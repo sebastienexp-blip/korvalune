@@ -7,6 +7,7 @@ import { CLASSES } from '../combat/Classes.js';
 import { damp, lerpAngle } from '../core/math.js';
 import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
 import { CATALOG_BY_ID } from '../data/shopCatalog.js';
+import { sanitizeAppearance } from '../data/looks.js';
 
 // Représentation visuelle d'un autre joueur connecté. La position réelle
 // n'est mise à jour que ~9 fois/seconde par le serveur ; on lisse ("interpole")
@@ -17,8 +18,8 @@ export class RemotePlayer {
     this.name = info.name;
     this.level = info.level;
     this.classId = info.classId;
-    const cls = CLASSES[info.classId] || CLASSES.warrior;
-    this.rig = createHumanoid({ cloth: cls.color, armor: cls.armor, shield: cls.shield, hair: 0x2c1f16, role: 'player:' + (info.classId || 'warrior') });
+    this.app = info.app ? sanitizeAppearance(info.app) : null; // V10.12 : apparence choisie (création / barbier)
+    this.rig = this._makeRig();
     this.pos = new THREE.Vector3(...info.pos);
     this.targetPos = this.pos.clone();
     this.yaw = info.yaw || 0;
@@ -31,11 +32,37 @@ export class RemotePlayer {
     this.rig.root.position.copy(this.pos);
     scene.add(this.rig.root);
     this.label = makeLabel(`${info.name}  ·  Nv.${info.level}`, { color: '#bfe6ff', size: 38 });
-    this.label.position.y = 2.05;
+    this.label.position.y = 2.05 * (this.rig.lookScale || 1);
     this.rig.root.add(this.label);
     this.scene = scene;
     this.setCos(info.cos);
     this.setMount(info.mnt);
+  }
+
+  _makeRig() {
+    const cls = CLASSES[this.classId] || CLASSES.warrior, a = this.app;
+    return createHumanoid({
+      cloth: cls.color, armor: cls.armor, shield: cls.shield, role: 'player:' + (this.classId || 'warrior'),
+      hair: a ? a.hairCol : 0x2c1f16, ...(a ? { eye: a.eyeCol, look: a } : {}), ...(a && a.skin != null ? { skin: a.skin } : {})
+    });
+  }
+
+  // V10.12 : un autre joueur est passé chez le barbier → on reconstruit son modèle
+  setLook(app) {
+    this.app = sanitizeAppearance(app);
+    const old = this.rig;
+    disposeCosmetics(old);
+    for (const l of [this.label, this.titleLabel]) if (l) old.root.remove(l);
+    this.rig = this._makeRig();
+    this.rig.root.position.copy(old.root.position);
+    this.rig.root.rotation.y = old.root.rotation.y;
+    this.scene.add(this.rig.root);
+    this.scene.remove(old.root);
+    old.root.traverse((o) => { if (o.isMesh) { if (!o.geometry.userData?.shared) o.geometry.dispose(); if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose()); else o.material.dispose(); } });
+    const h = this.rig.lookScale || 1;
+    this.label.position.y = 2.05 * h; this.rig.root.add(this.label);
+    if (this.titleLabel) { this.titleLabel.position.y = 2.38 * h; this.rig.root.add(this.titleLabel); }
+    const cos = this.cos; this.cos = null; this.setCos(cos);
   }
 
   // V10.10 : monture visible des autres joueurs (identifiant validé par le serveur)
@@ -57,7 +84,7 @@ export class RemotePlayer {
     if (this.titleLabel) { this.rig.root.remove(this.titleLabel); this.titleLabel.material.map?.dispose(); this.titleLabel.material.dispose(); this.titleLabel = null; }
     if (tf) {
       this.titleLabel = makeLabel(`« ${tf.text} »`, { color: tf.color, size: 32, scale: 2.2 });
-      this.titleLabel.position.y = 2.38;
+      this.titleLabel.position.y = 2.38 * (this.rig.lookScale || 1);
       this.rig.root.add(this.titleLabel);
     }
   }

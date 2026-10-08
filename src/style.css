@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #barber-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -184,10 +184,10 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 #account-submit { width: min(320px, 88vw); }
 
 /* ---------- Création du personnage ---------- */
-#char-create { flex-direction: row; justify-content: center; align-items: center; gap: clamp(16px, 4vw, 52px); }
+#char-create, #barber-screen { flex-direction: row; justify-content: center; align-items: center; gap: clamp(16px, 4vw, 52px); }
 .cc-stage { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; margin: auto 0; width: auto; }
 .cc-stage #cc-start { width: 100%; margin-top: 2px; }
-#cc-preview {
+#cc-preview, #barber-preview {
   display: block; height: min(calc(100vh - 150px), 420px); width: auto; aspect-ratio: 300 / 380; border-radius: 12px; touch-action: none; cursor: grab;
   border: 1px solid var(--panel-border);
   background: radial-gradient(ellipse at 50% 32%, #2b3e7a 0%, #131d3d 58%, #0a0f20 100%);
@@ -218,9 +218,9 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .cc-swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.22); padding: 0; transition: transform 0.12s; }
 .cc-swatch.active { border-color: var(--brass-hi); transform: scale(1.14); box-shadow: 0 0 0 2px rgba(8, 12, 24, 0.9), 0 0 0 4px var(--brass); }
 @media (max-width: 720px), (orientation: portrait) {
-  #char-create { flex-direction: column; justify-content: flex-start; gap: 12px; }
+  #char-create, #barber-screen { flex-direction: column; justify-content: flex-start; gap: 12px; }
   .cc-stage { display: contents; }
-  #cc-preview { height: min(38vh, 300px); order: 1; }
+  #cc-preview, #barber-preview { height: min(38vh, 300px); order: 1; }
   .cc-stage-hint { order: 1; }
   .cc-form { order: 2; }
   .cc-stage #cc-start { order: 3; width: min(100%, 420px); }
@@ -228,8 +228,8 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
   .cc-form { width: 100%; }
 }
 @media (max-height: 440px) and (min-width: 721px) {
-  #char-create { padding-top: 10px; padding-bottom: 10px; }
-  #cc-preview { height: calc(100vh - 112px); }
+  #char-create, #barber-screen { padding-top: 10px; padding-bottom: 10px; }
+  #cc-preview, #barber-preview { height: calc(100vh - 112px); }
   .cc-stage-hint { display: none; }
   .cc-form { gap: 6px; }
   .cc-form h2 { font-size: 21px; }
@@ -886,3 +886,24 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 #stable-list > * { flex: none; }
 #side-buttons #btn-mount.tbtn.small.on { border-color: #5fe0a0; background: rgba(30, 90, 60, 0.85); box-shadow: 0 0 10px rgba(95, 224, 160, 0.5); }
 @media (max-height: 460px) { #stable-list { max-height: calc(100vh - 170px); } #stable-head .menu-hint { display: none; } }
+
+/* ---------- V10.12 : apparence (création + barbier) ---------- */
+.look-editor { display: flex; flex-direction: column; gap: 10px; }
+.le-tabs { display: flex; gap: 6px; }
+.le-tab { flex: 1; min-height: 40px; padding: 6px; font-size: 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.04); color: rgba(239, 230, 207, 0.7); box-shadow: none; }
+.le-tab.active { color: #fff; background: rgba(226, 184, 102, 0.18); box-shadow: inset 0 0 0 1px var(--brass); font-weight: 700; }
+.le-body { display: flex; flex-direction: column; gap: 10px; }
+.le-slider { display: flex; align-items: center; gap: 12px; }
+.le-slider input { flex: 1; min-width: 0; accent-color: var(--brass); min-height: 32px; padding: 0; }
+.le-slider output { min-width: 84px; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
+.le-swatches { flex-wrap: wrap; }
+.le-price { float: right; color: var(--brass-hi); font-family: system-ui, sans-serif; font-size: 11px; }
+#barber-cost { min-height: 2.6em; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
+#barber-cost small { opacity: 0.7; }
+#barber-cost.poor b { color: #ff9a86; }
+.barber-actions { display: flex; gap: 10px; }
+.barber-actions button { flex: 1; }
+.barber-actions #barber-pay { flex: 1.6; }
+@media (max-width: 720px), (orientation: portrait) {
+  #barber-screen .cc-form, #char-create .cc-form { padding-bottom: 12px; }
+}
