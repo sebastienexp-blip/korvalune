@@ -15,8 +15,8 @@ COPY server.js ./
 COPY server ./server
 COPY src ./src
 COPY --from=build /app/dist ./dist
-RUN mkdir -p /data && chown -R node:node /data /app
-USER node
+# Le disque persistant Render est monté en root : on reste root pour pouvoir y écrire (comptes, personnages)
+RUN mkdir -p /data
 VOLUME ["/data"]
 EXPOSE 8787
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:${PORT}/healthz || exit 1
