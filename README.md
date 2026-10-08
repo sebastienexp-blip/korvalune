@@ -832,6 +832,11 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.5 — Menu de la boutique
+
+- Bouton « 🌙 Boutique des Lunes » dans le **menu principal** (connexion requise) et dans le **menu pause**, en plus de la pastille violette « Boutique » (🌙 + libellé) sur l'écran de jeu.
+- Ouverte depuis le menu principal, la boutique se referme vers le menu principal ; l'aperçu « Essayer » est masqué (pas de personnage en jeu).
+
 ## V10.4 — Lunes plus rares
 
 - Gains réduits : **15 Lunes** à la création du compte (avant 50), **3 par jour** (avant 20), **2 Lunes tous les 5 niveaux** (avant 3 par niveau). Un joueur gratuit gagne environ 90 Lunes par mois ; les objets coûtent de 30 à 400 Lunes, les ailes et auras prismatiques demandent plusieurs mois.

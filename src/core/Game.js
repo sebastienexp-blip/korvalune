@@ -627,6 +627,7 @@ export class Game {
     });
     b.on('ui:cs-back', () => this.hud.showScreen('main-menu'));
     b.on('net:chars', (msg) => { this._serverChars = msg.chars || []; this._serverBank = msg.bank || []; this._refreshContinueButton(); if (this.hud._curScreen === 'char-select') this._openCharSelect(); });
+    b.on('ui:lune', () => this._openLune(this.hud._curScreen === 'pause-menu' ? 'pause-menu' : 'main-menu'));
     b.on('ui:account', () => { this.hud.showScreen('account-screen'); this.hud.setAccountError(''); });
     b.on('ui:account-back', () => this.hud.showScreen('main-menu'));
     // V10.3 — page « Nouveautés » (menu principal + page de connexion) ; pastille « Nouveau » tant que la dernière version n'a pas été vue
@@ -1261,11 +1262,19 @@ export class Game {
     if (this.bank && this.bank.size < n) { while (this.bank.slots.length < n) this.bank.slots.push(null); this.bank.size = n; }
   }
 
-  _openLune() {
-    if (!this.player || this.dialogueOpen || this.modalOpen) return;
-    if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour utiliser la boutique des Lunes.', 'info'); return; }
-    document.exitPointerLock?.();
-    this.modalOpen = true;
+  // from : écran de départ ('main-menu' | 'pause-menu' | undefined = en jeu via le bouton 🌙)
+  _openLune(from) {
+    if (from === 'main-menu') { // depuis le menu principal : pas de personnage en jeu, donc pas d'aperçu « Essayer »
+      if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte (menu Compte) pour utiliser la boutique des Lunes.', 'info'); return; }
+      this._luneReturn = 'main-menu';
+    } else {
+      if (from === 'pause-menu') this.setPaused(false);
+      if (!this.player || this.dialogueOpen || this.modalOpen) return;
+      if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour utiliser la boutique des Lunes.', 'info'); return; }
+      this._luneReturn = null;
+      document.exitPointerLock?.();
+      this.modalOpen = true;
+    }
     this._luneTab = this._luneTab || 'aura';
     this._luneMsg = null;
     this.hud.showScreen('lune-screen');
@@ -1275,12 +1284,13 @@ export class Game {
 
   _closeLune() {
     if (this._preview) { this._preview = null; this.player?.setCosmetics(this._shopCos()); }
+    if (this._luneReturn) { const r = this._luneReturn; this._luneReturn = null; this.hud.showScreen(r); return; }
     this._closeModal();
   }
 
   _renderLune() {
     if (this.hud.q('#lune-screen').classList.contains('hidden')) return;
-    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, consent: !!this._luneConsent });
+    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, consent: !!this._luneConsent, canTry: !!this.player && !this._luneReturn });
   }
 
   _openSocial() {

@@ -814,3 +814,9 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .news-badge.hidden { display: none; }
 .news-link { position: static; margin: -4px auto 8px; display: block; flex: none; font-size: 13px; padding: 5px 12px; background: none; border: 1px dashed rgba(226, 184, 102, 0.6); color: #f4e9cf; padding: 8px 14px; border-radius: 9px; font-family: inherit; cursor: pointer; }
 .panel-screen > button.news-link[data-act] { position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: 20px; bottom: auto; left: auto; width: auto; height: auto; margin: 0; box-shadow: none; }
+
+/* V10.5 — pastille « Boutique » : icône + petit libellé dessous, bien visible sur l'écran de jeu */
+#side-buttons { align-items: flex-start; }
+#side-buttons #btn-lune.tbtn.small { width: 48px; height: 48px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 0; line-height: 1; border-color: #9a7bff; background: linear-gradient(160deg, rgba(70, 48, 140, 0.92), rgba(24, 20, 56, 0.92)); box-shadow: 0 0 10px rgba(154, 123, 255, 0.45); }
+#btn-lune .bl-ico { font-size: 19px; }
+#btn-lune .bl-txt { font-size: 9px; letter-spacing: 0.2px; margin-top: 2px; color: #e7dcff; }

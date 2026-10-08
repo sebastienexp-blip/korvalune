@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.5', title: 'La boutique a enfin son menu',
+    items: [
+      'Nouveau bouton « 🌙 Boutique des Lunes » dans le menu principal et dans le menu pause.',
+      'Depuis le menu principal, tu peux voir ton solde, récupérer la récompense du jour et acheter (l’aperçu « Essayer » reste réservé au jeu).',
+      'En jeu, le bouton 🌙 devient une pastille violette avec « Boutique » écrit dessous, plus facile à repérer.'
+    ]
+  },
+  {
     version: '10.4', title: 'Les Lunes deviennent rares',
     items: [
       'Équilibrage de la monnaie de la boutique : 15 Lunes offertes, 3 par jour, et 2 Lunes tous les 5 niveaux.',

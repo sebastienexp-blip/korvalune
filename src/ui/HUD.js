@@ -85,13 +85,14 @@ export class HUD {
           <div class="menu-buttons">
             <button data-act="new">Nouvelle partie</button>
             <button data-act="continue">Continuer</button>
+            <button data-act="lune">🌙 Boutique des Lunes</button>
             <button data-act="account">Compte</button>
             <button data-act="options">Options</button>
             <button data-act="credits">Crédits</button>
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.4 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.5 — Korvalune</div>
         </div>
       </div>
 
@@ -222,7 +223,7 @@ export class HUD {
           <button id="btn-quests" class="tbtn small">📜</button>
           <button id="btn-ach" class="tbtn small">🏆</button>
           <button id="btn-social" class="tbtn small">👥</button>
-          <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes">🌙</button>
+          <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes" title="Boutique des Lunes"><span class="bl-ico">🌙</span><span class="bl-txt">Boutique</span></button>
           <button id="btn-chat" class="tbtn small">💬</button>
         </div>
 
@@ -402,6 +403,7 @@ export class HUD {
         <div class="menu-buttons">
           <button data-act="resume">Reprendre</button>
           <button data-act="teleport-town" id="btn-teleport">Téléportation vers Korvalune — <span id="teleport-cost">?</span> 🪙</button>
+          <button data-act="lune">🌙 Boutique des Lunes</button>
           <button data-act="fullscreen">Plein écran</button>
           <button data-act="settings">Paramètres</button>
           <button data-act="save">Sauvegarder</button>
@@ -917,7 +919,7 @@ export class HUD {
       const locked = it.requires && !sh.owned.includes(it.requires);
       const btns = [];
       if (it.cat !== 'perk') {
-        btns.push(`<button class="soc-btn" data-la="try" data-v="${it.id}">${prev ? 'Aperçu en cours' : 'Essayer'}</button>`);
+        if (d.canTry !== false) btns.push(`<button class="soc-btn" data-la="try" data-v="${it.id}">${prev ? 'Aperçu en cours' : 'Essayer'}</button>`);
         if (owned) btns.push(eqd ? `<button class="soc-btn" data-la="unequip" data-v="${it.cat}">Retirer</button>` : `<button class="soc-btn lune-go" data-la="equip" data-v="${it.id}">Équiper</button>`);
       }
       if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
