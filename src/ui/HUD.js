@@ -91,7 +91,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.3 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.4 — Korvalune</div>
         </div>
       </div>
 
@@ -898,7 +898,7 @@ export class HUD {
     head.innerHTML = `<div class="lune-bal"><span class="lune-gem">🌙</span><b>${sh.gems}</b><small>Lunes</small></div>` +
       `<button class="soc-btn" data-la="daily"${sh.dailyReady ? '' : ' disabled'}>${sh.dailyReady ? `Récompense du jour : +${sh.dailyAmount}` : 'Récompense du jour récupérée'}</button>`;
     msg.className = d.msg ? (d.msg.ok ? 'lune-ok' : 'lune-ko') : '';
-    msg.textContent = d.msg ? d.msg.text : 'Gagne des Lunes en jouant : récompense du jour et chaque nouveau niveau. Aucun objet de la boutique ne donne de puissance au combat.';
+    msg.textContent = d.msg ? d.msg.text : 'Les Lunes sont rares : récompense du jour et prime tous les 5 niveaux. Aucun objet de la boutique ne donne de puissance au combat.';
     tabs.innerHTML = CATEGORIES.map((c) => `<button class="lune-tab${c.id === d.tab ? ' on' : ''}" data-la="tab" data-v="${c.id}">${c.icon} ${esc(c.label)}</button>`).join('');
     // V10.2 : achat de Lunes par carte (affiché seulement si le serveur a les paiements activés — voir STRIPE.md)
     const payEl = this.q('#lune-pay');

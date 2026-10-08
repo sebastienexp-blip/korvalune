@@ -832,6 +832,12 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.4 — Lunes plus rares
+
+- Gains réduits : **15 Lunes** à la création du compte (avant 50), **3 par jour** (avant 20), **2 Lunes tous les 5 niveaux** (avant 3 par niveau). Un joueur gratuit gagne environ 90 Lunes par mois ; les objets coûtent de 30 à 400 Lunes, les ailes et auras prismatiques demandent plusieurs mois.
+- Réglages dans `src/data/shopCatalog.js` (`LUNES`) ; les prix du catalogue sont inchangés.
+- Les soldes et achats déjà faits sont conservés.
+
 ## V10.3 — Nouveautés en jeu + pages légales
 
 - **Page « Nouveautés »** (notes de mise à jour) accessible depuis le menu principal (carte avec pastille « Nouveau ») et depuis la page de connexion. Contenu : `src/data/patchNotes.js` — pour publier une nouveauté, ajouter une entrée **en haut** de la liste.

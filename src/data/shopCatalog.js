@@ -6,9 +6,10 @@
 
 export const LUNES = {
   name: 'Lunes',
-  welcome: 50,          // offert à la création du compte
-  daily: 20,            // récompense quotidienne (1 fois par jour, côté serveur)
-  perLevel: 3,          // par nouveau niveau atteint (record du compte, tous personnages confondus)
+  welcome: 15,          // offert à la création du compte (de quoi s'offrir un titre ou presque)
+  daily: 3,             // récompense quotidienne (1 fois par jour, côté serveur) : ~90 par mois
+  levelStep: 5,         // une prime tous les 5 niveaux (record du compte, tous personnages confondus)
+  perStep: 2,           // Lunes par palier de niveau : 80 au maximum sur les 200 niveaux
   maxBankTabs: 4        // onglets de coffre supplémentaires achetables
 };
 

@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.4', title: 'Les Lunes deviennent rares',
+    items: [
+      'Équilibrage de la monnaie de la boutique : 15 Lunes offertes, 3 par jour, et 2 Lunes tous les 5 niveaux.',
+      'Les objets déjà achetés et vos Lunes actuelles sont conservés.'
+    ]
+  },
+  {
     version: '10.3', title: 'Notes de mise à jour & pages légales',
     items: [
       'Nouveau : cette page « Nouveautés », accessible depuis le menu principal et la page de connexion.',

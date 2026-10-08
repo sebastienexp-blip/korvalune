@@ -74,14 +74,15 @@ export function claimDaily(acc) {
   return { ok: true, amount: LUNES.daily };
 }
 
-// Gain de Lunes par nouveau niveau atteint (record du compte : créer des personnages supplémentaires ne rapporte rien de plus).
+// Gain de Lunes par PALIER de niveau (tous les `levelStep` niveaux), sur le record du compte : créer d'autres personnages ne rapporte rien de plus.
 // Le niveau lu ici est celui déjà borné par la validation de sauvegarde. -> nombre de Lunes gagnées
 export function levelReward(acc, level) {
   const s = ensureShop(acc);
   const lv = Number.isFinite(level) ? Math.max(1, Math.min(200, Math.floor(level))) : 1;
   if (lv <= s.lvlMax) return 0;
-  const gain = (lv - s.lvlMax) * LUNES.perLevel;
+  const steps = Math.floor(lv / LUNES.levelStep) - Math.floor(s.lvlMax / LUNES.levelStep);
   s.lvlMax = lv;
+  const gain = Math.max(0, steps) * LUNES.perStep;
   s.gems += gain;
   return gain;
 }
