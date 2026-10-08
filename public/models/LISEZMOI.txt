@@ -1,0 +1,23 @@
+MODELES 3D (optionnel) — dépose ici des fichiers .glb
+=====================================================
+Le jeu les détecte tout seul au lancement (redémarre la page, pas besoin de npm install).
+Sans fichier ici, le jeu utilise ses modèles intégrés.
+
+Packs gratuits conseillés (licence CC0, libres de droits) :
+  - KayKit "Adventurers" (Knight, Mage, Rogue, Ranger, Barbarian) — kaylousberg.itch.io
+  - KayKit "Skeletons" et "Character Animations" — kaylousberg.itch.io
+  - Quaternius "Ultimate Modular Men/Women", "Universal Animation Library",
+    "Ultimate Monsters", "Ultimate Animated Animals" (loup, sanglier...) — quaternius.com
+Prends les versions GLB (pas FBX/OBJ).
+
+Le nom du fichier sert à choisir le modèle (mots-clés) :
+  warrior/knight/barbarian  → Guerrier, Paladin       mage/wizard  → Mage
+  ranger/archer/rogue       → Archer, Assassin        villager/merchant... → PNJ
+  skeleton/goblin/orc/bandit → bandits et brutes      wolf / boar / bear → bêtes
+Pour forcer un choix, crée mapping.json :
+  { "player:mage": "Mage.glb", "species:wolf": "Wolf.glb", "npc": "Villager.glb" }
+Rôles possibles : player:warrior|paladin|mage|archer|assassin, npc, boss,
+species:bandit|elite|brute|goblin|wolf|boar|bear.
+
+Les fichiers d'animations seuls sont acceptés : leurs mouvements sont partagés
+avec les personnages dont le squelette a les mêmes noms d'os (cas des packs KayKit).

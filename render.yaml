@@ -1,0 +1,18 @@
+# Déploiement en un clic sur Render (https://render.com) : « New + » > « Blueprint »
+services:
+  - type: web
+    name: legends-of-aetheria
+    runtime: docker
+    plan: starter          # un disque persistant exige un plan payant
+    healthCheckPath: /healthz
+    envVars:
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DATA_DIR
+        value: /data
+      - key: SESSION_SECRET
+        generateValue: true
+    disk:
+      name: aetheria-data
+      mountPath: /data
+      sizeGB: 1

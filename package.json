@@ -1,0 +1,28 @@
+{
+  "name": "legends-of-aetheria",
+  "version": "0.9.5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "server": "node server.js",
+    "start": "node server.js",
+    "online": "bash tools/go-online.sh",
+    "deploy": "bash tools/deploy-fly.sh",
+    "cap:init": "npm run build && npx cap add android && npx cap sync android",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "ws": "^8.18.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/android": "^6.1.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "@capacitor/cli": "^6.1.0"
+  }
+}

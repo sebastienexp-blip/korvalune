@@ -1,0 +1,14 @@
+[
+  {
+    "id": "crypts",
+    "name": "Cryptes oubliées",
+    "center": [
+      -112,
+      42
+    ],
+    "radius": 20,
+    "tint": 1382946,
+    "priority": 2,
+    "levels": "10-20"
+  }
+]
