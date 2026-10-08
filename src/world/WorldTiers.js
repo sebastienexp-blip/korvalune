@@ -7,7 +7,7 @@ const fam = (suffix) => ['wolf', 'boar', 'bear', 'marauder', 'brute', 'rat', 'ze
 const rg = (id) => REGION_BY_ID[id];
 
 export const WORLD_TIERS = [
-  { id: 1, regionId: 'prairie', regions: ['prairie', 'forest', 'mount'], name: "Prairies d'Aetheria", unlockLevel: 1, levelRange: [1, 32], color: '#8fd0ff' },
+  { id: 1, regionId: 'prairie', regions: ['prairie', 'forest', 'mount'], name: "Prairies de Korvalune", unlockLevel: 1, levelRange: [1, 32], color: '#8fd0ff' },
   { id: 6, regionId: 'desert', name: rg('desert').name, unlockLevel: 28, levelRange: rg('desert').levels, color: rg('desert').color, center: rg('desert').site, radius: 140,
     species: fam('sand'), elite: 'warden_sand' },
   { id: 7, regionId: 'swamp', name: rg('swamp').name, unlockLevel: 40, levelRange: rg('swamp').levels, color: rg('swamp').color, center: rg('swamp').site, radius: 130,

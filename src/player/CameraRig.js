@@ -3,7 +3,7 @@ import { CONFIG } from '../core/config.js';
 import { clamp, damp } from '../core/math.js';
 
 // Deux modes de caméra :
-//  - 'iso' (défaut) : caméra FIXE façon Diablo 3 (V6.1) : angle et inclinaison verrouillés, aucune rotation ;
+//  - 'iso' (défaut) : caméra FIXE classique (V6.1) : angle et inclinaison verrouillés, aucune rotation ;
 //    seul le zoom (molette / pincement) reste possible, dans une plage resserrée. Le décor qui gêne devient translucide.
 //  - 'free' : l'ancienne caméra orbitale troisième personne (verrouillable derrière le joueur).
 export const CAMERA_MODES = {
@@ -15,7 +15,7 @@ export const CAMERA_MODES = {
   top: { aerial: true, fov: 40, pitch: 1.38, pitchMin: 1.38, pitchMax: 1.38, dist: 24, min: 12, max: 48, yaw: Math.PI, pivotY: 1.0 } // vue de dessus
 };
 export const CAMERA_LABELS = [
-  ['iso', 'Aérienne fixe façon Diablo (par défaut)'],
+  ['iso', 'Aérienne fixe (par défaut)'],
   ['free', 'Libre (3ᵉ personne)'],
   ['close', 'Épaule (3ᵉ personne rapprochée)'],
   ['high', 'Tactique (aérienne haute, grand champ)'],

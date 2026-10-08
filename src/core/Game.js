@@ -706,8 +706,8 @@ export class Game {
     b.on('playerDeath', () => setTimeout(() => {
       const rf = !!this.rift?.active, ds = this.hud.q('#death-screen');
       const btn = ds.querySelector('button'), msg = ds.querySelector('p');
-      if (btn) btn.textContent = rf ? 'Réapparaître au point de contrôle' : 'Revenir à Aetheria';
-      if (msg) msg.textContent = rf ? (this.rift.run?.mode.timed ? 'Vous réapparaissez dans la spire — le chronomètre continue !' : 'Vous réapparaissez au dernier point de contrôle de la spire.') : 'Votre équipement est intact. Le portail d\'Aetheria vous attend.';
+      if (btn) btn.textContent = rf ? 'Réapparaître au point de contrôle' : 'Revenir à Korvalune';
+      if (msg) msg.textContent = rf ? (this.rift.run?.mode.timed ? 'Vous réapparaissez dans la spire — le chronomètre continue !' : 'Vous réapparaissez au dernier point de contrôle de la spire.') : 'Votre équipement est intact. Le portail de Korvalune vous attend.';
       this.hud.showScreen('death-screen');
     }, 900));
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
@@ -992,12 +992,12 @@ export class Game {
   _startGameInner(save) {
     this.player = new Player(this.scene, this.world, this.audio, this.particles, this.bus, save);
     setLootClass(this.player.classId);
-    // V8.0 : le continent a été redessiné — une ancienne sauvegarde posée en mer ou hors terre ferme repart d'Aetheria
+    // V8.0 : le continent a été redessiné — une ancienne sauvegarde posée en mer ou hors terre ferme repart de Korvalune
     try {
       const pp = this.player.pos;
       if (save?.pos && (!isLand(pp.x, pp.z) || this.world.heightAt(pp.x, pp.z) < this.world.waterLevel + 0.3)) {
         pp.set(0, this.world.heightAt(0, 12) + 0.5, 12);
-        this.hud.notify('Le continent a été redessiné : vous reprenez votre aventure à Aetheria.', 'info');
+        this.hud.notify('Le continent a été redessiné : vous reprenez votre aventure à Korvalune.', 'info');
       }
     } catch (e) { /* ignoré */ }
     netShare.localPlayer = this.player;
@@ -1442,7 +1442,7 @@ export class Game {
       const btn = this.root.querySelector('#btn-teleport');
       if (this.rift?.active) { btn.innerHTML = 'Quitter la spire'; btn.disabled = false; }
       else {
-        btn.innerHTML = `Téléportation vers Aetheria — <span id="teleport-cost">${cost}</span> 🪙`;
+        btn.innerHTML = `Téléportation vers Korvalune — <span id="teleport-cost">${cost}</span> 🪙`;
         btn.disabled = cost === 0 || this.player.coins < cost;
       }
     }
@@ -1466,7 +1466,7 @@ export class Game {
     this.player.vel.set(0, 0, 0);
     this.particles.emit(this.player.pos.x, this.player.pos.y + 1, this.player.pos.z, { count: 50, color: 0x8fd0ff, speed: 5, life: 0.9, up: 2.5 });
     this.audio.play('portal');
-    this.hud.notify(cost > 0 ? `Téléporté vers Aetheria (-${cost} 🪙)` : 'Déjà en ville.', 'info');
+    this.hud.notify(cost > 0 ? `Téléporté vers Korvalune (-${cost} 🪙)` : 'Déjà en ville.', 'info');
     this.setPaused(false);
   }
 
@@ -1876,7 +1876,7 @@ export class Game {
   }
 
   _zoneNameAt(x, z) {
-    if (Math.hypot(x, z) < CONFIG.world.townRadius + 4) return 'Aetheria';
+    if (Math.hypot(x, z) < CONFIG.world.townRadius + 4) return 'Korvalune';
     if (!isLand(x, z)) return 'Haute mer';
     return regionAt(x, z).name;
   }
@@ -1939,9 +1939,9 @@ export class Game {
     g.strokeStyle = '#e2b866'; g.lineWidth = 2.5;
     g.beginPath(); g.arc(tx, ty, Math.max(tr, 8), 0, Math.PI * 2); g.stroke();
     g.fillStyle = 'rgba(8,12,24,0.75)'; g.font = 'bold 13px sans-serif';
-    const tw = g.measureText('Aetheria').width + 14;
+    const tw = g.measureText('Korvalune').width + 14;
     g.fillRect(tx - tw / 2, ty - 34, tw, 22);
-    g.fillStyle = '#f2cf6e'; g.fillText('Aetheria', tx, ty - 23);
+    g.fillStyle = '#f2cf6e'; g.fillText('Korvalune', tx, ty - 23);
     // autres joueurs connectés (groupe en vert, les autres en bleu clair)
     g.font = 'bold 11px sans-serif';
     for (const o of this._mapPlayers().sort((a, b) => a.group - b.group)) {
@@ -2150,7 +2150,7 @@ export class Game {
     }
     let lines = npc.def.dialogues[key] || npc.def.dialogues.intro;
     if (npc.id === 'guard' && this.quests.tutorialStep()?.target === 'guard') {
-      lines = ['Bienvenue à Aetheria, voyageur ! Moi, c\'est Halvar. Je veille sur cette place.',
+      lines = ['Bienvenue à Korvalune, voyageur ! Moi, c\'est Halvar. Je veille sur cette place.',
         'Tu n\'as presque rien sur toi, je le vois bien. Tiens, voici trois potions de soin.',
         'J\'ai aussi posé une armure à tes pieds : ramasse-la avec E, puis équipe-la depuis ton inventaire.'];
     }

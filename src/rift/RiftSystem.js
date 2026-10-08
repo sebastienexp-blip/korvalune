@@ -276,7 +276,7 @@ export class RiftSystem {
     g.camera.position.set(RETURN_POS[0], 4, RETURN_POS[1] + 8);
     g.particles.emit(p.pos.x, p.pos.y + 1, p.pos.z, { count: 50, color: 0x5ee6d0, speed: 5, life: 1, up: 2.5 });
     g.audio.play('portal');
-    g.hud.notify('Retour à Aetheria.', 'info');
+    g.hud.notify('Retour à Korvalune.', 'info');
     g._doSave();
   }
 

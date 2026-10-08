@@ -11,7 +11,7 @@
     },
     "dialogues": {
       "intro": [
-        "Halte, voyageur ! Bienvenue à Aetheria, la cité des Sept Routes.",
+        "Halte, voyageur ! Bienvenue à Korvalune, la cité des Sept Routes.",
         "Les loups rôdent de plus en plus près de la route du sud. Ils effraient les marchands.",
         "Si tu sais tenir une lame, va en chasser un et reviens me voir. Une récompense t'attend."
       ],
@@ -21,7 +21,7 @@
       ],
       "report": [
         "Un loup de moins ! Beau travail, aventurier.",
-        "Prends cette récompense. Aetheria a besoin de gens comme toi."
+        "Prends cette récompense. Korvalune a besoin de gens comme toi."
       ],
       "done": [
         "Les routes sont plus sûres grâce à toi. Explore les environs, mais ne t'éloigne pas trop."
@@ -206,7 +206,7 @@
         "Les bandits ne t'ont pas posé de problème, j'espère ?"
       ],
       "all_done": [
-        "Grâce à toi, j'ose enfin sortir d'Aetheria. Un jour, moi aussi, je serai aussi fort que toi !"
+        "Grâce à toi, j'ose enfin sortir de Korvalune. Un jour, moi aussi, je serai aussi fort que toi !"
       ]
     }
   },
@@ -266,7 +266,7 @@
         "Les terres lointaines cachent bien des secrets."
       ],
       "offer_morgane_1": [
-        "J'étudie les terres lointaines depuis des années. Le Royaume Céleste en particulier cache des secrets sur les bâtisseurs d'Aetheria.",
+        "J'étudie les terres lointaines depuis des années. Le Royaume Céleste en particulier cache des secrets sur les bâtisseurs de Korvalune.",
         "Pourrais-tu m'y rapporter des échantillons ? Élimine six loups célestes, leurs crocs portent une trace d'énergie que je veux analyser."
       ],
       "progress_morgane_1": [
@@ -317,7 +317,7 @@
         "Le Souverain du Néant est toujours debout. Prends ton temps, mais ne recule pas."
       ],
       "all_done": [
-        "Tu as accompli ce qu'aucune armée n'aurait pu faire. Aetheria te doit tout, aventurier."
+        "Tu as accompli ce qu'aucune armée n'aurait pu faire. Korvalune te doit tout, aventurier."
       ]
     }
   }

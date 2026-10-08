@@ -26,5 +26,5 @@ export const ACHIEVEMENTS = [
   { id: 'q2', icon: '📚', name: 'Héros des contrats', desc: 'Terminer 40 quêtes', stat: 'quests', goal: 40, reward: { xp: 5000, coins: 2500 } },
   { id: 'v1', icon: '⭐', name: 'Apprenti', desc: 'Atteindre le niveau 10', stat: 'level', goal: 10, reward: { xp: 300, coins: 300 } },
   { id: 'v2', icon: '🌠', name: 'Vétéran', desc: 'Atteindre le niveau 50', stat: 'level', goal: 50, reward: { xp: 4000, coins: 3000 } },
-  { id: 'v3', icon: '🔥', name: 'Maître d\'Aetheria', desc: 'Atteindre le niveau 100', stat: 'level', goal: 100, reward: { xp: 20000, coins: 15000 } }
+  { id: 'v3', icon: '🔥', name: 'Maître de Korvalune', desc: 'Atteindre le niveau 100', stat: 'level', goal: 100, reward: { xp: 20000, coins: 15000 } }
 ];

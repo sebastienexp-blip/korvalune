@@ -22,7 +22,7 @@ const HOUSES = [
   { x: 29, z: -22, w: 10, d: 7, h: 5.8, wall: 0xc0ad8c, roof: 0x6a2f2f }
 ];
 
-// Construit Aetheria : maisons, puits, étals, torches, portail.
+// Construit Korvalune : maisons, puits, étals, torches, portail.
 export function buildTown(world) {
   const g = new THREE.Group();
   world.group.add(g);

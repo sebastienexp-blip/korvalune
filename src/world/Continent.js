@@ -4,7 +4,7 @@ import { fbm } from './noise.js';
 // (diagramme de Voronoï déformé par du bruit), littoral irrégulier entouré d'océan, niveaux 1 → 200.
 // Utilisé par le relief (World), les ennemis (Game), la détection de zone (ZoneManager) et les cartes.
 export const REGIONS = [
-  { id: 'prairie', name: "Prairies d'Aetheria", site: [0, -10], w: 1.5, levels: [1, 12], color: '#8fd06a', tint: 0xc2c8b8 },
+  { id: 'prairie', name: "Prairies de Korvalune", site: [0, -10], w: 1.5, levels: [1, 12], color: '#8fd06a', tint: 0xc2c8b8 },
   { id: 'forest', name: 'Forêt des Ombres', site: [-215, 35], w: 1.0, levels: [10, 24], color: '#2f7a3a', tint: 0x273a2a },
   { id: 'mount', name: 'Montagnes de Fer', site: [45, 232], w: 1.2, levels: [15, 32], color: '#9aa0a8', tint: 0x9098a8 },
   { id: 'desert', name: "Désert d'Ambre", site: [255, 65], w: 1.0, levels: [28, 50], color: '#e0b14f', tint: 0xe6cf9a },

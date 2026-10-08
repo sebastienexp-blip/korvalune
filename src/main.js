@@ -5,7 +5,7 @@ let errorShown = false;
 function showFatalError(err) {
   if (errorShown) return; // évite un déluge d'alertes si l'erreur se répète en boucle
   errorShown = true;
-  console.error('Erreur Legends of Aetheria :', err);
+  console.error('Erreur Korvalune :', err);
   alert('Une erreur a arrêté le jeu :\n' + (err?.message || err) + '\n\nMerci de signaler ce message exact.');
 }
 window.addEventListener('error', (e) => showFatalError(e.error || e.message));

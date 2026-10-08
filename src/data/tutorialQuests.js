@@ -32,11 +32,11 @@ export const TUTORIAL_QUESTS = [
     reward: { xp: 120, coins: 60 }
   },
   {
-    id: 'tuto_3', name: 'Initiation : la ville d\'Aetheria', level: 1, tutorial: true, next: 'commencement',
+    id: 'tuto_3', name: 'Initiation : la ville de Korvalune', level: 1, tutorial: true, next: 'commencement',
     steps: [
       ev('map', 'Ouvrez la carte du monde ({k:map} ou bouton 🗺)', 'map'),
       ev('shop', 'Visitez un marchand (Ymir, Sella ou Wren) pour acheter ou vendre', 'shop'),
-      ev('bank', 'Ouvrez le coffre d\'Aetheria ({k:interact} près du coffre)', 'bank'),
+      ev('bank', 'Ouvrez le coffre de Korvalune ({k:interact} près du coffre)', 'bank'),
       ev('rift', 'Approchez la Statue de la Spire, à l\'ouest de la place, et appuyez sur {k:interact}', 'rift'),
       { id: 'hugo', text: 'Parlez à Hugo pour débuter les grandes quêtes', type: 'talk', target: 'hugo' }
     ],

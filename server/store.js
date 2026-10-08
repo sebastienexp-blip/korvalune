@@ -36,7 +36,7 @@ export function persistAccounts(accounts) {
       try { await fs.copyFile(FILE, FILE + '.bak'); } catch { /* première écriture */ }
       await fs.rename(tmp, FILE);
     })
-    .catch((err) => console.error('[Aetheria] Échec écriture accounts.json :', err.message));
+    .catch((err) => console.error('[Korvalune] Échec écriture accounts.json :', err.message));
   return writeQueue;
 }
 

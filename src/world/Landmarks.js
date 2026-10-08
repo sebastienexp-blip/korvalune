@@ -3,7 +3,7 @@ import { mulberry32 } from '../core/math.js';
 import { regionAt } from './Continent.js';
 import { makeLabel } from '../ui/Label.js';
 
-// V7.0 — Points d'intérêt du continent (façon Diablo 3 / 4) : repères visibles de loin, un ou deux par région,
+// V7.0 — Points d'intérêt du continent : repères visibles de loin, un ou deux par région,
 // avec une zone aplanie autour pour que les bâtiments tiennent bien sur le relief.
 export const POI_DEFS = [
   // Prairies (1-12)

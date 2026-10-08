@@ -29,7 +29,7 @@
     },
     "value": 30,
     "stackable": false,
-    "desc": "Utilisée par les gardes d'Aetheria.",
+    "desc": "Utilisée par les gardes de Korvalune.",
     "visual": "sword"
   },
   {
@@ -129,7 +129,7 @@
     },
     "value": 90,
     "stackable": false,
-    "desc": "Porte l'emblème des gardes d'Aetheria.",
+    "desc": "Porte l'emblème des gardes de Korvalune.",
     "visual": "shield"
   },
   {

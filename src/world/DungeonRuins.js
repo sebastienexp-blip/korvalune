@@ -25,7 +25,7 @@ export function buildDungeon(world, center = [-112, 42]) {
   for (let i = 0; i < segments; i++) {
     const a0 = (i / segments) * Math.PI * 2, a1 = ((i + 1) / segments) * Math.PI * 2;
     const mid = (a0 + a1) / 2;
-    // Laisse une ouverture orientée vers Aetheria (le donjon est à l'ouest de la ville)
+    // Laisse une ouverture orientée vers Korvalune (le donjon est à l'ouest de la ville)
     if (Math.cos(mid) > 0.3) continue;
     const broken = Math.random() < 0.3;
     const h = broken ? 1.2 + Math.random() * 1.2 : 3.2 + Math.random() * 1.4;

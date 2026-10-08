@@ -1,10 +1,10 @@
-# Legends of Aetheria — Prototype (Étape 6 — toutes les étapes prévues)
+# Korvalune — Prototype (Étape 6 — toutes les étapes prévues)
 
 MMORPG fantasy 3D jouable dans le navigateur, en **HTML5 / Three.js / JavaScript ES2022**,
 optimisé pour PC **et pour mobile** (contrôles tactiles, jauges adaptatives de qualité).
 
 Ce prototype couvre les **6 étapes** du cahier des charges d'origine : monde 3D avec terrain
-procédural, ville d'Aetheria, PNJ, ennemis variés avec IA, combat en temps réel, XP/niveaux,
+procédural, ville de Korvalune, PNJ, ennemis variés avec IA, combat en temps réel, XP/niveaux,
 HUD, mini-carte, cycle jour/nuit, météo dynamique, inventaire, équipement, butin, deux zones
 explorables, marchands, un point d'intérêt façon donjon, un boss à phases, un serveur
 multijoueur Node.js/WebSocket (présence des autres joueurs, chat, groupes), **et maintenant des
@@ -129,7 +129,7 @@ JSON, et une limite de tentatives de connexion plus robuste contre le bruteforce
 ```
 src/
   core/       Game.js (orchestrateur), boucle, config, input, sauvegarde
-  world/      Terrain procédural (bruit), rivière, ville d'Aetheria, zones, donjon, météo
+  world/      Terrain procédural (bruit), rivière, ville de Korvalune, zones, donjon, météo
   player/     Personnage jouable, caméra troisième personne
   entities/   Modèles procéduraux (humanoïde, créature), PNJ, ennemis, boss
   combat/     Classes de personnage, résolution des dégâts/compétences
@@ -335,7 +335,7 @@ ne plus plafonner avant la fin du jeu avec une répartition équilibrée des poi
 
 | Monde | Niveau requis | Tranche de niveau |
 |---|---|---|
-| Prairies d'Aetheria (départ) | — | 1-30 |
+| Prairies de Korvalune (départ) | — | 1-30 |
 | Terres Corrompues | 22 | 22-70 |
 | Royaume Céleste | 60 | 60-115 |
 | Abysses Oubliées | 100 | 100-160 |
@@ -411,12 +411,12 @@ effaçait le bonus de critique inhérent à certaines armes lors de la sauvegard
 
 ## Nouvelles fonctionnalités
 
-**Coffre de banque** : près du puits, au centre d'Aetheria. S'approcher et appuyer sur
+**Coffre de banque** : près du puits, au centre de Korvalune. S'approcher et appuyer sur
 interagir (`E` / ✋) ouvre un coffre à 4 pages de 30 emplacements chacune (120 au total),
 séparé de l'inventaire personnel. Touchez un objet d'un côté pour le faire passer de
 l'autre côté (inventaire ↔ coffre). Sauvegardé comme le reste.
 
-**Téléportation vers Aetheria** : bouton dans le menu pause. Gratuite si vous êtes déjà
+**Téléportation vers Korvalune** : bouton dans le menu pause. Gratuite si vous êtes déjà
 en ville, sinon le coût dépend de la distance (20 à 300 pièces). Le bouton affiche le prix
 et se désactive si vous n'avez pas assez d'or.
 
@@ -624,14 +624,14 @@ Tous les réglages s'appliquent immédiatement et sont sauvegardés sur l'appare
 ## V4.0 — Tutoriel, départ minimaliste, objets au sol, équipement visible
 
 - **Départ minimaliste** : un nouveau personnage commence avec **sa seule arme de classe, équipée** (plus de bouclier ni de potions d'office). Correction au passage : à la création, l'équipement de départ n'était en réalité jamais donné.
-- **3 quêtes de tutoriel** qui s'enchaînent toutes seules à la création du personnage (« Initiation : premiers pas », « le combat », « la ville d'Aetheria ») : marcher, caméra, roulade, parler au garde (il offre 3 potions et pose une armure au sol), ramasser, inventaire, équiper, fiche du personnage, compétences, lancer un sort, tuer des loups, boire une potion, jeter / ramasser un objet, carte du monde, marchand, coffre, Statue de la Spire, parler à Hugo. Chaque étape est validée quand vous faites l'action ; récompenses d'XP et d'or à la fin de chaque quête, puis « Le commencement » prend le relais. Les anciennes sauvegardes ne reçoivent pas le tutoriel.
+- **3 quêtes de tutoriel** qui s'enchaînent toutes seules à la création du personnage (« Initiation : premiers pas », « le combat », « la ville de Korvalune ») : marcher, caméra, roulade, parler au garde (il offre 3 potions et pose une armure au sol), ramasser, inventaire, équiper, fiche du personnage, compétences, lancer un sort, tuer des loups, boire une potion, jeter / ramasser un objet, carte du monde, marchand, coffre, Statue de la Spire, parler à Hugo. Chaque étape est validée quand vous faites l'action ; récompenses d'XP et d'or à la fin de chaque quête, puis « Le commencement » prend le relais. Les anciennes sauvegardes ne reçoivent pas le tutoriel.
 - **Panneau « Équipé »** dans l'**inventaire** et dans le **coffre** : les 11 emplacements d'équipement sont toujours visibles ; toucher un objet équipé le remet dans l'inventaire.
 - **« Jeter » pose réellement l'objet par terre**, devant vous (modèle, lueur et nom visibles) ; on le ramasse avec E. Les objets jetés ne disparaissent pas avec la limite de butin et sont **conservés dans la sauvegarde locale**. Ramasser avec un inventaire plein laisse maintenant l'objet au sol au lieu de le perdre.
 
 ## V3.9 — Coffre réparé et noms 100 % originaux
 
 - **Coffre de la ville** : les objets générés (équipement à affixes) déposés dans le coffre disparaissaient au lieu d'apparaître ; le transfert coffre ⇄ inventaire fonctionne maintenant pour tous les objets, avec gestion des cas « inventaire plein » / « coffre plein » (rien n'est perdu).
-- **Propriété intellectuelle** : tout le vocabulaire qui rappelait de trop près un autre jeu a été remplacé par des noms propres à Aetheria — *Failles de Nephalem* → **Spires d'Éther** (modes **Ascension** et **Zénith**), pylônes → **obélisques**, sanctuaires → **totems**, gemmes → **cristaux**, Gloire → **Ferveur d'éther**, éclats de sang → **poussière d'éther**, gobelin au trésor → **lutin pillard**, coffre maudit → **coffre piégé**, « Vue Diablo » → **Vue aérienne**, affixes d'élites et quelques noms de compétences (Blizzard, Singularité, Vengeance, Consécration, Météore…) renommés. Les mécaniques de jeu restent les mêmes.
+- **Propriété intellectuelle** : tout le vocabulaire qui rappelait de trop près un autre jeu a été remplacé par des noms propres à Korvalune — *Failles de Nephalem* → **Spires d'Éther** (modes **Ascension** et **Zénith**), pylônes → **obélisques**, sanctuaires → **totems**, gemmes → **cristaux**, Gloire → **Ferveur d'éther**, éclats de sang → **poussière d'éther**, gobelin au trésor → **lutin pillard**, coffre maudit → **coffre piégé**, « Vue Diablo » → **Vue aérienne**, affixes d'élites et quelques noms de compétences (Blizzard, Singularité, Vengeance, Consécration, Météore…) renommés. Les mécaniques de jeu restent les mêmes.
 - Les anciennes sauvegardes (V3.7/V3.8) sont converties automatiquement (clés, cristaux, records, spire ouverte, réglage de caméra).
 - Note : ce nettoyage porte sur les noms et textes. Pour une commercialisation, faites aussi vérifier le jeu par un professionnel (recherche de marques, textes, musiques, ressources externes) : je ne suis pas juriste.
 
@@ -651,7 +651,7 @@ L'écran **Compétences (K)** détaille les effets de chacune ; la barre reste �
 
 ## V3.7 — Les Spires d'Éther
 
-**Où ?** Sur la place d'Aetheria, côté ouest près de l'entrée sud : la **Statue de la Spire**. Approche-toi et appuie sur **E** (même bouton d'interaction qu'avant) pour ouvrir l'écran de la spire. Les contrôles ne changent pas.
+**Où ?** Sur la place de Korvalune, côté ouest près de l'entrée sud : la **Statue de la Spire**. Approche-toi et appuie sur **E** (même bouton d'interaction qu'avant) pour ouvrir l'écran de la spire. Les contrôles ne changent pas.
 
 **Modes**
 - **Ascension** (coûte 1 sceau de spire) : pas de limite de temps, remplis la jauge de progression.
@@ -702,7 +702,7 @@ Tout est synthétisé en direct (aucun fichier son) :
 - **Vrais projectiles magiques** : orbes en comète (noyau, halo, traînée) tirées depuis le cristal, dégâts à l'arrivée. Météore et Tempête élémentaire font tomber des boules depuis le ciel, Éclair en chaîne saute de cible en cible, Nova de givre projette des éclats en cercle, Oubli lance une grosse sphère du néant avec colonne de lumière à l'impact.
 - Portées augmentées : Trait de feu 13, Vague arcanique 14, Trait du néant 15, Dévastation arcanique 16 ; zones : Nova 6, Météore 9, Éclair en chaîne 9, Tempête 10, Oubli 11. Un sort ciblé ne touche qu'une cible (la verrouillée). Le verrouillage automatique du mage passe à 17 m.
 
-**Ville agrandie (Aetheria)**
+**Ville agrandie (Korvalune)**
 - Rayon plat de la ville : 24 → 52 m. Enceinte de **remparts** crénelés avec 4 tours d'angle, **porte sud** avec bannières et torches, **grande place pavée** autour du puits.
 - 10 nouvelles maisons (quartiers ouest et est, rue du sud, deux bâtiments de guilde), tonneaux, caisses, plus de lampadaires.
 - Le **quartier des portails** est au nord : une plateforme pavée avec les 4 portails alignés (étiquette « nom du monde — niv. requis » au-dessus de chacun), au lieu d'être alignés sur le côté.
@@ -804,7 +804,7 @@ Dites-moi ce qui vous intéresse et on continue.
 
 ## V7.0 — Le continent (plus de portails, une seule grande carte)
 
-- **Un seul continent** : les petits portails de la ville sont supprimés. Chaque région se rejoint à pied par de vraies **routes** qui partent d'Aetheria (sud → Montagnes de Fer → Royaume Céleste, ouest → Forêt des Ombres → Abysses Oubliées, est → Terres Corrompues, sud-est → Néant Primordial).
+- **Un seul continent** : les petits portails de la ville sont supprimés. Chaque région se rejoint à pied par de vraies **routes** qui partent de Korvalune (sud → Montagnes de Fer → Royaume Céleste, ouest → Forêt des Ombres → Abysses Oubliées, est → Terres Corrompues, sud-est → Néant Primordial).
 - **Relief et décor propres à chaque région** : prairies vallonnées, forêt dense sombre, montagnes enneigées, terres corrompues (cristaux violets), royaume céleste (colonnes de marbre dorées), abysses (lave, obsidienne), néant (pylônes de basalte, roches flottantes).
 - **18 points d'intérêt** (moulin, menhirs, forteresse naine, tour de guet, obélisque corrompu, arche dorée, temple en ruine, gueule de lave, monolithe du Néant…), visibles sur la carte du monde.
 - **Niveaux recommandés** par région affichés à l'entrée, avec un avertissement si vous êtes trop faible.
@@ -831,6 +831,15 @@ Dites-moi ce qui vous intéresse et on continue.
 
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
+
+## V10.0 — Nouveau nom : Korvalune
+
+- Le jeu s'appelle désormais **Korvalune** (nom inventé : aucune occurrence trouvée dans mes recherches web de jeux, studios et marques — ce n'est PAS une garantie juridique : fais une recherche officielle et envisage un dépôt de marque avant toute commercialisation).
+- Remplacé partout où le joueur le voit : titre, écran d'accueil, crédits, ville, région « Prairies de Korvalune », quêtes, PNJ, succès, objets, messages serveur, titre de la page.
+- Retiré toute mention d'autres jeux dans l'interface (« façon Diablo ») et dans les commentaires du code.
+- Conservés volontairement (invisibles pour les joueurs) : clés internes de sauvegarde du navigateur (`aetheria.*`), dossier `aetheria/` du zip, noms du service et du disque sur Render/Fly (renommer demanderait de recréer le service). Les sauvegardes existantes restent donc lisibles.
+- Reste à faire de ton côté : renommer le dépôt GitHub et recréer le service Render si tu veux une adresse `…korvalune…onrender.com`.
+
 
 ## V9.5 — Mise en ligne permanente (Fly.io)
 
@@ -929,10 +938,10 @@ Audit du code (analyse statique), du jeu lancé pour de vrai (démarrage, régio
 
 ## V8.0 — Le grand continent
 
-- **Un vrai continent** entouré d'océan, au littoral irrégulier, découpé en **10 régions aux frontières irrégulières** (plus de ronds) : Prairies d'Aetheria (1-12), Forêt des Ombres (10-24), Montagnes de Fer (15-32), Désert d'Ambre (28-50), Marais de Brume (40-65), Toundra de Givre (55-80), Terres Corrompues (75-105), Royaume Céleste (100-130), Abysses Oubliées (125-160), Néant Primordial (150-200).
-- Chaque région a son relief, ses couleurs, son décor et sa faune propre (3 nouvelles familles de monstres : sables, marais, givre). Dans une région, plus on s'éloigne d'Aetheria, plus les monstres montent en niveau.
+- **Un vrai continent** entouré d'océan, au littoral irrégulier, découpé en **10 régions aux frontières irrégulières** (plus de ronds) : Prairies de Korvalune (1-12), Forêt des Ombres (10-24), Montagnes de Fer (15-32), Désert d'Ambre (28-50), Marais de Brume (40-65), Toundra de Givre (55-80), Terres Corrompues (75-105), Royaume Céleste (100-130), Abysses Oubliées (125-160), Néant Primordial (150-200).
+- Chaque région a son relief, ses couleurs, son décor et sa faune propre (3 nouvelles familles de monstres : sables, marais, givre). Dans une région, plus on s'éloigne de Korvalune, plus les monstres montent en niveau.
 - **Portiques de frontière** sur les routes : le nom de la nouvelle région et sa tranche de niveaux. Les frontières sont aussi tracées sur la carte du monde.
 - **34 lieux remarquables** : ils apparaissent sur la carte (avec leur nom) une fois découverts (« Lieu découvert »).
-- Les anciennes sauvegardes posées en mer repartent d'Aetheria.
+- Les anciennes sauvegardes posées en mer repartent de Korvalune.
 - **Objets limités au niveau 200.**
 - **Raretés vraiment rares** (par objet, hors bonus de boss) : Commun 66 %, Magique 27 %, Rare 5,8 %, Légendaire 1 %, Mythique 0,1 %, Absolu 0,006 % (≈ 1 pour 16 000 objets). Les effets visuels des raretés basses sont calmés : pas de faisceau sous Rare, faisceau fin pour Rare, gros faisceau et halo seulement à partir de Légendaire.

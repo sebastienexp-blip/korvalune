@@ -1,4 +1,4 @@
-// Legends of Aetheria — serveur multijoueur (ÉTAPES 5 & 6)
+// Korvalune — serveur multijoueur (ÉTAPES 5 & 6)
 // -----------------------------------------------------------------------------
 // Relais WebSocket : positions/animations des joueurs, chat (général/groupe/
 // privé) et groupes (jusqu'à 5 joueurs) — voir aussi comptes, sauvegarde
@@ -57,10 +57,10 @@ function ipOf(req) {
 const httpServer = createWebServer({ distDir: DIST, onHealth: () => ({ ok: true, players: players.size, accounts: Object.keys(accounts).length }) });
 const wss = new WebSocketServer({ server: httpServer, maxPayload: 600 * 1024, perMessageDeflate: false });
 httpServer.listen(PORT, HOST, () => {
-  console.log(`[Aetheria] Jeu + serveur multijoueur sur http://${HOST}:${PORT}`);
-  console.log(`[Aetheria] ${Object.keys(accounts).length} compte(s) chargé(s) depuis ${DATA_DIR}`);
+  console.log(`[Korvalune] Jeu + serveur multijoueur sur http://${HOST}:${PORT}`);
+  console.log(`[Korvalune] ${Object.keys(accounts).length} compte(s) chargé(s) depuis ${DATA_DIR}`);
 });
-import('fs').then((fs) => { if (!fs.existsSync(path.join(DIST, 'index.html'))) console.warn(`[Aetheria] Dossier ${DIST} introuvable : lancez « npm run build » pour servir le jeu (le WebSocket fonctionne quand même).`); });
+import('fs').then((fs) => { if (!fs.existsSync(path.join(DIST, 'index.html'))) console.warn(`[Korvalune] Dossier ${DIST} introuvable : lancez « npm run build » pour servir le jeu (le WebSocket fonctionne quand même).`); });
 // battement de cœur : coupe les connexions mortes
 const beat = setInterval(() => { for (const c of wss.clients) { if (c.isAlive === false) { c.terminate(); continue; } c.isAlive = false; try { c.ping(); } catch { /* ignoré */ } } }, 30000);
 beat.unref?.();
@@ -359,7 +359,7 @@ wss.on('connection', (ws, req) => {
         const token = makeToken(SECRET, key);
         setAuth(key);
         send(ws, { t: 'authResult', ok: true, token, username: key, ...accView(accounts[key]) });
-      })().catch((e) => { console.error('[Aetheria] auth :', e.message); fail('Erreur serveur.'); });
+      })().catch((e) => { console.error('[Korvalune] auth :', e.message); fail('Erreur serveur.'); });
       return;
     }
     if (msg.t === 'logout') { const old = authUsername; if (old) { presence(old, ws, false); if (player) player.account = null; } authUsername = null; if (old) pushFriendsOf(old); return; }
@@ -465,7 +465,7 @@ wss.on('connection', (ws, req) => {
       players.set(id, player);
       send(ws, { t: 'welcome', id, players: [...players.values()].filter((p) => p.id !== id).map(playerSummary) });
       broadcastAll({ t: 'playerJoined', player: playerSummary(player) }, id);
-      broadcastAll({ t: 'system', text: `${player.name} a rejoint Aetheria.` }, id);
+      broadcastAll({ t: 'system', text: `${player.name} a rejoint Korvalune.` }, id);
       if (authUsername) pushFriendsOf(authUsername);
       return;
     }
@@ -597,7 +597,7 @@ wss.on('connection', (ws, req) => {
     pendingInvites.delete(player.id);
     for (const [id, inv] of pendingInvites) if (inv === player.id) pendingInvites.delete(id);
     broadcastAll({ t: 'playerLeft', id: player.id });
-    broadcastAll({ t: 'system', text: `${player.name} a quitté Aetheria.` });
+    broadcastAll({ t: 'system', text: `${player.name} a quitté Korvalune.` });
   });
 
   ws.on('error', () => {});

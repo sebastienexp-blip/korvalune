@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// V6.1 — Transparence « à la Diablo 3 » : tout ce qui se trouve entre la caméra et le personnage
+// V6.1 — Transparence (décor translucide) : tout ce qui se trouve entre la caméra et le personnage
 // (arbres, rochers, murs, toits…) devient translucide pour que le héros reste toujours visible.
 // Aucun objet n'est déplacé ni dupliqué : un petit morceau de shader (tramage) estompe les pixels
 // proches du segment caméra → joueur. Coût négligeable, y compris pour les arbres instanciés.

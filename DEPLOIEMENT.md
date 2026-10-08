@@ -1,4 +1,4 @@
-# Mettre Legends of Aetheria en ligne
+# Mettre Korvalune en ligne
 
 Le jeu et le serveur de comptes tournent dans **un seul programme** (`node server.js`), sur **un seul port**.
 Les joueurs ouvrent l'adresse du site, créent un compte (identifiant + mot de passe de 8 caractères minimum), puis jouent directement dans le navigateur. Leur personnage est sauvegardé sur le serveur et se retrouve sur n'importe quel appareil.

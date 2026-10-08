@@ -1,4 +1,4 @@
-// V7.1 — Sets d'équipement façon Diablo 3/4 : 3 sets par classe (15 au total), 6 pièces chacun
+// V7.1 — Sets d'équipement classique : 3 sets par classe (15 au total), 6 pièces chacun
 // (arme, casque, épaulières, plastron, gants, bottes). Bonus à 2, 4 et 6 pièces portées ;
 // le bonus à 6 pièces ajoute un effet spécial. Les pièces de set ne tombent que pour la classe du joueur.
 export const SET_RARITY = {

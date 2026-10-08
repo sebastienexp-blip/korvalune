@@ -24,7 +24,7 @@ export const cellKey = (gx, gz) => gz * ARENA.n + gx;
 // links : bitmask N(−z)=1 E(+x)=2 S(+z)=4 W(−x)=8
 const DIRS = [{ b: 1, dx: 0, dz: -1, o: 4 }, { b: 2, dx: 1, dz: 0, o: 8 }, { b: 4, dx: 0, dz: 1, o: 1 }, { b: 8, dx: -1, dz: 0, o: 2 }];
 
-// Environnements (façon « tilesets » des failles de Diablo 3). Le choix dépend de la graine ET du monde du thème,
+// Environnements (tilesets des failles). Le choix dépend de la graine ET du monde du thème,
 // donc identique pour tous les joueurs d'un même groupe.
 export const RIFT_STYLES = {
   crypt: { label: 'Crypte', wall: 0x6a6f78, floor: 0x4a4f58, fog: null },

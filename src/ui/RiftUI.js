@@ -232,7 +232,7 @@ export class RiftUI {
       ${bracket}
       <div id="rf-gempick"></div>
       <div class="rf-endbtns">
-        <button class="btn-primary" data-rf="result-exit">Retourner à Aetheria</button>
+        <button class="btn-primary" data-rf="result-exit">Retourner à Korvalune</button>
         <button class="rf-ghost" data-rf="result-stay">Rester ramasser le butin</button>
       </div>`;
     this._renderGemPick(null);

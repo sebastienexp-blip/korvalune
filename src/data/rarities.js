@@ -42,7 +42,7 @@ export function getRarity(tierOrLegacyId) {
   return RARITY_BY_ID[tierOrLegacyId] || RARITIES[0];
 }
 
-// Courbe façon Diablo 3/4 : 6 raretés seulement. Commun/Magique dominent, Rare est courant, Légendaire est un vrai
+// Courbe classique : 6 raretés seulement. Commun/Magique dominent, Rare est courant, Légendaire est un vrai
 // évènement (~1 objet sur 22), Mythique et Absolu (1 %) sont exceptionnels. `shift` (boss, coffres, lutin trésor…)
 // décale la courbe vers le haut : chaque classe i est multipliée par (1 + 0,06·shift)^e_i.
 export const TOP_TIER_CHANCE = 0.01;

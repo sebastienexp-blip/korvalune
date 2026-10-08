@@ -13,7 +13,7 @@ import { planLandmarks, buildLandmarks } from './Landmarks.js';
 
 
 // ---------------------------------------------------------------------------------------------
-// V7.0 — Le continent : un seul monde continu, régions de biomes distincts autour d'Aetheria,
+// V7.0 — Le continent : un seul monde continu, régions de biomes distincts autour de Korvalune,
 // reliées par des routes (plus de portails).
 const REGION_IDS = REGIONS.map((r) => r.id).filter((id) => id !== 'prairie');
 // Routes (points de contrôle), de la ville vers chaque région
@@ -219,7 +219,7 @@ export class World {
     progress(0.5, 'Plantation des forêts…'); await tick();
     this.scatterVegetation();
     try { this.scatterDebris(); } catch (e) { console.warn('[V9.3] détails au sol indisponibles', e); }
-    progress(0.7, "Construction d'Aetheria…"); await tick();
+    progress(0.7, "Construction de Korvalune…"); await tick();
     this.town = buildTown(this);
     try { this.landmarks = buildLandmarks(this); } catch (e) { console.warn('[V7] repères indisponibles', e); }
     try { this._autoCollide(); } catch (e) { console.warn('[V8.8] collisions automatiques indisponibles', e); }

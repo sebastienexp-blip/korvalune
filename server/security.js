@@ -9,7 +9,7 @@ export async function loadSecret(dataDir) {
   const file = path.join(dataDir, 'session.key');
   try { const s = (await fs.readFile(file, 'utf8')).trim(); if (s.length >= 32) return s; } catch { /* à créer */ }
   const s = randomBytes(32).toString('hex');
-  try { await fs.mkdir(dataDir, { recursive: true }); await fs.writeFile(file, s, { mode: 0o600 }); } catch (e) { console.error('[Aetheria] Impossible d\'écrire session.key :', e.message); }
+  try { await fs.mkdir(dataDir, { recursive: true }); await fs.writeFile(file, s, { mode: 0o600 }); } catch (e) { console.error('[Korvalune] Impossible d\'écrire session.key :', e.message); }
   return s;
 }
 

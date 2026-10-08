@@ -65,7 +65,7 @@ export class HUD {
       <div id="loading-screen">
         <div class="bg-sky"></div>
         <div class="mm-sigil">${SIGIL}</div>
-        <div class="title-logo">Legends of <span>Aetheria</span></div>
+        <div class="title-logo"><span>Korvalune</span></div>
         <div class="loading-bar"><div id="loading-fill"></div></div>
         <div id="loading-text">Initialisation…</div>
       </div>
@@ -75,7 +75,7 @@ export class HUD {
         <button id="fs-corner" data-act="fullscreen" aria-label="Plein écran" title="Plein écran">⛶</button>
         <div class="mm-sigil">${SIGIL}</div>
         <div class="mm-left">
-          <div class="title-logo">Legends of <span>Aetheria</span></div>
+          <div class="title-logo"><span>Korvalune</span></div>
           <p class="mm-tag">Un monde ouvert à explorer, seul ou à plusieurs.</p>
         </div>
         <div class="mm-right">
@@ -88,7 +88,7 @@ export class HUD {
             <button data-act="credits">Crédits</button>
           </div>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V9.5 — Mise en ligne permanente</div>
+          <div class="menu-hint" id="build-version">Version V10.0 — Korvalune</div>
         </div>
       </div>
 
@@ -143,7 +143,7 @@ export class HUD {
 
       <div id="credits" class="hidden panel-screen">
         <h2>Crédits</h2>
-        <p class="credits-text">Legends of Aetheria — prototype technique.<br>Monde, personnages et musique originaux.<br>Construit avec Three.js.</p>
+        <p class="credits-text">Korvalune — prototype technique.<br>Monde, personnages et musique originaux.<br>Construit avec Three.js.</p>
         <button data-act="back">Retour</button>
       </div>
 
@@ -183,7 +183,7 @@ export class HUD {
           <canvas id="minimap" width="176" height="176"></canvas>
           <button id="map-expand" aria-label="Carte du monde">🗺️</button>
           <button id="map-mode" aria-label="Orientation de la mini-carte">🧭</button>
-          <div id="minimap-zone">Aetheria</div>
+          <div id="minimap-zone">Korvalune</div>
         </div>
 
         <div id="rift-hud" class="hidden"></div>
@@ -324,7 +324,7 @@ export class HUD {
       </div>
 
       <div id="bank-screen" class="hidden panel-screen">
-        <h2>Coffre d'Aetheria</h2>
+        <h2>Coffre de Korvalune</h2>
         <p class="menu-hint">Touchez un objet pour le faire passer de l'autre côté.</p>
         <div id="bank-columns">
           <div class="bank-col">
@@ -377,7 +377,7 @@ export class HUD {
         <h2>Pause</h2>
         <div class="menu-buttons">
           <button data-act="resume">Reprendre</button>
-          <button data-act="teleport-town" id="btn-teleport">Téléportation vers Aetheria — <span id="teleport-cost">?</span> 🪙</button>
+          <button data-act="teleport-town" id="btn-teleport">Téléportation vers Korvalune — <span id="teleport-cost">?</span> 🪙</button>
           <button data-act="fullscreen">Plein écran</button>
           <button data-act="settings">Paramètres</button>
           <button data-act="save">Sauvegarder</button>
@@ -390,8 +390,8 @@ export class HUD {
       <div id="levelup-banner" class="hidden">Niveau supérieur !</div>
       <div id="death-screen" class="hidden panel-screen">
         <h2>Vous êtes tombé au combat</h2>
-        <p class="menu-hint">Votre équipement est intact. Aetheria vous attend.</p>
-        <button data-act="respawn">Revenir à Aetheria</button>
+        <p class="menu-hint">Votre équipement est intact. Korvalune vous attend.</p>
+        <button data-act="respawn">Revenir à Korvalune</button>
       </div>
     `;
   }

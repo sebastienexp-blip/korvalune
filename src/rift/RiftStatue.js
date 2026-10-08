@@ -3,7 +3,7 @@ import { glowTexture, ringTexture, runeTexture, stoneTexture, safeTexture } from
 import { buildPortal } from '../world/Portals.js';
 import { makeLabel } from '../ui/Label.js';
 
-// Statue de la Spire, sur la place d'Aetheria (ouest, près de l'entrée sud) :
+// Statue de la Spire, sur la place de Korvalune (ouest, près de l'entrée sud) :
 // un Veilleur de pierre qui tend un orbe d'éther. Quand une spire est ouverte, un portail
 // apparaît à côté et l'orbe s'embrase.
 export const STATUE_POS = [-12, 22];

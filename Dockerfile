@@ -1,4 +1,4 @@
-# Legends of Aetheria — image de production (jeu + serveur de comptes, un seul port)
+# Korvalune — image de production (jeu + serveur de comptes, un seul port)
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json* ./

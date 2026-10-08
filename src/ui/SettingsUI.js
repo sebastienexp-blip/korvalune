@@ -50,7 +50,7 @@ const TABS = [
   { id: 'keys', label: '⌨️ Clavier & souris', items: [
     { t: 'custom', id: 'keys' },
     { t: 'section', label: 'Souris et caméra' },
-    { t: 'select', k: 'cameraMode', label: 'Caméra', opts: [['iso', 'Aérienne fixe façon Diablo (par défaut)'], ['free', 'Libre (3ᵉ personne)'], ['close', 'Épaule (3ᵉ personne rapprochée)'], ['high', 'Tactique (aérienne haute, grand champ)'], ['top', 'Vue de dessus (presque verticale)']] },
+    { t: 'select', k: 'cameraMode', label: 'Caméra', opts: [['iso', 'Aérienne fixe (par défaut)'], ['free', 'Libre (3ᵉ personne)'], ['close', 'Épaule (3ᵉ personne rapprochée)'], ['high', 'Tactique (aérienne haute, grand champ)'], ['top', 'Vue de dessus (presque verticale)']] },
     { t: 'select', k: 'camRotate', label: 'Rotation de la caméra', opts: [['auto', 'Auto (selon la caméra)'], ['on', 'Activée (clic droit / glisser pour tourner)'], ['off', 'Désactivée (caméra figée)']] },
     { t: 'select', k: 'autoLoot', label: 'Ramassage automatique du butin', opts: [['off', 'Désactivé (touche d\'interaction)'], ['basic', 'Potions, parchemins et consommables'], ['all', 'Tout le butin proche']] },
     { t: 'check', k: 'cameraLock', label: 'Caméra verrouillée (mode libre)' },

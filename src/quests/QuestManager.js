@@ -4,7 +4,7 @@ const DEFS = [
   {
     id: 'commencement', name: 'Le commencement', level: 1,
     steps: [
-      { id: 'move', text: 'Se déplacer dans Aetheria', type: 'auto' },
+      { id: 'move', text: 'Se déplacer dans Korvalune', type: 'auto' },
       { id: 'talk_guard', text: 'Parler au garde Halvar', type: 'talk', target: 'guard' },
       { id: 'kill_wolf', text: 'Tuer un loup', type: 'kill', target: 'wolf', need: 1 },
       { id: 'loot', text: 'Récupérer le butin', type: 'auto' },
