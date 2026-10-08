@@ -169,6 +169,18 @@ synthétisé, ambiance sonore de pluie. La neige n'apparaît que dans la zone «
   dans Paramètres pour du débogage.
 
 ## 7. Application Android (.apk)
+
+### V10.11 — APK prêt à télécharger (méthode simple)
+Le dossier `android-app/` contient une petite application Android (WebView plein écran) qui
+ouvre le jeu en ligne (`https://legends-of-aetheria-mxaq.onrender.com/`). GitHub la compile
+tout seul (workflow `.github/workflows/android-apk.yml`) à chaque modification du dossier, ou à
+la demande (onglet *Actions* → *Construire l'APK Android* → *Run workflow*). Le fichier est
+ensuite disponible dans *Releases* (« Korvalune — APK Android », fichier `Korvalune.apk`).
+Si l'adresse du site change, modifier `GAME_URL` dans `android-app/.../MainActivity.java`.
+L'APK est signé en mode « debug » : installable directement (autoriser les sources inconnues),
+mais pas publiable tel quel sur le Play Store.
+
+### Ancienne méthode (Capacitor, sur PC)
 Les fichiers sont prêts (`capacitor.config.json`, scripts `cap:*` dans `package.json`), mais
 la génération elle-même doit se faire sur un PC avec internet et le SDK Android installé —
 ça ne peut pas se faire depuis ce chat ni depuis votre téléphone sans PC. Le jour où vous êtes
@@ -1017,3 +1029,8 @@ Audit du code (analyse statique), du jeu lancé pour de vrai (démarrage, régio
 - Les anciennes sauvegardes posées en mer repartent de Korvalune.
 - **Objets limités au niveau 200.**
 - **Raretés vraiment rares** (par objet, hors bonus de boss) : Commun 66 %, Magique 27 %, Rare 5,8 %, Légendaire 1 %, Mythique 0,1 %, Absolu 0,006 % (≈ 1 pour 16 000 objets). Les effets visuels des raretés basses sont calmés : pas de faisceau sous Rare, faisceau fin pour Rare, gros faisceau et halo seulement à partir de Légendaire.
+
+## V10.11 — Application Android (APK)
+- Nouveau dossier `android-app/` (WebView plein écran, écran toujours allumé, paysage, retour = Échap).
+- Compilation automatique par GitHub Actions, APK publié dans *Releases* (`apk-latest`).
+- Non testé sur un vrai téléphone au moment de l'écriture ; l'APK n'a pas pu être compilé dans le bac à sable.

@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.11', title: 'Korvalune sur Android (APK)',
+    items: [
+      'Nouveau : une application Android (.apk) ouvre Korvalune en plein écran, sans barre d’adresse.',
+      'Elle utilise le jeu en ligne : les mises à jour du jeu arrivent toutes seules, sans réinstaller l’application.',
+      'Une connexion internet est nécessaire. Le bouton retour du téléphone ouvre le menu pause au lieu de quitter le jeu.'
+    ]
+  },
+  {
     version: '10.10', title: 'L’écurie de Korvalune',
     items: [
       'Nouveau : le Maître d’écurie Bram t’attend à l’est de la porte sud. Il vend 3 chevaux et 2 griffons, payables en pièces d’or du jeu.',

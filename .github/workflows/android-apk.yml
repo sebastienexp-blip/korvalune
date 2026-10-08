@@ -1,0 +1,40 @@
+name: Construire l'APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android-app/**'
+      - '.github/workflows/android-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Construire l'APK
+        working-directory: android-app
+        run: gradle --no-daemon assembleDebug
+      - name: Renommer
+        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk Korvalune.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Korvalune-apk
+          path: Korvalune.apk
+      - name: Publier dans les Releases (lien de téléchargement direct)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete apk-latest --yes --cleanup-tag || true
+          gh release create apk-latest Korvalune.apk --title "Korvalune — APK Android" \
+            --notes "APK à installer sur Android. Ouvre le jeu en ligne : https://legends-of-aetheria-mxaq.onrender.com/"
