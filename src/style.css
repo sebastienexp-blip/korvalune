@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -846,3 +846,17 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 @media (max-height: 460px) {
   #touch-controls > #t-lock.tbtn.small { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* V10.8 — messages privés */
+#dm-screen { padding-top: calc(26px + env(safe-area-inset-top, 0px)); }
+#dm-list { width: min(620px, 94vw); height: min(46vh, 340px); overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(8, 12, 26, 0.6); text-align: left; -webkit-overflow-scrolling: touch; }
+#dm-list > * { flex: none; }
+.dm-msg { max-width: 82%; padding: 6px 10px; border-radius: 12px; display: flex; flex-direction: column; gap: 2px; word-break: break-word; font-size: 14px; }
+.dm-msg small { opacity: 0.55; font-size: 10px; }
+.dm-msg.me { align-self: flex-end; background: rgba(226, 184, 102, 0.22); border: 1px solid rgba(226, 184, 102, 0.45); }
+.dm-msg.them { align-self: flex-start; background: rgba(60, 90, 170, 0.3); border: 1px solid rgba(120, 160, 255, 0.35); }
+.dm-add { width: min(620px, 94vw); }
+.dm-badge { display: inline-block; min-width: 16px; padding: 0 5px; border-radius: 9px; background: #e0573f; color: #fff; font-size: 11px; line-height: 16px; text-align: center; }
+#btn-social.has-unread::after { content: ''; position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: #e0573f; border: 1px solid #fff; }
+#side-buttons #btn-social.tbtn.small { position: relative; bottom: auto; left: auto; top: auto; }
+@media (max-height: 460px) { #dm-list { height: min(40vh, 150px); } }

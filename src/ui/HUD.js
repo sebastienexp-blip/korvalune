@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.7 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.8 — Korvalune</div>
         </div>
       </div>
 
@@ -328,6 +328,13 @@ export class HUD {
         <button data-act="close-social">Fermer</button>
       </div>
 
+      <div id="dm-screen" class="hidden panel-screen">
+        <h2 id="dm-title">Messages</h2>
+        <div id="dm-list"></div>
+        <div class="social-add dm-add"><input id="dm-input" placeholder="Ton message…" maxlength="240" autocomplete="off"><button id="dm-send" class="soc-btn">Envoyer</button></div>
+        <button data-act="close-dm">Retour aux amis</button>
+      </div>
+
       <div id="lune-screen" class="hidden panel-screen">
         <h2>Boutique des Lunes</h2>
         <div id="lune-body">
@@ -450,7 +457,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -927,6 +934,15 @@ export class HUD {
     }).join('');
   }
 
+  // V10.8 — conversation privée avec un ami. d : { name, msgs:[{me,text,at}] }
+  renderDm(d) {
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    this.q('#dm-title').textContent = 'Messages · ' + d.name;
+    const el = this.q('#dm-list');
+    el.innerHTML = d.msgs.length ? d.msgs.map((m) => `<div class="dm-msg ${m.me ? 'me' : 'them'}"><span>${esc(m.text)}</span><small>${new Date(m.at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</small></div>`).join('') : '<p class="menu-hint">Aucun message pour l\u2019instant. Ton ami le verra à sa prochaine connexion s\u2019il est hors ligne.</p>';
+    el.scrollTop = el.scrollHeight;
+  }
+
   renderSocial(d) {
     this.q('#social-rift').innerHTML = d.rift ? `<div class="soc-row soc-on"><div class="soc-name"><b>🌀 ${String(d.rift.from).replace(/[<>&]/g, '')} est dans une spire</b><small>${d.rift.label}</small></div><button class="soc-btn" data-sa="join-rift">Rejoindre</button></div>` : '';
     const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -938,7 +954,7 @@ export class HUD {
         + '<div class="soc-row"><button class="soc-btn" data-sa="leave">Quitter le groupe</button></div>';
     }
     this.q('#social-requests').innerHTML = d.requests.length ? '<h4>Demandes reçues</h4>' + d.requests.map((n) => `<div class="soc-row"><div class="soc-name"><b>${esc(n)}</b><small>veut devenir ton ami</small></div><button class="soc-btn" data-sa="accept" data-v="${esc(n)}">Accepter</button><button class="soc-btn" data-sa="decline" data-v="${esc(n)}">Refuser</button></div>`).join('') : '';
-    this.q('#social-friends').innerHTML = d.friends.length ? d.friends.map((f) => `<div class="soc-row${f.online ? ' soc-on' : ''}"><div class="soc-name"><b>${f.online ? '🟢' : '⚫'} ${esc(f.name)}</b><small>${f.online ? (f.char ? esc(f.char) + ' · Nv.' + f.level : 'en ligne') : 'hors ligne'}</small></div>${f.online ? `<button class="soc-btn" data-sa="invite" data-v="${esc(f.name)}">Inviter</button>` : ''}<button class="soc-btn" data-sa="remove" data-v="${esc(f.name)}">Retirer</button></div>`).join('') : '<p class="menu-hint">Aucun ami pour l\'instant. Écris le nom de compte de ton ami ci-dessus puis « Ajouter » : il recevra ta demande.</p>';
+    this.q('#social-friends').innerHTML = d.friends.length ? d.friends.map((f) => `<div class="soc-row${f.online ? ' soc-on' : ''}"><div class="soc-name"><b>${f.online ? '🟢' : '⚫'} ${esc(f.name)}</b><small>${f.online ? (f.char ? esc(f.char) + ' · Nv.' + f.level : 'en ligne') : 'hors ligne'}</small></div><button class="soc-btn dm-btn" data-sa="dm" data-v="${esc(f.name)}">✉️ Message${f.unread ? ` <span class="dm-badge">${f.unread}</span>` : ''}</button>${f.online ? `<button class="soc-btn" data-sa="invite" data-v="${esc(f.name)}">Inviter</button>` : ''}<button class="soc-btn" data-sa="remove" data-v="${esc(f.name)}">Retirer</button></div>`).join('') : '<p class="menu-hint">Aucun ami pour l\'instant. Écris le nom de compte de ton ami ci-dessus puis « Ajouter » : il recevra ta demande.</p>';
     this.q('#social-players').innerHTML = d.players.length ? d.players.map((p) => `<div class="soc-row"><div class="soc-name"><b>${esc(p.name)}</b><small>Nv.${p.level}</small></div><button class="soc-btn" data-sa="invite-id" data-v="${esc(p.id)}">Inviter</button></div>`).join('') : '<p class="menu-hint">Personne d\'autre en vue.</p>';
   }
 
@@ -1042,7 +1058,7 @@ export class HUD {
 
   // ---------- Réseau : chat, groupe, statut de connexion ----------
   initChat(onSend) {
-    this._chatLines = { general: [], group: [] };
+    this._chatLines = this._chatLines || { general: [], group: [] }; // conserve les messages reçus avant le début de la partie
     this._chatChannel = 'general';
     for (const tab of this.root.querySelectorAll('.chat-tab')) {
       tab.addEventListener('click', () => {
@@ -1071,8 +1087,10 @@ export class HUD {
   appendChat({ channel = 'general', from, to, text, system, whisper, self }) {
     const target = channel === 'group' ? 'group' : 'general';
     const line = { from, to, text, system, whisper, self };
+    this._chatLines = this._chatLines || { general: [], group: [] };
     this._chatLines[target].push(line);
     if (this._chatLines[target].length > 60) this._chatLines[target].shift();
+    if (this._chatChannel === undefined) return;
     if (this._chatChannel === target) this._renderChatLog();
     else this._flashChatTab(target);
   }

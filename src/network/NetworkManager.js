@@ -90,6 +90,8 @@ export class NetworkManager {
       case 'group:update': this.bus.emit('net:group', msg); break;
       case 'gr': this.bus.emit('net:gr', msg); break;
       case 'friends': this.bus.emit('net:friends', msg); break;
+      case 'dm': this.bus.emit('net:dm', msg); break;
+      case 'dmHistory': this.bus.emit('net:dmHistory', msg); break;
       case 'group:invited': this.bus.emit('net:groupInvited', msg); break;
       case 'authResult':
         if (msg.ok) { this.token = msg.token; this.username = msg.username; try { localStorage.setItem('aetheria.session', msg.token); } catch { /* ignoré */ } }
@@ -135,6 +137,8 @@ export class NetworkManager {
   sendGr(k, to, d) { this._send({ t: 'gr', k, to, d }); }
 
   // ---------- Amis (V6.0) ----------
+  friendMsg(to, text) { this._send({ t: 'friend:msg', to, text }); }
+  friendHistory(name) { this._send({ t: 'friend:history', with: name }); }
   friendList() { this._send({ t: 'friend:list' }); }
   friendAdd(name) { this._send({ t: 'friend:add', to: name }); }
   friendAccept(name) { this._send({ t: 'friend:accept', from: name }); }

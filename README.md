@@ -832,6 +832,13 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.8 — Messages entre amis
+
+- La liste d'amis (par compte, avec statut en ligne) existait déjà ; ajout des **messages privés** : `friend:msg` / `friend:history` (client→serveur), `dm` / `dmHistory` (serveur→client).
+- Stockage dans `acc.dm` (40 derniers messages par ami, compteur de non lus), réservé aux amis réciproques, limité en débit, supprimé quand on retire l'ami.
+- Interface : bouton « ✉️ Message » (avec badge) dans le menu Amis, écran `#dm-screen`, pastille rouge sur 👥.
+- Correctif : un message de chat reçu depuis le menu principal (avant la partie) ne provoque plus d'erreur.
+
 ## V10.7 — Affichage, son, réglages sur le compte
 
 - Mise en page téléphone paysage (`max-height: 460px`) : menu principal compact, bouton plein écran en haut à gauche, rangée de boutons de jeu limitée avant la mini-carte (2 lignes si besoin), barre de boss et verrou de caméra décalés.

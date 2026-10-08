@@ -645,7 +645,7 @@ export class Game {
       });
       b.on('ui:patch-back', () => this.hud.showScreen(this._patchReturn || 'main-menu'));
     }
-    b.on('ui:account-logout', () => { this.net.logout(); this._shop = null; this._preview = null; this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
+    b.on('ui:account-logout', () => { this._unreadN = null; this._dmOpen = null; this.net.logout(); this._shop = null; this._preview = null; this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
     b.on('net:authResult', (msg) => {
       if (msg.ok) {
         this.hud.setAccountError('');
@@ -680,6 +680,13 @@ export class Game {
     b.on('ui:close-quests', () => this._closeModal());
     b.on('ui:close-ach', () => this._closeModal());
     b.on('ui:close-social', () => this._closeModal());
+    // V10.8 — messages privés entre amis
+    b.on('ui:close-dm', () => { this._dmOpen = null; this.hud.showScreen('social-screen'); this._renderSocial(); this.net.friendList(); });
+    b.on('net:dmHistory', (msg) => { this._dmMsgs = msg.msgs || []; if (this._dmOpen === msg.with) this.hud.renderDm({ name: msg.with, msgs: this._dmMsgs }); });
+    b.on('net:dm', (msg) => {
+      if (this._dmOpen === msg.with) { this._dmMsgs.push({ me: msg.me, text: msg.text, at: msg.at }); this.hud.renderDm({ name: msg.with, msgs: this._dmMsgs }); if (!msg.me) this.net.friendHistory(msg.with); }
+      else if (!msg.me) { this.hud.notify(`✉️ ${msg.with} : ${String(msg.text).slice(0, 60)}`, 'quest'); this.hud.appendChat({ channel: 'general', whisper: true, from: msg.with, to: 'toi', text: msg.text }); }
+    });
     this.ach = new Achievements(this);
     b.on('ui:close-bank', () => this._closeModal());
     b.on('notify', (d) => { if (d.kind === 'zone') { this.hud.zoneBanner(d.text); this.audio.play('zone'); } else this.hud.notify(d.text, d.kind === 'warn' ? 'boss' : 'info'); });
@@ -833,6 +840,11 @@ export class Game {
     b.on('net:friends', (msg) => {
       const before = this._friends?.requests?.length || 0;
       this._friends = msg;
+      const unreadN = (msg.friends || []).reduce((a, f) => a + (f.unread || 0), 0);
+      this.root.querySelector('#btn-social')?.classList.toggle('has-unread', unreadN > 0);
+      if (unreadN > (this._unreadN ?? 0) && this._unreadN != null && !this._dmOpen) this.hud.notify(`✉️ Tu as ${unreadN} message${unreadN > 1 ? 's' : ''} non lu${unreadN > 1 ? 's' : ''} (menu 👥)`, 'quest');
+      else if (this._unreadN == null && unreadN > 0) this.hud.notify(`✉️ Tu as ${unreadN} message${unreadN > 1 ? 's' : ''} d'amis non lu${unreadN > 1 ? 's' : ''} (menu 👥)`, 'quest');
+      this._unreadN = unreadN;
       if (msg.requests.length > before) this.hud.notify(`👥 Demande d'ami de ${msg.requests[msg.requests.length - 1]} (menu 👥)`, 'quest');
       this._renderSocial();
     });
@@ -891,6 +903,7 @@ export class Game {
           case 'accept': this.net.friendAccept(v); break;
           case 'decline': this.net.friendDecline(v); break;
           case 'remove': this.net.friendRemove(v); break;
+          case 'dm': this._dmOpen = v; this._dmMsgs = []; this.hud.showScreen('dm-screen'); this.hud.renderDm({ name: v, msgs: [] }); this.net.friendHistory(v); break;
           case 'kick': this.net.kickFromGroup(v); break;
           case 'leave': this.net.leaveGroup(); break;
           case 'join-rift': this._closeModal(); this._joinGroupRift(); break;
@@ -900,6 +913,10 @@ export class Game {
       const doAdd = () => { const i = scr.querySelector('#friend-input'); const n = i.value.trim(); if (n) { this.net.friendAdd(n); i.value = ''; } };
       scr.querySelector('#friend-add').addEventListener('click', doAdd);
       scr.querySelector('#friend-input').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') doAdd(); });
+      const dmScr = this.root.querySelector('#dm-screen'), dmIn = dmScr.querySelector('#dm-input');
+      const dmSend = () => { const t = dmIn.value.trim(); if (t && this._dmOpen) { this.net.friendMsg(this._dmOpen, t); dmIn.value = ''; } };
+      dmScr.querySelector('#dm-send').addEventListener('click', dmSend);
+      dmIn.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') dmSend(); });
     }
     this.root.querySelector('#btn-chat').addEventListener('click', () => { document.exitPointerLock?.(); this.hud.toggleChat(); });
     document.addEventListener('keydown', (e) => {
@@ -1398,7 +1415,7 @@ export class Game {
   }
 
   _closeModal(returnTo = 'game-ui') {
-    this.modalOpen = false;
+    this.modalOpen = false; this._dmOpen = null;
     this.hud.showScreen(returnTo);
   }
 

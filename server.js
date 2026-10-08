@@ -145,13 +145,21 @@ function presence(key, ws, on) {
   if (on) { if (!set) acctWs.set(key, (set = new Set())); set.add(ws); }
   else if (set) { set.delete(ws); if (!set.size) acctWs.delete(key); }
 }
+// V10.8 — messages privés entre amis, conservés sur les comptes (lisibles même si l'ami était hors ligne)
+const DM_KEEP = 40;
+function dmConv(acc, w, create = false) {
+  if (!Array.isArray(acc.dm)) { if (!create) return {}; acc.dm = []; }
+  let c = acc.dm.find((x) => x.w === w);
+  if (!c && create) { c = { w, m: [], u: 0 }; acc.dm.push(c); if (acc.dm.length > 120) acc.dm.shift(); }
+  return c || {};
+}
 function friendsState(key) {
   const acc = accounts[key] || {};
   const friends = (acc.friends || []).map((fk) => {
     const online = !!acctWs.get(fk)?.size;
     let ch = null;
     if (online) for (const p of players.values()) if (p.account === fk) { ch = p; break; }
-    return { name: fk, online, char: ch?.name || null, level: ch?.level || null, classId: ch?.classId || null };
+    return { name: fk, online, char: ch?.name || null, level: ch?.level || null, classId: ch?.classId || null, unread: dmConv(acc, fk).u || 0 };
   }).sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name));
   return { t: 'friends', friends, requests: [...(acc.requests || [])] };
 }
@@ -423,6 +431,35 @@ wss.on('connection', (ws, req) => {
     }
     if (msg.t === 'logout') { const old = authUsername; if (old) { presence(old, ws, false); if (player) player.account = null; } authUsername = null; refreshCos(null); if (old) pushFriendsOf(old); return; }
 
+    // --- Messages privés entre amis (V10.8) ---
+    if (msg.t === 'friend:msg' || msg.t === 'friend:history') {
+      if (!authUsername) { send(ws, { t: 'system', text: 'Connecte-toi à ton compte pour utiliser les messages.' }); return; }
+      if (!chatLimiter.allow()) return;
+      const me = authUsername, acc = accounts[me];
+      const fk = resolveAccount(sanitizeUsername(msg.t === 'friend:msg' ? msg.to : msg.with));
+      const other = fk && accounts[fk];
+      if (!other || !(acc.friends || []).includes(fk) || !(other.friends || []).includes(me)) { send(ws, { t: 'system', text: 'Tu ne peux écrire qu\u2019à tes amis.' }); return; }
+      if (msg.t === 'friend:history') {
+        const c = dmConv(acc, fk);
+        send(ws, { t: 'dmHistory', with: fk, msgs: (c.m || []).map((x) => ({ me: x.f === me, text: x.x, at: x.t })) });
+        if (c.u) { c.u = 0; persistAccounts(accounts); pushFriends(me); }
+        return;
+      }
+      const text = sanitize(msg.text, MAX_CHAT_LEN);
+      if (!text) return;
+      const at = Date.now();
+      const mine = dmConv(acc, fk, true), theirs = dmConv(other, me, true);
+      mine.m.push({ f: me, x: text, t: at }); theirs.m.push({ f: me, x: text, t: at });
+      if (mine.m.length > DM_KEEP) mine.m.splice(0, mine.m.length - DM_KEEP);
+      if (theirs.m.length > DM_KEEP) theirs.m.splice(0, theirs.m.length - DM_KEEP);
+      theirs.u = Math.min(99, (theirs.u || 0) + 1);
+      persistAccounts(accounts);
+      for (const w of acctWs.get(me) || []) send(w, { t: 'dm', with: fk, me: true, text, at });
+      for (const w of acctWs.get(fk) || []) send(w, { t: 'dm', with: me, me: false, text, at });
+      pushFriends(fk);
+      return;
+    }
+
     // --- Amis (V6.0) : par nom de compte ---
     if (msg.t.startsWith('friend:')) {
       if (!authUsername) { send(ws, { t: 'system', text: 'Connecte-toi à ton compte pour utiliser les amis.' }); return; }
@@ -470,6 +507,8 @@ wss.on('connection', (ws, req) => {
         if (!fk) return;
         acc.friends = acc.friends.filter((x) => x !== fk);
         const other = accounts[fk]; if (other) other.friends = (other.friends || []).filter((x) => x !== me);
+        if (Array.isArray(acc.dm)) acc.dm = acc.dm.filter((x) => x.w !== fk);
+        if (other && Array.isArray(other.dm)) other.dm = other.dm.filter((x) => x.w !== me);
         persistAccounts(accounts); pushFriends(me); pushFriends(fk);
         return;
       }

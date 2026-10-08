@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.8', title: 'Messages entre amis',
+    items: [
+      'Nouveau bouton « ✉️ Message » sur chaque ami (menu 👥) : tu peux lui écrire même s’il est hors ligne.',
+      'Il retrouve tes messages à sa prochaine connexion. Une pastille rouge sur 👥 signale les messages non lus.',
+      'Les 40 derniers messages de chaque conversation sont conservés. Seuls tes amis peuvent t’écrire.'
+    ]
+  },
+  {
     version: '10.7', title: 'Affichage, son et réglages',
     items: [
       'Menu principal et écran de jeu réorganisés pour les téléphones en paysage : plus de boutons qui se chevauchent ni de menu coupé.',
