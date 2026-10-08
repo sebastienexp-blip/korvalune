@@ -59,17 +59,37 @@ export class CharPreview {
     this._tick();
   }
 
-  setAppearance({ skin, cloth, armor, shield, hair, eye, weaponVisual, classId }) {
+  setAppearance({ skin, cloth, armor, shield, hair, eye, weaponVisual, classId, look, equipVisible = true }) {
     if (this.rig) {
       this.scene.remove(this.rig.root);
       this.rig.root.traverse((o) => {
         if (o.isMesh) { if (!o.geometry.userData?.shared) o.geometry.dispose(); if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose()); else o.material.dispose(); }
       });
     }
-    this.rig = createHumanoid({ skin, cloth, armor, shield, hair: hair ?? 0x2c1f16, eye: eye ?? 0x3f78b0, weaponVisual: weaponVisual || 'sword', equipVisible: true, role: classId ? 'player:' + classId : undefined });
+    this.rig = createHumanoid({ skin, cloth, armor, shield, hair: hair ?? 0x2c1f16, eye: eye ?? 0x3f78b0, weaponVisual: weaponVisual || 'sword', equipVisible, look, role: classId ? 'player:' + classId : undefined });
     this.rig.root.position.y = 0;
     this.rig.root.rotation.y = this._yaw;
     this.scene.add(this.rig.root);
+  }
+
+  // V10.12 : cadrage « corps » (silhouette entière) ou « visage » (gros plan sur la tête)
+  focus(mode) { this._focus = mode === 'face' ? 'face' : 'body'; }
+
+  _updateCamera() {
+    const s = this.rig?.lookScale || 1;
+    const goalT = this._camT || (this._camT = new THREE.Vector3(0, 1.08, 0));
+    const goalP = this._camP || (this._camP = new THREE.Vector3(0, 1.35, 5.4));
+    let tx = 0, ty = 1.08 * s, tz = 0, px = 0, py = 1.35 * s, pz = 4.6 + 0.8 * s;
+    if (this._focus === 'face' && this.rig?.head) {
+      this.rig.root.updateMatrixWorld(true);
+      const h = this.rig.head.getWorldPosition(this._hp || (this._hp = new THREE.Vector3()));
+      tx = 0; ty = h.y + 0.08; tz = 0; px = 0; py = h.y + 0.14; pz = 1.75;
+    }
+    const k = this._camInit ? 0.14 : 1; this._camInit = true;
+    goalT.lerp(this._tmpT || (this._tmpT = new THREE.Vector3()).set(tx, ty, tz), k);
+    goalP.lerp(this._tmpP || (this._tmpP = new THREE.Vector3()).set(px, py, pz), k);
+    this.camera.position.copy(goalP);
+    this.camera.lookAt(goalT);
   }
 
   _tick = () => {
@@ -84,6 +104,7 @@ export class CharPreview {
     if (this.rig) {
       this.rig.root.rotation.y = this._yaw;
       animateHumanoid(this.rig, { speed: 0, grounded: true, action: null, dead: false, crouch: false }, dt);
+      this._updateCamera();
     }
     this._pedestal[1].rotation.z += dt * 0.25; this._pedestal[2].rotation.z -= dt * 0.4;
     this.renderer.render(this.scene, this.camera);

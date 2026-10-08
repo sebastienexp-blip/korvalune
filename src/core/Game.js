@@ -48,6 +48,9 @@ import { createMount, updateMount } from '../visual/MountModel.js';
 import { SettingsUI, DEFAULTS, TOUCH_DEFAULTS } from '../ui/SettingsUI.js';
 import { normalizeKeys, defaultKeys, keyLabel } from './Keybinds.js';
 import { CharPreview } from '../ui/CharPreview.js';
+import { LookEditor } from '../ui/LookEditor.js';
+import { defaultLook, normalizeLook, computeLookCost, LOOK_PRICES, HAIR_COLORS, EYE_COLORS } from '../data/looks.js';
+import { buildBarberDecor } from '../world/BarberDecor.js';
 import { CLASSES, RACES } from '../combat/Classes.js';
 import { Inventory } from '../inventory/Inventory.js';
 import { Equipment } from '../inventory/Equipment.js';
@@ -354,6 +357,15 @@ export class Game {
         this.scene.add(m.group);
         this._stableDisplay.push(m);
       }
+    }
+
+    // V10.12 — barbier : la barbière devant la maison de la rue sud-ouest (enseigne + poteau rayé)
+    {
+      const bx = -12.6, bz = 19.1, by = this.world.heightAt(bx, bz);
+      const odile = new NPC(this.scene, npcsData.barber, new THREE.Vector3(bx, by, bz), 0.25);
+      odile.id = 'barber';
+      this.npcs.push(odile);
+      try { this._barberDecor = buildBarberDecor(this.scene, this.world, { x: -11, z: 15, depth: 5, width: 5.5 }); } catch (e) { console.warn('[V10.12] façade du barbier ignorée', e); }
     }
 
     // PNJ des quêtes principales (chaînes déclarées dans npcs.json).
@@ -842,6 +854,7 @@ export class Game {
       for (const p of msg.players) this._addRemote(p);
     });
     b.on('net:playerJoined', (p) => this._addRemote(p));
+    b.on('net:playerLook', (msg) => { try { this.remotePlayers.get(msg.id)?.setLook(msg.app); } catch (e) { console.warn('[V10.12] apparence distante', e); } });
     b.on('net:playerLeft', (id) => { this.remotePlayers.get(id)?.dispose(this.scene); this.remotePlayers.delete(id); });
     b.on('net:playerMoved', (msg) => { this.remotePlayers.get(msg.id)?.applyState(msg); this.gw.onMoved(msg); });
     b.on('net:gr', (msg) => this.gw.onRelay(msg));
@@ -915,6 +928,8 @@ export class Game {
     this.root.querySelector('#btn-mount').addEventListener('click', () => this._toggleMount());
     this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
     this.bus.on('ui:close-stable', () => this._closeModal());
+    this.bus.on('ui:close-barber', () => this._closeModal());
+    this.root.querySelector('#barber-pay').addEventListener('click', () => this._barberPay());
     this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
     this.root.querySelector('#lune-screen').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-la]');
@@ -1063,11 +1078,9 @@ export class Game {
     const classGrid = this.root.querySelector('#cc-class');
     const skinRow = this.root.querySelector('#cc-skin');
     raceGrid.innerHTML = ''; classGrid.innerHTML = ''; skinRow.innerHTML = '';
-    this._chosenRace = 'human'; this._chosenClass = 'warrior'; this._chosenTone = 2; this._chosenHair = 0; this._chosenEye = 0;
-    const HAIRS = [0x2c1f16, 0x0f0d0c, 0x6b4426, 0xb5803a, 0xd9c079, 0x9c3a22, 0xc9ccd2, 0x2f5f8a, 0x6a3a8a];
-    const EYES = [0x3f78b0, 0x3d7a4a, 0x6b4a2a, 0x7a8a96, 0x8a5aa8, 0xb08a2a];
-    const hairRow = this.root.querySelector('#cc-hair'), eyeRow = this.root.querySelector('#cc-eye');
-    hairRow.innerHTML = ''; eyeRow.innerHTML = '';
+    this._chosenRace = 'human'; this._chosenClass = 'warrior'; this._chosenTone = 2;
+    // V10.12 : sexe, taille, corpulence, visage, coiffure, couleurs des cheveux et des yeux
+    this._ccLook = { look: defaultLook('homme'), hairCol: HAIR_COLORS[0], eyeCol: EYE_COLORS[0] };
 
     const CLASS_UI = {
       warrior: ['⚔️', 'Mêlée'], paladin: ['🛡️', 'Mêlée · soin'], mage: ['🔮', 'Magie'], archer: ['🏹', 'Distance'], assassin: ['🗡️', 'Vitesse']
@@ -1091,11 +1104,15 @@ export class Game {
     const refreshPreview = () => {
       const race = RACES[this._chosenRace], cls = CLASSES[this._chosenClass];
       const weaponVisual = getItem(cls.startWeapon)?.visual || 'sword';
-      this._charPreview.setAppearance({ skin: currentSkin(), cloth: cls.color, armor: cls.armor, shield: cls.shield, hair: HAIRS[this._chosenHair], eye: EYES[this._chosenEye], weaponVisual, classId: this._chosenClass });
+      const L = this._ccLook;
+      this._charPreview.setAppearance({ skin: currentSkin(), cloth: cls.color, armor: cls.armor, shield: cls.shield, hair: L.hairCol, eye: L.eyeCol, look: L.look, weaponVisual, classId: this._chosenClass });
       refreshSwatches();
-      hairRow.querySelectorAll('.cc-swatch').forEach((b, i) => b.classList.toggle('active', i === this._chosenHair));
-      eyeRow.querySelectorAll('.cc-swatch').forEach((b, i) => b.classList.toggle('active', i === this._chosenEye));
     };
+    this._ccEditor = new LookEditor(this.root.querySelector('#cc-look'), {
+      state: this._ccLook,
+      onChange: (st) => { this._ccLook = { look: st.look, hairCol: st.hairCol, eyeCol: st.eyeCol }; refreshPreview(); },
+      onTab: (tab) => this._charPreview?.focus(tab === 'corps' ? 'body' : 'face')
+    });
 
     TONES.forEach((_, i) => {
       const b = document.createElement('button');
@@ -1103,8 +1120,6 @@ export class Game {
       b.onclick = () => { this._chosenTone = i; refreshPreview(); };
       skinRow.appendChild(b);
     });
-    HAIRS.forEach((c, i) => { const b = document.createElement('button'); b.className = 'cc-swatch'; b.style.background = hex(c); b.setAttribute('aria-label', 'Cheveux ' + (i + 1)); b.onclick = () => { this._chosenHair = i; refreshPreview(); }; hairRow.appendChild(b); });
-    EYES.forEach((c, i) => { const b = document.createElement('button'); b.className = 'cc-swatch'; b.style.background = hex(c); b.setAttribute('aria-label', 'Yeux ' + (i + 1)); b.onclick = () => { this._chosenEye = i; refreshPreview(); }; eyeRow.appendChild(b); });
     for (const r of Object.values(RACES)) {
       const b = document.createElement('button'); b.dataset.id = r.id;
       b.className = r.id === this._chosenRace ? 'chip active' : 'chip';
@@ -1127,7 +1142,7 @@ export class Game {
       const skin = currentSkin();
       if (this._charPreview) { this._charPreview.dispose(); this._charPreview = null; }
       this._slot = this.net.loggedIn ? (this._pendingSlot ?? 0) : 0;
-      this._startGame({ classId: this._chosenClass, name: this.root.querySelector('#cc-name').value.trim() || 'Aventurier', skin, hairCol: HAIRS[this._chosenHair], eyeCol: EYES[this._chosenEye], ...(this.net.loggedIn ? { bank: this._serverBank || [] } : {}) });
+      this._startGame({ classId: this._chosenClass, name: this.root.querySelector('#cc-name').value.trim() || 'Aventurier', skin, hairCol: this._ccLook.hairCol, eyeCol: this._ccLook.eyeCol, look: this._ccLook.look, ...(this.net.loggedIn ? { bank: this._serverBank || [] } : {}) });
     };
   }
 
@@ -1199,7 +1214,8 @@ export class Game {
     this.net.joinWorld({
       name: this.player.name, classId: this.player.classId, level: this.player.level,
       pos: [this.player.pos.x, this.player.pos.y, this.player.pos.z], yaw: this.player.yaw,
-      hp: this.player.hp, maxHp: this.player.maxHp
+      hp: this.player.hp, maxHp: this.player.maxHp,
+      app: this._netApp()
     });
     this._autoSaveAcc = 0;
     this._running = true;
@@ -1448,6 +1464,62 @@ export class Game {
     this._renderStable();
   }
 
+  // ---------- Barbier (V10.12) ----------
+  _netApp() {
+    const a = this.player.appearance();
+    return { ...a.look, skin: a.skin, hairCol: a.hairCol, eyeCol: a.eyeCol };
+  }
+
+  _openBarber(npc) {
+    if (!this.player) return;
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    const lines = npc.def.dialogues?.intro;
+    if (lines?.length) this.hud.notify(lines[0], 'info');
+    this.hud.showScreen('barber-screen');
+    if (this._barber) this._barber.preview.dispose();
+    const p = this.player, a = p.appearance();
+    const before = { look: { ...a.look }, hairCol: a.hairCol, eyeCol: a.eyeCol };
+    const preview = new CharPreview(this.root.querySelector('#barber-preview'));
+    const cls = CLASSES[p.classId] || CLASSES.warrior;
+    const show = (st) => preview.setAppearance({ skin: p.skin ?? 0xd9a98b, cloth: cls.color, armor: cls.armor, shield: false, hair: st.hairCol, eye: st.eyeCol, look: st.look, equipVisible: false, classId: p.classId });
+    this._barber = { before, preview, state: before };
+    this.root.querySelector('#barber-head').innerHTML = `<div class="lune-bal"><span class="lune-gem">🪙</span><b id="barber-coins">${p.coins}</b><small>pièces</small></div>`;
+    new LookEditor(this.root.querySelector('#barber-look'), {
+      state: before, prices: LOOK_PRICES, keepBody: true,
+      onChange: (st) => { this._barber.state = { look: st.look, hairCol: st.hairCol, eyeCol: st.eyeCol }; show(this._barber.state); this._renderBarberCost(); },
+      onTab: (tab) => preview.focus(tab === 'corps' ? 'body' : 'face')
+    });
+    show(before);
+    this._renderBarberCost();
+  }
+
+  _renderBarberCost() {
+    const b = this._barber; if (!b) return;
+    const { total, items } = computeLookCost({ ...b.before.look, hairCol: b.before.hairCol, eyeCol: b.before.eyeCol }, { ...b.state.look, hairCol: b.state.hairCol, eyeCol: b.state.eyeCol });
+    const el = this.root.querySelector('#barber-cost'), pay = this.root.querySelector('#barber-pay');
+    const poor = total > this.player.coins;
+    el.innerHTML = items.length ? `<b>Total : ${total} 🪙</b><small>${items.map((i) => `${i.label} ${i.price}`).join(' · ')}</small>` : '<small>Choisis ce que tu veux changer : chaque catégorie modifiée est payée une seule fois.</small>';
+    el.classList.toggle('poor', poor);
+    pay.disabled = total === 0 || poor;
+    pay.textContent = total === 0 ? 'Payer' : poor ? 'Pas assez de pièces' : `Payer ${total} 🪙`;
+  }
+
+  _barberPay() {
+    const b = this._barber, p = this.player; if (!b || !p) return;
+    const { total } = computeLookCost({ ...b.before.look, hairCol: b.before.hairCol, eyeCol: b.before.eyeCol }, { ...b.state.look, hairCol: b.state.hairCol, eyeCol: b.state.eyeCol });
+    if (total === 0) return;
+    if (p.coins < total) { this.hud.notify('Pas assez de pièces.', 'info'); return; }
+    p.addCoins(-total);
+    p.setAppearance({ look: normalizeLook(b.state.look), hairCol: b.state.hairCol, eyeCol: b.state.eyeCol });
+    if (this.equipment) p.refreshGearVisuals(this.equipment);
+    this.net.sendLook(this._netApp());
+    this.audio.play('coin');
+    this.hud.notify('Nouvelle apparence ! Odile est fière de son travail.', 'quest');
+    try { this._doSave(); } catch { /* ignoré */ }
+    this._closeModal();
+  }
+
   // ---------- Échanges (V10.9) ----------
   _closeTrade() {
     this._trade = null;
@@ -1589,6 +1661,7 @@ export class Game {
 
   _closeModal(returnTo = 'game-ui') {
     this.modalOpen = false; this._dmOpen = null;
+    if (this._barber) { this._barber.preview.dispose(); this._barber = null; }
     this.hud.showScreen(returnTo);
   }
 
@@ -2349,7 +2422,7 @@ export class Game {
     }
     for (const n of this.npcs) {
       if (n.pos.distanceTo(this.player.pos) < 3.2) {
-        return n.def.stable ? this._openStable(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
+        return n.def.stable ? this._openStable(n) : n.def.barber ? this._openBarber(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
       }
     }
     const wc = this.worldChests?.nearest(this.player.pos, 2.8);
@@ -2553,6 +2626,7 @@ export class Game {
     this._camQuat.copy(this.camera.quaternion);
     for (const n of this.npcs) n.update(dt, this._camQuat);
     for (const m of this._stableDisplay || []) updateMount(m, dt, 0, false);
+    this._barberDecor?.update(dt);
     if (this.player.mount && this.rift?.active) { this.player.setMount(null); this.hud.notify('Les montures ne sont pas autorisées dans les spires.', 'info'); }
     if (this._mntOn !== !!this.player.mount) { this._mntOn = !!this.player.mount; this._syncMountBtn(); }
     for (const e of this.enemies) e.label.quaternion.copy(this._camQuat);

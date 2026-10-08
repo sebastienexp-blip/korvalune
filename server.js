@@ -25,6 +25,7 @@ import { loadAccounts, persistAccounts, hashPassword, verifyPassword, sanitizeUs
 import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/security.js';
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
+import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
@@ -128,7 +129,7 @@ function broadcastAll(msg, exceptId) {
   for (const p of players.values()) if (p.id !== exceptId) send(p.ws, msg);
 }
 function playerSummary(p) {
-  return { id: p.id, name: p.name, classId: p.classId, level: p.level, pos: p.pos, yaw: p.yaw, anim: p.anim, hp: p.hp, maxHp: p.maxHp, inst: p.inst | 0, cos: p.cos || {}, mnt: p.mnt || '' };
+  return { id: p.id, name: p.name, classId: p.classId, level: p.level, pos: p.pos, yaw: p.yaw, anim: p.anim, hp: p.hp, maxHp: p.maxHp, inst: p.inst | 0, cos: p.cos || {}, mnt: p.mnt || '', app: p.app || null };
 }
 
 function findByName(name) {
@@ -235,6 +236,8 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   clean.classId = sanitize(incoming.classId, 20) || 'warrior';
   clean.skin = Number.isInteger(incoming.skin) && incoming.skin >= 0 && incoming.skin <= 0xffffff ? incoming.skin : (Number.isInteger(prev?.skin) ? prev.skin : null);
   for (const k of ['hairCol', 'eyeCol']) clean[k] = Number.isInteger(incoming[k]) && incoming[k] >= 0 && incoming[k] <= 0xffffff ? incoming[k] : (Number.isInteger(prev?.[k]) ? prev[k] : undefined);
+  // V10.12 : apparence (sexe, taille, visage, coiffure…) — valeurs du catalogue uniquement, bornées
+  clean.look = normalizeLook(incoming.look && typeof incoming.look === 'object' ? incoming.look : prev?.look);
   clean.pos = Array.isArray(incoming.pos) && incoming.pos.length === 3 && incoming.pos.every(Number.isFinite) ? incoming.pos : (prev?.pos || [0, 0, 12]);
   clean.yaw = Number.isFinite(incoming.yaw) ? incoming.yaw : 0;
 
@@ -617,7 +620,8 @@ wss.on('connection', (ws, req) => {
         hp: Number(msg.hp) || 100,
         maxHp: Number(msg.maxHp) || 100,
         inst: 0, account: authUsername,
-        cos: authUsername && accounts[authUsername] ? publicCos(accounts[authUsername]) : {}
+        cos: authUsername && accounts[authUsername] ? publicCos(accounts[authUsername]) : {},
+        app: msg.app ? sanitizeAppearance(msg.app) : null // V10.12 : apparence visible des autres joueurs
       };
       players.set(id, player);
       send(ws, { t: 'welcome', id, players: [...players.values()].filter((p) => p.id !== id).map(playerSummary) });
@@ -644,6 +648,14 @@ wss.on('connection', (ws, req) => {
       broadcastAll({ t: 'playerMoved', id: player.id, pos: player.pos, yaw: player.yaw, anim: player.anim, hp: player.hp, maxHp: player.maxHp, level: player.level, inst: player.inst | 0, mnt: player.mnt }, player.id);
       const gid = groupOf(player.id);
       if (gid) broadcastGroupUpdate(gid, instChanged);
+      return;
+    }
+
+    // --- V10.12 : nouvelle apparence (barbier) ---
+    if (msg.t === 'look') {
+      if (!chatLimiter.allow()) return;
+      player.app = sanitizeAppearance(msg.app);
+      broadcastAll({ t: 'playerLook', id: player.id, app: player.app }, player.id);
       return;
     }
 

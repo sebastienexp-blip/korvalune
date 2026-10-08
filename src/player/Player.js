@@ -4,9 +4,10 @@ import { CONFIG } from '../core/config.js';
 import { clamp, damp, lerpAngle } from '../core/math.js';
 import { createHumanoid, animateHumanoid } from '../entities/HumanoidModel.js';
 import { setWeaponAura } from '../visual/WeaponAura.js';
-import { applyCosmetics } from '../visual/Cosmetics.js';
+import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
 import { createMount, updateMount, disposeMount } from '../visual/MountModel.js';
 import { MOUNT_BY_ID } from '../data/mounts.js';
+import { normalizeLook } from '../data/looks.js';
 import { CLASSES, PRIMARY_STAT, SKILLS, getClassSkillPool } from '../combat/Classes.js';
 import { getItem, RARITY, resolveItem } from '../inventory/Item.js';
 import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../combat/WeaponRules.js';
@@ -23,6 +24,7 @@ export class Player {
     this.skin = typeof save?.skin === 'number' ? save.skin : null;
     this.hairCol = typeof save?.hairCol === 'number' ? save.hairCol : 0x2c1f16;
     this.eyeCol = typeof save?.eyeCol === 'number' ? save.eyeCol : 0x3f78b0;
+    this.look = normalizeLook(save?.look); // V10.12 : sexe, taille, corpulence, visage, coiffure (ancienne sauvegarde → apparence d'origine)
 
     this.pos = save?.pos
       ? new THREE.Vector3(save.pos[0], save.pos[1], save.pos[2])
@@ -64,7 +66,8 @@ export class Player {
       starter.forEach((id, i) => { this.skillBar[i] = id; });
     }
 
-    this.rig = createHumanoid({ ...(this.skin != null ? { skin: this.skin } : {}), cloth: cls.color, armor: cls.armor, hair: this.hairCol, eye: this.eyeCol, equipVisible: false, role: 'player:' + this.classId });
+    this._cls = cls;
+    this.rig = this._makeRig();
     this.rig.root.position.copy(this.pos);
     this.rig.root.rotation.y = this.yaw;
     scene.add(this.rig.root);
@@ -196,6 +199,32 @@ export class Player {
   // casque/épaulières/plastron/cape) quand équipée, la cache sinon, et teinte
   // selon la rareté de l'objet.
   // V10.1 : cosmétiques de la boutique (aura d'arme, cercle, traînée, ailes) — identifiants du catalogue
+  _makeRig() {
+    const cls = this._cls;
+    return createHumanoid({ ...(this.skin != null ? { skin: this.skin } : {}), cloth: cls.color, armor: cls.armor, hair: this.hairCol, eye: this.eyeCol, look: this.look, equipVisible: false, role: 'player:' + this.classId });
+  }
+
+  // V10.12 : nouvelle apparence (barbier) — reconstruit le modèle en gardant position, équipement et cosmétiques.
+  setAppearance({ look, hairCol, eyeCol }) {
+    this.look = normalizeLook(look);
+    if (Number.isInteger(hairCol)) this.hairCol = hairCol;
+    if (Number.isInteger(eyeCol)) this.eyeCol = eyeCol;
+    const old = this.rig;
+    this.rig = this._makeRig();
+    this.rig.root.position.copy(old.root.position);
+    this.rig.root.rotation.y = old.root.rotation.y;
+    this.scene.add(this.rig.root);
+    this.rig.root.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    try { disposeCosmetics(old); } catch { /* ignoré */ }
+    this.scene.remove(old.root);
+    old.root.traverse((o) => { if (o.isMesh && !o.geometry.userData?.shared) o.geometry.dispose(); });
+    this.setCosmetics(this.cos); // réapplique cosmétiques + équipement visible + aura d'arme
+  }
+
+  appearance() {
+    return { look: this.look, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol };
+  }
+
   setCosmetics(cos) {
     this.cos = cos || {};
     try { applyCosmetics(this.rig, this.cos); } catch (e) { console.warn('[V10.1] cosmétiques', e); }
@@ -224,6 +253,7 @@ export class Player {
     tint(this.rig.matRefs.shield, s.offhand);
 
     ev.helm.visible = !!s.head;
+    if (this.rig.customHair) this.rig.customHair.visible = !(s.head && this.rig.hairBulky); // V10.12 : volume de cheveux sous le casque
     tint(this.rig.matRefs.helm, s.head);
 
     const shouldersOn = !!s.shoulders;
@@ -557,7 +587,7 @@ export class Player {
 
   serialize() {
     return {
-      classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
+      classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, look: this.look, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
       level: this.level, xp: this.xp, coins: this.coins, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
       skillBar: this.skillBar
     };

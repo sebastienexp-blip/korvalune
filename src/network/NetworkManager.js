@@ -108,11 +108,15 @@ export class NetworkManager {
       case 'settings': this.bus.emit('net:settings', msg); break;
       case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;
+      case 'playerLook': this.bus.emit('net:playerLook', msg); break;
       case 'charsUpdate': this.bus.emit('net:chars', msg); break;
       case 'saveAck': this.bus.emit('net:saveAck', msg); break;
       default: break;
     }
   }
+
+  // V10.12 : nouvelle apparence (barbier), visible des autres joueurs
+  sendLook(app) { if (this._joinProfile) this._joinProfile.app = app; if (this._joined) this._send({ t: 'look', app }); }
 
   // Rejoint le monde multijoueur (visible des autres joueurs) avec ce profil.
   // Si le socket n'est pas encore ouvert, le join partira dès la connexion.

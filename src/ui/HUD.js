@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.11 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.12 — Korvalune</div>
         </div>
       </div>
 
@@ -147,8 +147,7 @@ export class HUD {
           <div class="cc-field"><label>Classe</label><div id="cc-class" class="choice-grid class-grid"></div></div>
           <p id="cc-desc" class="cc-desc"></p>
           <div class="cc-field cc-field-inline"><label>Teint</label><div id="cc-skin" class="swatches"></div></div>
-          <div class="cc-field cc-field-inline"><label>Cheveux</label><div id="cc-hair" class="swatches"></div></div>
-          <div class="cc-field cc-field-inline"><label>Yeux</label><div id="cc-eye" class="swatches"></div></div>
+          <div class="cc-field"><label>Apparence</label><div id="cc-look"></div></div>
         </div>
       </div>
 
@@ -329,6 +328,23 @@ export class HUD {
         <button data-act="close-social">Fermer</button>
       </div>
 
+      <div id="barber-screen" class="hidden panel-screen">
+        <div class="cc-stage">
+          <canvas id="barber-preview" width="300" height="380"></canvas>
+          <div class="cc-stage-hint">Glissez pour faire tourner le personnage</div>
+        </div>
+        <div class="cc-form">
+          <h2>Barbier de Korvalune</h2>
+          <div id="barber-head"></div>
+          <div id="barber-look"></div>
+          <div id="barber-cost"></div>
+          <div class="barber-actions">
+            <button data-act="close-barber">Partir</button>
+            <button id="barber-pay" class="btn-primary" disabled>Payer</button>
+          </div>
+        </div>
+      </div>
+
       <div id="stable-screen" class="hidden panel-screen">
         <h2>Écurie de Korvalune</h2>
         <div id="stable-head"></div>
@@ -479,7 +495,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }

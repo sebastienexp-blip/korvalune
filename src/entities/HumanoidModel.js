@@ -7,6 +7,8 @@ import { createHumanoidLegacy } from './HumanoidLegacy.js';
 import { createBow } from './Bow.js';
 import { createStaff } from './Staff.js';
 import { tryCreateGlbRig, animateGlbRig } from '../visual/ModelLibrary.js';
+import { normalizeLook, bodyFactors, byId, FACE_SHAPES, EYE_STYLES, NOSE_STYLES, hairStyleOf } from '../data/looks.js';
+import { buildHair, buildFacialHair } from '../visual/HairStyles.js';
 
 let _glowTex;
 const glowTex = () => (_glowTex === undefined ? (_glowTex = safeTexture(glowTexture, 64)) : _glowTex);
@@ -56,8 +58,10 @@ function createHumanoidV25(opts = {}) {
   const staffGemMat = mat(0x6ab0ff, { emissive: 0x3a7fd9, emissiveIntensity: 0.8, roughness: 0.3 });
 
   const root = new THREE.Group();
+  const sizer = new THREE.Group(); // V10.12 : taille du personnage (apparence) — l'animation ne touche jamais ce groupe
+  root.add(sizer);
   const body = new THREE.Group();
-  root.add(body);
+  sizer.add(body);
   const add = (geo, m, parent, x = 0, y = 0, z = 0) => {
     const mesh = new THREE.Mesh(geo, m);
     mesh.position.set(x, y, z);
@@ -105,7 +109,7 @@ function createHumanoidV25(opts = {}) {
   torso.add(head);
   const skull = add(new THREE.SphereGeometry(0.14, 22, 16), skin, head);
   skull.scale.set(0.96, 1.06, 1);
-  buildFace(head, { skin, hair, o });
+  const face = buildFace(head, { skin, hair, o });
   const hairMesh = add(new THREE.SphereGeometry(0.152, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.31), hair, head, 0, 0.012, -0.012); // calotte : laisse le front dégagé
   // chevelure : arrière + frange + mèches + queue (enfants de hairMesh)
   const hairBack = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 10, Math.PI - 0.55, Math.PI + 1.1, Math.PI * 0.27, Math.PI * 0.5), hair); // nuque et côtés uniquement
@@ -133,6 +137,36 @@ function createHumanoidV25(opts = {}) {
   tail.position.set(0, -0.13, -0.17); tail.rotation.x = 0.35; tail.castShadow = true; hairMesh.add(tail);
   const tie = new THREE.Mesh(new THREE.TorusGeometry(0.036, 0.008, 4, 8), trimMat);
   tie.position.set(0, -0.075, -0.155); tie.rotation.x = 0.35 + Math.PI / 2; hairMesh.add(tie);
+
+  // V10.12 : apparence choisie par le joueur (visage, coiffure, barbe). Sans « look » (PNJ, ennemis) : modèle d'origine.
+  const look = o.look ? normalizeLook(o.look) : null;
+  let customHair = null, beardGrp = null;
+  if (look) {
+    const fs = byId(FACE_SHAPES, look.face), fem = look.sex === 'femme';
+    skull.scale.set(0.96 * fs.skull[0], 1.06 * fs.skull[1], 1);
+    face.jaw.scale.x *= fs.jaw[0] * (fem ? 0.92 : 1); face.jaw.scale.y *= fs.jaw[1];
+    face.chin.scale.x *= fs.chin[0] * (fem ? 0.85 : 1); face.chin.scale.y *= fs.chin[1] * (fem ? 0.9 : 1);
+    face.chin.position.y -= (fs.chin[1] - 1) * 0.025;
+    if (fs.cheek) for (const c of face.cheeks) c.scale.x *= fs.cheek;
+    const es = byId(EYE_STYLES, look.eyes).scale;
+    for (const e of face.eyes) e.scale.set(es[0], es[1], 1);
+    const ns = byId(NOSE_STYLES, look.nose).scale;
+    face.nose.scale.set(ns[0] * (fem ? 0.9 : 1), ns[1], ns[2]);
+    if (fem) for (const b of face.brows) b.scale.x *= 0.7;
+    const ctx = {
+      R: 0.14, sx: 0.96 * fs.skull[0], sy: 1.06 * fs.skull[1], sz: 1,
+      mats: { hair, hairFine: mat(o.hair, { roughness: 0.85, transparent: true, opacity: 0.5, depthWrite: false }) },
+      jaw: { center: [0, -0.03, 0.004], radii: [0.137 * fs.skull[0] * (0.9 + 0.1 * fs.jaw[0]), 0.128 * fs.skull[1], 0.146] }, // bas du visage (le crâne fait l'essentiel du volume)
+      mouth: { y: -0.082, z: 0.142 }
+    };
+    if (look.hair !== 'classique') {
+      head.remove(hairMesh);
+      customHair = buildHair(look.hair, ctx);
+      customHair.traverse((c) => { if (c.isMesh) c.castShadow = true; });
+      head.add(customHair);
+    }
+    if (look.beard !== 'aucune') { beardGrp = buildFacialHair(look.beard, ctx); head.add(beardGrp); }
+  }
 
   // Casque (emplacement "tête") : recouvre les cheveux quand équipé.
   const helm = new THREE.Group();
@@ -314,11 +348,13 @@ function createHumanoidV25(opts = {}) {
 
   const equipVisuals = { weapons, shield: shieldGrp, helm, shoulders: [shoulderR, shoulderL], chest: chestPlate, cape };
   root.scale.setScalar(o.scale);
+  const lookScale = look ? shapeBody({ sizer, torso, hips, head, armR, armL, legR: legRr, legL: legLr, cape }, bodyFactors(look)) : 1;
 
   return {
     root, body, hips, torso, head, armR: armR.pivot, armL: armL.pivot, legR, legL, cape, capeLow, halo,
     handR: armR.hand, handL: armL.hand, bowRig, staffRig,
-    elbowR: armR.elbow, elbowL: armL.elbow, kneeR: legRr.knee, kneeL: legLr.knee, hairTail: tail,
+    elbowR: armR.elbow, elbowL: armL.elbow, kneeR: legRr.knee, kneeL: legLr.knee, hairTail: customHair ? null : tail,
+    look, lookScale, customHair, beard: beardGrp, hairBulky: !!(look && hairStyleOf(look.hair).bulky),
     tips: { sword: tipSword, dagger: tipDagger, staff: tipStaff, bow: tipBow }, landT: 0, prevYaw: 0, prevGrounded: true, bank: 0, weaponKind: 'sword',
     mats: [skin, cloth, steel], matRefs, equipVisuals,
     phase: 0, k: 0, t: 0, hurtT: 0, crouchK: 0
@@ -388,13 +424,15 @@ function buildFace(head, { skin, hair, o }) {
   const m = (geo, mt, x, y, z, sx = 1, sy = 1, sz = 1) => { const me = new THREE.Mesh(geo, mt); me.position.set(x, y, z); me.scale.set(sx, sy, sz); head.add(me); return me; };
 
   // volumes : mâchoire, menton, pommettes, front
-  m(g.jaw, skin, 0, -0.07, 0.015, 0.98, 0.78, 0.98);
-  m(g.chin, skin, 0, -0.118, 0.07, 1.1, 0.78, 0.95);
+  const refs = { eyes: [], brows: [], cheeks: [], noseParts: [] };
+  refs.jaw = m(g.jaw, skin, 0, -0.07, 0.015, 0.98, 0.78, 0.98);
+  refs.chin = m(g.chin, skin, 0, -0.118, 0.07, 1.1, 0.78, 0.95);
   m(g.chin, skin, 0, 0.075, 0.095, 1.5, 0.5, 0.55); // arcade du front
-  for (const sx of [-1, 1]) m(g.cheekbone, skin, sx * 0.075, -0.03, 0.09, 0.7, 0.6, 0.55);
+  for (const sx of [-1, 1]) refs.cheeks.push(m(g.cheekbone, skin, sx * 0.075, -0.03, 0.09, 0.7, 0.6, 0.55));
 
   for (const sx of [-1, 1]) {
     const ex = sx * 0.047, ey = 0.025;
+    const eyeFrom = head.children.length;
     m(g.socket, skinDeep, ex, ey + 0.002, 0.108, 1.1, 0.8, 0.5); // orbite (légère ombre)
     m(g.ball, white, ex, ey, 0.119, 1, 0.84, 0.7); // globe oculaire
     m(g.iris, irisRing, ex, ey - 0.001, 0.134, 1.12, 1.12, 0.5); // anneau sombre de l'iris
@@ -406,24 +444,27 @@ function buildFace(head, { skin, hair, o }) {
     const lash = m(g.lash, lashMat, ex, ey + 0.0015, 0.1415, 1, 0.8, 0.6); lash.rotation.z = Math.PI * 0.075; // cils supérieurs
     const flick = m(g.lashFlick, lashMat, ex + sx * 0.0275, ey + 0.004, 0.139); flick.rotation.z = -sx * 1.25; // petit cil au coin externe
     const lowerLid = m(g.lash, skinDeep, ex, ey - 0.001, 0.1385, 0.9, 0.55, 0.5); lowerLid.rotation.z = Math.PI * 1.08; // paupière inférieure
+    refs.eyes.push(regroup(head, head.children.slice(eyeFrom), ex, ey, 0.13)); // V10.12 : œil regroupé (forme des yeux)
     // sourcil arqué en deux segments (fin vers l'extérieur)
     const b1 = m(g.brow, hair, ex - sx * 0.011, 0.067, 0.127, 1, 1, 0.8); b1.rotation.z = Math.PI / 2 + sx * 0.05; b1.rotation.y = sx * -0.25;
     const b2 = m(g.brow2, hair, ex + sx * 0.019, 0.0715, 0.1235, 1, 1, 0.8); b2.rotation.z = Math.PI / 2 + sx * 0.4; b2.rotation.y = sx * -0.45;
+    refs.brows.push(b1, b2);
     m(g.blush, blushMat, sx * 0.082, -0.04, 0.1).rotation.y = sx * 0.9;
     // oreilles
     const ear = m(g.ear, skin, sx * 0.138, -0.003, 0.0, 0.42, 1, 0.78); ear.rotation.z = sx * -0.12;
     m(g.earIn, skinDeep, sx * 0.145, -0.003, 0.004, 0.25, 0.8, 0.5);
     m(g.lobe, skin, sx * 0.138, -0.036, 0.0, 0.7, 1, 0.8);
     // narines et ailes du nez
-    m(g.nostril, skin, sx * 0.0165, -0.039, 0.147, 1.05, 0.8, 0.85);
-    m(g.nostrilHole, pupilMat, sx * 0.0115, -0.0465, 0.1525, 1, 0.6, 0.6);
+    refs.noseParts.push(m(g.nostril, skin, sx * 0.0165, -0.039, 0.147, 1.05, 0.8, 0.85));
+    refs.noseParts.push(m(g.nostrilHole, pupilMat, sx * 0.0115, -0.0465, 0.1525, 1, 0.6, 0.6));
     // commissures (légèrement relevées) et fossettes
     m(g.corner, lipDark, sx * 0.031, -0.0815, 0.1335);
   }
   // nez : arête (de la racine au bout), bout, ombre sous le nez
   const br = m(g.noseRidge, skin, 0, -0.01, 0.1405, 0.9, 1, 0.8); br.rotation.x = 0.32;
-  m(g.tip, skin, 0, -0.034, 0.1495, 0.95, 0.85, 0.95);
-  m(g.nostrilHole, skinDeep, 0, -0.049, 0.1455, 2.4, 0.5, 0.7); // ombre sous le nez
+  refs.noseParts.push(br, m(g.tip, skin, 0, -0.034, 0.1495, 0.95, 0.85, 0.95));
+  refs.noseParts.push(m(g.nostrilHole, skinDeep, 0, -0.049, 0.1455, 2.4, 0.5, 0.7)); // ombre sous le nez
+  refs.nose = regroup(head, refs.noseParts, 0, -0.02, 0.13); // V10.12 : nez regroupé (forme du nez)
   m(g.philtrum, skinDeep, 0, -0.0615, 0.1455, 0.7, 0.6, 0.6);
   // bouche : arc de Cupidon, lèvre supérieure, lèvre inférieure pleine, sourire léger
   const up = m(g.lipU, lipMat, 0, -0.0755, 0.1395, 1, 1, 0.7); up.rotation.z = Math.PI / 2;
@@ -431,7 +472,42 @@ function buildFace(head, { skin, hair, o }) {
   const lo = m(g.lipL, lipMat, 0, -0.0885, 0.1385, 1, 1, 0.8); lo.rotation.z = Math.PI / 2;
   const smile = m(g.smile, lipDark, 0, -0.0825 + 0.12, 0.1425, 1, 1, 0.5); smile.rotation.z = -Math.PI / 2 - 0.25;
   m(g.glint, glintMat, 0.004, -0.0905, 0.1445, 1.1, 0.4, 0.4).material = new THREE.MeshBasicMaterial({ color: 0xffd8d0, transparent: true, opacity: 0.55 }); // brillance des lèvres
-  return head;
+  return refs;
+}
+
+// V10.12 : rassemble des maillages du visage dans un groupe centré sur (px,py,pz) — position visuelle inchangée,
+// mais le groupe peut ensuite être mis à l'échelle autour de ce point (forme des yeux, du nez).
+function regroup(head, parts, px, py, pz) {
+  const grp = new THREE.Group();
+  grp.position.set(px, py, pz);
+  for (const p of parts) { p.position.x -= px; p.position.y -= py; p.position.z -= pz; grp.add(p); }
+  head.add(grp);
+  return grp;
+}
+
+// V10.12 : silhouette (taille, corpulence, musculature, sexe). Ne touche que les maillages (épaisseurs) et
+// les positions d'attache des membres : les pivots animés gardent leurs rotations, les armes ne sont pas déformées.
+function shapeBody(r, f) {
+  const meshesOf = (grp, fn) => { for (const c of grp.children) if (c.isMesh) fn(c); };
+  const widen = (c, fx, fz) => { c.position.x *= fx; c.position.z *= fz; c.scale.x *= fx; c.scale.z *= fz; };
+  const gx = f.girth * (0.55 + 0.45 * f.shoulders), gz = f.girth;
+  // torse : le cou et le col grossissent moins que le buste
+  meshesOf(r.torso, (c) => { if (c.position.y > 0.64) widen(c, 1 + (gx - 1) * 0.35, 1 + (gz - 1) * 0.35); else widen(c, gx, gz); });
+  r.cape.position.z *= gz; r.cape.scale.x *= gx;
+  for (const a of [r.armR, r.armL]) {
+    a.pivot.position.x = Math.sign(a.pivot.position.x) * (0.33 * gx * (0.6 + 0.4 * f.shoulders / Math.max(0.5, f.girth)) + 0.05 * (f.arms - 1));
+    meshesOf(a.pivot, (c) => widen(c, f.arms, f.arms));
+    meshesOf(a.elbow, (c) => widen(c, f.arms, f.arms));
+  }
+  meshesOf(r.hips, (c) => widen(c, f.hips * (0.7 + 0.3 * f.girth), gz));
+  for (const l of [r.legR, r.legL]) {
+    l.pivot.position.x *= f.hips * (0.75 + 0.25 * f.legs);
+    meshesOf(l.pivot, (c) => widen(c, f.legs, f.legs));
+    meshesOf(l.knee, (c) => widen(c, f.legs, f.legs));
+  }
+  r.sizer.scale.setScalar(f.scale);
+  r.head.scale.multiplyScalar(Math.pow(f.scale, -0.45) * (f.female ? 0.97 : 1)); // la tête grandit moins vite que le corps
+  return f.scale;
 }
 
 const easeOut = (t) => 1 - (1 - t) * (1 - t);

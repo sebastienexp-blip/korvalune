@@ -337,5 +337,24 @@
       ]
     },
     "stable": true
+  },
+  "barber": {
+    "id": "barber",
+    "name": "Barbière Odile",
+    "title": "Barbier de Korvalune",
+    "look": {
+      "cloth": 7999023,
+      "armor": 3355443,
+      "cape": 0,
+      "hair": 13224402,
+      "skin": 12093035,
+      "shape": { "sex": "femme", "height": 164, "weight": 55, "muscle": 25, "face": "rond", "eyes": "amande", "nose": "retrousse", "hair": "chignon" }
+    },
+    "dialogues": {
+      "intro": [
+        "Installe-toi ! Une nouvelle coupe, une autre silhouette, un autre visage… tout se change ici, contre quelques pièces."
+      ]
+    },
+    "barber": true
   }
 }
