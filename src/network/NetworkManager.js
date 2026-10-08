@@ -92,6 +92,12 @@ export class NetworkManager {
       case 'friends': this.bus.emit('net:friends', msg); break;
       case 'dm': this.bus.emit('net:dm', msg); break;
       case 'dmHistory': this.bus.emit('net:dmHistory', msg); break;
+      case 'trade:invited': this.bus.emit('net:tradeInvited', msg); break;
+      case 'trade:open': this.bus.emit('net:tradeOpen', msg); break;
+      case 'trade:state': this.bus.emit('net:tradeState', msg); break;
+      case 'trade:exec': this.bus.emit('net:tradeExec', msg); break;
+      case 'trade:final': this.bus.emit('net:tradeFinal', msg); break;
+      case 'trade:end': this.bus.emit('net:tradeEnd', msg); break;
       case 'group:invited': this.bus.emit('net:groupInvited', msg); break;
       case 'authResult':
         if (msg.ok) { this.token = msg.token; this.username = msg.username; try { localStorage.setItem('aetheria.session', msg.token); } catch { /* ignoré */ } }
@@ -127,6 +133,14 @@ export class NetworkManager {
   sendChat(channel, text) { this._send({ t: 'chat', channel, text }); }
   sendWhisper(to, text) { this._send({ t: 'whisper', to, text }); }
   requestWho() { this._send({ t: 'who' }); }
+  // ---------- Échanges d'objets (V10.9) ----------
+  tradeInvite(name, id) { this._send({ t: 'trade:invite', to: name, id }); }
+  tradeAccept() { this._send({ t: 'trade:accept' }); }
+  tradeDecline() { this._send({ t: 'trade:decline' }); }
+  tradeOffer(items) { this._send({ t: 'trade:offer', items }); }
+  tradeConfirm() { this._send({ t: 'trade:confirm' }); }
+  tradeCancel() { this._send({ t: 'trade:cancel' }); }
+  tradeAck(ok) { this._send({ t: 'trade:ack', ok: !!ok }); }
   inviteToGroup(name, id) { this._send({ t: 'group:invite', to: name, id }); }
   acceptGroupInvite() { this._send({ t: 'group:accept' }); }
   leaveGroup() { this._send({ t: 'group:leave' }); }

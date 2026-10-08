@@ -680,6 +680,31 @@ export class Game {
     b.on('ui:close-quests', () => this._closeModal());
     b.on('ui:close-ach', () => this._closeModal());
     b.on('ui:close-social', () => this._closeModal());
+    // V10.9 — échanges d'objets entre joueurs (le serveur orchestre ; double confirmation puis double accusé)
+    b.on('net:tradeInvited', (msg) => {
+      if (this._trade || !this.player) { this.net.tradeDecline(); return; }
+      this.hud.showInvite(msg.from, () => this.net.tradeAccept(), () => this.net.tradeDecline(), 'te propose un échange d\u2019objets');
+      this.hud.notify(`${msg.from} te propose un échange`, 'quest');
+    });
+    b.on('net:tradeOpen', () => {
+      if (!this.player) { this.net.tradeCancel(); return; }
+      document.exitPointerLock?.();
+      this._dmOpen = null;
+      this._trade = { sel: [], st: { with: '?', mine: [], theirs: [], okMe: false, okThem: false } };
+      this.modalOpen = true;
+      this.hud.showScreen('trade-screen');
+      this._renderTrade();
+    });
+    b.on('net:tradeState', (msg) => { if (!this._trade) return; this._trade.st = msg; this._renderTrade(); });
+    b.on('net:tradeExec', (msg) => { this.net.tradeAck(this._tradeCheck(msg.give, msg.get)); });
+    b.on('net:tradeFinal', (msg) => {
+      const ok = this._tradeApply(msg.give, msg.get);
+      this._closeTrade();
+      this.audio.play('click');
+      this.hud.notify(ok ? 'Échange terminé !' : 'Échange terminé, mais ton inventaire a changé : vérifie tes objets.', ok ? 'quest' : 'boss');
+    });
+    b.on('net:tradeEnd', (msg) => { if (this._trade) { this._closeTrade(); } this.hud.notify(msg.reason || 'Échange annulé.', 'info'); });
+    b.on('ui:cancel-trade', () => { this.net.tradeCancel(); this._closeTrade(); this.hud.notify('Échange annulé.', 'info'); });
     // V10.8 — messages privés entre amis
     b.on('ui:close-dm', () => { this._dmOpen = null; this.hud.showScreen('social-screen'); this._renderSocial(); this.net.friendList(); });
     b.on('net:dmHistory', (msg) => { this._dmMsgs = msg.msgs || []; if (this._dmOpen === msg.with) this.hud.renderDm({ name: msg.with, msgs: this._dmMsgs }); });
@@ -900,6 +925,8 @@ export class Game {
         switch (btn.dataset.sa) {
           case 'invite': this.net.inviteToGroup(v); break;
           case 'invite-id': this.net.inviteToGroup('', v); break;
+          case 'trade': this.net.tradeInvite(v); break;
+          case 'trade-id': this.net.tradeInvite('', v); break;
           case 'accept': this.net.friendAccept(v); break;
           case 'decline': this.net.friendDecline(v); break;
           case 'remove': this.net.friendRemove(v); break;
@@ -913,6 +940,18 @@ export class Game {
       const doAdd = () => { const i = scr.querySelector('#friend-input'); const n = i.value.trim(); if (n) { this.net.friendAdd(n); i.value = ''; } };
       scr.querySelector('#friend-add').addEventListener('click', doAdd);
       scr.querySelector('#friend-input').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') doAdd(); });
+      const trScr = this.root.querySelector('#trade-screen');
+      trScr.addEventListener('click', (e) => {
+        if (!this._trade) return;
+        const c = e.target.closest('[data-ti]');
+        if (c) {
+          const i = Number(c.dataset.ti), sel = this._trade.sel, k = sel.indexOf(i);
+          if (k >= 0) sel.splice(k, 1); else if (sel.length < 6) sel.push(i); else { this.hud.notify('6 objets maximum par échange.', 'info'); return; }
+          this.net.tradeOffer(this._tradeOfferFromSel());
+          this._renderTrade();
+        }
+        if (e.target.closest('#trade-ok')) this.net.tradeConfirm();
+      });
       const dmScr = this.root.querySelector('#dm-screen'), dmIn = dmScr.querySelector('#dm-input');
       const dmSend = () => { const t = dmIn.value.trim(); if (t && this._dmOpen) { this.net.friendMsg(this._dmOpen, t); dmIn.value = ''; } };
       dmScr.querySelector('#dm-send').addEventListener('click', dmSend);
@@ -1323,6 +1362,56 @@ export class Game {
   _renderLune() {
     if (this.hud.q('#lune-screen').classList.contains('hidden')) return;
     this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, consent: !!this._luneConsent, canTry: !!this.player && !this._luneReturn });
+  }
+
+  // ---------- Échanges (V10.9) ----------
+  _closeTrade() {
+    this._trade = null;
+    this.hud.hideInvite?.();
+    if (this.hud._curScreen === 'trade-screen') this._closeModal();
+  }
+
+  _tradeOfferFromSel() {
+    return this._trade.sel.map((i) => this.inventory.slots[i]).filter(Boolean).map((sl) => (sl.gen ? { gen: sl.gen } : { defId: sl.defId, qty: sl.qty }));
+  }
+
+  _renderTrade() {
+    if (!this._trade) return;
+    const st = this._trade.st;
+    this._trade.sel = this._trade.sel.filter((i) => this.inventory.slots[i]);
+    this.hud.renderTrade({ name: st.with, mine: st.mine, theirs: st.theirs, okMe: st.okMe, okThem: st.okThem, inv: this.inventory.slots, sel: this._trade.sel });
+  }
+
+  // cherche, dans une copie des cases, l'objet à donner ; renvoie l'index ou -1
+  _tradeFind(slots, it) {
+    return slots.findIndex((sl) => sl && (it.gen ? sl.gen && sl.gen.uid === it.gen.uid : (!sl.gen && sl.defId === it.defId && sl.qty >= it.qty)));
+  }
+
+  // l'échange est possible si je possède bien ce que je donne et si j'ai la place pour ce que je reçois
+  _tradeCheck(give, get) {
+    const sim = this.inventory.slots.map((sl) => (sl ? { gen: sl.gen, defId: sl.defId, qty: sl.qty } : null));
+    for (const it of give) {
+      const i = this._tradeFind(sim, it);
+      if (i < 0) return false;
+      if (it.gen || sim[i].qty <= it.qty) sim[i] = null; else sim[i].qty -= it.qty;
+    }
+    for (const it of get) {
+      if (it.gen) { const e = sim.indexOf(null); if (e < 0) return false; sim[e] = { gen: it.gen, qty: 1 }; continue; }
+      const def = getItem(it.defId);
+      if (!def) return false;
+      let left = it.qty;
+      if (def.stackable) for (const sl of sim) { if (left > 0 && sl && !sl.gen && sl.defId === it.defId) { const room = (def.maxStack || 99) - sl.qty; const t = Math.min(room, left); sl.qty += t; left -= t; } }
+      while (left > 0) { const e = sim.indexOf(null); if (e < 0) return false; const t = def.stackable ? Math.min(def.maxStack || 99, left) : 1; sim[e] = { defId: it.defId, qty: t }; left -= t; }
+    }
+    return true;
+  }
+
+  _tradeApply(give, get) {
+    if (!this._tradeCheck(give, get)) return false;
+    for (const it of give) { const i = this._tradeFind(this.inventory.slots, it); if (i >= 0) this.inventory.removeAt(i, it.gen ? 1 : it.qty); }
+    for (const it of get) { if (it.gen) this.inventory.addGenerated(it.gen); else this.inventory.add(it.defId, it.qty); }
+    try { this._updatePotionBadges(); this._doSave(); } catch { /* ignoré */ }
+    return true;
   }
 
   _openSocial() {

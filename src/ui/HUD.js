@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.8 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.9 — Korvalune</div>
         </div>
       </div>
 
@@ -328,6 +328,20 @@ export class HUD {
         <button data-act="close-social">Fermer</button>
       </div>
 
+      <div id="trade-screen" class="hidden panel-screen">
+        <h2 id="trade-title">Échange</h2>
+        <div id="trade-body">
+          <h3>Ton offre</h3>
+          <div id="trade-mine" class="trade-grid"></div>
+          <h3 id="trade-their-h">Son offre</h3>
+          <div id="trade-theirs" class="trade-grid"></div>
+          <div id="trade-status"></div>
+          <h3>Ton inventaire <small>(touche un objet pour l’ajouter ou le retirer, 6 maximum)</small></h3>
+          <div id="trade-inv" class="trade-grid"></div>
+        </div>
+        <div class="trade-btns"><button id="trade-ok" class="soc-btn lune-go">Confirmer l’échange</button><button data-act="cancel-trade">Annuler</button></div>
+      </div>
+
       <div id="dm-screen" class="hidden panel-screen">
         <h2 id="dm-title">Messages</h2>
         <div id="dm-list"></div>
@@ -457,7 +471,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -934,6 +948,24 @@ export class HUD {
     }).join('');
   }
 
+  // V10.9 — fenêtre d'échange. d : { name, mine, theirs, okMe, okThem, inv:[slots], sel:[index] }
+  renderTrade(d) {
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    this.q('#trade-title').textContent = 'Échange avec ' + d.name;
+    this.q('#trade-their-h').textContent = 'Offre de ' + d.name;
+    const cell = (slot, attrs = '') => {
+      const v = resolveItem(slot.gen ? { gen: slot.gen } : { defId: slot.defId, qty: slot.qty });
+      if (!v) return '';
+      return `<button class="inv-cell trade-cell" style="border-color:${v.rarityInfo.color}" title="${esc(v.name)}" ${attrs}><span class="inv-icon">${v.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}<small>${esc(v.name)}</small></button>`;
+    };
+    this.q('#trade-mine').innerHTML = d.mine.length ? d.mine.map((s) => cell(s)).join('') : '<p class="menu-hint">Rien pour l’instant.</p>';
+    this.q('#trade-theirs').innerHTML = d.theirs.length ? d.theirs.map((s) => cell(s)).join('') : '<p class="menu-hint">Rien pour l’instant.</p>';
+    this.q('#trade-inv').innerHTML = d.inv.map((s, i) => (s ? cell(s, `data-ti="${i}"${d.sel.includes(i) ? ' data-on="1"' : ''}`) : '')).join('') || '';
+    const st = this.q('#trade-status');
+    st.textContent = d.okMe && d.okThem ? 'Échange en cours…' : d.okMe ? `Tu as confirmé. En attente de ${d.name}…` : d.okThem ? `${d.name} a confirmé. À toi de vérifier puis confirmer.` : 'Choisis tes objets, vérifie l’offre, puis confirme. Si l’offre change, les confirmations sont annulées.';
+    const ok = this.q('#trade-ok'); ok.disabled = !!d.okMe; ok.textContent = d.okMe ? 'Confirmé ✔' : 'Confirmer l’échange';
+  }
+
   // V10.8 — conversation privée avec un ami. d : { name, msgs:[{me,text,at}] }
   renderDm(d) {
     const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -954,9 +986,11 @@ export class HUD {
         + '<div class="soc-row"><button class="soc-btn" data-sa="leave">Quitter le groupe</button></div>';
     }
     this.q('#social-requests').innerHTML = d.requests.length ? '<h4>Demandes reçues</h4>' + d.requests.map((n) => `<div class="soc-row"><div class="soc-name"><b>${esc(n)}</b><small>veut devenir ton ami</small></div><button class="soc-btn" data-sa="accept" data-v="${esc(n)}">Accepter</button><button class="soc-btn" data-sa="decline" data-v="${esc(n)}">Refuser</button></div>`).join('') : '';
-    this.q('#social-friends').innerHTML = d.friends.length ? d.friends.map((f) => `<div class="soc-row${f.online ? ' soc-on' : ''}"><div class="soc-name"><b>${f.online ? '🟢' : '⚫'} ${esc(f.name)}</b><small>${f.online ? (f.char ? esc(f.char) + ' · Nv.' + f.level : 'en ligne') : 'hors ligne'}</small></div><button class="soc-btn dm-btn" data-sa="dm" data-v="${esc(f.name)}">✉️ Message${f.unread ? ` <span class="dm-badge">${f.unread}</span>` : ''}</button>${f.online ? `<button class="soc-btn" data-sa="invite" data-v="${esc(f.name)}">Inviter</button>` : ''}<button class="soc-btn" data-sa="remove" data-v="${esc(f.name)}">Retirer</button></div>`).join('') : '<p class="menu-hint">Aucun ami pour l\'instant. Écris le nom de compte de ton ami ci-dessus puis « Ajouter » : il recevra ta demande.</p>';
-    this.q('#social-players').innerHTML = d.players.length ? d.players.map((p) => `<div class="soc-row"><div class="soc-name"><b>${esc(p.name)}</b><small>Nv.${p.level}</small></div><button class="soc-btn" data-sa="invite-id" data-v="${esc(p.id)}">Inviter</button></div>`).join('') : '<p class="menu-hint">Personne d\'autre en vue.</p>';
+    this.q('#social-friends').innerHTML = d.friends.length ? d.friends.map((f) => `<div class="soc-row${f.online ? ' soc-on' : ''}"><div class="soc-name"><b>${f.online ? '🟢' : '⚫'} ${esc(f.name)}</b><small>${f.online ? (f.char ? esc(f.char) + ' · Nv.' + f.level : 'en ligne') : 'hors ligne'}</small></div><button class="soc-btn dm-btn" data-sa="dm" data-v="${esc(f.name)}">✉️ Message${f.unread ? ` <span class="dm-badge">${f.unread}</span>` : ''}</button>${f.online ? `<button class="soc-btn" data-sa="invite" data-v="${esc(f.name)}">Inviter</button>` : ''}${f.online && f.char ? `<button class="soc-btn" data-sa="trade" data-v="${esc(f.char)}">🔁 Échanger</button>` : ''}<button class="soc-btn" data-sa="remove" data-v="${esc(f.name)}">Retirer</button></div>`).join('') : '<p class="menu-hint">Aucun ami pour l\'instant. Écris le nom de compte de ton ami ci-dessus puis « Ajouter » : il recevra ta demande.</p>';
+    this.q('#social-players').innerHTML = d.players.length ? d.players.map((p) => `<div class="soc-row"><div class="soc-name"><b>${esc(p.name)}</b><small>Nv.${p.level}</small></div><button class="soc-btn" data-sa="invite-id" data-v="${esc(p.id)}">Inviter</button><button class="soc-btn" data-sa="trade-id" data-v="${esc(p.id)}">🔁 Échanger</button></div>`).join('') : '<p class="menu-hint">Personne d\'autre en vue.</p>';
   }
+
+  hideInvite() { const el = this.q('#invite-pop'); clearTimeout(this._invT); if (el) { el.classList.add('hidden'); el.innerHTML = ''; } }
 
   // Fenêtre d'invitation de groupe avec Accepter / Refuser (disparaît seule après 25 s)
   showInvite(from, onAccept, onDecline, label = 't\'invite dans son groupe') {

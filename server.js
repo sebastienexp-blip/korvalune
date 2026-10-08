@@ -172,6 +172,31 @@ function pushFriends(key) {
 function notifyAccount(key, text) { for (const w of acctWs.get(key) || []) send(w, { t: 'system', text }); }
 function pushFriendsOf(key) { for (const fk of accounts[key]?.friends || []) pushFriends(fk); }
 
+// ---- Échanges d'objets entre joueurs (V10.9) ----
+// Le serveur orchestre : proposition, offres, double confirmation, puis double accusé « j'ai bien les objets et la place »
+// avant l'échange final. Seuls des OBJETS s'échangent (ni pièces ni cosmétiques/Lunes de la boutique).
+const trades = new Map(); // tid -> { a, b, off:{a,b}, ok:{a,b}, ack:{}, phase, t }
+const tradeOf = new Map(); // playerId -> tid
+const pendingTrade = new Map(); // idCible -> { from, t }
+const TRADE_MAX_ITEMS = 6;
+const sideOf = (tr, pid) => (tr.a === pid ? 'a' : 'b');
+function tradeState(tr, pid) {
+  const me = sideOf(tr, pid), ot = me === 'a' ? 'b' : 'a', other = players.get(tr[ot]);
+  return { t: 'trade:state', with: other?.name || '?', mine: tr.off[me], theirs: tr.off[ot], okMe: tr.ok[me], okThem: tr.ok[ot] };
+}
+function pushTrade(tr) { for (const pid of [tr.a, tr.b]) { const p = players.get(pid); if (p) send(p.ws, tradeState(tr, pid)); } }
+function endTrade(pid, reason) {
+  const tid = tradeOf.get(pid); if (!tid) return;
+  const tr = trades.get(tid); trades.delete(tid);
+  if (!tr) { tradeOf.delete(pid); return; }
+  for (const id of [tr.a, tr.b]) { tradeOf.delete(id); const p = players.get(id); if (p && reason) send(p.ws, { t: 'trade:end', reason }); }
+}
+setInterval(() => { // échanges abandonnés / invitations périmées
+  const now = Date.now();
+  for (const [tid, tr] of trades) if (now - tr.t > (tr.phase === 'exec' ? 20000 : 10 * 60 * 1000)) endTrade(tr.a, 'Échange expiré.');
+  for (const [id, pe] of pendingTrade) if (now - pe.t > 30000) pendingTrade.delete(id);
+}, 5000).unref?.();
+
 function groupOf(playerId) {
   for (const [gid, members] of groups) if (members.has(playerId)) return gid;
   return null;
@@ -367,6 +392,7 @@ wss.on('connection', (ws, req) => {
   // V10.7 — réglages du joueur conservés sur le compte (retrouvés sur n'importe quel appareil / lien)
   const pushSettings = () => { if (authUsername && accounts[authUsername]) send(ws, { t: 'settings', s: accounts[authUsername].settings || null }); };
   const settingsLimiter = new RateLimiter(4, 5000);
+  const tradeLimiter = new RateLimiter(30, 5000);
   const pushShop = () => { if (authUsername && accounts[authUsername]) send(ws, shopView(accounts[authUsername])); };
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
@@ -649,6 +675,71 @@ wss.on('connection', (ws, req) => {
     }
 
     // --- Groupes ---
+    // --- Échanges d'objets (V10.9) ---
+    if (msg.t.startsWith('trade:')) {
+      const sys = (text) => send(ws, { t: 'system', text });
+      if (!tradeLimiter.allow()) return;
+      if (msg.t === 'trade:invite') {
+        if (!player.account) { sys('Connecte-toi à ton compte pour échanger.'); return; }
+        const target = (typeof msg.id === 'string' && players.get(msg.id)) || findByName(sanitize(msg.to, MAX_NAME_LEN));
+        if (!target || target.id === player.id) { sys(`Joueur introuvable : ${msg.to || ''}`); return; }
+        if (!target.account) { sys(`${target.name} n'est pas connecté à un compte : échange impossible.`); return; }
+        if (tradeOf.has(player.id)) { sys('Tu es déjà en train d\u2019échanger.'); return; }
+        if (tradeOf.has(target.id) || pendingTrade.has(target.id)) { sys(`${target.name} est occupé.`); return; }
+        pendingTrade.set(target.id, { from: player.id, t: Date.now() });
+        send(target.ws, { t: 'trade:invited', from: player.name });
+        sys(`Proposition d'échange envoyée à ${target.name}.`);
+        return;
+      }
+      if (msg.t === 'trade:accept' || msg.t === 'trade:decline') {
+        const pe = pendingTrade.get(player.id); pendingTrade.delete(player.id);
+        const from = pe && players.get(pe.from);
+        if (!from || Date.now() - pe.t > 30000) { sys('Proposition expirée.'); return; }
+        if (msg.t === 'trade:decline') { send(from.ws, { t: 'system', text: `${player.name} refuse l'échange.` }); return; }
+        if (tradeOf.has(from.id) || tradeOf.has(player.id)) { sys('Échange impossible : un des joueurs est occupé.'); return; }
+        const tid = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        const tr = { a: from.id, b: player.id, off: { a: [], b: [] }, ok: { a: false, b: false }, ack: {}, phase: 'edit', t: Date.now() };
+        trades.set(tid, tr); tradeOf.set(from.id, tid); tradeOf.set(player.id, tid);
+        for (const p of [from, player]) send(p.ws, { t: 'trade:open' });
+        pushTrade(tr);
+        return;
+      }
+      const tid = tradeOf.get(player.id), tr = tid && trades.get(tid);
+      if (!tr) return;
+      const me = sideOf(tr, player.id), ot = me === 'a' ? 'b' : 'a', other = players.get(tr[ot]);
+      if (msg.t === 'trade:cancel') { endTrade(player.id, `${player.name} a annulé l'échange.`); return; }
+      if (!other) { endTrade(player.id, 'L\u2019autre joueur est parti : échange annulé.'); return; }
+      if (msg.t === 'trade:offer') {
+        if (tr.phase !== 'edit') return;
+        const items = (sanitizeItemSlots(Array.isArray(msg.items) ? msg.items.slice(0, TRADE_MAX_ITEMS) : [], TRADE_MAX_ITEMS, sanitize) || []).filter(Boolean);
+        tr.off[me] = items; tr.ok = { a: false, b: false }; tr.t = Date.now();
+        pushTrade(tr);
+        return;
+      }
+      if (msg.t === 'trade:confirm') {
+        if (tr.phase !== 'edit') return;
+        if (!tr.off.a.length && !tr.off.b.length) { sys('Ajoute au moins un objet à l\u2019échange.'); return; }
+        tr.ok[me] = true;
+        if (tr.ok.a && tr.ok.b) {
+          tr.phase = 'exec'; tr.ack = {}; tr.t = Date.now();
+          for (const s of ['a', 'b']) { const p = players.get(tr[s]); if (p) send(p.ws, { t: 'trade:exec', give: tr.off[s], get: tr.off[s === 'a' ? 'b' : 'a'] }); }
+        }
+        pushTrade(tr);
+        return;
+      }
+      if (msg.t === 'trade:ack') {
+        if (tr.phase !== 'exec') return;
+        if (!msg.ok) { endTrade(player.id, 'Échange impossible (objet manquant ou inventaire plein) : rien n\u2019a été échangé.'); return; }
+        tr.ack[me] = true;
+        if (tr.ack.a && tr.ack.b) {
+          for (const s of ['a', 'b']) { const p = players.get(tr[s]); if (p) send(p.ws, { t: 'trade:final', give: tr.off[s], get: tr.off[s === 'a' ? 'b' : 'a'] }); }
+          console.log(`[Korvalune] échange : ${players.get(tr.a)?.name} (${tr.off.a.length}) <-> ${players.get(tr.b)?.name} (${tr.off.b.length})`);
+          trades.delete(tid); tradeOf.delete(tr.a); tradeOf.delete(tr.b);
+        }
+        return;
+      }
+      return;
+    }
     if (msg.t === 'group:invite') {
       const target = (typeof msg.id === 'string' && players.get(msg.id)) || findByName(sanitize(msg.to, MAX_NAME_LEN));
       if (!target || target.id === player.id) { send(ws, { t: 'system', text: `Joueur introuvable : ${msg.to || ''}` }); return; }
@@ -719,6 +810,7 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     if (authUsername) { const old = authUsername; presence(old, ws, false); pushFriendsOf(old); }
     if (!player) return;
+    endTrade(player.id, 'L\u2019autre joueur s\u2019est déconnecté : échange annulé.'); pendingTrade.delete(player.id);
     disbandOrLeave(player.id);
     players.delete(player.id);
     pendingInvites.delete(player.id);

@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.9', title: 'Échanges entre joueurs',
+    items: [
+      'Nouveau bouton « 🔁 Échanger » dans le menu 👥 (amis en ligne et joueurs proches) : propose un échange d’objets à un autre joueur connecté à son compte.',
+      'Chacun choisit jusqu’à 6 objets ; l’échange n’a lieu que si les deux joueurs confirment, et il est annulé dès que l’offre change.',
+      'Seuls les objets de l’inventaire s’échangent : ni pièces, ni Lunes, ni cosmétiques de la boutique.'
+    ]
+  },
+  {
     version: '10.8', title: 'Messages entre amis',
     items: [
       'Nouveau bouton « ✉️ Message » sur chaque ami (menu 👥) : tu peux lui écrire même s’il est hors ligne.',

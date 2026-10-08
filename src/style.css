@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -860,3 +860,21 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 #btn-social.has-unread::after { content: ''; position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: #e0573f; border: 1px solid #fff; }
 #side-buttons #btn-social.tbtn.small { position: relative; bottom: auto; left: auto; top: auto; }
 @media (max-height: 460px) { #dm-list { height: min(40vh, 150px); } }
+
+/* V10.9 — échanges */
+#trade-screen { padding-top: calc(20px + env(safe-area-inset-top, 0px)); }
+#trade-body { width: min(640px, 94vw); max-height: calc(100vh - 150px); overflow-y: auto; display: flex; flex-direction: column; gap: 6px; text-align: left; -webkit-overflow-scrolling: touch; }
+#trade-body > * { flex: none; }
+#trade-body h3 { font-family: var(--serif); margin: 8px 0 2px; font-size: 15px; color: #e2b866; }
+#trade-body h3 small { font-size: 11px; opacity: 0.7; color: #fff; font-family: inherit; }
+.trade-grid { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; }
+.trade-cell { position: relative; width: 74px; height: 74px; padding: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; overflow: hidden; }
+.trade-cell small { font-size: 9px; line-height: 1.05; max-width: 70px; max-height: 20px; overflow: hidden; opacity: 0.85; }
+.trade-cell[data-on] { outline: 3px solid #e2b866; background: rgba(226, 184, 102, 0.28); }
+#trade-status { font-size: 13px; padding: 6px 8px; border-radius: 8px; background: rgba(8, 12, 26, 0.6); border: 1px solid rgba(255, 255, 255, 0.12); }
+.trade-btns { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.trade-btns .soc-btn { min-height: 46px; padding: 8px 18px; font-size: 16px; }
+.soc-row { flex-wrap: wrap; }
+.soc-name { min-width: 110px; }
+@media (max-height: 460px) { #trade-body { max-height: calc(100vh - 120px); } }
+@media (max-height: 460px) { .trade-cell { width: 60px; height: 60px; } .trade-cell small { max-width: 56px; font-size: 8px; } #trade-body h3 { margin: 4px 0 0; } }
