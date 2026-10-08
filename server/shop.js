@@ -1,6 +1,7 @@
 // V10.1 — Boutique des Lunes côté serveur : SEULE source de vérité pour le solde, les achats et l'équipement.
 // Le client ne peut jamais décider qu'il possède un objet : il envoie une demande, le serveur valide et répond.
 import { CATALOG_BY_ID, COSMETIC_SLOTS, LUNES } from '../src/data/shopCatalog.js';
+import { PACK_BY_ID, payView } from './payments.js';
 
 const today = () => new Date().toISOString().slice(0, 10); // jour UTC
 
@@ -37,7 +38,7 @@ export function publicCos(acc) {
 
 export function shopView(acc) {
   const s = ensureShop(acc);
-  return { t: 'shop', gems: s.gems, owned: s.owned, eq: { ...s.eq }, bankTabs: bankTabsOf(acc), dailyReady: s.daily !== today(), dailyAmount: LUNES.daily };
+  return { t: 'shop', gems: s.gems, owned: s.owned, eq: { ...s.eq }, bankTabs: bankTabsOf(acc), dailyReady: s.daily !== today(), dailyAmount: LUNES.daily, pay: payView() };
 }
 
 // -> { ok, error? }
@@ -83,4 +84,21 @@ export function levelReward(acc, level) {
   s.lvlMax = lv;
   s.gems += gain;
   return gain;
+}
+
+// V10.2 — crédite un achat de Lunes payé via Stripe. Idempotent : Stripe peut renvoyer le même événement plusieurs fois.
+// `session` = objet Checkout Session reçu par webhook (déjà authentifié par signature). On revérifie pack, devise et montant.
+export function creditPayment(acc, session) {
+  const s = ensureShop(acc);
+  if (!session || session.payment_status !== 'paid') return { ok: false, reason: 'non payé' };
+  const pack = PACK_BY_ID[typeof session.metadata?.pack === 'string' ? session.metadata.pack : ''];
+  if (!pack) return { ok: false, reason: 'pack inconnu' };
+  if (String(session.currency).toLowerCase() !== 'eur' || session.amount_total !== pack.cents) return { ok: false, reason: 'montant incohérent' };
+  if (typeof session.id !== 'string') return { ok: false, reason: 'session invalide' };
+  s.paid = Array.isArray(s.paid) ? s.paid : [];
+  if (s.paid.some((p) => p.id === session.id)) return { ok: true, duplicate: true, lunes: 0 };
+  s.gems += pack.lunes;
+  s.paid.push({ id: session.id, pack: pack.id, lunes: pack.lunes, cents: pack.cents, at: new Date().toISOString(), consent: String(session.metadata?.consent || '').slice(0, 40) });
+  if (s.paid.length > 300) s.paid = s.paid.slice(-300);
+  return { ok: true, lunes: pack.lunes };
 }

@@ -19,7 +19,7 @@ const CSP = [
   "font-src 'self' data:", "connect-src 'self' ws: wss: blob: data:", "worker-src 'self' blob:", "object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'"
 ].join('; ');
 
-export function createWebServer({ distDir, onHealth }) {
+export function createWebServer({ distDir, onHealth, onApi }) {
   const cache = new Map(); // chemin -> { buf, gz, type, etag, immutable }
 
   function load(rel) {
@@ -48,6 +48,10 @@ export function createWebServer({ distDir, onHealth }) {
       'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Content-Security-Policy': CSP
     };
     if (https) base['Strict-Transport-Security'] = 'max-age=31536000';
+    if (onApi && req.url && req.url.startsWith('/api/')) { // V10.2 : API (paiements) — gérée par server.js, jamais mise en cache
+      Promise.resolve(onApi(req, res, { ...base, 'Cache-Control': 'no-store' })).catch((e) => { try { res.writeHead(500, base); res.end(); } catch { /* ignoré */ } console.error('[Korvalune] api :', e?.message); });
+      return;
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { ...base, Allow: 'GET, HEAD' }); res.end(); return; }
     let url;
     try { url = new URL(req.url, 'http://x'); } catch { res.writeHead(400, base); res.end(); return; }

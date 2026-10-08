@@ -790,3 +790,11 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .soc-btn[disabled] { opacity: 0.45; cursor: default; filter: grayscale(0.4); }
 #lune-body > * { flex: none; } /* sans cela, la rangée d'onglets était écrasée dans la colonne défilante */
 #lune-tabs { min-height: 38px; }
+
+#lune-pay h3 { font-family: var(--serif); margin: 12px 0 4px; font-size: 16px; color: #e2b866; }
+#lune-pay { display: flex; flex-direction: column; gap: 7px; }
+.lune-consent { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; line-height: 1.35; padding: 8px 4px; opacity: 0.92; }
+.lune-consent input { flex: none; width: 20px; height: 20px; margin-top: 1px; }
+.lune-test { margin: 0; padding: 6px 10px; border-radius: 8px; background: rgba(255, 200, 80, 0.14); border: 1px solid rgba(255, 200, 80, 0.5); font-size: 12.5px; }
+#lune-legal { font-size: 12px; opacity: 0.75; text-align: center; padding: 6px 0 2px; }
+#lune-legal a { color: #cfd8ff; }

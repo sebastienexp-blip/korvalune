@@ -12,6 +12,13 @@ services:
         value: /data
       - key: SESSION_SECRET
         generateValue: true
+      # Paiements Stripe (voir STRIPE.md) : à renseigner dans le tableau de bord Render, jamais dans ce fichier
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PUBLIC_URL
+        sync: false
     disk:
       name: aetheria-data
       mountPath: /data

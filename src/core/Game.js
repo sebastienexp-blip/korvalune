@@ -231,6 +231,7 @@ export class Game {
   }
 
   async _boot() {
+    try { const q = new URLSearchParams(location.search); if (q.has('paid')) { this._paidReturn = q.get('paid'); history.replaceState(null, '', location.pathname); } } catch { /* ignoré */ } // retour de la page de paiement Stripe
     this.net.connect();
     this.hud.setLoading(0.02, 'Chargement des modèles 3D…');
     await ModelLibrary.init();
@@ -784,6 +785,11 @@ export class Game {
     b.on('net:group', (msg) => { this.group = msg.members || []; this.gw.onGroup(msg); this._renderSocial(); });
     // V10.1 — boutique des Lunes (état fourni par le serveur : le client ne décide de rien)
     b.on('net:shop', (msg) => {
+      if (this._paidReturn) {
+        const ok = this._paidReturn === '1'; this._paidReturn = null;
+        this.hud.notify(ok ? 'Paiement reçu : tes Lunes arrivent dans quelques secondes…' : 'Paiement annulé : rien n\u2019a été débité.', ok ? 'quest' : 'info');
+        if (ok) { setTimeout(() => this.net.shopGet(), 4000); setTimeout(() => this.net.shopGet(), 12000); }
+      }
       this._shop = msg;
       this._growBank();
       if (this.player) this.player.setCosmetics(this._shopCos());
@@ -819,6 +825,7 @@ export class Game {
     this.root.querySelector('#btn-ach').addEventListener('click', () => this._openAchievements());
     this.root.querySelector('#btn-social').addEventListener('click', () => this._openSocial());
     this.root.querySelector('#btn-lune').addEventListener('click', () => this._openLune());
+    this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
     this.root.querySelector('#lune-screen').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-la]');
       if (!btn || btn.disabled) return;
@@ -826,6 +833,12 @@ export class Game {
       switch (btn.dataset.la) {
         case 'tab': this._luneTab = v; this._luneMsg = null; break;
         case 'daily': this.net.shopDaily(); return;
+        case 'pay': {
+          if (!this._luneConsent) { this._luneMsg = { ok: false, text: 'Coche d\u2019abord la case d\u2019acceptation des conditions de vente.' }; this._renderLune(); return; }
+          btn.disabled = true;
+          this.net.startCheckout(v, true).then((url) => { window.location.assign(url); }).catch((err) => { this._luneMsg = { ok: false, text: err.message }; this._renderLune(); });
+          return;
+        }
         case 'buy': this.net.shopBuy(v); return;
         case 'equip': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = null; this.net.shopEquip(it.cat, v); } return; }
         case 'unequip': this._preview = null; this.net.shopEquip(v, null); return;
@@ -1251,7 +1264,7 @@ export class Game {
 
   _renderLune() {
     if (this.hud.q('#lune-screen').classList.contains('hidden')) return;
-    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg });
+    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, consent: !!this._luneConsent });
   }
 
   _openSocial() {

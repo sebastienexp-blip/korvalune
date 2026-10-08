@@ -26,7 +26,8 @@ import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/security.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
-import { ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
+import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
+import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
 const MAX_GROUP_SIZE = 5;
@@ -55,7 +56,7 @@ function ipOf(req) {
   return req.socket.remoteAddress || 'inconnue';
 }
 
-const httpServer = createWebServer({ distDir: DIST, onHealth: () => ({ ok: true, players: players.size, accounts: Object.keys(accounts).length }) });
+const httpServer = createWebServer({ distDir: DIST, onApi: (req, res, base) => handleApi(req, res, base), onHealth: () => ({ ok: true, players: players.size, accounts: Object.keys(accounts).length }) });
 const wss = new WebSocketServer({ server: httpServer, maxPayload: 600 * 1024, perMessageDeflate: false });
 httpServer.listen(PORT, HOST, () => {
   console.log(`[Korvalune] Jeu + serveur multijoueur sur http://${HOST}:${PORT}`);
@@ -68,6 +69,50 @@ beat.unref?.();
 
 /** @type {Map<string, Player>} */
 const players = new Map();
+
+// ---- V10.2 : API paiements (Stripe Checkout) ----
+const checkoutLimiter = new KeyedLimiter(8, 10 * 60 * 1000); // créations de sessions de paiement par IP
+const readBody = (req, max = 65536) => new Promise((resolve, reject) => {
+  let n = 0; const ch = [];
+  req.on('data', (c) => { n += c.length; if (n > max) { reject(new Error('corps trop grand')); req.destroy(); } else ch.push(c); });
+  req.on('end', () => resolve(Buffer.concat(ch).toString('utf8')));
+  req.on('error', reject);
+});
+const jsonOut = (res, base, code, obj) => { const b = Buffer.from(JSON.stringify(obj)); res.writeHead(code, { ...base, 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': b.length }); res.end(b); };
+async function handleApi(req, res, base) {
+  let url; try { url = new URL(req.url, 'http://x'); } catch { return jsonOut(res, base, 400, { error: 'requête invalide' }); }
+  if (req.method === 'POST' && url.pathname === '/api/checkout') {
+    if (!payEnabled()) return jsonOut(res, base, 503, { error: 'Les paiements ne sont pas activés.' });
+    if (!checkoutLimiter.hit(ipOf(req))) return jsonOut(res, base, 429, { error: 'Trop de tentatives, réessaie dans quelques minutes.' });
+    let body; try { body = JSON.parse(await readBody(req, 4096)); } catch { return jsonOut(res, base, 400, { error: 'requête invalide' }); }
+    const key = resolveAccount(verifyToken(SECRET, body?.token) || '');
+    if (!key) return jsonOut(res, base, 401, { error: 'Session expirée — reconnecte-toi.' });
+    if (body.consent !== true) return jsonOut(res, base, 400, { error: 'Tu dois accepter les conditions de vente et la livraison immédiate.' });
+    if (!PACK_BY_ID[typeof body.pack === 'string' ? body.pack : '']) return jsonOut(res, base, 400, { error: 'Pack inconnu.' });
+    try { const r = await createCheckout({ account: key, packId: body.pack, consentAt: new Date().toISOString() }); return jsonOut(res, base, 200, { url: r.url }); }
+    catch (e) { console.error('[Korvalune] checkout :', e.message); return jsonOut(res, base, 502, { error: 'Le service de paiement est indisponible, réessaie plus tard.' }); }
+  }
+  if (req.method === 'POST' && url.pathname === '/api/stripe-webhook') {
+    if (!payEnabled()) return jsonOut(res, base, 503, { error: 'désactivé' });
+    let raw; try { raw = await readBody(req); } catch { return jsonOut(res, base, 400, { error: 'corps invalide' }); }
+    if (!verifySignature(raw, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET)) return jsonOut(res, base, 400, { error: 'signature invalide' });
+    let ev; try { ev = JSON.parse(raw); } catch { return jsonOut(res, base, 400, { error: 'JSON invalide' }); }
+    if (ev?.type === 'checkout.session.completed' || ev?.type === 'checkout.session.async_payment_succeeded') {
+      const session = ev.data?.object;
+      const key = resolveAccount(String(session?.metadata?.account || ''));
+      if (!key) { console.error('[Korvalune] paiement reçu pour un compte introuvable :', session?.id); return jsonOut(res, base, 200, { received: true, ignored: 'compte introuvable' }); }
+      const acc = ensureChars(accounts[key]);
+      const r = creditPayment(acc, session);
+      if (r.ok && !r.duplicate) {
+        await persistAccounts(accounts); // sauvegardé AVANT de répondre 200 à Stripe
+        console.log(`[Korvalune] paiement crédité : ${key} +${r.lunes} Lunes (${session.id})`);
+        for (const w of acctWs.get(key) || []) { send(w, shopView(acc)); send(w, { t: 'shop:msg', ok: true, text: `Merci ! +${r.lunes} Lunes ajoutées à ton compte.` }); }
+      } else if (!r.ok) console.warn('[Korvalune] paiement non crédité :', r.reason, session?.id);
+    }
+    return jsonOut(res, base, 200, { received: true });
+  }
+  return jsonOut(res, base, 404, { error: 'introuvable' });
+}
 /** @type {Map<string, Set<string>>} groupId -> Set<playerId> */
 const groups = new Map();
 /** groupId -> pending invites: Map<targetPlayerId, inviterPlayerId> */

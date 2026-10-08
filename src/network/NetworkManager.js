@@ -39,6 +39,9 @@ export class NetworkManager {
     return true;
   }
 
+  // adresse HTTP du même serveur (API de paiement) : ws://hôte -> http://hôte
+  get apiBase() { return this.url.replace(/^ws/, 'http'); }
+
   connect() { this._open(); }
 
   _open() {
@@ -142,6 +145,13 @@ export class NetworkManager {
   shopBuy(id) { this._send({ t: 'shop:buy', id }); }
   shopEquip(slot, id) { this._send({ t: 'shop:equip', slot, id: id || null }); }
   shopDaily() { this._send({ t: 'shop:daily' }); }
+  // V10.2 : crée une session de paiement Stripe ; renvoie l'adresse de la page de paiement (le jeu ne touche jamais la carte)
+  async startCheckout(pack, consent) {
+    const r = await fetch(this.apiBase + '/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: this.token, pack, consent: consent === true }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.url) throw new Error(j.error || 'Paiement indisponible.');
+    return j.url;
+  }
 
   // ---------- Comptes (ÉTAPE 6) ----------
   register(username, password) { this._send({ t: 'register', username, password }); }

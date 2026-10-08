@@ -832,6 +832,14 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.2 — Paiements préparés (désactivés par défaut)
+
+- **Achat de Lunes par carte** via Stripe Checkout (page de paiement hébergée par Stripe : le jeu ne voit jamais la carte). Section « Acheter des Lunes » dans la boutique 🌙, visible **uniquement** si le serveur a `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` et `PUBLIC_URL`.
+- Crédit **uniquement** par webhook signé, vérification pack/devise/montant, idempotent, journal par compte, consentement exprès (case obligatoire) avec renoncement au droit de rétractation.
+- Modèles de **CGV, confidentialité et mentions légales** dans `public/legal/` (champs jaunes à compléter, à faire relire).
+- **Guide complet** : `STRIPE.md`. Prix des packs = exemples dans `server/payments.js`.
+- Testé avec un faux serveur Stripe local et des événements signés simulés ; **pas** avec un vrai compte Stripe.
+
 ## V10.1 — Boutique des Lunes (cosmétiques + confort, sans argent réel)
 
 Nouveau bouton 🌙 dans la barre latérale du jeu (connexion à un compte requise).

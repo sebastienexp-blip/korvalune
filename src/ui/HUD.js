@@ -89,7 +89,7 @@ export class HUD {
             <button data-act="credits">Crédits</button>
           </div>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.1 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.2 — Korvalune</div>
         </div>
       </div>
 
@@ -325,6 +325,8 @@ export class HUD {
           <div id="lune-tabs"></div>
           <div id="lune-msg"></div>
           <div id="lune-list"></div>
+          <div id="lune-pay"></div>
+          <div id="lune-legal"><a href="/legal/cgv.html" target="_blank" rel="noopener">Conditions de vente</a> · <a href="/legal/confidentialite.html" target="_blank" rel="noopener">Confidentialité</a> · <a href="/legal/mentions.html" target="_blank" rel="noopener">Mentions légales</a></div>
         </div>
         <button data-act="close-lune">Fermer</button>
       </div>
@@ -889,6 +891,15 @@ export class HUD {
     msg.className = d.msg ? (d.msg.ok ? 'lune-ok' : 'lune-ko') : '';
     msg.textContent = d.msg ? d.msg.text : 'Gagne des Lunes en jouant : récompense du jour et chaque nouveau niveau. Aucun objet de la boutique ne donne de puissance au combat.';
     tabs.innerHTML = CATEGORIES.map((c) => `<button class="lune-tab${c.id === d.tab ? ' on' : ''}" data-la="tab" data-v="${c.id}">${c.icon} ${esc(c.label)}</button>`).join('');
+    // V10.2 : achat de Lunes par carte (affiché seulement si le serveur a les paiements activés — voir STRIPE.md)
+    const payEl = this.q('#lune-pay');
+    if (sh.pay && sh.pay.enabled) {
+      const eur = (c) => (c / 100).toFixed(2).replace('.', ',') + ' €';
+      payEl.innerHTML = `<h3>Acheter des Lunes</h3>${sh.pay.test ? '<p class="lune-test">Mode test : aucun vrai paiement n\u2019est effectué (carte de test 4242 4242 4242 4242).</p>' : ''}` +
+        sh.pay.packs.map((p) => `<div class="soc-row lune-item"><div class="soc-name"><b>${esc(p.label)}</b><small>${p.lunes} Lunes · ${eur(p.cents)}</small></div><div class="lune-btns"><button class="soc-btn lune-buy" data-la="pay" data-v="${esc(p.id)}">Payer ${eur(p.cents)}</button></div></div>`).join('') +
+        `<label class="lune-consent"><input type="checkbox" id="lune-consent"${d.consent ? ' checked' : ''}> J\u2019accepte les conditions de vente, je demande la livraison immédiate des Lunes et je reconnais perdre mon droit de rétractation pour ce contenu numérique.</label>` +
+        '<p class="menu-hint">Paiement sécurisé par Stripe : le jeu ne voit jamais votre numéro de carte. Les Lunes n\u2019ont aucune valeur monétaire et ne sont pas remboursables, sauf obligation légale.</p>';
+    } else payEl.innerHTML = '';
     const items = CATALOG.filter((c) => c.cat === d.tab);
     list.innerHTML = items.map((it) => {
       const owned = sh.owned.includes(it.id);
