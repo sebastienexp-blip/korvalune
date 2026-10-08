@@ -97,6 +97,7 @@ export class NetworkManager {
         this.bus.emit('net:authResult', msg);
         break;
       case 'shop': this.bus.emit('net:shop', msg); break;
+      case 'settings': this.bus.emit('net:settings', msg); break;
       case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;
       case 'charsUpdate': this.bus.emit('net:chars', msg); break;
@@ -141,6 +142,7 @@ export class NetworkManager {
   friendRemove(name) { this._send({ t: 'friend:remove', name }); }
 
   // ---------- Boutique des Lunes (V10.1) : le serveur valide tout ----------
+  saveSettings(s) { this._send({ t: 'settings:save', s }); }
   shopGet() { this._send({ t: 'shop:get' }); }
   shopBuy(id) { this._send({ t: 'shop:buy', id }); }
   shopEquip(slot, id) { this._send({ t: 'shop:equip', slot, id: id || null }); }

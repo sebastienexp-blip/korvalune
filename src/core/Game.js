@@ -89,7 +89,7 @@ export class Game {
       removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true);
       try {
         this.audio.resume(); this.audio.setVolume(this.settings.volume / 100);
-        this.audio.setMix({ music: this.settings.musicVol / 100, sfx: this.settings.sfxVol / 100 });
+        this.audio.setMix({ music: this.settings.musicVol / 100, sfx: this.settings.sfxVol / 100, ui: this.settings.uiVol / 100, ambience: this.settings.ambVol / 100 });
         this.audio.startMusic();
       } catch (e) { /* ignore */ }
     };
@@ -812,6 +812,21 @@ export class Game {
       if (this.player) this.player.setCosmetics(this._shopCos());
       this._renderLune();
     });
+    b.on('net:settings', (msg) => { // réglages enregistrés sur le compte : ils priment sur ceux du navigateur ; sinon on envoie les nôtres
+      if (!msg.s || typeof msg.s !== 'object') { this.net.saveSettings(this.settings); return; }
+      const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+      const m = { ...this.settings, ...msg.s };
+      m.touch = { ...TOUCH_DEFAULTS, ...(msg.s.touch || {}), layout: { ...((msg.s.touch && msg.s.touch.layout) || {}) } };
+      m.keys = normalizeKeys(msg.s.keys);
+      if (!CONFIG.quality[m.quality]) m.quality = coarse ? 'medium' : 'high';
+      this.settings = m;
+      SaveManager.saveSettings(m);
+      try {
+        this._applyQuality(m.quality); this._applyVisualMode(); this._applyCameraMode(); this._applyExtra();
+        this.audio.setMuted(m.mute); this.audio.setVolume(m.volume / 100);
+        this.audio.setMix({ music: m.musicVol / 100, sfx: m.sfxVol / 100, ui: m.uiVol / 100, ambience: m.ambVol / 100 });
+      } catch (e) { console.warn('[V10.7] réglages du compte', e); }
+    });
     b.on('net:shopMsg', (msg) => { this._luneMsg = { ok: msg.ok, text: msg.text }; if (msg.text) this.hud.notify(msg.text, msg.ok ? 'quest' : 'info'); this._renderLune(); });
     b.on('net:playerCos', (msg) => { this.remotePlayers.get(msg.id)?.setCos(msg.cos); });
     b.on('ui:close-lune', () => this._closeLune());
@@ -1094,7 +1109,7 @@ export class Game {
     this.hud.showScreen('game-ui');
     this.audio.resume();
     this.audio.setVolume(this.settings.volume / 100);
-    this.audio.setMix({ music: this.settings.musicVol / 100, sfx: this.settings.sfxVol / 100 });
+    this.audio.setMix({ music: this.settings.musicVol / 100, sfx: this.settings.sfxVol / 100, ui: this.settings.uiVol / 100, ambience: this.settings.ambVol / 100 });
     this.audio.startMusic();
     this._camQuat = new THREE.Quaternion();
     this._raycaster = new THREE.Raycaster();
@@ -1908,7 +1923,11 @@ export class Game {
       this.enemies ? `Ennemis actifs: ${this.enemies.filter((e) => e.alive).length}/${this.enemies.length}` : ''
     ].filter(Boolean).join('\n');
   }
-  _persistSettings() { SaveManager.saveSettings(this.settings); }
+  _persistSettings() {
+    SaveManager.saveSettings(this.settings);
+    // V10.7 : copie sur le compte (au plus une fois toutes les 1,5 s) pour ne plus rien perdre quand le lien/l'appareil change
+    if (this.net?.loggedIn) { clearTimeout(this._setSync); this._setSync = setTimeout(() => { try { this.net.saveSettings(this.settings); } catch { /* ignoré */ } }, 1500); }
+  }
 
   // ---- Plein écran (V3.5) ----
   _isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }

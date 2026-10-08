@@ -64,7 +64,7 @@ const LEAD_RHYTHMS = [[1, 1, 2], [2, 1, 1], [1, 0.5, 0.5, 2], [3, 1], [1.5, 0.5,
 const MIN_GAP = { hit: 40, swing: 70, click: 30, step: 80, bow: 60, cast: 80, arrowHit: 35, boltHit: 35, enemyAttack: 140, enemyHurt: 90, kill: 100, loot: 120, pickup: 60, land: 120, legendary: 600, absolute: 900, coin: 50, globe: 60, pylon: 200 };
 const UI_SOUNDS = new Set(['click', 'open', 'close', 'quest', 'zone', 'coin', 'equip', 'error', 'legendary', 'absolute']);
 const SENDS = { sfx: 0.2, ui: 0.08, ambience: 0.28, music: 0.5 };
-const BUS_LEVEL = { sfx: 1.5, ui: 1.2, ambience: 0.8, music: 0.7 };
+const BUS_LEVEL = { sfx: 1.5, ui: 1.2, ambience: 0.4, music: 0.7 };
 
 export class AudioManager {
   constructor() {
@@ -550,7 +550,7 @@ export class AudioManager {
     if (!this.ctx || !this._amb) return;
     const now = this.ctx.currentTime, E = this.env;
     const set = (n, v, tc = 1.6) => { this._amb[n].g.gain.setTargetAtTime(v, now, tc); };
-    set('wind', (E.town ? 0.035 : 0.07) * (1 + (E.snow ? 0.8 : 0)) + E.rain * 0.03);
+    set('wind', (E.town ? 0.018 : 0.035) * (1 + (E.snow ? 0.8 : 0)) + E.rain * 0.03);
     set('rain', E.rain * 0.17, 1.2);
     set('rainLow', E.rain * 0.22, 1.2);
     set('water', E.town ? 0.05 * (E.fountain == null ? 1 : E.fountain) : 0, 1.2);
@@ -593,7 +593,7 @@ export class AudioManager {
 
   _chirp() {
     const to = this._panTo(rnd(-0.9, 0.9)), c = this.ctx;
-    const n = Math.floor(rnd(2, 6)), base = rnd(2300, 4300), step = rnd(0.09, 0.14), peak = rnd(0.012, 0.03);
+    const n = Math.floor(rnd(2, 6)), base = rnd(2300, 4300), step = rnd(0.09, 0.14), peak = rnd(0.006, 0.014);
     for (let i = 0; i < n; i++) {
       const t = c.currentTime + i * step, f0 = base * rnd(0.85, 1.2);
       const o = c.createOscillator(), g = c.createGain();
@@ -611,7 +611,7 @@ export class AudioManager {
     const n = Math.floor(rnd(8, 18));
     for (let i = 0; i < n; i++) {
       const t = t0 + i * 0.065;
-      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.01, t + 0.02); g.gain.linearRampToValueAtTime(0.0001, t + 0.05);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.005, t + 0.02); g.gain.linearRampToValueAtTime(0.0001, t + 0.05);
     }
     o.connect(g); g.connect(to); o.start(t0); o.stop(t0 + n * 0.065 + 0.1);
   }

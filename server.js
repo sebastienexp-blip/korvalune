@@ -356,6 +356,9 @@ wss.on('connection', (ws, req) => {
     player.cos = key && accounts[key] ? publicCos(accounts[key]) : {};
     broadcastAll({ t: 'playerCos', id: player.id, cos: player.cos }, player.id);
   };
+  // V10.7 — réglages du joueur conservés sur le compte (retrouvés sur n'importe quel appareil / lien)
+  const pushSettings = () => { if (authUsername && accounts[authUsername]) send(ws, { t: 'settings', s: accounts[authUsername].settings || null }); };
+  const settingsLimiter = new RateLimiter(4, 5000);
   const pushShop = () => { if (authUsername && accounts[authUsername]) send(ws, shopView(accounts[authUsername])); };
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
@@ -373,7 +376,7 @@ wss.on('connection', (ws, req) => {
       if (!key) { send(ws, { t: 'authResult', ok: false, error: '', silent: true }); return; }
       setAuth(key);
       send(ws, { t: 'authResult', ok: true, token: msg.token, username: key, ...accView(accounts[key]), resumed: true });
-      pushShop();
+      pushShop(); pushSettings();
       return;
     }
     if (msg.t === 'register' || msg.t === 'login') {
@@ -414,7 +417,7 @@ wss.on('connection', (ws, req) => {
         const token = makeToken(SECRET, key);
         setAuth(key);
         send(ws, { t: 'authResult', ok: true, token, username: key, ...accView(accounts[key]) });
-        pushShop();
+        pushShop(); pushSettings();
       })().catch((e) => { console.error('[Korvalune] auth :', e.message); fail('Erreur serveur.'); });
       return;
     }
@@ -501,6 +504,18 @@ wss.on('connection', (ws, req) => {
       persistAccounts(accounts);
       send(ws, { t: 'saveAck', ok: true });
       if (gainL > 0) { send(ws, shopView(acc)); send(ws, { t: 'shop:msg', ok: true, text: `+${gainL} Lunes pour ta progression !` }); }
+      return;
+    }
+
+    // --- Réglages du compte (V10.7) ---
+    if (msg.t === 'settings:save') {
+      const key = authUsername && resolveAccount(authUsername);
+      if (!key || !settingsLimiter.allow()) return;
+      if (!msg.s || typeof msg.s !== 'object' || Array.isArray(msg.s)) return;
+      let txt; try { txt = JSON.stringify(msg.s); } catch { return; }
+      if (txt.length > 12000) return;
+      accounts[key].settings = JSON.parse(txt);
+      persistAccounts(accounts);
       return;
     }
 
