@@ -1,5 +1,5 @@
 # Fly.io : fly launch --no-deploy --copy-config ; fly volumes create aetheria_data --size 1 ; fly secrets set SESSION_SECRET=$(openssl rand -hex 32) ; fly deploy
-app = "legends-of-aetheria"
+app = "korvalune"
 primary_region = "cdg"
 
 [build]
