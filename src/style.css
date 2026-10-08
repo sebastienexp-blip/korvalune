@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -798,3 +798,19 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .lune-test { margin: 0; padding: 6px 10px; border-radius: 8px; background: rgba(255, 200, 80, 0.14); border: 1px solid rgba(255, 200, 80, 0.5); font-size: 12.5px; }
 #lune-legal { font-size: 12px; opacity: 0.75; text-align: center; padding: 6px 0 2px; }
 #lune-legal a { color: #cfd8ff; }
+
+/* ---------- V10.3 : nouveautés ---------- */
+#patch-screen { padding-top: calc(26px + env(safe-area-inset-top, 0px)); }
+#patch-body { width: min(620px, 94vw); max-height: calc(100vh - 150px); overflow-y: auto; display: flex; flex-direction: column; gap: 12px; text-align: left; padding-right: 4px; -webkit-overflow-scrolling: touch; }
+.patch-entry { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12); background: linear-gradient(180deg, rgba(30, 42, 80, 0.45), rgba(10, 15, 32, 0.65)); flex: none; }
+.patch-entry:first-child { border-color: rgba(226, 184, 102, 0.7); }
+.patch-entry h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 17px; color: #e2b866; }
+.patch-entry h3 span { color: #f1ead8; font-size: 15px; margin-left: 6px; font-weight: 400; }
+.patch-entry ul { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.45; }
+.patch-entry li { margin: 3px 0; }
+.news-card { position: relative; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; margin-top: 10px; padding: 10px 14px; width: 100%; border-radius: 10px; border: 1px solid rgba(226, 184, 102, 0.55); background: linear-gradient(180deg, rgba(60, 50, 30, 0.55), rgba(24, 20, 12, 0.7)); color: #f4e9cf; font-family: inherit; text-align: left; cursor: pointer; }
+.news-card small { opacity: 0.8; font-size: 12.5px; }
+.news-badge { position: absolute; top: -8px; right: 10px; padding: 2px 8px; border-radius: 9px; background: #e2493a; color: #fff; font-size: 11px; font-weight: 700; }
+.news-badge.hidden { display: none; }
+.news-link { position: static; margin: -4px auto 8px; display: block; flex: none; font-size: 13px; padding: 5px 12px; background: none; border: 1px dashed rgba(226, 184, 102, 0.6); color: #f4e9cf; padding: 8px 14px; border-radius: 9px; font-family: inherit; cursor: pointer; }
+.panel-screen > button.news-link[data-act] { position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: 20px; bottom: auto; left: auto; width: auto; height: auto; margin: 0; box-shadow: none; }

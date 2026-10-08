@@ -832,6 +832,13 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.3 — Nouveautés en jeu + pages légales
+
+- **Page « Nouveautés »** (notes de mise à jour) accessible depuis le menu principal (carte avec pastille « Nouveau ») et depuis la page de connexion. Contenu : `src/data/patchNotes.js` — pour publier une nouveauté, ajouter une entrée **en haut** de la liste.
+- **CGV réécrites** selon votre choix : pas de droit de rétractation (consentement exprès à la livraison immédiate, art. L221-28 13° du Code de la consommation) et achats ni échangeables ni remboursables. Elles réservent les droits que la loi ne permet pas d'écarter (non-livraison, double débit, défaut de conformité).
+- Les pages `public/legal/*.html` gardent des champs jaunes `[À COMPLÉTER]` pour vos informations personnelles (nom, SIRET, adresse, e-mail, médiateur…) : je ne peux pas les inventer. **À faire relire avant d'ouvrir les paiements.**
+- Case de consentement du paiement mise à jour (lien vers les CGV, « ni échangeables ni remboursables »).
+
 ## V10.2 — Paiements préparés (désactivés par défaut)
 
 - **Achat de Lunes par carte** via Stripe Checkout (page de paiement hébergée par Stripe : le jeu ne voit jamais la carte). Section « Acheter des Lunes » dans la boutique 🌙, visible **uniquement** si le serveur a `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` et `PUBLIC_URL`.

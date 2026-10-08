@@ -5,6 +5,7 @@ import { PRIMARY_STAT } from '../combat/Classes.js';
 import { countSets, describeBonus } from '../data/sets.js';
 import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
 import { CATALOG, CATEGORIES, CATALOG_BY_ID } from '../data/shopCatalog.js';
+import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
 // Résumé lisible des effets d'une compétence (écran Compétences)
@@ -88,13 +89,15 @@ export class HUD {
             <button data-act="options">Options</button>
             <button data-act="credits">Crédits</button>
           </div>
+          <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.2 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.3 — Korvalune</div>
         </div>
       </div>
 
       <div id="account-screen" class="hidden panel-screen">
         <h2>Compte</h2>
+        <button class="news-link" data-act="patch">🆕 Nouveautés</button>
         <div id="account-logged-in" class="hidden">
           <p>Connecté en tant que <b id="account-name-display"></b>.</p>
           <div class="menu-buttons">
@@ -114,6 +117,12 @@ export class HUD {
           <p class="menu-hint" id="account-hint">Un compte permet de retrouver votre personnage depuis n'importe quel appareil.<br>Facultatif : vous pouvez toujours jouer en invité (sauvegarde locale sur l'appareil).</p>
         </div>
         <button data-act="account-back">Retour</button>
+      </div>
+
+      <div id="patch-screen" class="hidden panel-screen">
+        <h2>Nouveautés</h2>
+        <div id="patch-body">${PATCH_NOTES.map((n) => `<section class="patch-entry"><h3>V${n.version} <span>${n.title}</span></h3><ul>${n.items.map((i) => `<li>${i}</li>`).join('')}</ul></section>`).join('')}</div>
+        <button data-act="patch-back">Retour</button>
       </div>
 
       <div id="char-select" class="hidden panel-screen">
@@ -439,7 +448,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -897,8 +906,8 @@ export class HUD {
       const eur = (c) => (c / 100).toFixed(2).replace('.', ',') + ' €';
       payEl.innerHTML = `<h3>Acheter des Lunes</h3>${sh.pay.test ? '<p class="lune-test">Mode test : aucun vrai paiement n\u2019est effectué (carte de test 4242 4242 4242 4242).</p>' : ''}` +
         sh.pay.packs.map((p) => `<div class="soc-row lune-item"><div class="soc-name"><b>${esc(p.label)}</b><small>${p.lunes} Lunes · ${eur(p.cents)}</small></div><div class="lune-btns"><button class="soc-btn lune-buy" data-la="pay" data-v="${esc(p.id)}">Payer ${eur(p.cents)}</button></div></div>`).join('') +
-        `<label class="lune-consent"><input type="checkbox" id="lune-consent"${d.consent ? ' checked' : ''}> J\u2019accepte les conditions de vente, je demande la livraison immédiate des Lunes et je reconnais perdre mon droit de rétractation pour ce contenu numérique.</label>` +
-        '<p class="menu-hint">Paiement sécurisé par Stripe : le jeu ne voit jamais votre numéro de carte. Les Lunes n\u2019ont aucune valeur monétaire et ne sont pas remboursables, sauf obligation légale.</p>';
+        `<label class="lune-consent"><input type="checkbox" id="lune-consent"${d.consent ? ' checked' : ''}> J\u2019accepte les <a href="/legal/cgv.html" target="_blank" rel="noopener">conditions de vente</a>. Je demande la livraison immédiate des Lunes et je reconnais perdre mon droit de rétractation. Les achats ne sont ni échangeables ni remboursables.</label>` +
+        '<p class="menu-hint">Paiement sécurisé par Stripe : le jeu ne voit jamais votre numéro de carte. Les Lunes n\u2019ont aucune valeur monétaire : ni échange ni remboursement, sauf obligation légale.</p>';
     } else payEl.innerHTML = '';
     const items = CATALOG.filter((c) => c.cat === d.tab);
     list.innerHTML = items.map((it) => {

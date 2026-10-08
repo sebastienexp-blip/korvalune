@@ -57,6 +57,7 @@ import { applyOcclusionFade, updateOcclusion } from '../visual/OcclusionFade.js'
 import { share as netShare } from '../network/NetShare.js';
 import { RemotePlayer } from '../network/RemotePlayer.js';
 import { CATALOG_BY_ID, LUNES } from '../data/shopCatalog.js';
+import { LATEST_VERSION } from '../data/patchNotes.js';
 import enemiesData from '../data/enemies.json';
 import npcsData from '../data/npcs.json';
 import skillDefs from '../data/skills.json';
@@ -628,6 +629,21 @@ export class Game {
     b.on('net:chars', (msg) => { this._serverChars = msg.chars || []; this._serverBank = msg.bank || []; this._refreshContinueButton(); if (this.hud._curScreen === 'char-select') this._openCharSelect(); });
     b.on('ui:account', () => { this.hud.showScreen('account-screen'); this.hud.setAccountError(''); });
     b.on('ui:account-back', () => this.hud.showScreen('main-menu'));
+    // V10.3 — page « Nouveautés » (menu principal + page de connexion) ; pastille « Nouveau » tant que la dernière version n'a pas été vue
+    {
+      const KEY = 'korvalune.patchSeen';
+      const badge = this.root.querySelector('#news-badge');
+      let seen = null; try { seen = localStorage.getItem(KEY); } catch { /* ignoré */ }
+      if (badge && seen === LATEST_VERSION) badge.classList.add('hidden');
+      b.on('ui:patch', () => {
+        this._patchReturn = this.hud._curScreen === 'patch-screen' ? this._patchReturn : this.hud._curScreen;
+        this.hud.showScreen('patch-screen');
+        this.hud.q('#patch-body').scrollTop = 0;
+        badge?.classList.add('hidden');
+        try { localStorage.setItem(KEY, LATEST_VERSION); } catch { /* ignoré */ }
+      });
+      b.on('ui:patch-back', () => this.hud.showScreen(this._patchReturn || 'main-menu'));
+    }
     b.on('ui:account-logout', () => { this.net.logout(); this._shop = null; this._preview = null; this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
     b.on('net:authResult', (msg) => {
       if (msg.ok) {

@@ -9,7 +9,8 @@ ci-dessous sont définies sur le serveur. Sans elles, le jeu fonctionne exacteme
 ## 0. Prérequis (hors technique)
 1. **Statut** : en France, micro-entreprise (guichet unique de l'INPI/URSSAF) ou autre structure. Notez votre SIRET.
 2. **Compléter** `public/legal/cgv.html`, `confidentialite.html`, `mentions.html` (tous les champs jaunes), faire relire.
-3. **Décider des prix** : les 4 packs de `server/payments.js` (`PACKS`) sont des **exemples** (1,99 / 3,99 / 7,99 / 17,99 €).
+3. **Politique choisie** : pas de rétractation, achats ni échangeables ni remboursables (déjà rédigé dans les CGV, sous réserve des droits que la loi impose). Surveillez les litiges bancaires (chargebacks) dans Stripe.
+3b. **Décider des prix** : les 4 packs de `server/payments.js` (`PACKS`) sont des **exemples** (1,99 / 3,99 / 7,99 / 17,99 €).
 4. **Marque** : recherche d'antériorité « Korvalune » (INPI, EUIPO/TMview), puis dépôt si vous êtes satisfait.
 
 ## 1. Compte Stripe (mode TEST d'abord)
