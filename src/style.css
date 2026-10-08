@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -878,3 +878,11 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .soc-name { min-width: 110px; }
 @media (max-height: 460px) { #trade-body { max-height: calc(100vh - 120px); } }
 @media (max-height: 460px) { .trade-cell { width: 60px; height: 60px; } .trade-cell small { max-width: 56px; font-size: 8px; } #trade-body h3 { margin: 4px 0 0; } }
+
+/* V10.10 — écurie et bouton de monture */
+#stable-screen { padding-top: calc(22px + env(safe-area-inset-top, 0px)); }
+#stable-head { width: min(620px, 94vw); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; }
+#stable-list { width: min(620px, 94vw); max-height: calc(100vh - 230px); overflow-y: auto; display: flex; flex-direction: column; gap: 7px; text-align: left; -webkit-overflow-scrolling: touch; }
+#stable-list > * { flex: none; }
+#side-buttons #btn-mount.tbtn.small.on { border-color: #5fe0a0; background: rgba(30, 90, 60, 0.85); box-shadow: 0 0 10px rgba(95, 224, 160, 0.5); }
+@media (max-height: 460px) { #stable-list { max-height: calc(100vh - 170px); } #stable-head .menu-hint { display: none; } }

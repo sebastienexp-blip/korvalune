@@ -24,6 +24,7 @@ import { fileURLToPath } from 'url';
 import { loadAccounts, persistAccounts, hashPassword, verifyPassword, sanitizeUsername, DATA_DIR } from './server/store.js';
 import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/security.js';
+import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
@@ -127,7 +128,7 @@ function broadcastAll(msg, exceptId) {
   for (const p of players.values()) if (p.id !== exceptId) send(p.ws, msg);
 }
 function playerSummary(p) {
-  return { id: p.id, name: p.name, classId: p.classId, level: p.level, pos: p.pos, yaw: p.yaw, anim: p.anim, hp: p.hp, maxHp: p.maxHp, inst: p.inst | 0, cos: p.cos || {} };
+  return { id: p.id, name: p.name, classId: p.classId, level: p.level, pos: p.pos, yaw: p.yaw, anim: p.anim, hp: p.hp, maxHp: p.maxHp, inst: p.inst | 0, cos: p.cos || {}, mnt: p.mnt || '' };
 }
 
 function findByName(name) {
@@ -259,6 +260,9 @@ function sanitizeSave(prev, incoming, elapsedMs) {
 
   clean.active = Array.isArray(incoming.active) ? incoming.active.slice(0, 40).map((s) => sanitize(s, 60)) : [];
   clean.completed = Array.isArray(incoming.completed) ? incoming.completed.slice(0, 400).map((s) => sanitize(s, 60)) : [];
+  // V10.10 : montures de l'écurie (identifiants du catalogue uniquement)
+  clean.mounts = [...new Set((Array.isArray(incoming.mounts) ? incoming.mounts : []).filter(isMountId))].slice(0, MAX_MOUNTS);
+  clean.mountSel = isMountId(incoming.mountSel) && clean.mounts.includes(incoming.mountSel) ? incoming.mountSel : '';
   clean.progress = incoming.progress && typeof incoming.progress === 'object' ? incoming.progress : {};
   // Compteurs d'objectifs (ex: 3/8 loups tués) : uniquement des entiers bornés.
   clean.counts = {};
@@ -636,7 +640,8 @@ wss.on('connection', (ws, req) => {
       const newInst = Number.isFinite(msg.inst) ? (msg.inst | 0) : (msg.inst ? 1 : 0);
       const instChanged = newInst !== (player.inst | 0);
       player.inst = newInst;
-      broadcastAll({ t: 'playerMoved', id: player.id, pos: player.pos, yaw: player.yaw, anim: player.anim, hp: player.hp, maxHp: player.maxHp, level: player.level, inst: player.inst | 0 }, player.id);
+      player.mnt = isMountId(msg.mnt) ? msg.mnt : '';
+      broadcastAll({ t: 'playerMoved', id: player.id, pos: player.pos, yaw: player.yaw, anim: player.anim, hp: player.hp, maxHp: player.maxHp, level: player.level, inst: player.inst | 0, mnt: player.mnt }, player.id);
       const gid = groupOf(player.id);
       if (gid) broadcastGroupUpdate(gid, instChanged);
       return;

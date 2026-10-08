@@ -832,6 +832,14 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.10 — Écurie : chevaux et griffons
+
+- Catalogue partagé `src/data/mounts.js` (5 montures, prix en **pièces d'or**, niveau requis, vitesse). Modèles 3D en boîtes (`src/visual/MountModel.js`).
+- PNJ « Maître d'écurie Bram » en (20, 18) avec un cheval et un griffon en exposition ; achat et choix de la monture active dans l'écran Écurie.
+- Bouton 🐎 (et touche H, réassignable dans Options) : monter/descendre. Vitesse = course × 0,8 × multiplicateur de la monture. Cheval : au sol (on en descend pour attaquer). Griffon : altitude de croisière (4,8 m), survole eau/falaises/obstacles, atterrissage progressif refusé au-dessus de l'eau ; compétences bloquées en vol ; roulade désactivée à cheval ; interdit dans les spires.
+- Persistance par personnage (`mounts`, `mountSel` dans la sauvegarde, identifiants validés côté serveur) ; la monture en cours (`mnt`) est diffusée aux autres joueurs.
+- Limite : comme les pièces, la possession est gérée par la sauvegarde du client (le serveur ne valide que les identifiants).
+
 ## V10.9 — Échanges d'objets
 
 - Protocole (serveur = chef d'orchestre) : `trade:invite` → `trade:invited` → `trade:accept` → `trade:open`/`trade:state` ; offres `trade:offer` (6 objets max, validés par `sanitizeItemSlots`), `trade:confirm` ; quand les deux ont confirmé : `trade:exec` → chaque client vérifie qu'il possède ses objets et a la place (`trade:ack`) → `trade:final` (les deux appliquent). Un seul refus ou une déconnexion annule tout (`trade:end`).

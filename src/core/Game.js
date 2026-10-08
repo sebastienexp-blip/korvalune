@@ -43,6 +43,8 @@ import { setSafeMode, isSafeMode, updateVisualUniforms } from '../visual/Safe.js
 import { AudioManager } from '../audio/AudioManager.js';
 import { HUD } from '../ui/HUD.js';
 import { TouchControls } from '../ui/TouchControls.js';
+import { MOUNTS, MOUNT_BY_ID } from '../data/mounts.js';
+import { createMount, updateMount } from '../visual/MountModel.js';
 import { SettingsUI, DEFAULTS, TOUCH_DEFAULTS } from '../ui/SettingsUI.js';
 import { normalizeKeys, defaultKeys, keyLabel } from './Keybinds.js';
 import { CharPreview } from '../ui/CharPreview.js';
@@ -337,6 +339,22 @@ export class Game {
       npc.id = s.def.id;
       this.npcs.push(npc);
     });
+
+    // V10.10 — écurie : maître d'écurie + un cheval et un griffon en exposition
+    {
+      const sx = 20, sz = 18, sy = this.world.heightAt(sx, sz);
+      const bram = new NPC(this.scene, npcsData.stablemaster, new THREE.Vector3(sx, sy, sz), Math.PI);
+      bram.id = 'stablemaster';
+      this.npcs.push(bram);
+      this._stableDisplay = [];
+      for (const [mid, dx, yaw] of [['horse_brun', 3.4, -1.9], ['griffon_fauve', -3.6, 1.9]]) {
+        const m = createMount(MOUNT_BY_ID[mid]);
+        m.group.position.set(sx + dx, this.world.heightAt(sx + dx, sz), sz + 0.5);
+        m.group.rotation.y = yaw;
+        this.scene.add(m.group);
+        this._stableDisplay.push(m);
+      }
+    }
 
     // PNJ des quêtes principales (chaînes déclarées dans npcs.json).
     const questGivers = [
@@ -894,6 +912,9 @@ export class Game {
     this.root.querySelector('#btn-ach').addEventListener('click', () => this._openAchievements());
     this.root.querySelector('#btn-social').addEventListener('click', () => this._openSocial());
     this.root.querySelector('#btn-lune').addEventListener('click', () => this._openLune());
+    this.root.querySelector('#btn-mount').addEventListener('click', () => this._toggleMount());
+    this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
+    this.bus.on('ui:close-stable', () => this._closeModal());
     this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
     this.root.querySelector('#lune-screen').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-la]');
@@ -975,6 +996,7 @@ export class Game {
       else if (act === 'character') this.modalOpen ? this._closeModal() : this._openCharacter();
       else if (act === 'skills') this.modalOpen ? this._closeModal() : this._openSkills();
       else if (act === 'interact') this._tryInteract();
+      else if (act === 'mount' && !e.repeat) this._toggleMount();
       else if (act === 'potionHeal' && !e.repeat) this._quickPotion('heal');
       else if (act === 'potionMana' && !e.repeat) this._quickPotion('mana');
       else if (act === 'chat' && !e.repeat && !this.paused && !this.modalOpen) { e.preventDefault(); document.exitPointerLock?.(); this.hud.toggleChat(); }
@@ -992,6 +1014,7 @@ export class Game {
       inventory: this.inventory.serialize(),
       equipment: this.equipment.serialize(),
       bank: this.bank.serialize(),
+      mounts: this.mounts || [], mountSel: this.mountSel || '',
       // V4.0 : objets jetés au sol (sauvegardés en local)
       ground: this.lootDrops.filter((d) => d.keep).slice(0, 40).map((d) => ({ x: +d.pos.x.toFixed(2), z: +d.pos.z.toFixed(2), item: d.item })),
       chests: this.worldChests ? this.worldChests.serialize() : undefined,
@@ -1131,6 +1154,8 @@ export class Game {
     netShare.localPlayer = this.player;
     this._secondaryQuests = this._secondaryQuests || generateSecondaryQuests();
     this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...this._secondaryQuests]);
+    this.mounts = Array.isArray(save?.mounts) ? save.mounts.filter((m) => MOUNT_BY_ID[m]) : [];
+    this.mountSel = MOUNT_BY_ID[save?.mountSel] ? save.mountSel : '';
     this.inventory = new Inventory(this.bus, 30, save?.inventory);
     this.equipment = new Equipment(this.bus, this.player, save?.equipment);
     this.bank = new Inventory(this.bus, 120 + 30 * Math.min(LUNES.maxBankTabs, this._shop?.bankTabs || 0), save?.bank);
@@ -1145,6 +1170,7 @@ export class Game {
     }
     this.ach.load(this.player.name, this.player.level);
     this.caravan = new CaravanEvent(this);
+    this._syncMountBtn();
     this.worldChests = new WorldChests(this.scene, this.world, new Set(Array.isArray(save?.chests) ? save.chests : []));
     for (const gi of Array.isArray(save?.ground) ? save.ground.slice(0, 40) : []) {
       if (gi && Number.isFinite(gi.x) && Number.isFinite(gi.z) && gi.item && (gi.item.gen || getItem(gi.item.defId))) this._spawnGroundItem(gi.item, gi.x, gi.z, true);
@@ -1362,6 +1388,64 @@ export class Game {
   _renderLune() {
     if (this.hud.q('#lune-screen').classList.contains('hidden')) return;
     this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, consent: !!this._luneConsent, canTry: !!this.player && !this._luneReturn });
+  }
+
+  // ---------- Écurie et montures (V10.10) ----------
+  _syncMountBtn() {
+    const b = this.root.querySelector('#btn-mount'); if (!b) return;
+    b.classList.toggle('hidden', !(this.mounts && this.mounts.length));
+    b.classList.toggle('on', !!this.player?.mount);
+  }
+
+  _toggleMount() {
+    const p = this.player;
+    if (!p || p.dead || this.paused || this.dialogueOpen || this.modalOpen) return;
+    if (p.mount) {
+      if (p.requestDismount() === 'landing') this.hud.notify('Atterrissage…', 'info');
+      this._syncMountBtn();
+      return;
+    }
+    if (!this.mounts?.length) { this.hud.notify('Tu n\u2019as pas de monture : va voir le maître d\u2019écurie à Korvalune.', 'info'); return; }
+    if (this.rift?.active) { this.hud.notify('Les montures ne sont pas autorisées dans les spires.', 'info'); return; }
+    const id = this.mounts.includes(this.mountSel) ? this.mountSel : this.mounts.slice().sort((a, b) => MOUNT_BY_ID[b].speed - MOUNT_BY_ID[a].speed)[0];
+    p.setMount(id);
+    this.audio.play('click');
+    this.hud.notify(p.flying ? 'Décollage ! Appuie à nouveau sur 🐎 pour atterrir.' : 'Tu montes en selle. 🐎 pour descendre.', 'info');
+    this._syncMountBtn();
+  }
+
+  _openStable(npc) {
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    const lines = npc.def.dialogues?.intro;
+    if (lines?.length) this.hud.notify(lines[0], 'info');
+    this.hud.showScreen('stable-screen');
+    this._renderStable();
+  }
+
+  _renderStable() {
+    if (this.hud.q('#stable-screen').classList.contains('hidden')) return;
+    this.hud.renderStable({ coins: this.player.coins, level: this.player.level, list: MOUNTS.map((def) => ({ def, owned: this.mounts.includes(def.id), sel: this.mountSel === def.id })) });
+  }
+
+  _stableAct(act, id) {
+    const def = MOUNT_BY_ID[id]; if (!def || !this.player) return;
+    if (act === 'buy') {
+      if (this.mounts.includes(id)) return;
+      if (this.player.level < def.levelReq) { this.hud.notify(`Niveau ${def.levelReq} requis.`, 'info'); return; }
+      if (this.player.coins < def.price) { this.hud.notify('Pas assez de pièces.', 'info'); return; }
+      this.player.addCoins(-def.price);
+      this.mounts.push(id); this.mountSel = id;
+      this.audio.play('coin');
+      this.hud.notify(`${def.name} est à toi ! Monte avec le bouton 🐎.`, 'quest');
+      try { this._doSave(); } catch { /* ignoré */ }
+    } else if (act === 'sel' && this.mounts.includes(id)) {
+      this.mountSel = id;
+      if (this.player.mount && !this.player.flying && !def.fly) this.player.setMount(id);
+      try { this._doSave(); } catch { /* ignoré */ }
+    }
+    this._syncMountBtn();
+    this._renderStable();
   }
 
   // ---------- Échanges (V10.9) ----------
@@ -2265,7 +2349,7 @@ export class Game {
     }
     for (const n of this.npcs) {
       if (n.pos.distanceTo(this.player.pos) < 3.2) {
-        return n.def.shop ? this._openShop(n) : this._talkTo(n);
+        return n.def.stable ? this._openStable(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
       }
     }
     const wc = this.worldChests?.nearest(this.player.pos, 2.8);
@@ -2468,6 +2552,9 @@ export class Game {
     }
     this._camQuat.copy(this.camera.quaternion);
     for (const n of this.npcs) n.update(dt, this._camQuat);
+    for (const m of this._stableDisplay || []) updateMount(m, dt, 0, false);
+    if (this.player.mount && this.rift?.active) { this.player.setMount(null); this.hud.notify('Les montures ne sont pas autorisées dans les spires.', 'info'); }
+    if (this._mntOn !== !!this.player.mount) { this._mntOn = !!this.player.mount; this._syncMountBtn(); }
     for (const e of this.enemies) e.label.quaternion.copy(this._camQuat);
     this._updateAutoTarget();
     this._updateTreasureGoblin(dt);
@@ -2479,7 +2566,7 @@ export class Game {
     for (const portal of this.portals || []) updatePortal(portal, dt);
 
     const animState = this.player.dead ? 'dead' : this.player.action || (this.player.speed > 0.3 ? (this.player.running ? 'run' : 'walk') : 'idle');
-    this.net.tickMove(dt, this.player.pos, this.player.yaw, animState, this.player.hp, this.player.maxHp, this.player.level, this.gw.room);
+    this.net.tickMove(dt, this.player.pos, this.player.yaw, animState, this.player.hp, this.player.maxHp, this.player.level, this.gw.room, this.player.mount?.id || '');
     // V9.0 : ramassage automatique (option) — jamais pendant un menu/dialogue, sans spam si l'inventaire est plein
     this._autoLootT = (this._autoLootT || 0) + dt;
     if (this._autoLootT > 0.35 && this.settings.autoLoot && this.settings.autoLoot !== 'off' && !this.player.dead && !this.dialogueOpen && !this.modalOpen) {

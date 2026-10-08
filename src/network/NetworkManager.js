@@ -122,12 +122,12 @@ export class NetworkManager {
   }
 
   // À appeler chaque frame avec dt ; envoie la position au serveur à débit limité.
-  tickMove(dt, pos, yaw, anim, hp, maxHp, level, inst = 0) {
+  tickMove(dt, pos, yaw, anim, hp, maxHp, level, inst = 0, mnt = '') {
     if (!this._joined) return;
     this._moveAcc += dt;
     if (this._moveAcc < MOVE_INTERVAL) return;
     this._moveAcc = 0;
-    this._send({ t: 'move', pos: [pos.x, pos.y, pos.z], yaw, anim, hp: Math.round(hp), maxHp: Math.round(maxHp), level, inst: inst | 0 });
+    this._send({ t: 'move', pos: [pos.x, pos.y, pos.z], yaw, anim, hp: Math.round(hp), maxHp: Math.round(maxHp), level, inst: inst | 0, mnt: mnt || '' });
   }
 
   sendChat(channel, text) { this._send({ t: 'chat', channel, text }); }

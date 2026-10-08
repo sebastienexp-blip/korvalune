@@ -5,6 +5,8 @@ import { clamp, damp, lerpAngle } from '../core/math.js';
 import { createHumanoid, animateHumanoid } from '../entities/HumanoidModel.js';
 import { setWeaponAura } from '../visual/WeaponAura.js';
 import { applyCosmetics } from '../visual/Cosmetics.js';
+import { createMount, updateMount, disposeMount } from '../visual/MountModel.js';
+import { MOUNT_BY_ID } from '../data/mounts.js';
 import { CLASSES, PRIMARY_STAT, SKILLS, getClassSkillPool } from '../combat/Classes.js';
 import { getItem, RARITY, resolveItem } from '../inventory/Item.js';
 import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../combat/WeaponRules.js';
@@ -333,7 +335,34 @@ export class Player {
     this.bus.emit('hud');
   }
 
+  // V10.10 — monture : null = à pied. Les chevaux vont au sol ; les griffons survolent eau, falaises et obstacles.
+  setMount(id) {
+    const def = id ? MOUNT_BY_ID[id] : null;
+    if (!def) {
+      if (this._mountRig) { disposeMount(this._mountRig); this._mountRig = null; }
+      this.mount = null; this.flying = false; this.landing = false;
+      return;
+    }
+    if (this.mount && this.mount.id === def.id) return;
+    if (this._mountRig) disposeMount(this._mountRig);
+    this.mount = def; this._mountRig = createMount(def); this.scene.add(this._mountRig.group);
+    this._mountRig.group.position.copy(this.pos);
+    this.flying = !!def.fly; this.landing = false; this.dash = null;
+  }
+
+  // Descente : cheval = immédiat ; griffon = atterrissage progressif (refusé au-dessus de l'eau / d'un obstacle). -> 'ok' | 'landing' | 'blocked'
+  requestDismount() {
+    if (!this.mount) return 'ok';
+    if (!this.flying) { this.setMount(null); return 'ok'; }
+    this.landing = true;
+    return 'landing';
+  }
+
   tryUseSkill(id, enemies) {
+    if (this.mount) { // on ne combat pas depuis les airs ; au sol on descend de cheval pour attaquer
+      if (this.flying) { this.bus.emit('notify', { text: 'Pose-toi (bouton 🐎) pour combattre.', kind: 'info' }); return false; }
+      this.setMount(null);
+    }
     if (this.dead || this.busyUntil > performance.now() / 1000) return false;
     const s = SKILLS[id];
     if (!s || !this.isSkillUnlocked(id)) return false;
@@ -396,6 +425,7 @@ export class Player {
   }
 
   update(dt, input, cameraYaw, enemiesForResolve) {
+    if (this.dead && this.mount) this.setMount(null);
     if (this.dead) { this.dash = null; animateHumanoid(this.rig, { speed: 0, grounded: true, dead: true, actionT: this.actionT }, dt); this.actionT += dt; return; }
     this.invuln = Math.max(0, this.invuln - dt);
     if (this._rollDust > 0) { // poussière derrière la roulade
@@ -419,8 +449,9 @@ export class Player {
       const worldAngle = Math.atan2(mv.x, mv.y) + cameraYaw;
       this.yaw = lerpAngle(this.yaw, worldAngle, Math.min(1, dt * 14));
       this.yaw = ((this.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
-      const spd = (this.crouch ? CONFIG.player.crouch : this.running && this.stamina > 1 ? CONFIG.player.run : CONFIG.player.walk) * (this.speedMult || 1) * (this.sbSpeed || 1) * (1 + (this.moveSpeedBonus || 0));
-      if (this.running && this.stamina > 1 && !this.crouch) this.stamina = Math.max(0, this.stamina - dt * 16);
+      const base = this.mount ? CONFIG.player.run * 0.8 * this.mount.speed : (this.crouch ? CONFIG.player.crouch : this.running && this.stamina > 1 ? CONFIG.player.run : CONFIG.player.walk);
+      const spd = base * (this.speedMult || 1) * (this.sbSpeed || 1) * (1 + (this.moveSpeedBonus || 0));
+      if (this.running && this.stamina > 1 && !this.crouch && !this.mount) this.stamina = Math.max(0, this.stamina - dt * 16);
       this.speed = damp(this.speed, spd, 10, dt);
     } else {
       this.speed = damp(this.speed, 0, 10, dt);
@@ -437,7 +468,7 @@ export class Player {
       const x0 = this.pos.x, z0 = this.pos.z;
       let nx = x0 + Math.sin(this.yaw) * this.speed * dt, nz = z0 + Math.cos(this.yaw) * this.speed * dt;
       const w = this.world;
-      if (!w.canStep(x0, z0, nx, nz)) {
+      if (!this.flying && !w.canStep(x0, z0, nx, nz)) {
         if (w.canStep(x0, z0, nx, z0)) nz = z0;
         else if (w.canStep(x0, z0, x0, nz)) nx = x0;
         else { nx = x0; nz = z0; }
@@ -452,7 +483,7 @@ export class Player {
     this._spaceWas = spaceNow;
     if (wantRoll) {
       input.actions.delete('roll'); input.actions.delete('jump');
-      if (this.grounded && !busy && !this.dash && this.rollCd <= 0 && this.stamina >= 10) {
+      if (this.grounded && !this.mount && !busy && !this.dash && this.rollCd <= 0 && this.stamina >= 10) {
         if (mv.x || mv.y) this.yaw = Math.atan2(mv.x, mv.y) + cameraYaw;
         this.startDash(5.2, Math.sin(this.yaw), Math.cos(this.yaw), 0.5);
         this.action = 'roll'; this.actionT = 0; this.actionDur = 0.5;
@@ -467,13 +498,23 @@ export class Player {
       }
     }
     const wasGrounded = this.grounded, stickable = wasGrounded && this.vel.y <= 0;
-    this.vel.y -= CONFIG.player.gravity * dt;
-    this.pos.y += this.vel.y * dt;
-    const groundY = this.world.heightAt(this.pos.x, this.pos.z);
-    const fallV = this.vel.y;
-    if (this.pos.y <= groundY) { this.pos.y = groundY; this.vel.y = 0; this.grounded = true; }
-    else if (stickable && this.pos.y - groundY < 0.7) { this.pos.y = groundY; this.vel.y = 0; this.grounded = true; } // colle au sol en descente (évite les faux « sauts »)
-    else this.grounded = false;
+    let groundY = this.world.heightAt(this.pos.x, this.pos.z), fallV = this.vel.y;
+    if (this.flying) { // V10.10 : vol du griffon — altitude de croisière au-dessus du terrain (ou de l'eau), atterrissage en douceur
+      const gy = Math.max(groundY, this.world.waterLevel);
+      this.pos.y = damp(this.pos.y, this.landing ? groundY : gy + 4.8, this.landing ? 2.4 : 2.8, dt);
+      this.vel.y = 0; this.grounded = false; fallV = 0;
+      if (this.landing && this.pos.y - groundY < 0.4) {
+        if (this.world.isWalkable(this.pos.x, this.pos.z, CONFIG.player.radius)) { this.pos.y = groundY; this.grounded = true; this.setMount(null); this.audio.play('land'); }
+        else { this.landing = false; this.bus.emit('notify', { text: 'Impossible d\u2019atterrir ici (eau ou obstacle). Cherche un terrain dégagé.', kind: 'info' }); }
+      }
+    } else {
+      this.vel.y -= CONFIG.player.gravity * dt;
+      this.pos.y += this.vel.y * dt;
+      fallV = this.vel.y;
+      if (this.pos.y <= groundY) { this.pos.y = groundY; this.vel.y = 0; this.grounded = true; }
+      else if (stickable && this.pos.y - groundY < 0.7) { this.pos.y = groundY; this.vel.y = 0; this.grounded = true; } // colle au sol en descente (évite les faux « sauts »)
+      else this.grounded = false;
+    }
     // pose « en l'air » seulement après un vrai décollage (sinon la course saccade sur les pentes)
     this.airT = this.grounded ? 0 : (this.airT || 0) + dt;
     if (this.grounded && !wasGrounded && fallV < -6) this.audio.play('land');
@@ -487,7 +528,7 @@ export class Player {
       }
     } else if (this.speed <= 1.2) this._stepD = 1.5;
 
-    this.world.pushOut(this.pos, CONFIG.player.radius);
+    if (!(this.flying && this.pos.y - groundY > 1.5)) this.world.pushOut(this.pos, CONFIG.player.radius);
     if (this.pos.x < 1500) { // (l'arène des spires est hors de la carte : pas de limite)
       this.pos.x = clamp(this.pos.x, -CONFIG.world.bound, CONFIG.world.bound);
       this.pos.z = clamp(this.pos.z, -CONFIG.world.bound, CONFIG.world.bound);
@@ -505,7 +546,13 @@ export class Player {
 
     this.rig.root.position.copy(this.pos);
     this.rig.root.rotation.y = this.yaw;
-    animateHumanoid(this.rig, { speed: this.speed, grounded: this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch }, dt);
+    if (this._mountRig) { // V10.10 : le cavalier est assis sur la monture
+      const mr = this._mountRig;
+      mr.group.position.copy(this.pos); mr.group.rotation.y = this.yaw;
+      updateMount(mr, dt, this.speed, this.flying);
+      this.rig.root.position.y += mr.seat;
+    }
+    animateHumanoid(this.rig, { speed: this.mount ? 0 : this.speed, grounded: this.mount ? true : this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch || !!this.mount }, dt);
   }
 
   serialize() {

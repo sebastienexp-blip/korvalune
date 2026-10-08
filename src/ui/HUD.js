@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.9 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.10 — Korvalune</div>
         </div>
       </div>
 
@@ -223,6 +223,7 @@ export class HUD {
           <button id="btn-quests" class="tbtn small">📜</button>
           <button id="btn-ach" class="tbtn small">🏆</button>
           <button id="btn-social" class="tbtn small">👥</button>
+          <button id="btn-mount" class="tbtn small hidden" aria-label="Monter ou descendre de monture" title="Monture (H)">🐎</button>
           <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes" title="Boutique des Lunes"><span class="bl-ico">🌙</span><span class="bl-txt">Boutique</span></button>
           <button id="btn-chat" class="tbtn small">💬</button>
         </div>
@@ -326,6 +327,13 @@ export class HUD {
           <div id="social-players"></div>
         </div>
         <button data-act="close-social">Fermer</button>
+      </div>
+
+      <div id="stable-screen" class="hidden panel-screen">
+        <h2>Écurie de Korvalune</h2>
+        <div id="stable-head"></div>
+        <div id="stable-list"></div>
+        <button data-act="close-stable">Fermer</button>
       </div>
 
       <div id="trade-screen" class="hidden panel-screen">
@@ -471,7 +479,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -945,6 +953,18 @@ export class HUD {
       }
       if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
       return `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btns.join('')}</div></div>`;
+    }).join('');
+  }
+
+  // V10.10 — écurie. d : { coins, level, list:[{ def, owned, sel }] }
+  renderStable(d) {
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    this.q('#stable-head').innerHTML = `<div class="lune-bal"><span class="lune-gem">🪙</span><b>${d.coins}</b><small>pièces</small></div><p class="menu-hint">Monte avec le bouton 🐎 (ou la touche H). Les chevaux vont vite au sol ; les griffons volent au-dessus de l’eau et des falaises. On ne se bat pas en vol.</p>`;
+    this.q('#stable-list').innerHTML = d.list.map(({ def, owned, sel }) => {
+      const need = def.levelReq > d.level ? `Niveau ${def.levelReq} requis` : '';
+      const btn = owned ? (sel ? '<button class="soc-btn" disabled>Active ✔</button>' : `<button class="soc-btn lune-go" data-st="sel" data-v="${def.id}">Choisir</button>`)
+        : `<button class="soc-btn lune-buy" data-st="buy" data-v="${def.id}"${need || d.coins < def.price ? ' disabled' : ''}>${need || `Acheter · ${def.price} 🪙`}</button>`;
+      return `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${def.kind === 'griffon' ? '🦅' : '🐎'} ${esc(def.name)}${owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(def.desc)} · Vitesse ×${def.speed}${def.fly ? ' · Vol' : ''} · Niv. ${def.levelReq}</small></div><div class="lune-btns">${btn}</div></div>`;
     }).join('');
   }
 

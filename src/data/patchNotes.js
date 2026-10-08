@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.10', title: 'L’écurie de Korvalune',
+    items: [
+      'Nouveau : le Maître d’écurie Bram t’attend à l’est de la porte sud. Il vend 3 chevaux et 2 griffons, payables en pièces d’or du jeu.',
+      'Monte et descends avec le bouton 🐎 (ou la touche H) : les chevaux vont bien plus vite que la marche.',
+      'Les griffons volent au-dessus de l’eau, des falaises et des obstacles. On ne combat pas en vol : pose-toi d’abord, sur un terrain dégagé.',
+      'Les autres joueurs voient ta monture. Les montures sont interdites dans les spires. Le niveau requis est indiqué pour chaque monture.'
+    ]
+  },
+  {
     version: '10.9', title: 'Échanges entre joueurs',
     items: [
       'Nouveau bouton « 🔁 Échanger » dans le menu 👥 (amis en ligne et joueurs proches) : propose un échange d’objets à un autre joueur connecté à son compte.',

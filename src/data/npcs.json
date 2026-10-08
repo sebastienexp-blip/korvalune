@@ -320,5 +320,22 @@
         "Tu as accompli ce qu'aucune armée n'aurait pu faire. Korvalune te doit tout, aventurier."
       ]
     }
+  },
+  "stablemaster": {
+    "id": "stablemaster",
+    "name": "Maître d’écurie Bram",
+    "title": "Écurie de Korvalune",
+    "look": {
+      "cloth": 8018478,
+      "armor": 5981744,
+      "cape": 0,
+      "hair": 4863526
+    },
+    "dialogues": {
+      "intro": [
+        "Bienvenue à l’écurie de Korvalune ! Chevaux rapides et griffons des hauts sommets."
+      ]
+    },
+    "stable": true
   }
 }
