@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.6', title: 'Mises à jour automatiques',
+    items: [
+      'Quand une nouvelle version du jeu est publiée, un bandeau « Mettre à jour » apparaît tout seul : plus besoin de penser à actualiser la page.',
+      'Ta partie est sauvegardée avant le rechargement. Rien n’est jamais rechargé de force en plein combat.'
+    ]
+  },
+  {
     version: '10.5', title: 'La boutique a enfin son menu',
     items: [
       'Nouveau bouton « 🌙 Boutique des Lunes » dans le menu principal et dans le menu pause.',

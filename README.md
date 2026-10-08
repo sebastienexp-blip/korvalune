@@ -832,6 +832,11 @@ Dites-moi ce qui vous intéresse et on continue.
 - **100 % de butin de votre classe** : armes uniquement de vos familles, accessoires uniquement avec des attributs utiles à votre classe, et plus aucun bonus de Force/Agilité/Intelligence d'une autre classe sur les objets.
 - **Fluidité** : les objets au sol n'ajoutent plus de lumière dynamique (cause des saccades à chaque drop/ramassage : three.js recompilait tous les shaders de la scène) ; les étiquettes de noms sont mises en cache ; les shaders et textures du butin et des effets de combat sont pré-chauffés au chargement.
 
+## V10.6 — Mises à jour automatiques
+
+- `src/core/UpdateCheck.js` : toutes les 3 min (et au retour sur l'onglet), le jeu relit `index.html` et compare le nom du fichier `assets/index-XXXX.js` avec celui chargé. S'ils diffèrent, un bandeau « Mettre à jour » apparaît ; le clic sauvegarde la partie puis recharge. Rien n'est rechargé de force.
+- `index.html` est servi en `no-cache` : un simple rechargement récupère toujours la dernière version. Inactif en mode développement.
+
 ## V10.5 — Menu de la boutique
 
 - Bouton « 🌙 Boutique des Lunes » dans le **menu principal** (connexion requise) et dans le **menu pause**, en plus de la pastille violette « Boutique » (🌙 + libellé) sur l'écran de jeu.

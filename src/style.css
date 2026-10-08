@@ -820,3 +820,7 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 #side-buttons #btn-lune.tbtn.small { width: 48px; height: 48px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 0; line-height: 1; border-color: #9a7bff; background: linear-gradient(160deg, rgba(70, 48, 140, 0.92), rgba(24, 20, 56, 0.92)); box-shadow: 0 0 10px rgba(154, 123, 255, 0.45); }
 #btn-lune .bl-ico { font-size: 19px; }
 #btn-lune .bl-txt { font-size: 9px; letter-spacing: 0.2px; margin-top: 2px; color: #e7dcff; }
+
+/* V10.6 — bandeau de mise à jour */
+#update-bar { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 99999; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 24px); padding: 10px 14px; border-radius: 12px; background: rgba(20, 26, 52, 0.96); border: 1px solid #e2b866; color: #fff; font-size: 14px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5); }
+#update-bar button { flex: none; min-height: 38px; padding: 6px 14px; border-radius: 8px; border: 0; background: #e2b866; color: #241806; font-weight: 700; font-size: 14px; }
