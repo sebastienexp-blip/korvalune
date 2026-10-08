@@ -4,6 +4,7 @@ import { rarityGlow } from '../data/rarities.js';
 import { PRIMARY_STAT } from '../combat/Classes.js';
 import { countSets, describeBonus } from '../data/sets.js';
 import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
+import { CATALOG, CATEGORIES, CATALOG_BY_ID } from '../data/shopCatalog.js';
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
 // Résumé lisible des effets d'une compétence (écran Compétences)
@@ -88,7 +89,7 @@ export class HUD {
             <button data-act="credits">Crédits</button>
           </div>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.0 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.1 — Korvalune</div>
         </div>
       </div>
 
@@ -212,6 +213,7 @@ export class HUD {
           <button id="btn-quests" class="tbtn small">📜</button>
           <button id="btn-ach" class="tbtn small">🏆</button>
           <button id="btn-social" class="tbtn small">👥</button>
+          <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes">🌙</button>
           <button id="btn-chat" class="tbtn small">💬</button>
         </div>
 
@@ -314,6 +316,17 @@ export class HUD {
           <div id="social-players"></div>
         </div>
         <button data-act="close-social">Fermer</button>
+      </div>
+
+      <div id="lune-screen" class="hidden panel-screen">
+        <h2>Boutique des Lunes</h2>
+        <div id="lune-body">
+          <div id="lune-head"></div>
+          <div id="lune-tabs"></div>
+          <div id="lune-msg"></div>
+          <div id="lune-list"></div>
+        </div>
+        <button data-act="close-lune">Fermer</button>
       </div>
 
       <div id="ach-screen" class="hidden panel-screen">
@@ -424,7 +437,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -865,6 +878,33 @@ export class HUD {
   // qm: QuestManager ; onSelectTier(id) / onAccept(questId): callbacks.
   // ---------- Amis & groupe (V6.0) ----------
   // d : { meId, leaderId, group:[{id,name,level,classId}], friends:[{name,online,char,level}], requests:[nom], players:[{id,name,level}], inGroup }
+  // V10.1 — Boutique des Lunes. d : { shop:{gems,owned,eq,bankTabs,dailyReady,dailyAmount}|null, tab, preview:{slot,id}|null, msg:{ok,text}|null }
+  renderLune(d) {
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const sh = d.shop;
+    const head = this.q('#lune-head'), tabs = this.q('#lune-tabs'), list = this.q('#lune-list'), msg = this.q('#lune-msg');
+    if (!sh) { head.innerHTML = ''; tabs.innerHTML = ''; msg.textContent = ''; list.innerHTML = '<p class="menu-hint">Chargement de la boutique… Si rien n\u2019apparaît, connecte-toi à ton compte (menu principal → Compte).</p>'; return; }
+    head.innerHTML = `<div class="lune-bal"><span class="lune-gem">🌙</span><b>${sh.gems}</b><small>Lunes</small></div>` +
+      `<button class="soc-btn" data-la="daily"${sh.dailyReady ? '' : ' disabled'}>${sh.dailyReady ? `Récompense du jour : +${sh.dailyAmount}` : 'Récompense du jour récupérée'}</button>`;
+    msg.className = d.msg ? (d.msg.ok ? 'lune-ok' : 'lune-ko') : '';
+    msg.textContent = d.msg ? d.msg.text : 'Gagne des Lunes en jouant : récompense du jour et chaque nouveau niveau. Aucun objet de la boutique ne donne de puissance au combat.';
+    tabs.innerHTML = CATEGORIES.map((c) => `<button class="lune-tab${c.id === d.tab ? ' on' : ''}" data-la="tab" data-v="${c.id}">${c.icon} ${esc(c.label)}</button>`).join('');
+    const items = CATALOG.filter((c) => c.cat === d.tab);
+    list.innerHTML = items.map((it) => {
+      const owned = sh.owned.includes(it.id);
+      const eqd = it.cat !== 'perk' && sh.eq[it.cat] === it.id;
+      const prev = d.preview && d.preview.id === it.id;
+      const locked = it.requires && !sh.owned.includes(it.requires);
+      const btns = [];
+      if (it.cat !== 'perk') {
+        btns.push(`<button class="soc-btn" data-la="try" data-v="${it.id}">${prev ? 'Aperçu en cours' : 'Essayer'}</button>`);
+        if (owned) btns.push(eqd ? `<button class="soc-btn" data-la="unequip" data-v="${it.cat}">Retirer</button>` : `<button class="soc-btn lune-go" data-la="equip" data-v="${it.id}">Équiper</button>`);
+      }
+      if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
+      return `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btns.join('')}</div></div>`;
+    }).join('');
+  }
+
   renderSocial(d) {
     this.q('#social-rift').innerHTML = d.rift ? `<div class="soc-row soc-on"><div class="soc-name"><b>🌀 ${String(d.rift.from).replace(/[<>&]/g, '')} est dans une spire</b><small>${d.rift.label}</small></div><button class="soc-btn" data-sa="join-rift">Rejoindre</button></div>` : '';
     const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

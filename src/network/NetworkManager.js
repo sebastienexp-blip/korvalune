@@ -93,6 +93,9 @@ export class NetworkManager {
         else if (msg.silent) { try { localStorage.removeItem('aetheria.session'); } catch { /* ignoré */ } }
         this.bus.emit('net:authResult', msg);
         break;
+      case 'shop': this.bus.emit('net:shop', msg); break;
+      case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
+      case 'playerCos': this.bus.emit('net:playerCos', msg); break;
       case 'charsUpdate': this.bus.emit('net:chars', msg); break;
       case 'saveAck': this.bus.emit('net:saveAck', msg); break;
       default: break;
@@ -133,6 +136,12 @@ export class NetworkManager {
   friendAccept(name) { this._send({ t: 'friend:accept', from: name }); }
   friendDecline(name) { this._send({ t: 'friend:decline', from: name }); }
   friendRemove(name) { this._send({ t: 'friend:remove', name }); }
+
+  // ---------- Boutique des Lunes (V10.1) : le serveur valide tout ----------
+  shopGet() { this._send({ t: 'shop:get' }); }
+  shopBuy(id) { this._send({ t: 'shop:buy', id }); }
+  shopEquip(slot, id) { this._send({ t: 'shop:equip', slot, id: id || null }); }
+  shopDaily() { this._send({ t: 'shop:daily' }); }
 
   // ---------- Comptes (ÉTAPE 6) ----------
   register(username, password) { this._send({ t: 'register', username, password }); }

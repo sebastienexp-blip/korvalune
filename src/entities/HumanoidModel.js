@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { clamp, lerp } from '../core/math.js';
 import { glowTexture, safeTexture } from '../visual/Textures.js';
+import { updateCosmetics } from '../visual/Cosmetics.js';
 import { updateWeaponAura } from '../visual/WeaponAura.js';
 import { createHumanoidLegacy } from './HumanoidLegacy.js';
 import { createBow } from './Bow.js';
@@ -457,6 +458,7 @@ export function animateHumanoid(rig, s, dt) {
   if (wv) for (const key in wv) if (wv[key].visible) { wk = key; break; }
   rig.weaponKind = wk;
   if (rig.weaponAura) updateWeaponAura(rig.weaponAura, dt);
+  if (rig.cosFx) updateCosmetics(rig, dt, s.speed || 0);
 
   const k = clamp(s.speed / 7.4, 0, 1.15);
   rig.k += (k - rig.k) * Math.min(1, dt * 10);

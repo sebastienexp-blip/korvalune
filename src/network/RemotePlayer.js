@@ -3,6 +3,8 @@ import { createHumanoid, animateHumanoid } from '../entities/HumanoidModel.js';
 import { makeLabel } from '../ui/Label.js';
 import { CLASSES } from '../combat/Classes.js';
 import { damp, lerpAngle } from '../core/math.js';
+import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
+import { CATALOG_BY_ID } from '../data/shopCatalog.js';
 
 // Représentation visuelle d'un autre joueur connecté. La position réelle
 // n'est mise à jour que ~9 fois/seconde par le serveur ; on lisse ("interpole")
@@ -29,6 +31,22 @@ export class RemotePlayer {
     this.label = makeLabel(`${info.name}  ·  Nv.${info.level}`, { color: '#bfe6ff', size: 38 });
     this.label.position.y = 2.05;
     this.rig.root.add(this.label);
+    this.setCos(info.cos);
+  }
+
+  // V10.1 : cosmétiques équipés (ids du catalogue, fournis par le serveur) : cercle, traînée, ailes, titre
+  setCos(cos) {
+    this.cos = cos && typeof cos === 'object' ? cos : {};
+    try { applyCosmetics(this.rig, this.cos); } catch { /* ignoré */ }
+    const tf = this.cos.title && CATALOG_BY_ID[this.cos.title]?.fx;
+    if (this._titleKey === (tf ? this.cos.title : '')) return;
+    this._titleKey = tf ? this.cos.title : '';
+    if (this.titleLabel) { this.rig.root.remove(this.titleLabel); this.titleLabel.material.map?.dispose(); this.titleLabel.material.dispose(); this.titleLabel = null; }
+    if (tf) {
+      this.titleLabel = makeLabel(`« ${tf.text} »`, { color: tf.color, size: 32, scale: 2.2 });
+      this.titleLabel.position.y = 2.38;
+      this.rig.root.add(this.titleLabel);
+    }
   }
 
   applyState(info) {
@@ -63,10 +81,11 @@ export class RemotePlayer {
       action: isAction ? this.anim : null, actionT: this._actionT, actionDur: 0.5,
       dead: this.anim === 'dead', crouch: false
     }, dt);
-    if (camQuat) this.label.quaternion.copy(camQuat);
+    if (camQuat) { this.label.quaternion.copy(camQuat); if (this.titleLabel) this.titleLabel.quaternion.copy(camQuat); }
   }
 
   dispose(scene) {
+    disposeCosmetics(this.rig);
     scene.remove(this.rig.root);
     this.rig.root.traverse((o) => {
       if (o.isMesh) { if (!o.geometry.userData?.shared) o.geometry.dispose(); if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose()); else o.material.dispose(); }

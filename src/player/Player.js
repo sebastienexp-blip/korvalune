@@ -4,6 +4,7 @@ import { CONFIG } from '../core/config.js';
 import { clamp, damp, lerpAngle } from '../core/math.js';
 import { createHumanoid, animateHumanoid } from '../entities/HumanoidModel.js';
 import { setWeaponAura } from '../visual/WeaponAura.js';
+import { applyCosmetics } from '../visual/Cosmetics.js';
 import { CLASSES, PRIMARY_STAT, SKILLS, getClassSkillPool } from '../combat/Classes.js';
 import { getItem, RARITY, resolveItem } from '../inventory/Item.js';
 import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../combat/WeaponRules.js';
@@ -192,6 +193,13 @@ export class Player {
   // l'équipement porté : affiche la pièce correspondante (arme/bouclier/
   // casque/épaulières/plastron/cape) quand équipée, la cache sinon, et teinte
   // selon la rareté de l'objet.
+  // V10.1 : cosmétiques de la boutique (aura d'arme, cercle, traînée, ailes) — identifiants du catalogue
+  setCosmetics(cos) {
+    this.cos = cos || {};
+    try { applyCosmetics(this.rig, this.cos); } catch (e) { console.warn('[V10.1] cosmétiques', e); }
+    if (this._equipRef) this.refreshGearVisuals(this._equipRef);
+  }
+
   refreshGearVisuals(equipment) {
     const ev = this.rig.equipVisuals;
     if (!ev) return;
@@ -208,7 +216,7 @@ export class Player {
     const visualType = mainView?.visual || null;
     for (const [type, mesh] of Object.entries(ev.weapons)) mesh.visible = type === visualType;
     if (visualType) tint(this.rig.matRefs.weapons[visualType], s.mainhand);
-    try { setWeaponAura(this.rig, mainView?.rarityInfo?.id, visualType); } catch (e) { console.warn('[V9.4] aura d\'arme indisponible', e); }
+    try { setWeaponAura(this.rig, mainView?.rarityInfo?.id, visualType, this.cos?.aura); } catch (e) { console.warn('[V9.4] aura d\'arme indisponible', e); }
 
     ev.shield.visible = !!s.offhand;
     tint(this.rig.matRefs.shield, s.offhand);

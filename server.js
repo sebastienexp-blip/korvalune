@@ -26,6 +26,7 @@ import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/security.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
+import { ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
 const MAX_GROUP_SIZE = 5;
@@ -81,7 +82,7 @@ function broadcastAll(msg, exceptId) {
   for (const p of players.values()) if (p.id !== exceptId) send(p.ws, msg);
 }
 function playerSummary(p) {
-  return { id: p.id, name: p.name, classId: p.classId, level: p.level, pos: p.pos, yaw: p.yaw, anim: p.anim, hp: p.hp, maxHp: p.maxHp, inst: p.inst | 0 };
+  return { id: p.id, name: p.name, classId: p.classId, level: p.level, pos: p.pos, yaw: p.yaw, anim: p.anim, hp: p.hp, maxHp: p.maxHp, inst: p.inst | 0, cos: p.cos || {} };
 }
 
 function findByName(name) {
@@ -302,7 +303,15 @@ wss.on('connection', (ws, req) => {
     if (authUsername && authUsername !== key) presence(authUsername, ws, false);
     authUsername = key;
     if (key) { presence(key, ws, true); if (player) player.account = key; pushFriends(key); pushFriendsOf(key); }
+    refreshCos(key);
   };
+  // V10.1 — cosmétiques équipés : lus sur le compte (jamais envoyés par le client), diffusés aux autres joueurs
+  const refreshCos = (key) => {
+    if (!player) return;
+    player.cos = key && accounts[key] ? publicCos(accounts[key]) : {};
+    broadcastAll({ t: 'playerCos', id: player.id, cos: player.cos }, player.id);
+  };
+  const pushShop = () => { if (authUsername && accounts[authUsername]) send(ws, shopView(accounts[authUsername])); };
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
   const authLimiter = new RateLimiter(5, 10000);
@@ -319,6 +328,7 @@ wss.on('connection', (ws, req) => {
       if (!key) { send(ws, { t: 'authResult', ok: false, error: '', silent: true }); return; }
       setAuth(key);
       send(ws, { t: 'authResult', ok: true, token: msg.token, username: key, ...accView(accounts[key]), resumed: true });
+      pushShop();
       return;
     }
     if (msg.t === 'register' || msg.t === 'login') {
@@ -359,10 +369,11 @@ wss.on('connection', (ws, req) => {
         const token = makeToken(SECRET, key);
         setAuth(key);
         send(ws, { t: 'authResult', ok: true, token, username: key, ...accView(accounts[key]) });
+        pushShop();
       })().catch((e) => { console.error('[Korvalune] auth :', e.message); fail('Erreur serveur.'); });
       return;
     }
-    if (msg.t === 'logout') { const old = authUsername; if (old) { presence(old, ws, false); if (player) player.account = null; } authUsername = null; if (old) pushFriendsOf(old); return; }
+    if (msg.t === 'logout') { const old = authUsername; if (old) { presence(old, ws, false); if (player) player.account = null; } authUsername = null; refreshCos(null); if (old) pushFriendsOf(old); return; }
 
     // --- Amis (V6.0) : par nom de compte ---
     if (msg.t.startsWith('friend:')) {
@@ -435,14 +446,30 @@ wss.on('connection', (ws, req) => {
       const clean = sanitizeSave(prevChar, msg.data, elapsed);
       if (!clean) { send(ws, { t: 'saveAck', ok: false, error: 'Données de sauvegarde invalides.' }); return; }
       // le coffre est partagé par tous les personnages du compte
-      const bank = sanitizeItemSlots(msg.data?.bank, 240, sanitize);
+      const bank = sanitizeItemSlots(msg.data?.bank, bankCapOf(acc), sanitize);
       if (bank) acc.sharedBank = bank;
       delete clean.bank;
       acc.chars[slot] = clean;
       acc.charSaveAt[slot] = Date.now();
       acc.lastSaveAt = Date.now();
+      const gainL = levelReward(acc, clean.level);
       persistAccounts(accounts);
       send(ws, { t: 'saveAck', ok: true });
+      if (gainL > 0) { send(ws, shopView(acc)); send(ws, { t: 'shop:msg', ok: true, text: `+${gainL} Lunes pour ta progression !` }); }
+      return;
+    }
+
+    // --- Boutique des Lunes (V10.1) ---
+    if (msg.t.startsWith('shop:')) {
+      if (!friendLimiter.allow()) return;
+      const key = authUsername && resolveAccount(authUsername);
+      if (!key) { send(ws, { t: 'shop:msg', ok: false, text: 'Connecte-toi à ton compte pour utiliser la boutique.' }); return; }
+      const acc = ensureChars(accounts[key]);
+      const reply = (r, okText) => { send(ws, { t: 'shop:msg', ok: !!r.ok, text: r.ok ? okText : r.error }); send(ws, shopView(acc)); };
+      if (msg.t === 'shop:get') { send(ws, shopView(acc)); return; }
+      if (msg.t === 'shop:buy') { const r = shopBuy(acc, msg.id); if (r.ok) persistAccounts(accounts); reply(r, r.ok ? `Acheté : ${r.item.name}` : ''); return; }
+      if (msg.t === 'shop:equip') { const r = shopEquip(acc, msg.slot, msg.id ?? null); if (r.ok) { persistAccounts(accounts); for (const p of players.values()) if (p.account === key) { p.cos = publicCos(acc); broadcastAll({ t: 'playerCos', id: p.id, cos: p.cos }, p.id); } } reply(r, msg.id ? 'Équipé.' : 'Retiré.'); return; }
+      if (msg.t === 'shop:daily') { const r = claimDaily(acc); if (r.ok) persistAccounts(accounts); reply(r, r.ok ? `+${r.amount} Lunes : récompense quotidienne !` : ''); return; }
       return;
     }
 
@@ -460,7 +487,8 @@ wss.on('connection', (ws, req) => {
         anim: 'idle',
         hp: Number(msg.hp) || 100,
         maxHp: Number(msg.maxHp) || 100,
-        inst: 0, account: authUsername
+        inst: 0, account: authUsername,
+        cos: authUsername && accounts[authUsername] ? publicCos(accounts[authUsername]) : {}
       };
       players.set(id, player);
       send(ws, { t: 'welcome', id, players: [...players.values()].filter((p) => p.id !== id).map(playerSummary) });

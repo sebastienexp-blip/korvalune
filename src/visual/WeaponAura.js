@@ -2,6 +2,7 @@
 // Aucune lumière dynamique (pas de PointLight) : uniquement des matériaux additifs, très léger pour le mobile.
 import * as THREE from 'three';
 import { glowTexture, safeTexture } from './Textures.js';
+import { CATALOG_BY_ID } from '../data/shopCatalog.js';
 
 let _glow;
 const glowTex = () => (_glow === undefined ? (_glow = safeTexture(glowTexture, 64)) : _glow);
@@ -25,9 +26,18 @@ function disposeAura(a) {
 }
 
 // Pose (ou retire) l'aura sur l'arme tenue. rarityId : 'commun' | 'magique' | 'rare' | 'legendaire' | 'mythique' | 'absolu'
-export function setWeaponAura(rig, rarityId, visualType) {
+// V10.1 : cosId = aura cosmétique de la boutique (prioritaire sur l'aura de rareté, visible même sur une arme commune)
+function cosmeticStyle(cosId) {
+  const fx = cosId && CATALOG_BY_ID[cosId] && CATALOG_BY_ID[cosId].fx;
+  if (!fx) return null;
+  return { color: fx.color || 0xffffff, glow: 0.5, sparks: 18, size: 0.1, rad: 0.23, rise: 0.55, spin: fx.spin || 2.2, pulse: 3, embers: !!fx.embers, prism: !!fx.prism };
+}
+
+export function setWeaponAura(rig, rarityId, visualType, cosId) {
   const wv = rig && rig.equipVisuals && rig.equipVisuals.weapons;
-  const st = STYLES[rarityId];
+  const cs = cosmeticStyle(cosId);
+  const st = cs || STYLES[rarityId];
+  if (cs) rarityId = cosId;
   const parent = wv && visualType && wv[visualType];
   if (rig.weaponAura && rig.weaponAura.key === rarityId + '|' + visualType) return; // déjà en place
   disposeAura(rig.weaponAura); rig.weaponAura = null;

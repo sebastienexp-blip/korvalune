@@ -56,6 +56,7 @@ import { GroupWorld } from '../network/GroupWorld.js';
 import { applyOcclusionFade, updateOcclusion } from '../visual/OcclusionFade.js';
 import { share as netShare } from '../network/NetShare.js';
 import { RemotePlayer } from '../network/RemotePlayer.js';
+import { CATALOG_BY_ID, LUNES } from '../data/shopCatalog.js';
 import enemiesData from '../data/enemies.json';
 import npcsData from '../data/npcs.json';
 import skillDefs from '../data/skills.json';
@@ -626,7 +627,7 @@ export class Game {
     b.on('net:chars', (msg) => { this._serverChars = msg.chars || []; this._serverBank = msg.bank || []; this._refreshContinueButton(); if (this.hud._curScreen === 'char-select') this._openCharSelect(); });
     b.on('ui:account', () => { this.hud.showScreen('account-screen'); this.hud.setAccountError(''); });
     b.on('ui:account-back', () => this.hud.showScreen('main-menu'));
-    b.on('ui:account-logout', () => { this.net.logout(); this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
+    b.on('ui:account-logout', () => { this.net.logout(); this._shop = null; this._preview = null; this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
     b.on('net:authResult', (msg) => {
       if (msg.ok) {
         this.hud.setAccountError('');
@@ -781,6 +782,16 @@ export class Game {
     b.on('net:system', (msg) => this.hud.appendChat({ channel: 'general', system: true, text: msg.text }));
     b.on('net:who', (players) => this.hud.appendChat({ channel: 'general', system: true, text: `En ligne (${players.length}) : ${players.map((p) => `${p.name} (Nv.${p.level})`).join(', ') || '—'}` }));
     b.on('net:group', (msg) => { this.group = msg.members || []; this.gw.onGroup(msg); this._renderSocial(); });
+    // V10.1 — boutique des Lunes (état fourni par le serveur : le client ne décide de rien)
+    b.on('net:shop', (msg) => {
+      this._shop = msg;
+      this._growBank();
+      if (this.player) this.player.setCosmetics(this._shopCos());
+      this._renderLune();
+    });
+    b.on('net:shopMsg', (msg) => { this._luneMsg = { ok: msg.ok, text: msg.text }; if (msg.text) this.hud.notify(msg.text, msg.ok ? 'quest' : 'info'); this._renderLune(); });
+    b.on('net:playerCos', (msg) => { this.remotePlayers.get(msg.id)?.setCos(msg.cos); });
+    b.on('ui:close-lune', () => this._closeLune());
     b.on('net:friends', (msg) => {
       const before = this._friends?.requests?.length || 0;
       this._friends = msg;
@@ -807,6 +818,22 @@ export class Game {
     this.root.querySelector('#btn-quests').addEventListener('click', () => this._openQuestBoard());
     this.root.querySelector('#btn-ach').addEventListener('click', () => this._openAchievements());
     this.root.querySelector('#btn-social').addEventListener('click', () => this._openSocial());
+    this.root.querySelector('#btn-lune').addEventListener('click', () => this._openLune());
+    this.root.querySelector('#lune-screen').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-la]');
+      if (!btn || btn.disabled) return;
+      const v = btn.dataset.v;
+      switch (btn.dataset.la) {
+        case 'tab': this._luneTab = v; this._luneMsg = null; break;
+        case 'daily': this.net.shopDaily(); return;
+        case 'buy': this.net.shopBuy(v); return;
+        case 'equip': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = null; this.net.shopEquip(it.cat, v); } return; }
+        case 'unequip': this._preview = null; this.net.shopEquip(v, null); return;
+        case 'try': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = this._preview?.id === v ? null : { slot: it.cat, id: v }; this.player?.setCosmetics(this._shopCos()); } break; }
+        default: return;
+      }
+      this._renderLune();
+    });
     {
       const scr = this.root.querySelector('#social-screen');
       scr.addEventListener('click', (e) => {
@@ -1005,7 +1032,8 @@ export class Game {
     this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...this._secondaryQuests]);
     this.inventory = new Inventory(this.bus, 30, save?.inventory);
     this.equipment = new Equipment(this.bus, this.player, save?.equipment);
-    this.bank = new Inventory(this.bus, 120, save?.bank);
+    this.bank = new Inventory(this.bus, 120 + 30 * Math.min(LUNES.maxBankTabs, this._shop?.bankTabs || 0), save?.bank);
+    this.player.setCosmetics(this._shopCos());
     this.bankPage = 0;
     this.rift = this.riftStatue ? new RiftSystem(this, save?.rift) : null;
     if (!save || !Array.isArray(save.inventory)) { // nouveau personnage (la création passe un objet sans inventaire)
@@ -1189,6 +1217,41 @@ export class Game {
     this.rift._viaGroup = true;
     this.rift.pending = { modeId: r.modeId, level: r.level, seed: r.seed, keyUsed: false };
     this.rift.enter();
+  }
+
+  // ---------- V10.1 : boutique des Lunes ----------
+  // cosmétiques réellement équipés (serveur) + aperçu temporaire éventuel
+  _shopCos() {
+    const cos = { ...(this._shop?.eq || {}) };
+    if (this._preview) cos[this._preview.slot] = this._preview.id;
+    return cos;
+  }
+
+  _growBank() { // onglets de coffre achetés : le coffre grandit sans rien perdre
+    const n = 120 + 30 * Math.min(LUNES.maxBankTabs, this._shop?.bankTabs || 0);
+    if (this.bank && this.bank.size < n) { while (this.bank.slots.length < n) this.bank.slots.push(null); this.bank.size = n; }
+  }
+
+  _openLune() {
+    if (!this.player || this.dialogueOpen || this.modalOpen) return;
+    if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour utiliser la boutique des Lunes.', 'info'); return; }
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    this._luneTab = this._luneTab || 'aura';
+    this._luneMsg = null;
+    this.hud.showScreen('lune-screen');
+    this._renderLune();
+    this.net.shopGet();
+  }
+
+  _closeLune() {
+    if (this._preview) { this._preview = null; this.player?.setCosmetics(this._shopCos()); }
+    this._closeModal();
+  }
+
+  _renderLune() {
+    if (this.hud.q('#lune-screen').classList.contains('hidden')) return;
+    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg });
   }
 
   _openSocial() {
