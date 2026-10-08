@@ -13,6 +13,6 @@ services:
       - key: SESSION_SECRET
         generateValue: true
     disk:
-      name: korvalune-data
+      name: aetheria-data
       mountPath: /data
       sizeGB: 1
