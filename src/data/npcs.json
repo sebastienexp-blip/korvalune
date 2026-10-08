@@ -1,0 +1,324 @@
+{
+  "guard": {
+    "id": "guard",
+    "name": "Garde Halvar",
+    "title": "Garde de la porte sud",
+    "look": {
+      "cloth": 3823690,
+      "armor": 11712171,
+      "cape": 8134699,
+      "hair": 5260582
+    },
+    "dialogues": {
+      "intro": [
+        "Halte, voyageur ! Bienvenue à Aetheria, la cité des Sept Routes.",
+        "Les loups rôdent de plus en plus près de la route du sud. Ils effraient les marchands.",
+        "Si tu sais tenir une lame, va en chasser un et reviens me voir. Une récompense t'attend."
+      ],
+      "hunt": [
+        "Les loups sont au sud, le long de la route. Sois prudent : ils fuient quand ils sont blessés, mais reviennent.",
+        "Utilise tes compétences ! Le Tourbillon touche tous les ennemis autour de toi."
+      ],
+      "report": [
+        "Un loup de moins ! Beau travail, aventurier.",
+        "Prends cette récompense. Aetheria a besoin de gens comme toi."
+      ],
+      "done": [
+        "Les routes sont plus sûres grâce à toi. Explore les environs, mais ne t'éloigne pas trop."
+      ]
+    }
+  },
+  "weaponsmith": {
+    "id": "weaponsmith",
+    "name": "Forgeron Ymir",
+    "title": "Marchand d'armes",
+    "look": {
+      "cloth": 2960685,
+      "armor": 6710886,
+      "cape": 0,
+      "hair": 3225907
+    },
+    "dialogues": {
+      "intro": [
+        "Bienvenue à ma forge ! Lames aiguisées et boucliers solides, tout est fait main.",
+        "Regarde mon étal si tu cherches à t'équiper."
+      ]
+    },
+    "shop": [
+      {
+        "itemId": "sword_common",
+        "price": 15
+      },
+      {
+        "itemId": "sword_uncommon",
+        "price": 40
+      },
+      {
+        "itemId": "sword_rare",
+        "price": 110
+      },
+      {
+        "itemId": "shield_common",
+        "price": 12
+      },
+      {
+        "itemId": "shield_uncommon",
+        "price": 34
+      },
+      {
+        "itemId": "staff_common",
+        "price": 15
+      },
+      {
+        "itemId": "staff_uncommon",
+        "price": 40
+      },
+      {
+        "itemId": "bow_common",
+        "price": 15
+      },
+      {
+        "itemId": "bow_uncommon",
+        "price": 40
+      },
+      {
+        "itemId": "dagger_common",
+        "price": 15
+      },
+      {
+        "itemId": "dagger_uncommon",
+        "price": 40
+      }
+    ]
+  },
+  "armorsmith": {
+    "id": "armorsmith",
+    "name": "Armurière Sella",
+    "title": "Marchande d'armures",
+    "look": {
+      "cloth": 4535293,
+      "armor": 816468,
+      "cape": 3160298,
+      "hair": 2172214
+    },
+    "dialogues": {
+      "intro": [
+        "Une armure bien ajustée peut faire la différence entre une victoire et une tombe.",
+        "J'ai de quoi te couvrir de la tête aux pieds."
+      ]
+    },
+    "shop": [
+      {
+        "itemId": "helm_common",
+        "price": 10
+      },
+      {
+        "itemId": "shoulders_common",
+        "price": 10
+      },
+      {
+        "itemId": "chest_common",
+        "price": 18
+      },
+      {
+        "itemId": "chest_uncommon",
+        "price": 42
+      },
+      {
+        "itemId": "gloves_common",
+        "price": 10
+      },
+      {
+        "itemId": "legs_common",
+        "price": 12
+      },
+      {
+        "itemId": "legs_uncommon",
+        "price": 36
+      },
+      {
+        "itemId": "boots_common",
+        "price": 10
+      }
+    ]
+  },
+  "apothecary": {
+    "id": "apothecary",
+    "name": "Herboriste Wren",
+    "title": "Marchande de potions",
+    "look": {
+      "cloth": 3949557,
+      "armor": 6636321,
+      "cape": 4552722,
+      "hair": 8875044
+    },
+    "dialogues": {
+      "intro": [
+        "Potions de soin, fioles de mana… tout est frais du matin, foi d'herboriste.",
+        "N'oublie jamais d'en emporter avant de partir à l'aventure."
+      ]
+    },
+    "shop": [
+      {
+        "itemId": "potion_heal_small",
+        "price": 6
+      },
+      {
+        "itemId": "potion_heal_big",
+        "price": 14
+      },
+      {
+        "itemId": "potion_mana",
+        "price": 8
+      }
+    ]
+  },
+  "hugo": {
+    "id": "hugo",
+    "name": "Hugo",
+    "title": "Apprenti aventurier",
+    "look": {
+      "cloth": 3581519,
+      "armor": 7891710,
+      "cape": 0,
+      "hair": 4472129
+    },
+    "questChain": [
+      "hugo_1",
+      "hugo_2"
+    ],
+    "dialogues": {
+      "intro": [
+        "Salut !"
+      ],
+      "offer_hugo_1": [
+        "Oh, un nouveau visage ! Je m'appelle Hugo, j'essaie de devenir aventurier, mais les loups autour de la ville me terrifient un peu.",
+        "Tu as l'air plus aguerri que moi. Tu veux bien m'en débarrasser quelques-uns ? Quatre devraient suffire à me rassurer."
+      ],
+      "progress_hugo_1": [
+        "Alors, ces loups ? J'ai hâte de pouvoir sortir sans trembler."
+      ],
+      "offer_hugo_2": [
+        "Tu as vraiment du talent ! Ça me donne du courage.",
+        "Les bandits de la route m'inquiètent presque autant. Si tu pouvais en affronter six, je saurais que la route est sûre."
+      ],
+      "progress_hugo_2": [
+        "Les bandits ne t'ont pas posé de problème, j'espère ?"
+      ],
+      "all_done": [
+        "Grâce à toi, j'ose enfin sortir d'Aetheria. Un jour, moi aussi, je serai aussi fort que toi !"
+      ]
+    }
+  },
+  "sebastien": {
+    "id": "sebastien",
+    "name": "Sébastien",
+    "title": "Éclaireur",
+    "look": {
+      "cloth": 3357671,
+      "armor": 4934475,
+      "cape": 2434341,
+      "hair": 2167065
+    },
+    "questChain": [
+      "sebastien_1",
+      "sebastien_2"
+    ],
+    "dialogues": {
+      "intro": [
+        "Les routes du continent ne sont pas sans danger."
+      ],
+      "offer_sebastien_1": [
+        "Je reviens tout juste des Terres Corrompues. Ce qui s'y passe ne me dit rien qui vaille.",
+        "Les loups là-bas ont changé, ils sont... autre chose. Va m'en éliminer six, j'ai besoin de savoir à quel point c'est grave."
+      ],
+      "progress_sebastien_1": [
+        "Les Terres Corrompues sont toujours aussi dangereuses. Fais attention là-bas."
+      ],
+      "offer_sebastien_2": [
+        "Tes rapports confirment mes craintes. Il y a un Gardien corrompu qui semble commander les autres.",
+        "Si on l'abat, le reste de la zone devrait se calmer un peu. Je compte sur toi."
+      ],
+      "progress_sebastien_2": [
+        "Ce Gardien corrompu n'a pas encore été vaincu, à ce que je vois."
+      ],
+      "all_done": [
+        "Grâce à toi, les Terres Corrompues sont un peu moins terrifiantes. Mais je doute que ce soit la dernière menace de ce genre."
+      ]
+    }
+  },
+  "morgane": {
+    "id": "morgane",
+    "name": "Morgane",
+    "title": "Érudite",
+    "look": {
+      "cloth": 7894260,
+      "armor": 11511390,
+      "cape": 5527768,
+      "hair": 2894892
+    },
+    "questChain": [
+      "morgane_1",
+      "morgane_2"
+    ],
+    "dialogues": {
+      "intro": [
+        "Les terres lointaines cachent bien des secrets."
+      ],
+      "offer_morgane_1": [
+        "J'étudie les terres lointaines depuis des années. Le Royaume Céleste en particulier cache des secrets sur les bâtisseurs d'Aetheria.",
+        "Pourrais-tu m'y rapporter des échantillons ? Élimine six loups célestes, leurs crocs portent une trace d'énergie que je veux analyser."
+      ],
+      "progress_morgane_1": [
+        "Les loups célestes ne se laissent pas facilement approcher, n'est-ce pas ?"
+      ],
+      "offer_morgane_2": [
+        "Fascinant... cette énergie est bien plus ancienne que je ne le pensais.",
+        "Le Gardien céleste doit en être la source. Si tu le vaincs, je pourrai enfin comprendre ce que les anciens protégeaient."
+      ],
+      "progress_morgane_2": [
+        "Le Gardien céleste garde encore ses secrets."
+      ],
+      "all_done": [
+        "Ce que tu m'as rapporté va occuper mes recherches pendant des années. Merci, vraiment."
+      ]
+    }
+  },
+  "laurine": {
+    "id": "laurine",
+    "name": "Laurine",
+    "title": "Capitaine",
+    "look": {
+      "cloth": 2501670,
+      "armor": 10066431,
+      "cape": 6756575,
+      "hair": 3027200
+    },
+    "questChain": [
+      "laurine_1",
+      "laurine_2"
+    ],
+    "dialogues": {
+      "intro": [
+        "La dernière campagne approche."
+      ],
+      "offer_laurine_1": [
+        "On m'envoie ici pour préparer la dernière campagne. Le Néant Primordial grouille de créatures que je n'ai jamais vues ailleurs.",
+        "J'ai besoin de savoir si un soldat seul peut survivre là-bas. Élimine huit traqueurs primordiaux et reviens me faire ton rapport."
+      ],
+      "progress_laurine_1": [
+        "Les traqueurs primordiaux ne pardonnent pas la moindre erreur. Sois prudent."
+      ],
+      "offer_laurine_2": [
+        "Ton rapport m'a convaincue : tu es prêt.",
+        "Le Souverain du Néant attend au cœur de cette région. Vaincs-le, et plus aucun monde ne te sera fermé."
+      ],
+      "progress_laurine_2": [
+        "Le Souverain du Néant est toujours debout. Prends ton temps, mais ne recule pas."
+      ],
+      "all_done": [
+        "Tu as accompli ce qu'aucune armée n'aurait pu faire. Aetheria te doit tout, aventurier."
+      ]
+    }
+  }
+}

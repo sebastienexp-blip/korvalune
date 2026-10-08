@@ -1,0 +1,2003 @@
+{
+ "wolf": {
+  "id": "wolf",
+  "name": "Loup gris",
+  "species": "wolf",
+  "speed": 5.6,
+  "aggro": 13,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.3,
+  "respawn": 25,
+  "flees": true,
+  "rigType": "creature",
+  "itemDropChance": 0.3,
+  "model": {
+   "fur": 6974058,
+   "belly": 10132122,
+   "scale": 1,
+   "bodyLen": 1,
+   "snout": 0.32
+  }
+ },
+ "boar": {
+  "id": "boar",
+  "name": "Sanglier",
+  "species": "boar",
+  "speed": 4.6,
+  "aggro": 9,
+  "leash": 34,
+  "attackRange": 2.0,
+  "attackCd": 1.6,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.3,
+  "model": {
+   "fur": 4925988,
+   "belly": 7362600,
+   "scale": 1.1,
+   "bodyLen": 0.85,
+   "snout": 0.22,
+   "tusks": true
+  }
+ },
+ "bandit": {
+  "id": "bandit",
+  "name": "Bandit des routes",
+  "species": "bandit",
+  "speed": 4.8,
+  "aggro": 12,
+  "leash": 40,
+  "attackRange": 2.2,
+  "attackCd": 1.1,
+  "respawn": 35,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 2760984,
+   "armor": 4866104,
+   "hair": 1709072,
+   "shield": false
+  }
+ },
+ "bandit_chief": {
+  "id": "bandit_chief",
+  "name": "Chef bandit",
+  "species": "elite",
+  "speed": 4.6,
+  "aggro": 14,
+  "leash": 30,
+  "attackRange": 2.4,
+  "attackCd": 1.0,
+  "respawn": 60,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.75,
+  "model": {
+   "cloth": 5903380,
+   "armor": 6955040,
+   "hair": 986122,
+   "shield": true
+  }
+ },
+ "wolf_corrupted": {
+  "id": "wolf_corrupted",
+  "name": "Loup corrompu",
+  "species": "wolf",
+  "speed": 6.0,
+  "aggro": 14,
+  "leash": 40,
+  "attackRange": 1.9,
+  "attackCd": 1.2,
+  "respawn": 25,
+  "flees": true,
+  "rigType": "creature",
+  "itemDropChance": 0.32,
+  "model": {
+   "fur": 3357695,
+   "belly": 5779908,
+   "scale": 1.05,
+   "bodyLen": 1,
+   "snout": 0.32
+  }
+ },
+ "boar_corrupted": {
+  "id": "boar_corrupted",
+  "name": "Sanglier corrompu",
+  "species": "boar",
+  "speed": 4.8,
+  "aggro": 10,
+  "leash": 36,
+  "attackRange": 2.0,
+  "attackCd": 1.5,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.32,
+  "model": {
+   "fur": 3092832,
+   "belly": 5257539,
+   "scale": 1.15,
+   "bodyLen": 0.85,
+   "snout": 0.22,
+   "tusks": true
+  }
+ },
+ "marauder_corrupted": {
+  "id": "marauder_corrupted",
+  "name": "Maraudeur corrompu",
+  "species": "bandit",
+  "speed": 5.0,
+  "aggro": 13,
+  "leash": 42,
+  "attackRange": 2.2,
+  "attackCd": 1.0,
+  "respawn": 35,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 7294481,
+   "armor": 6180150,
+   "hair": 3092890,
+   "shield": false
+  }
+ },
+ "warden_corrupted": {
+  "id": "warden_corrupted",
+  "name": "Gardien corrompu",
+  "species": "elite",
+  "speed": 4.6,
+  "aggro": 15,
+  "leash": 32,
+  "attackRange": 2.5,
+  "attackCd": 0.95,
+  "respawn": 65,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.78,
+  "model": {
+   "cloth": 4587332,
+   "armor": 5600330,
+   "hair": 2171169,
+   "shield": true
+  }
+ },
+ "wolf_celestial": {
+  "id": "wolf_celestial",
+  "name": "Loup céleste",
+  "species": "wolf",
+  "speed": 6.0,
+  "aggro": 14,
+  "leash": 40,
+  "attackRange": 1.9,
+  "attackCd": 1.15,
+  "respawn": 25,
+  "flees": true,
+  "rigType": "creature",
+  "itemDropChance": 0.34,
+  "model": {
+   "fur": 15921906,
+   "belly": 16773836,
+   "scale": 1.1,
+   "bodyLen": 1.05,
+   "snout": 0.3
+  }
+ },
+ "boar_celestial": {
+  "id": "boar_celestial",
+  "name": "Sanglier céleste",
+  "species": "boar",
+  "speed": 4.8,
+  "aggro": 10,
+  "leash": 36,
+  "attackRange": 2.0,
+  "attackCd": 1.5,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.34,
+  "model": {
+   "fur": 14737632,
+   "belly": 16767181,
+   "scale": 1.2,
+   "bodyLen": 0.9,
+   "snout": 0.22,
+   "tusks": true
+  }
+ },
+ "sentinel_celestial": {
+  "id": "sentinel_celestial",
+  "name": "Sentinelle céleste",
+  "species": "bandit",
+  "speed": 5.0,
+  "aggro": 13,
+  "leash": 42,
+  "attackRange": 2.2,
+  "attackCd": 1.0,
+  "respawn": 35,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.44,
+  "model": {
+   "cloth": 16113590,
+   "armor": 16765240,
+   "hair": 16777164,
+   "shield": false
+  }
+ },
+ "warden_celestial": {
+  "id": "warden_celestial",
+  "name": "Gardien céleste",
+  "species": "elite",
+  "speed": 4.8,
+  "aggro": 15,
+  "leash": 34,
+  "attackRange": 2.4,
+  "attackCd": 0.95,
+  "respawn": 60,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.78,
+  "model": {
+   "cloth": 14737375,
+   "armor": 15921660,
+   "hair": 16777164,
+   "shield": true
+  }
+ },
+ "wraith_abyssal": {
+  "id": "wraith_abyssal",
+  "name": "Spectre abyssal",
+  "species": "wolf",
+  "speed": 6.4,
+  "aggro": 16,
+  "leash": 44,
+  "attackRange": 2.0,
+  "attackCd": 1.1,
+  "respawn": 28,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.37,
+  "model": {
+   "fur": 1247234,
+   "belly": 2500134,
+   "scale": 1.2,
+   "bodyLen": 1.05,
+   "snout": 0.3
+  }
+ },
+ "behemoth_abyssal": {
+  "id": "behemoth_abyssal",
+  "name": "Béhémoth abyssal",
+  "species": "boar",
+  "speed": 4.2,
+  "aggro": 11,
+  "leash": 38,
+  "attackRange": 2.3,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.37,
+  "model": {
+   "fur": 1579032,
+   "belly": 3355545,
+   "scale": 1.35,
+   "bodyLen": 0.95,
+   "snout": 0.26,
+   "tusks": true
+  }
+ },
+ "marauder_abyssal": {
+  "id": "marauder_abyssal",
+  "name": "Maraudeur abyssal",
+  "species": "bandit",
+  "speed": 5.2,
+  "aggro": 15,
+  "leash": 44,
+  "attackRange": 2.3,
+  "attackCd": 0.95,
+  "respawn": 36,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.46,
+  "model": {
+   "cloth": 986895,
+   "armor": 1842219,
+   "hair": 460551,
+   "shield": false
+  }
+ },
+ "harbinger_abyssal": {
+  "id": "harbinger_abyssal",
+  "name": "Héraut des abysses",
+  "species": "elite",
+  "speed": 4.6,
+  "aggro": 16,
+  "leash": 32,
+  "attackRange": 2.5,
+  "attackCd": 0.9,
+  "respawn": 65,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.8,
+  "model": {
+   "cloth": 1118481,
+   "armor": 2105376,
+   "hair": 657930,
+   "shield": true
+  }
+ },
+ "stalker_primordial": {
+  "id": "stalker_primordial",
+  "name": "Traqueur primordial",
+  "species": "wolf",
+  "speed": 6.8,
+  "aggro": 17,
+  "leash": 46,
+  "attackRange": 2.0,
+  "attackCd": 1.0,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.4,
+  "model": {
+   "fur": 9699680,
+   "belly": 13421619,
+   "scale": 1.25,
+   "bodyLen": 1.1,
+   "snout": 0.3
+  }
+ },
+ "colossus_primordial": {
+  "id": "colossus_primordial",
+  "name": "Colosse primordial",
+  "species": "boar",
+  "speed": 4.4,
+  "aggro": 12,
+  "leash": 40,
+  "attackRange": 2.4,
+  "attackCd": 1.8,
+  "respawn": 34,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.4,
+  "model": {
+   "fur": 10040115,
+   "belly": 13487565,
+   "scale": 1.45,
+   "bodyLen": 1.0,
+   "snout": 0.28,
+   "tusks": true
+  }
+ },
+ "herald_primordial": {
+  "id": "herald_primordial",
+  "name": "Héraut primordial",
+  "species": "bandit",
+  "speed": 5.4,
+  "aggro": 17,
+  "leash": 46,
+  "attackRange": 2.4,
+  "attackCd": 0.9,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.5,
+  "model": {
+   "cloth": 7554420,
+   "armor": 8947967,
+   "hair": 5523450,
+   "shield": false
+  }
+ },
+ "sovereign_primordial": {
+  "id": "sovereign_primordial",
+  "name": "Souverain primordial",
+  "species": "elite",
+  "speed": 4.8,
+  "aggro": 18,
+  "leash": 34,
+  "attackRange": 2.6,
+  "attackCd": 0.85,
+  "respawn": 70,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.85,
+  "model": {
+   "cloth": 11674146,
+   "armor": 13914636,
+   "hair": 16765240,
+   "shield": true
+  }
+ },
+ "bear": {
+  "id": "bear",
+  "name": "Ours des forêts",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.33,
+  "model": {
+   "fur": 4863268,
+   "belly": 7031344,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "bear_corrupted": {
+  "id": "bear_corrupted",
+  "name": "Ours corrompu",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.33,
+  "model": {
+   "fur": 3811914,
+   "belly": 4863328,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "bear_celestial": {
+  "id": "bear_celestial",
+  "name": "Ours céleste",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.33,
+  "model": {
+   "fur": 14477554,
+   "belly": 15660282,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "bear_abyssal": {
+  "id": "bear_abyssal",
+  "name": "Ours abyssal",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.33,
+  "model": {
+   "fur": 1707796,
+   "belly": 2758692,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "bear_primordial": {
+  "id": "bear_primordial",
+  "name": "Ours primordial",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.33,
+  "model": {
+   "fur": 5917210,
+   "belly": 8022570,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "brute": {
+  "id": "brute",
+  "name": "Brute des routes",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 3881787,
+   "armor": 5589871,
+   "hair": 2301728,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "brute_corrupted": {
+  "id": "brute_corrupted",
+  "name": "Brute corrompue",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 3223650,
+   "armor": 4605330,
+   "hair": 1512713,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "brute_celestial": {
+  "id": "brute_celestial",
+  "name": "Garde colossal",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 15921660,
+   "armor": 16771496,
+   "hair": 16777164,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "brute_abyssal": {
+  "id": "brute_abyssal",
+  "name": "Brute abyssale",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 1118481,
+   "armor": 2105376,
+   "hair": 657930,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "brute_primordial": {
+  "id": "brute_primordial",
+  "name": "Titan primordial",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 9124972,
+   "armor": 11674146,
+   "hair": 16765240,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "loot_sprite": {
+  "id": "loot_sprite",
+  "name": "Lutin pillard",
+  "species": "goblin",
+  "speed": 8.2,
+  "aggro": 16,
+  "leash": 50,
+  "attackRange": 1.6,
+  "attackCd": 3,
+  "respawn": 9999,
+  "flees": false,
+  "alwaysFlee": true,
+  "rigType": "humanoid",
+  "itemDropChance": 0,
+  "model": {
+   "cloth": 16755558,
+   "armor": 16766270,
+   "hair": 7942507,
+   "shield": false,
+   "scale": 0.72
+  }
+ },
+ "rat_giant": {
+  "id": "rat_giant",
+  "name": "Rat géant",
+  "species": "skitter",
+  "speed": 6.6,
+  "aggro": 10,
+  "leash": 30,
+  "attackRange": 1.4,
+  "attackCd": 0.9,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.18,
+  "model": {
+   "fur": 5917244,
+   "belly": 9075304,
+   "scale": 0.55,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "wolf_alpha": {
+  "id": "wolf_alpha",
+  "name": "Loup alpha",
+  "species": "alpha",
+  "speed": 6.2,
+  "aggro": 15,
+  "leash": 40,
+  "attackRange": 2.1,
+  "attackCd": 1.1,
+  "respawn": 60,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.6,
+  "model": {
+   "fur": 3026742,
+   "belly": 6974584,
+   "scale": 1.35,
+   "bodyLen": 1.1,
+   "snout": 0.36
+  },
+  "trait": "frenzy"
+ },
+ "shield_guard": {
+  "id": "shield_guard",
+  "name": "Garde-route blindé",
+  "species": "guard",
+  "speed": 4.2,
+  "aggro": 11,
+  "leash": 36,
+  "attackRange": 2.3,
+  "attackCd": 1.5,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.45,
+  "model": {
+   "cloth": 3816008,
+   "armor": 9080730,
+   "hair": 2760728,
+   "shield": true
+  },
+  "trait": "armored"
+ },
+ "zealot": {
+  "id": "zealot",
+  "name": "Fanatique incendiaire",
+  "species": "zealot",
+  "speed": 6.0,
+  "aggro": 14,
+  "leash": 36,
+  "attackRange": 1.9,
+  "attackCd": 1.2,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.35,
+  "model": {
+   "cloth": 9054746,
+   "armor": 4860448,
+   "hair": 1576976,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll": {
+  "id": "troll",
+  "name": "Troll des collines",
+  "species": "troll",
+  "speed": 3.6,
+  "aggro": 11,
+  "leash": 34,
+  "attackRange": 2.7,
+  "attackCd": 1.6,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.45,
+  "model": {
+   "cloth": 4872762,
+   "armor": 5925448,
+   "hair": 2764832,
+   "shield": false,
+   "scale": 1.5
+  },
+  "trait": "regen"
+ },
+ "rat_corrupted": {
+  "id": "rat_corrupted",
+  "name": "Rat corrompu",
+  "species": "skitter",
+  "speed": 7.0,
+  "aggro": 11,
+  "leash": 32,
+  "attackRange": 1.5,
+  "attackCd": 0.85,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.2,
+  "model": {
+   "fur": 3357695,
+   "belly": 5779908,
+   "scale": 0.6,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_corrupted": {
+  "id": "zealot_corrupted",
+  "name": "Fanatique corrompu",
+  "species": "zealot",
+  "speed": 6.3,
+  "aggro": 15,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.15,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.38,
+  "model": {
+   "cloth": 7294481,
+   "armor": 6180150,
+   "hair": 3092890,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_corrupted": {
+  "id": "troll_corrupted",
+  "name": "Troll corrompu",
+  "species": "troll",
+  "speed": 3.7,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.8,
+  "attackCd": 1.55,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.48,
+  "model": {
+   "cloth": 3223650,
+   "armor": 4605330,
+   "hair": 1512713,
+   "shield": false,
+   "scale": 1.55
+  },
+  "trait": "regen"
+ },
+ "rat_celestial": {
+  "id": "rat_celestial",
+  "name": "Rat céleste",
+  "species": "skitter",
+  "speed": 7.1,
+  "aggro": 11,
+  "leash": 32,
+  "attackRange": 1.5,
+  "attackCd": 0.85,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.2,
+  "model": {
+   "fur": 15921906,
+   "belly": 16773836,
+   "scale": 0.6,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_celestial": {
+  "id": "zealot_celestial",
+  "name": "Fanatique céleste",
+  "species": "zealot",
+  "speed": 6.3999999999999995,
+  "aggro": 15,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.15,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.38,
+  "model": {
+   "cloth": 16113590,
+   "armor": 16765240,
+   "hair": 16777164,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_celestial": {
+  "id": "troll_celestial",
+  "name": "Troll céleste",
+  "species": "troll",
+  "speed": 3.7,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.8,
+  "attackCd": 1.55,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.48,
+  "model": {
+   "cloth": 15921660,
+   "armor": 16771496,
+   "hair": 16777164,
+   "shield": false,
+   "scale": 1.55
+  },
+  "trait": "regen"
+ },
+ "rat_abyssal": {
+  "id": "rat_abyssal",
+  "name": "Rat abyssal",
+  "species": "skitter",
+  "speed": 7.2,
+  "aggro": 11,
+  "leash": 32,
+  "attackRange": 1.5,
+  "attackCd": 0.85,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.2,
+  "model": {
+   "fur": 1247234,
+   "belly": 2500134,
+   "scale": 0.6,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_abyssal": {
+  "id": "zealot_abyssal",
+  "name": "Fanatique abyssal",
+  "species": "zealot",
+  "speed": 6.5,
+  "aggro": 15,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.15,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.38,
+  "model": {
+   "cloth": 986895,
+   "armor": 1842219,
+   "hair": 460551,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_abyssal": {
+  "id": "troll_abyssal",
+  "name": "Troll abyssal",
+  "species": "troll",
+  "speed": 3.7,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.8,
+  "attackCd": 1.55,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.48,
+  "model": {
+   "cloth": 1118481,
+   "armor": 2105376,
+   "hair": 657930,
+   "shield": false,
+   "scale": 1.55
+  },
+  "trait": "regen"
+ },
+ "rat_primordial": {
+  "id": "rat_primordial",
+  "name": "Rat primordial",
+  "species": "skitter",
+  "speed": 7.3,
+  "aggro": 11,
+  "leash": 32,
+  "attackRange": 1.5,
+  "attackCd": 0.85,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.2,
+  "model": {
+   "fur": 9699680,
+   "belly": 13421619,
+   "scale": 0.6,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_primordial": {
+  "id": "zealot_primordial",
+  "name": "Fanatique primordial",
+  "species": "zealot",
+  "speed": 6.6,
+  "aggro": 15,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.15,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.38,
+  "model": {
+   "cloth": 7554420,
+   "armor": 8947967,
+   "hair": 5523450,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_primordial": {
+  "id": "troll_primordial",
+  "name": "Troll primordial",
+  "species": "troll",
+  "speed": 3.7,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.8,
+  "attackCd": 1.55,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.48,
+  "model": {
+   "cloth": 9124972,
+   "armor": 11674146,
+   "hair": 16765240,
+   "shield": false,
+   "scale": 1.55
+  },
+  "trait": "regen"
+ },
+ "bandit_archer": {
+  "id": "bandit_archer",
+  "name": "Archer des routes",
+  "species": "archer",
+  "speed": 4.6,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.1,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.4,
+  "model": {
+   "cloth": 3820074,
+   "armor": 6969914,
+   "hair": 2760728,
+   "shield": false
+  },
+  "ranged": {
+   "range": 17,
+   "min": 6,
+   "speed": 15,
+   "color": 16765578
+  }
+ },
+ "cultist_mage": {
+  "id": "cultist_mage",
+  "name": "Mage renégat",
+  "species": "mage",
+  "speed": 4.4,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.7,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 4860522,
+   "armor": 8014496,
+   "hair": 1576984,
+   "shield": false
+  },
+  "ranged": {
+   "range": 19,
+   "min": 8,
+   "speed": 9,
+   "color": 11561727
+  }
+ },
+ "archer_corrupted": {
+  "id": "archer_corrupted",
+  "name": "Archer corrompu",
+  "species": "archer",
+  "speed": 4.9,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.0,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 7294481,
+   "armor": 6180150,
+   "hair": 3092890,
+   "shield": false
+  },
+  "ranged": {
+   "range": 19,
+   "min": 6,
+   "speed": 17,
+   "color": 12124010
+  }
+ },
+ "mage_corrupted": {
+  "id": "mage_corrupted",
+  "name": "Mage corrompu",
+  "species": "mage",
+  "speed": 4.7,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.6,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.44,
+  "model": {
+   "cloth": 7294481,
+   "armor": 6180150,
+   "hair": 3092890,
+   "shield": false
+  },
+  "ranged": {
+   "range": 21,
+   "min": 8,
+   "speed": 10.0,
+   "color": 12610303
+  }
+ },
+ "archer_celestial": {
+  "id": "archer_celestial",
+  "name": "Archer céleste",
+  "species": "archer",
+  "speed": 5.0,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.0,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 16113590,
+   "armor": 16765240,
+   "hair": 16777164,
+   "shield": false
+  },
+  "ranged": {
+   "range": 20,
+   "min": 6,
+   "speed": 18,
+   "color": 11462911
+  }
+ },
+ "mage_celestial": {
+  "id": "mage_celestial",
+  "name": "Mage céleste",
+  "species": "mage",
+  "speed": 4.8,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.6,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.44,
+  "model": {
+   "cloth": 16113590,
+   "armor": 16765240,
+   "hair": 16777164,
+   "shield": false
+  },
+  "ranged": {
+   "range": 22,
+   "min": 8,
+   "speed": 10.5,
+   "color": 16773280
+  }
+ },
+ "archer_abyssal": {
+  "id": "archer_abyssal",
+  "name": "Archer abyssal",
+  "species": "archer",
+  "speed": 5.1000000000000005,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.0,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 986895,
+   "armor": 1842219,
+   "hair": 460551,
+   "shield": false
+  },
+  "ranged": {
+   "range": 21,
+   "min": 6,
+   "speed": 19,
+   "color": 16747082
+  }
+ },
+ "mage_abyssal": {
+  "id": "mage_abyssal",
+  "name": "Mage abyssal",
+  "species": "mage",
+  "speed": 4.9,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.6,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.44,
+  "model": {
+   "cloth": 986895,
+   "armor": 1842219,
+   "hair": 460551,
+   "shield": false
+  },
+  "ranged": {
+   "range": 23,
+   "min": 8,
+   "speed": 11.0,
+   "color": 16730698
+  }
+ },
+ "archer_primordial": {
+  "id": "archer_primordial",
+  "name": "Archer primordial",
+  "species": "archer",
+  "speed": 5.2,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.0,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 7554420,
+   "armor": 8947967,
+   "hair": 5523450,
+   "shield": false
+  },
+  "ranged": {
+   "range": 22,
+   "min": 6,
+   "speed": 20,
+   "color": 16765066
+  }
+ },
+ "mage_primordial": {
+  "id": "mage_primordial",
+  "name": "Mage primordial",
+  "species": "mage",
+  "speed": 5.0,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.6,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.44,
+  "model": {
+   "cloth": 7554420,
+   "armor": 8947967,
+   "hair": 5523450,
+   "shield": false
+  },
+  "ranged": {
+   "range": 24,
+   "min": 8,
+   "speed": 11.5,
+   "color": 16751162
+  }
+ },
+ "wolf_sand": {
+  "id": "wolf_sand",
+  "name": "Loup des sables",
+  "species": "wolf",
+  "speed": 5.6,
+  "aggro": 13,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.3,
+  "respawn": 25,
+  "flees": true,
+  "rigType": "creature",
+  "itemDropChance": 0.315,
+  "model": {
+   "fur": 13214554,
+   "belly": 15127459,
+   "scale": 1,
+   "bodyLen": 1,
+   "snout": 0.32
+  }
+ },
+ "boar_sand": {
+  "id": "boar_sand",
+  "name": "Sanglier des dunes",
+  "species": "boar",
+  "speed": 4.6,
+  "aggro": 9,
+  "leash": 34,
+  "attackRange": 2.0,
+  "attackCd": 1.6,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.315,
+  "model": {
+   "fur": 13214554,
+   "belly": 15127459,
+   "scale": 1.1,
+   "bodyLen": 0.85,
+   "snout": 0.22,
+   "tusks": true
+  }
+ },
+ "bear_sand": {
+  "id": "bear_sand",
+  "name": "Ours des sables",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.347,
+  "model": {
+   "fur": 13214554,
+   "belly": 15127459,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "marauder_sand": {
+  "id": "marauder_sand",
+  "name": "Maraudeur des dunes",
+  "species": "bandit",
+  "speed": 4.8,
+  "aggro": 12,
+  "leash": 40,
+  "attackRange": 2.2,
+  "attackCd": 1.1,
+  "respawn": 35,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": false
+  }
+ },
+ "brute_sand": {
+  "id": "brute_sand",
+  "name": "Brute des sables",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "rat_sand": {
+  "id": "rat_sand",
+  "name": "Rat des sables",
+  "species": "skitter",
+  "speed": 6.6,
+  "aggro": 10,
+  "leash": 30,
+  "attackRange": 1.4,
+  "attackCd": 0.9,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.189,
+  "model": {
+   "fur": 13214554,
+   "belly": 15127459,
+   "scale": 0.55,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_sand": {
+  "id": "zealot_sand",
+  "name": "Fanatique du désert",
+  "species": "zealot",
+  "speed": 6.0,
+  "aggro": 14,
+  "leash": 36,
+  "attackRange": 1.9,
+  "attackCd": 1.2,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.367,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_sand": {
+  "id": "troll_sand",
+  "name": "Troll des sables",
+  "species": "troll",
+  "speed": 3.6,
+  "aggro": 11,
+  "leash": 34,
+  "attackRange": 2.7,
+  "attackCd": 1.6,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.473,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": false,
+   "scale": 1.5
+  },
+  "trait": "regen"
+ },
+ "archer_sand": {
+  "id": "archer_sand",
+  "name": "Archer nomade",
+  "species": "archer",
+  "speed": 4.6,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.1,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": false
+  },
+  "ranged": {
+   "range": 17,
+   "min": 6,
+   "speed": 15,
+   "color": 16765562
+  }
+ },
+ "mage_sand": {
+  "id": "mage_sand",
+  "name": "Mage des mirages",
+  "species": "mage",
+  "speed": 4.4,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.7,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.441,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": false
+  },
+  "ranged": {
+   "range": 19,
+   "min": 8,
+   "speed": 9,
+   "color": 16765562
+  }
+ },
+ "warden_sand": {
+  "id": "warden_sand",
+  "name": "Gardien d'ambre",
+  "species": "elite",
+  "speed": 4.6,
+  "aggro": 15,
+  "leash": 32,
+  "attackRange": 2.5,
+  "attackCd": 0.95,
+  "respawn": 65,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.819,
+  "model": {
+   "cloth": 9071162,
+   "armor": 12098136,
+   "hair": 3811860,
+   "shield": true
+  }
+ },
+ "wolf_swamp": {
+  "id": "wolf_swamp",
+  "name": "Loup des marais",
+  "species": "wolf",
+  "speed": 5.6,
+  "aggro": 13,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.3,
+  "respawn": 25,
+  "flees": true,
+  "rigType": "creature",
+  "itemDropChance": 0.315,
+  "model": {
+   "fur": 4872757,
+   "belly": 9083482,
+   "scale": 1,
+   "bodyLen": 1,
+   "snout": 0.32
+  }
+ },
+ "boar_swamp": {
+  "id": "boar_swamp",
+  "name": "Sanglier des marais",
+  "species": "boar",
+  "speed": 4.6,
+  "aggro": 9,
+  "leash": 34,
+  "attackRange": 2.0,
+  "attackCd": 1.6,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.315,
+  "model": {
+   "fur": 4872757,
+   "belly": 9083482,
+   "scale": 1.1,
+   "bodyLen": 0.85,
+   "snout": 0.22,
+   "tusks": true
+  }
+ },
+ "bear_swamp": {
+  "id": "bear_swamp",
+  "name": "Ours des marais",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.347,
+  "model": {
+   "fur": 4872757,
+   "belly": 9083482,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "marauder_swamp": {
+  "id": "marauder_swamp",
+  "name": "Maraudeur des marais",
+  "species": "bandit",
+  "speed": 4.8,
+  "aggro": 12,
+  "leash": 40,
+  "attackRange": 2.2,
+  "attackCd": 1.1,
+  "respawn": 35,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": false
+  }
+ },
+ "brute_swamp": {
+  "id": "brute_swamp",
+  "name": "Brute des marais",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "rat_swamp": {
+  "id": "rat_swamp",
+  "name": "Rat des marais",
+  "species": "skitter",
+  "speed": 6.6,
+  "aggro": 10,
+  "leash": 30,
+  "attackRange": 1.4,
+  "attackCd": 0.9,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.189,
+  "model": {
+   "fur": 4872757,
+   "belly": 9083482,
+   "scale": 0.55,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_swamp": {
+  "id": "zealot_swamp",
+  "name": "Fanatique des marais",
+  "species": "zealot",
+  "speed": 6.0,
+  "aggro": 14,
+  "leash": 36,
+  "attackRange": 1.9,
+  "attackCd": 1.2,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.367,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_swamp": {
+  "id": "troll_swamp",
+  "name": "Troll des marais",
+  "species": "troll",
+  "speed": 3.6,
+  "aggro": 11,
+  "leash": 34,
+  "attackRange": 2.7,
+  "attackCd": 1.6,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.473,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": false,
+   "scale": 1.5
+  },
+  "trait": "regen"
+ },
+ "archer_swamp": {
+  "id": "archer_swamp",
+  "name": "Archer des roseaux",
+  "species": "archer",
+  "speed": 4.6,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.1,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": false
+  },
+  "ranged": {
+   "range": 17,
+   "min": 6,
+   "speed": 15,
+   "color": 10354608
+  }
+ },
+ "mage_swamp": {
+  "id": "mage_swamp",
+  "name": "Mage de la brume",
+  "species": "mage",
+  "speed": 4.4,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.7,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.441,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": false
+  },
+  "ranged": {
+   "range": 19,
+   "min": 8,
+   "speed": 9,
+   "color": 10354608
+  }
+ },
+ "warden_swamp": {
+  "id": "warden_swamp",
+  "name": "Gardien de la brume",
+  "species": "elite",
+  "speed": 4.6,
+  "aggro": 15,
+  "leash": 32,
+  "attackRange": 2.5,
+  "attackCd": 0.95,
+  "respawn": 65,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.819,
+  "model": {
+   "cloth": 3095074,
+   "armor": 5596218,
+   "hair": 1844242,
+   "shield": true
+  }
+ },
+ "wolf_frost": {
+  "id": "wolf_frost",
+  "name": "Loup des neiges",
+  "species": "wolf",
+  "speed": 5.6,
+  "aggro": 13,
+  "leash": 38,
+  "attackRange": 1.9,
+  "attackCd": 1.3,
+  "respawn": 25,
+  "flees": true,
+  "rigType": "creature",
+  "itemDropChance": 0.315,
+  "model": {
+   "fur": 14674416,
+   "belly": 16777215,
+   "scale": 1,
+   "bodyLen": 1,
+   "snout": 0.32
+  }
+ },
+ "boar_frost": {
+  "id": "boar_frost",
+  "name": "Sanglier des glaces",
+  "species": "boar",
+  "speed": 4.6,
+  "aggro": 9,
+  "leash": 34,
+  "attackRange": 2.0,
+  "attackCd": 1.6,
+  "respawn": 30,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.315,
+  "model": {
+   "fur": 14674416,
+   "belly": 16777215,
+   "scale": 1.1,
+   "bodyLen": 0.85,
+   "snout": 0.22,
+   "tusks": true
+  }
+ },
+ "bear_frost": {
+  "id": "bear_frost",
+  "name": "Ours polaire",
+  "species": "bear",
+  "speed": 3.8,
+  "aggro": 10,
+  "leash": 32,
+  "attackRange": 2.2,
+  "attackCd": 1.7,
+  "respawn": 32,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.347,
+  "model": {
+   "fur": 14674416,
+   "belly": 16777215,
+   "scale": 1.3,
+   "bodyLen": 0.8,
+   "snout": 0.3,
+   "tusks": false
+  }
+ },
+ "marauder_frost": {
+  "id": "marauder_frost",
+  "name": "Maraudeur du givre",
+  "species": "bandit",
+  "speed": 4.8,
+  "aggro": 12,
+  "leash": 40,
+  "attackRange": 2.2,
+  "attackCd": 1.1,
+  "respawn": 35,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": false
+  }
+ },
+ "brute_frost": {
+  "id": "brute_frost",
+  "name": "Brute des glaces",
+  "species": "brute",
+  "speed": 4.0,
+  "aggro": 12,
+  "leash": 36,
+  "attackRange": 2.5,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": false,
+   "scale": 1.3
+  }
+ },
+ "rat_frost": {
+  "id": "rat_frost",
+  "name": "Rat des neiges",
+  "species": "skitter",
+  "speed": 6.6,
+  "aggro": 10,
+  "leash": 30,
+  "attackRange": 1.4,
+  "attackCd": 0.9,
+  "respawn": 20,
+  "flees": false,
+  "rigType": "creature",
+  "itemDropChance": 0.189,
+  "model": {
+   "fur": 14674416,
+   "belly": 16777215,
+   "scale": 0.55,
+   "bodyLen": 0.9,
+   "snout": 0.4
+  }
+ },
+ "zealot_frost": {
+  "id": "zealot_frost",
+  "name": "Fanatique du givre",
+  "species": "zealot",
+  "speed": 6.0,
+  "aggro": 14,
+  "leash": 36,
+  "attackRange": 1.9,
+  "attackCd": 1.2,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.367,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": false
+  },
+  "trait": "volatile"
+ },
+ "troll_frost": {
+  "id": "troll_frost",
+  "name": "Troll des glaces",
+  "species": "troll",
+  "speed": 3.6,
+  "aggro": 11,
+  "leash": 34,
+  "attackRange": 2.7,
+  "attackCd": 1.6,
+  "respawn": 45,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.473,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": false,
+   "scale": 1.5
+  },
+  "trait": "regen"
+ },
+ "archer_frost": {
+  "id": "archer_frost",
+  "name": "Archer du givre",
+  "species": "archer",
+  "speed": 4.6,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.1,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": false
+  },
+  "ranged": {
+   "range": 17,
+   "min": 6,
+   "speed": 15,
+   "color": 10477823
+  }
+ },
+ "mage_frost": {
+  "id": "mage_frost",
+  "name": "Mage de givre",
+  "species": "mage",
+  "speed": 4.4,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.7,
+  "respawn": 38,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.441,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": false
+  },
+  "ranged": {
+   "range": 19,
+   "min": 8,
+   "speed": 9,
+   "color": 10477823
+  }
+ },
+ "warden_frost": {
+  "id": "warden_frost",
+  "name": "Gardien de givre",
+  "species": "elite",
+  "speed": 4.6,
+  "aggro": 15,
+  "leash": 32,
+  "attackRange": 2.5,
+  "attackCd": 0.95,
+  "respawn": 65,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.819,
+  "model": {
+   "cloth": 7178920,
+   "armor": 11454168,
+   "hair": 14674416,
+   "shield": true
+  }
+ }
+}

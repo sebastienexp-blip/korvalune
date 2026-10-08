@@ -1,0 +1,840 @@
+[
+  {
+    "id": "sword_common",
+    "name": "Épée courte",
+    "icon": "🗡️",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "atk": 4
+    },
+    "value": 12,
+    "stackable": false,
+    "desc": "Une lame simple mais fiable.",
+    "visual": "sword"
+  },
+  {
+    "id": "sword_uncommon",
+    "name": "Épée de garde",
+    "icon": "🗡️",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "peu_commun",
+    "levelReq": 3,
+    "stats": {
+      "atk": 9,
+      "crit": 0.01
+    },
+    "value": 30,
+    "stackable": false,
+    "desc": "Utilisée par les gardes d'Aetheria.",
+    "visual": "sword"
+  },
+  {
+    "id": "sword_rare",
+    "name": "Lame des brumes",
+    "icon": "⚔️",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "rare",
+    "levelReq": 6,
+    "stats": {
+      "atk": 16,
+      "crit": 0.03
+    },
+    "value": 80,
+    "stackable": false,
+    "desc": "Son tranchant semble se dérober à la lumière.",
+    "visual": "sword"
+  },
+  {
+    "id": "sword_epic",
+    "name": "Croc de Fer",
+    "icon": "🗡️",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "epique",
+    "levelReq": 10,
+    "stats": {
+      "atk": 26,
+      "crit": 0.05
+    },
+    "value": 220,
+    "stackable": false,
+    "desc": "Forgée dans les Montagnes de Fer.",
+    "visual": "sword"
+  },
+  {
+    "id": "sword_legendary",
+    "name": "Assermentée",
+    "icon": "🗡️",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "legendaire",
+    "levelReq": 15,
+    "stats": {
+      "atk": 42,
+      "crit": 0.08
+    },
+    "value": 600,
+    "stackable": false,
+    "desc": "Une lame qui n'a jamais trahi son porteur.",
+    "visual": "sword"
+  },
+  {
+    "id": "shield_common",
+    "name": "Bouclier en bois",
+    "icon": "🛡️",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 3
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": "Rudimentaire mais efficace.",
+    "visual": "shield"
+  },
+  {
+    "id": "shield_uncommon",
+    "name": "Bouclier renforcé",
+    "icon": "🛡️",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "peu_commun",
+    "levelReq": 4,
+    "stats": {
+      "def": 7
+    },
+    "value": 26,
+    "stackable": false,
+    "desc": "Cerclé de fer.",
+    "visual": "shield"
+  },
+  {
+    "id": "shield_rare",
+    "name": "Égide des Sentinelles",
+    "icon": "🛡️",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "rare",
+    "levelReq": 8,
+    "stats": {
+      "def": 13,
+      "hp": 20
+    },
+    "value": 90,
+    "stackable": false,
+    "desc": "Porte l'emblème des gardes d'Aetheria.",
+    "visual": "shield"
+  },
+  {
+    "id": "helm_common",
+    "name": "Capuche de voyageur",
+    "icon": "🪖",
+    "type": "armor",
+    "slot": "head",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 2
+    },
+    "value": 8,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "helm_uncommon",
+    "name": "Heaume de fer",
+    "icon": "🪖",
+    "type": "armor",
+    "slot": "head",
+    "rarity": "peu_commun",
+    "levelReq": 3,
+    "stats": {
+      "def": 5
+    },
+    "value": 22,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "helm_rare",
+    "name": "Couronne du Veilleur",
+    "icon": "👑",
+    "type": "armor",
+    "slot": "head",
+    "rarity": "rare",
+    "levelReq": 7,
+    "stats": {
+      "def": 8,
+      "int": 2
+    },
+    "value": 75,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "shoulders_common",
+    "name": "Épaulières usées",
+    "icon": "🎽",
+    "type": "armor",
+    "slot": "shoulders",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 2
+    },
+    "value": 8,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "shoulders_rare",
+    "name": "Épaulières du Gardien",
+    "icon": "🎽",
+    "type": "armor",
+    "slot": "shoulders",
+    "rarity": "rare",
+    "levelReq": 7,
+    "stats": {
+      "def": 9
+    },
+    "value": 70,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "chest_common",
+    "name": "Tunique rapiécée",
+    "icon": "👕",
+    "type": "armor",
+    "slot": "chest",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 4,
+      "hp": 10
+    },
+    "value": 14,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "chest_uncommon",
+    "name": "Plastron de cuir clouté",
+    "icon": "🥋",
+    "type": "armor",
+    "slot": "chest",
+    "rarity": "peu_commun",
+    "levelReq": 3,
+    "stats": {
+      "def": 8,
+      "hp": 18
+    },
+    "value": 32,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "chest_rare",
+    "name": "Cuirasse des Sept Routes",
+    "icon": "🥋",
+    "type": "armor",
+    "slot": "chest",
+    "rarity": "rare",
+    "levelReq": 8,
+    "stats": {
+      "def": 15,
+      "hp": 35
+    },
+    "value": 95,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "chest_epic",
+    "name": "Plaque du Gardien Déchu",
+    "icon": "🥋",
+    "type": "armor",
+    "slot": "chest",
+    "rarity": "epique",
+    "levelReq": 12,
+    "stats": {
+      "def": 24,
+      "hp": 60
+    },
+    "value": 260,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "gloves_common",
+    "name": "Gants en cuir",
+    "icon": "🧤",
+    "type": "armor",
+    "slot": "gloves",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 2,
+      "str": 1
+    },
+    "value": 8,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "gloves_rare",
+    "name": "Gants du Braconnier",
+    "icon": "🧤",
+    "type": "armor",
+    "slot": "gloves",
+    "rarity": "rare",
+    "levelReq": 6,
+    "stats": {
+      "def": 6,
+      "agi": 2
+    },
+    "value": 65,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "legs_common",
+    "name": "Pantalon de toile",
+    "icon": "👖",
+    "type": "armor",
+    "slot": "legs",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 3
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "legs_uncommon",
+    "name": "Jambières renforcées",
+    "icon": "👖",
+    "type": "armor",
+    "slot": "legs",
+    "rarity": "peu_commun",
+    "levelReq": 4,
+    "stats": {
+      "def": 7
+    },
+    "value": 28,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "legs_rare",
+    "name": "Jambières de la route sud",
+    "icon": "👖",
+    "type": "armor",
+    "slot": "legs",
+    "rarity": "rare",
+    "levelReq": 8,
+    "stats": {
+      "def": 12,
+      "vit": 2
+    },
+    "value": 85,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "boots_common",
+    "name": "Bottes usagées",
+    "icon": "🥾",
+    "type": "armor",
+    "slot": "boots",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 2,
+      "agi": 1
+    },
+    "value": 8,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "boots_rare",
+    "name": "Bottes du Messager",
+    "icon": "🥾",
+    "type": "armor",
+    "slot": "boots",
+    "rarity": "rare",
+    "levelReq": 6,
+    "stats": {
+      "def": 5,
+      "agi": 3
+    },
+    "value": 68,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "cape_common",
+    "name": "Cape rapiécée",
+    "icon": "🧣",
+    "type": "armor",
+    "slot": "cape",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "def": 1
+    },
+    "value": 6,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "cape_epic",
+    "name": "Cape des Ruines",
+    "icon": "🧣",
+    "type": "armor",
+    "slot": "cape",
+    "rarity": "epique",
+    "levelReq": 11,
+    "stats": {
+      "def": 10,
+      "crit": 0.03
+    },
+    "value": 240,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "ring_common",
+    "name": "Anneau simple",
+    "icon": "💍",
+    "type": "armor",
+    "slot": "ring",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "luck": 1
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "ring_rare",
+    "name": "Anneau de Chance",
+    "icon": "💍",
+    "type": "armor",
+    "slot": "ring",
+    "rarity": "rare",
+    "levelReq": 5,
+    "stats": {
+      "luck": 4
+    },
+    "value": 70,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "necklace_common",
+    "name": "Collier de bois",
+    "icon": "📿",
+    "type": "armor",
+    "slot": "necklace",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "spi": 1
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "necklace_rare",
+    "name": "Collier du Havre",
+    "icon": "📿",
+    "type": "armor",
+    "slot": "necklace",
+    "rarity": "rare",
+    "levelReq": 5,
+    "stats": {
+      "spi": 3,
+      "mana": 15
+    },
+    "value": 72,
+    "stackable": false,
+    "desc": ""
+  },
+  {
+    "id": "potion_heal_small",
+    "name": "Potion de soin mineure",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.25
+    },
+    "value": 5,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 25% des PV max."
+  },
+  {
+    "id": "potion_heal_big",
+    "name": "Potion de soin",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "peu_commun",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.5
+    },
+    "value": 12,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 50% des PV max."
+  },
+  {
+    "id": "potion_mana",
+    "name": "Fiole de mana",
+    "icon": "🔵",
+    "type": "consumable",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "manaPct": 0.4
+    },
+    "value": 6,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 40% du mana max."
+  },
+  {
+    "id": "mat_wood",
+    "name": "Bois brut",
+    "icon": "🪵",
+    "type": "material",
+    "rarity": "commun",
+    "value": 1,
+    "stackable": true,
+    "maxStack": 99,
+    "desc": "Récolté sur les arbres."
+  },
+  {
+    "id": "mat_ore",
+    "name": "Minerai de fer",
+    "icon": "⛏️",
+    "type": "material",
+    "rarity": "commun",
+    "value": 2,
+    "stackable": true,
+    "maxStack": 99,
+    "desc": "Récolté dans les rochers."
+  },
+  {
+    "id": "mat_herb",
+    "name": "Herbe des plaines",
+    "icon": "🌿",
+    "type": "material",
+    "rarity": "commun",
+    "value": 1,
+    "stackable": true,
+    "maxStack": 99,
+    "desc": "Utile en alchimie."
+  },
+  {
+    "id": "guardian_core",
+    "name": "Noyau du Gardien",
+    "icon": "🔮",
+    "type": "armor",
+    "slot": "necklace",
+    "rarity": "mythique",
+    "levelReq": 12,
+    "stats": {
+      "def": 18,
+      "hp": 80,
+      "mana": 40,
+      "crit": 0.06
+    },
+    "value": 1500,
+    "stackable": false,
+    "desc": "Le cœur pulsant du Gardien des Ruines, encore chaud."
+  },
+  {
+    "id": "staff_common",
+    "name": "Bâton de novice",
+    "icon": "🪄",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "atk": 4,
+      "int": 2
+    },
+    "value": 12,
+    "stackable": false,
+    "visual": "staff",
+    "desc": ""
+  },
+  {
+    "id": "staff_uncommon",
+    "name": "Bâton runique",
+    "icon": "🪄",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "peu_commun",
+    "levelReq": 3,
+    "stats": {
+      "atk": 9,
+      "crit": 0.01,
+      "int": 2
+    },
+    "value": 30,
+    "stackable": false,
+    "visual": "staff",
+    "desc": ""
+  },
+  {
+    "id": "staff_rare",
+    "name": "Bâton des brumes",
+    "icon": "🪄",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "rare",
+    "levelReq": 6,
+    "stats": {
+      "atk": 16,
+      "crit": 0.03,
+      "int": 2
+    },
+    "value": 80,
+    "stackable": false,
+    "visual": "staff",
+    "desc": ""
+  },
+  {
+    "id": "staff_epic",
+    "name": "Bâton du Gardien Déchu",
+    "icon": "🪄",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "epique",
+    "levelReq": 10,
+    "stats": {
+      "atk": 26,
+      "crit": 0.05,
+      "int": 2
+    },
+    "value": 220,
+    "stackable": false,
+    "visual": "staff",
+    "desc": ""
+  },
+  {
+    "id": "staff_legendary",
+    "name": "Sceptre Assermenté",
+    "icon": "🪄",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "legendaire",
+    "levelReq": 15,
+    "stats": {
+      "atk": 42,
+      "crit": 0.08,
+      "int": 2
+    },
+    "value": 600,
+    "stackable": false,
+    "visual": "staff",
+    "desc": ""
+  },
+  {
+    "id": "bow_common",
+    "name": "Arc court",
+    "icon": "🏹",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "atk": 4,
+      "agi": 2
+    },
+    "value": 12,
+    "stackable": false,
+    "visual": "bow",
+    "desc": ""
+  },
+  {
+    "id": "bow_uncommon",
+    "name": "Arc de garde",
+    "icon": "🏹",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "peu_commun",
+    "levelReq": 3,
+    "stats": {
+      "atk": 9,
+      "crit": 0.01,
+      "agi": 2
+    },
+    "value": 30,
+    "stackable": false,
+    "visual": "bow",
+    "desc": ""
+  },
+  {
+    "id": "bow_rare",
+    "name": "Arc des brumes",
+    "icon": "🏹",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "rare",
+    "levelReq": 6,
+    "stats": {
+      "atk": 16,
+      "crit": 0.03,
+      "agi": 2
+    },
+    "value": 80,
+    "stackable": false,
+    "visual": "bow",
+    "desc": ""
+  },
+  {
+    "id": "bow_epic",
+    "name": "Arc du Gardien Déchu",
+    "icon": "🏹",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "epique",
+    "levelReq": 10,
+    "stats": {
+      "atk": 26,
+      "crit": 0.05,
+      "agi": 2
+    },
+    "value": 220,
+    "stackable": false,
+    "visual": "bow",
+    "desc": ""
+  },
+  {
+    "id": "bow_legendary",
+    "name": "Arc Assermenté",
+    "icon": "🏹",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "legendaire",
+    "levelReq": 15,
+    "stats": {
+      "atk": 42,
+      "crit": 0.08,
+      "agi": 2
+    },
+    "value": 600,
+    "stackable": false,
+    "visual": "bow",
+    "desc": ""
+  },
+  {
+    "id": "dagger_common",
+    "name": "Dague simple",
+    "icon": "🔪",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "atk": 4,
+      "agi": 1
+    },
+    "value": 12,
+    "stackable": false,
+    "visual": "dagger",
+    "desc": ""
+  },
+  {
+    "id": "dagger_uncommon",
+    "name": "Dague de garde",
+    "icon": "🔪",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "peu_commun",
+    "levelReq": 3,
+    "stats": {
+      "atk": 9,
+      "crit": 0.01,
+      "agi": 1
+    },
+    "value": 30,
+    "stackable": false,
+    "visual": "dagger",
+    "desc": ""
+  },
+  {
+    "id": "dagger_rare",
+    "name": "Dague des brumes",
+    "icon": "🔪",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "rare",
+    "levelReq": 6,
+    "stats": {
+      "atk": 16,
+      "crit": 0.03,
+      "agi": 1
+    },
+    "value": 80,
+    "stackable": false,
+    "visual": "dagger",
+    "desc": ""
+  },
+  {
+    "id": "dagger_epic",
+    "name": "Croc du Gardien Déchu",
+    "icon": "🔪",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "epique",
+    "levelReq": 10,
+    "stats": {
+      "atk": 26,
+      "crit": 0.05,
+      "agi": 1
+    },
+    "value": 220,
+    "stackable": false,
+    "visual": "dagger",
+    "desc": ""
+  },
+  {
+    "id": "dagger_legendary",
+    "name": "Dague Assermentée",
+    "icon": "🔪",
+    "type": "weapon",
+    "slot": "mainhand",
+    "rarity": "legendaire",
+    "levelReq": 15,
+    "stats": {
+      "atk": 42,
+      "crit": 0.08,
+      "agi": 1
+    },
+    "value": 600,
+    "stackable": false,
+    "visual": "dagger",
+    "desc": ""
+  }
+]

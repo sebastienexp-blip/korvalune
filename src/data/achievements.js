@@ -1,0 +1,30 @@
+// V4.8 : succès. `stat` = compteur suivi par core/Achievements.js ; `goal` = valeur à atteindre.
+// Les récompenses (XP et or) sont données une seule fois, au déblocage.
+export const ACHIEVEMENTS = [
+  { id: 'k1', icon: '🗡️', name: 'Première goutte de sang', desc: 'Vaincre 1 monstre', stat: 'kills', goal: 1, reward: { xp: 30, coins: 20 } },
+  { id: 'k2', icon: '⚔️', name: 'Chasseur', desc: 'Vaincre 100 monstres', stat: 'kills', goal: 100, reward: { xp: 600, coins: 250 } },
+  { id: 'k3', icon: '💀', name: 'Fléau des Prairies', desc: 'Vaincre 500 monstres', stat: 'kills', goal: 500, reward: { xp: 3000, coins: 1200 } },
+  { id: 'k4', icon: '☠️', name: 'Massacre', desc: 'Vaincre 2 000 monstres', stat: 'kills', goal: 2000, reward: { xp: 12000, coins: 6000 } },
+  { id: 'c1', icon: '★', name: 'Briseur de champions', desc: 'Vaincre 10 champions', stat: 'champions', goal: 10, reward: { xp: 900, coins: 400 } },
+  { id: 'c2', icon: '🌟', name: 'Terreur des champions', desc: 'Vaincre 50 champions', stat: 'champions', goal: 50, reward: { xp: 5000, coins: 2500 } },
+  { id: 'b1', icon: '👑', name: 'Tueur de boss', desc: 'Vaincre 1 boss', stat: 'bosses', goal: 1, reward: { xp: 800, coins: 500 } },
+  { id: 'b2', icon: '🏆', name: 'Légende vivante', desc: 'Vaincre 10 boss', stat: 'bosses', goal: 10, reward: { xp: 6000, coins: 3000 } },
+  { id: 't1', icon: '🧰', name: 'Pilleur de tombes', desc: 'Ouvrir 5 coffres cachés', stat: 'chests', goal: 5, reward: { xp: 500, coins: 300 } },
+  { id: 't2', icon: '💎', name: 'Chasseur de trésors', desc: 'Ouvrir 25 coffres cachés', stat: 'chests', goal: 25, reward: { xp: 4000, coins: 2500 } },
+  { id: 'm1', icon: '☄️', name: 'Sous les étoiles', desc: 'Survivre à 1 pluie d\'astres', stat: 'meteors', goal: 1, reward: { xp: 500, coins: 300 } },
+  { id: 'm2', icon: '🌠', name: 'Intouchable', desc: 'Survivre à 8 pluies d\'astres', stat: 'meteors', goal: 8, reward: { xp: 5000, coins: 2500 } },
+  { id: 'cv1', icon: '🐎', name: 'Escorteur', desc: 'Mener 1 caravane à bon port', stat: 'caravans', goal: 1, reward: { xp: 700, coins: 400 } },
+  { id: 'cv2', icon: '🚚', name: 'Garde de convoi', desc: 'Mener 8 caravanes à bon port', stat: 'caravans', goal: 8, reward: { xp: 6000, coins: 3000 } },
+  { id: 'r1', icon: '🤸', name: 'Acrobate', desc: 'Faire 50 roulades', stat: 'rolls', goal: 50, reward: { xp: 300, coins: 150 } },
+  { id: 'r2', icon: '🌀', name: 'Danseur de lames', desc: 'Faire 500 roulades', stat: 'rolls', goal: 500, reward: { xp: 2500, coins: 1000 } },
+  { id: 'p1', icon: '🧪', name: 'Apothicaire', desc: 'Utiliser 25 consommables', stat: 'potions', goal: 25, reward: { xp: 400, coins: 200 } },
+  { id: 'p2', icon: '⚗️', name: 'Alchimiste', desc: 'Utiliser 250 consommables', stat: 'potions', goal: 250, reward: { xp: 3500, coins: 1500 } },
+  { id: 'l1', icon: '🎒', name: 'Glaneur', desc: 'Ramasser 50 objets', stat: 'loot', goal: 50, reward: { xp: 500, coins: 250 } },
+  { id: 'l2', icon: '📦', name: 'Collectionneur', desc: 'Ramasser 500 objets', stat: 'loot', goal: 500, reward: { xp: 5000, coins: 2500 } },
+  { id: 'e1', icon: '🛡️', name: 'Bien équipé', desc: 'Équiper 20 objets', stat: 'equips', goal: 20, reward: { xp: 400, coins: 200 } },
+  { id: 'q1', icon: '📜', name: 'Aventurier', desc: 'Terminer 5 quêtes', stat: 'quests', goal: 5, reward: { xp: 500, coins: 300 } },
+  { id: 'q2', icon: '📚', name: 'Héros des contrats', desc: 'Terminer 40 quêtes', stat: 'quests', goal: 40, reward: { xp: 5000, coins: 2500 } },
+  { id: 'v1', icon: '⭐', name: 'Apprenti', desc: 'Atteindre le niveau 10', stat: 'level', goal: 10, reward: { xp: 300, coins: 300 } },
+  { id: 'v2', icon: '🌠', name: 'Vétéran', desc: 'Atteindre le niveau 50', stat: 'level', goal: 50, reward: { xp: 4000, coins: 3000 } },
+  { id: 'v3', icon: '🔥', name: 'Maître d\'Aetheria', desc: 'Atteindre le niveau 100', stat: 'level', goal: 100, reward: { xp: 20000, coins: 15000 } }
+];

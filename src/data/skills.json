@@ -1,0 +1,3125 @@
+[
+  {
+    "id": "strike",
+    "name": "Frappe",
+    "icon": "⚔️",
+    "classId": null,
+    "levelReq": 1,
+    "cooldown": 0.7,
+    "duration": 0.45,
+    "cost": {},
+    "range": 3.4,
+    "damage": 1.0,
+    "anim": "attack",
+    "desc": "Attaque de base avec l'arme équipée."
+  },
+  {
+    "id": "heavy",
+    "name": "Frappe lourde",
+    "icon": "🔨",
+    "classId": "warrior",
+    "levelReq": 1,
+    "cooldown": 4,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 25
+    },
+    "range": 3.6,
+    "damage": 2.3,
+    "anim": "attack2",
+    "desc": "Un coup puissant qui épuise."
+  },
+  {
+    "id": "shield_bash",
+    "name": "Coup de bouclier",
+    "icon": "🛡️",
+    "classId": "warrior",
+    "levelReq": 3,
+    "cooldown": 6,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 20
+    },
+    "range": 2.6,
+    "damage": 1.4,
+    "anim": "attack",
+    "desc": "Frappe avec le bouclier, déstabilise l'ennemi.",
+    "fx": {
+      "stun": 1.2
+    }
+  },
+  {
+    "id": "whirlwind",
+    "name": "Tourbillon",
+    "icon": "🌀",
+    "classId": "warrior",
+    "levelReq": 5,
+    "cooldown": 8,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 35
+    },
+    "range": 4.6,
+    "damage": 1.5,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Fait tournoyer sa lame autour de lui."
+  },
+  {
+    "id": "warcry",
+    "name": "Cri de guerre",
+    "icon": "📢",
+    "classId": "warrior",
+    "levelReq": 8,
+    "cooldown": 18,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 30
+    },
+    "heal": 0.15,
+    "anim": "interact",
+    "desc": "Un rugissement qui raffermit la détermination."
+  },
+  {
+    "id": "rampage",
+    "name": "Furie",
+    "icon": "💥",
+    "classId": "warrior",
+    "levelReq": 12,
+    "cooldown": 14,
+    "duration": 0.8,
+    "cost": {
+      "stamina": 45
+    },
+    "range": 3.8,
+    "damage": 3.2,
+    "anim": "attack2",
+    "desc": "Une frappe dévastatrice née de la rage."
+  },
+  {
+    "id": "holy_strike",
+    "name": "Frappe sacrée",
+    "icon": "✨",
+    "classId": "paladin",
+    "levelReq": 1,
+    "cooldown": 3,
+    "duration": 0.6,
+    "cost": {
+      "mana": 15
+    },
+    "range": 3.4,
+    "damage": 1.8,
+    "anim": "attack",
+    "desc": "La lame s'enflamme d'une lumière sacrée."
+  },
+  {
+    "id": "heal",
+    "name": "Soin",
+    "icon": "💚",
+    "classId": "paladin",
+    "levelReq": 3,
+    "cooldown": 12,
+    "duration": 0.7,
+    "cost": {
+      "mana": 35
+    },
+    "heal": 0.35,
+    "anim": "interact",
+    "desc": "Restaure une partie des PV."
+  },
+  {
+    "id": "shield_of_faith",
+    "name": "Bouclier de foi",
+    "icon": "🔰",
+    "classId": "paladin",
+    "levelReq": 6,
+    "cooldown": 16,
+    "duration": 0.6,
+    "cost": {
+      "mana": 25
+    },
+    "heal": 0.2,
+    "anim": "interact",
+    "desc": "Une protection lumineuse absorbe les dégâts."
+  },
+  {
+    "id": "judgment",
+    "name": "Jugement",
+    "icon": "⚖️",
+    "classId": "paladin",
+    "levelReq": 9,
+    "cooldown": 10,
+    "duration": 0.7,
+    "cost": {
+      "mana": 30
+    },
+    "range": 3.8,
+    "damage": 2.6,
+    "anim": "attack2",
+    "desc": "Frappe les ennemis impies."
+  },
+  {
+    "id": "sanctuary",
+    "name": "Havre sacré",
+    "icon": "🕊️",
+    "classId": "paladin",
+    "levelReq": 13,
+    "cooldown": 22,
+    "duration": 0.8,
+    "cost": {
+      "mana": 50
+    },
+    "heal": 0.5,
+    "anim": "interact",
+    "desc": "Un havre de lumière restaure les forces."
+  },
+  {
+    "id": "firebolt",
+    "name": "Trait de feu",
+    "icon": "🔥",
+    "classId": "mage",
+    "levelReq": 1,
+    "cooldown": 2.5,
+    "duration": 0.55,
+    "cost": {
+      "mana": 18
+    },
+    "range": 13,
+    "damage": 2.0,
+    "anim": "attack",
+    "desc": "Un projectile enflammé."
+  },
+  {
+    "id": "frost_nova",
+    "name": "Nova de givre",
+    "icon": "❄️",
+    "classId": "mage",
+    "levelReq": 3,
+    "cooldown": 9,
+    "duration": 0.6,
+    "cost": {
+      "mana": 32
+    },
+    "range": 6,
+    "damage": 1.6,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Une onde glacée frappe tout autour.",
+    "fx": {
+      "slow": [
+        0.45,
+        4
+      ]
+    }
+  },
+  {
+    "id": "arcane_shield",
+    "name": "Bouclier arcanique",
+    "icon": "🔮",
+    "classId": "mage",
+    "levelReq": 6,
+    "cooldown": 16,
+    "duration": 0.6,
+    "cost": {
+      "mana": 28
+    },
+    "heal": 0.22,
+    "anim": "interact",
+    "desc": "Une barrière magique absorbe les coups."
+  },
+  {
+    "id": "meteor",
+    "name": "Chute d'astre",
+    "icon": "☄️",
+    "classId": "mage",
+    "levelReq": 10,
+    "cooldown": 15,
+    "duration": 0.8,
+    "cost": {
+      "mana": 55
+    },
+    "range": 9,
+    "damage": 2.8,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Un bloc de roche enflammé s'abat sur la zone."
+  },
+  {
+    "id": "mana_surge",
+    "name": "Vague arcanique",
+    "icon": "🌊",
+    "classId": "mage",
+    "levelReq": 13,
+    "cooldown": 11,
+    "duration": 0.6,
+    "cost": {
+      "mana": 40
+    },
+    "range": 14,
+    "damage": 3.4,
+    "anim": "attack",
+    "desc": "Toute la puissance arcanique en un seul trait."
+  },
+  {
+    "id": "quick_shot",
+    "name": "Tir rapide",
+    "icon": "🏹",
+    "classId": "archer",
+    "levelReq": 1,
+    "cooldown": 1.6,
+    "duration": 0.4,
+    "cost": {
+      "mana": 10
+    },
+    "range": 15,
+    "damage": 1.3,
+    "anim": "attack",
+    "desc": "Un tir précis et rapide."
+  },
+  {
+    "id": "power_shot",
+    "name": "Tir puissant",
+    "icon": "🎯",
+    "classId": "archer",
+    "levelReq": 3,
+    "cooldown": 6,
+    "duration": 0.65,
+    "cost": {
+      "mana": 28
+    },
+    "range": 17,
+    "damage": 2.5,
+    "anim": "attack2",
+    "desc": "Un tir chargé à pleine puissance."
+  },
+  {
+    "id": "multi_shot",
+    "name": "Salve en éventail",
+    "icon": "🏹",
+    "classId": "archer",
+    "levelReq": 6,
+    "cooldown": 9,
+    "duration": 0.6,
+    "cost": {
+      "mana": 32
+    },
+    "range": 8,
+    "damage": 1.4,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Plusieurs flèches partent en éventail."
+  },
+  {
+    "id": "evasion",
+    "name": "Esquive agile",
+    "icon": "💨",
+    "classId": "archer",
+    "levelReq": 9,
+    "cooldown": 18,
+    "duration": 0.5,
+    "cost": {
+      "mana": 25
+    },
+    "heal": 0.18,
+    "anim": "interact",
+    "desc": "Un pas de côté pour reprendre son souffle."
+  },
+  {
+    "id": "piercing_arrow",
+    "name": "Flèche perforante",
+    "icon": "🏹",
+    "classId": "archer",
+    "levelReq": 13,
+    "cooldown": 13,
+    "duration": 0.6,
+    "cost": {
+      "mana": 40
+    },
+    "range": 19,
+    "damage": 3.6,
+    "anim": "attack",
+    "desc": "Transperce les défenses les plus solides."
+  },
+  {
+    "id": "backstab",
+    "name": "Coup bas",
+    "icon": "🗡️",
+    "classId": "assassin",
+    "levelReq": 1,
+    "cooldown": 2,
+    "duration": 0.4,
+    "cost": {
+      "stamina": 14
+    },
+    "range": 2.8,
+    "damage": 1.9,
+    "anim": "attack",
+    "desc": "Frappe les points faibles."
+  },
+  {
+    "id": "poison_blade",
+    "name": "Lame empoisonnée",
+    "icon": "☠️",
+    "classId": "assassin",
+    "levelReq": 3,
+    "cooldown": 5,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 22
+    },
+    "range": 2.6,
+    "damage": 2.0,
+    "anim": "attack2",
+    "desc": "Une lame enduite de poison.",
+    "fx": {
+      "dot": [
+        0.4,
+        5,
+        "poison"
+      ]
+    }
+  },
+  {
+    "id": "shadow_step",
+    "name": "Pas de l'ombre",
+    "icon": "🌑",
+    "classId": "assassin",
+    "levelReq": 6,
+    "cooldown": 16,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 25
+    },
+    "heal": 0.18,
+    "anim": "interact",
+    "desc": "Se fond dans l'ombre un instant pour récupérer."
+  },
+  {
+    "id": "execute",
+    "name": "Exécution",
+    "icon": "💀",
+    "classId": "assassin",
+    "levelReq": 9,
+    "cooldown": 12,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 38
+    },
+    "range": 2.8,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Un coup fatal porté avec précision."
+  },
+  {
+    "id": "death_mark",
+    "name": "Marque mortelle",
+    "icon": "🎴",
+    "classId": "assassin",
+    "levelReq": 13,
+    "cooldown": 14,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 42
+    },
+    "range": 2.8,
+    "damage": 3.5,
+    "anim": "attack",
+    "desc": "Marque la cible pour une mort certaine.",
+    "fx": {
+      "vuln": [
+        0.3,
+        8
+      ]
+    }
+  },
+  {
+    "id": "iron_will",
+    "name": "Volonté de fer",
+    "icon": "🛡️",
+    "classId": "warrior",
+    "levelReq": 20,
+    "cooldown": 20,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 25
+    },
+    "heal": 0.22,
+    "anim": "interact",
+    "desc": "Puise dans sa détermination pour tenir bon."
+  },
+  {
+    "id": "earthquake",
+    "name": "Séisme",
+    "icon": "🌋",
+    "classId": "warrior",
+    "levelReq": 40,
+    "cooldown": 11,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 40
+    },
+    "range": 4.8,
+    "damage": 1.9,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Frappe le sol de toutes ses forces.",
+    "fx": {
+      "stun": 1.0
+    }
+  },
+  {
+    "id": "berserker_rage",
+    "name": "Rage berserker",
+    "icon": "😤",
+    "classId": "warrior",
+    "levelReq": 70,
+    "cooldown": 13,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 48
+    },
+    "range": 3.8,
+    "damage": 3.6,
+    "anim": "attack2",
+    "desc": "Une frappe nourrie par la fureur du combat."
+  },
+  {
+    "id": "colossus_strike",
+    "name": "Frappe du colosse",
+    "icon": "💢",
+    "classId": "warrior",
+    "levelReq": 100,
+    "cooldown": 12,
+    "duration": 0.75,
+    "cost": {
+      "stamina": 52
+    },
+    "range": 5.0,
+    "damage": 2.6,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Un coup si puissant qu'il ébranle les environs."
+  },
+  {
+    "id": "titan_fury",
+    "name": "Furie du Titan",
+    "icon": "⚡",
+    "classId": "warrior",
+    "levelReq": 140,
+    "cooldown": 11,
+    "duration": 0.8,
+    "cost": {
+      "stamina": 58
+    },
+    "range": 4.0,
+    "damage": 4.4,
+    "anim": "attack2",
+    "desc": "La force d'un titan concentrée en un seul coup."
+  },
+  {
+    "id": "ascendant_blade",
+    "name": "Lame ascendante",
+    "icon": "🗡️",
+    "classId": "warrior",
+    "levelReq": 180,
+    "cooldown": 13,
+    "duration": 0.85,
+    "cost": {
+      "stamina": 65
+    },
+    "range": 5.4,
+    "damage": 3.4,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Le sommet de l'art du combat à l'épée."
+  },
+  {
+    "id": "divine_wrath",
+    "name": "Courroux divin",
+    "icon": "✨",
+    "classId": "paladin",
+    "levelReq": 20,
+    "cooldown": 8,
+    "duration": 0.65,
+    "cost": {
+      "mana": 28
+    },
+    "range": 4.0,
+    "damage": 2.2,
+    "anim": "attack",
+    "desc": "La lumière punit les ennemis de la foi."
+  },
+  {
+    "id": "radiant_burst",
+    "name": "Éclat radieux",
+    "icon": "🌟",
+    "classId": "paladin",
+    "levelReq": 40,
+    "cooldown": 12,
+    "duration": 0.7,
+    "cost": {
+      "mana": 38
+    },
+    "range": 4.6,
+    "damage": 1.8,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Une explosion de lumière sacrée."
+  },
+  {
+    "id": "guardian_light",
+    "name": "Lumière gardienne",
+    "icon": "💫",
+    "classId": "paladin",
+    "levelReq": 70,
+    "cooldown": 18,
+    "duration": 0.7,
+    "cost": {
+      "mana": 42
+    },
+    "heal": 0.32,
+    "anim": "interact",
+    "desc": "Une lumière protectrice restaure les forces."
+  },
+  {
+    "id": "wrath_of_heaven",
+    "name": "Courroux céleste",
+    "icon": "☀️",
+    "classId": "paladin",
+    "levelReq": 100,
+    "cooldown": 13,
+    "duration": 0.75,
+    "cost": {
+      "mana": 48
+    },
+    "range": 5.0,
+    "damage": 2.9,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Le ciel lui-même s'abat sur les impies."
+  },
+  {
+    "id": "eternal_vow",
+    "name": "Vœu éternel",
+    "icon": "🕊️",
+    "classId": "paladin",
+    "levelReq": 140,
+    "cooldown": 20,
+    "duration": 0.75,
+    "cost": {
+      "mana": 55
+    },
+    "heal": 0.42,
+    "anim": "interact",
+    "desc": "Un serment sacré qui ne faiblit jamais."
+  },
+  {
+    "id": "celestial_judgment",
+    "name": "Jugement céleste",
+    "icon": "⚖️",
+    "classId": "paladin",
+    "levelReq": 180,
+    "cooldown": 14,
+    "duration": 0.85,
+    "cost": {
+      "mana": 62
+    },
+    "range": 5.6,
+    "damage": 3.8,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Le verdict ultime des cieux."
+  },
+  {
+    "id": "chain_lightning",
+    "name": "Éclair en chaîne",
+    "icon": "⚡",
+    "classId": "mage",
+    "levelReq": 20,
+    "cooldown": 9,
+    "duration": 0.6,
+    "cost": {
+      "mana": 32
+    },
+    "range": 9,
+    "damage": 1.6,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "La foudre bondit d'ennemi en ennemi."
+  },
+  {
+    "id": "void_bolt",
+    "name": "Trait du néant",
+    "icon": "🌀",
+    "classId": "mage",
+    "levelReq": 40,
+    "cooldown": 7,
+    "duration": 0.6,
+    "cost": {
+      "mana": 36
+    },
+    "range": 15,
+    "damage": 2.6,
+    "anim": "attack",
+    "desc": "Un projectile venu d'ailleurs."
+  },
+  {
+    "id": "elemental_storm",
+    "name": "Tempête élémentaire",
+    "icon": "🌪️",
+    "classId": "mage",
+    "levelReq": 70,
+    "cooldown": 14,
+    "duration": 0.75,
+    "cost": {
+      "mana": 50
+    },
+    "range": 10,
+    "damage": 2.3,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Les éléments déchaînés s'abattent sur la zone."
+  },
+  {
+    "id": "arcane_devastation",
+    "name": "Dévastation arcanique",
+    "icon": "💥",
+    "classId": "mage",
+    "levelReq": 100,
+    "cooldown": 10,
+    "duration": 0.7,
+    "cost": {
+      "mana": 54
+    },
+    "range": 16,
+    "damage": 3.8,
+    "anim": "attack",
+    "desc": "La magie pure réduite à sa plus simple expression : la destruction."
+  },
+  {
+    "id": "timefracture",
+    "name": "Fracture temporelle",
+    "icon": "⏳",
+    "classId": "mage",
+    "levelReq": 140,
+    "cooldown": 22,
+    "duration": 0.7,
+    "cost": {
+      "mana": 58
+    },
+    "heal": 0.3,
+    "anim": "interact",
+    "desc": "Une brève distorsion du temps qui referme les blessures."
+  },
+  {
+    "id": "oblivion",
+    "name": "Oubli",
+    "icon": "🕳️",
+    "classId": "mage",
+    "levelReq": 180,
+    "cooldown": 15,
+    "duration": 0.85,
+    "cost": {
+      "mana": 68
+    },
+    "range": 11,
+    "damage": 4.6,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Un sort que peu de mages osent encore invoquer."
+  },
+  {
+    "id": "rain_of_arrows",
+    "name": "Averse de traits",
+    "icon": "🏹",
+    "classId": "archer",
+    "levelReq": 20,
+    "cooldown": 10,
+    "duration": 0.65,
+    "cost": {
+      "mana": 34
+    },
+    "range": 9,
+    "damage": 1.5,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Une volée s'abat sur toute une zone."
+  },
+  {
+    "id": "hunters_mark",
+    "name": "Marque du chasseur",
+    "icon": "🎯",
+    "classId": "archer",
+    "levelReq": 40,
+    "cooldown": 8,
+    "duration": 0.55,
+    "cost": {
+      "mana": 32
+    },
+    "range": 17,
+    "damage": 2.8,
+    "anim": "attack",
+    "desc": "Un tir qui ne pardonne pas.",
+    "fx": {
+      "single": true,
+      "vuln": [
+        0.3,
+        8
+      ]
+    }
+  },
+  {
+    "id": "windrunner",
+    "name": "Course du vent",
+    "icon": "💨",
+    "classId": "archer",
+    "levelReq": 70,
+    "cooldown": 19,
+    "duration": 0.5,
+    "cost": {
+      "mana": 38
+    },
+    "heal": 0.26,
+    "anim": "interact",
+    "desc": "Une pause brève, portée par le vent."
+  },
+  {
+    "id": "barrage",
+    "name": "Barrage",
+    "icon": "🏹",
+    "classId": "archer",
+    "levelReq": 100,
+    "cooldown": 12,
+    "duration": 0.7,
+    "cost": {
+      "mana": 46
+    },
+    "range": 9,
+    "damage": 2.0,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Une cadence de tir impossible à soutenir longtemps."
+  },
+  {
+    "id": "deadeye",
+    "name": "Œil de la mort",
+    "icon": "👁️",
+    "classId": "archer",
+    "levelReq": 140,
+    "cooldown": 11,
+    "duration": 0.6,
+    "cost": {
+      "mana": 50
+    },
+    "range": 21,
+    "damage": 4.2,
+    "anim": "attack",
+    "desc": "Un seul tir, une seule issue."
+  },
+  {
+    "id": "skyfall_volley",
+    "name": "Volée du ciel déchu",
+    "icon": "🌠",
+    "classId": "archer",
+    "levelReq": 180,
+    "cooldown": 14,
+    "duration": 0.8,
+    "cost": {
+      "mana": 58
+    },
+    "range": 11,
+    "damage": 3.2,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Les flèches tombent comme des étoiles filantes."
+  },
+  {
+    "id": "shadow_clone",
+    "name": "Clone d'ombre",
+    "icon": "🥷",
+    "classId": "assassin",
+    "levelReq": 20,
+    "cooldown": 9,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 30
+    },
+    "range": 3.0,
+    "damage": 2.4,
+    "anim": "attack",
+    "desc": "Une ombre frappe à sa place, le temps d'un instant."
+  },
+  {
+    "id": "venom_burst",
+    "name": "Explosion de venin",
+    "icon": "☠️",
+    "classId": "assassin",
+    "levelReq": 40,
+    "cooldown": 10,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 36
+    },
+    "range": 3.4,
+    "damage": 1.9,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Une fiole de poison concentré libérée d'un coup.",
+    "fx": {
+      "dot": [
+        0.5,
+        6,
+        "poison"
+      ]
+    }
+  },
+  {
+    "id": "nightfall",
+    "name": "Tombée de la nuit",
+    "icon": "🌙",
+    "classId": "assassin",
+    "levelReq": 70,
+    "cooldown": 18,
+    "duration": 0.55,
+    "cost": {
+      "stamina": 40
+    },
+    "heal": 0.26,
+    "anim": "interact",
+    "desc": "L'obscurité enveloppe et répare les blessures."
+  },
+  {
+    "id": "thousand_cuts",
+    "name": "Mille entailles",
+    "icon": "🔪",
+    "classId": "assassin",
+    "levelReq": 100,
+    "cooldown": 11,
+    "duration": 0.65,
+    "cost": {
+      "stamina": 48
+    },
+    "range": 3.2,
+    "damage": 2.4,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "Trop de coups pour les compter, trop rapides pour les éviter."
+  },
+  {
+    "id": "soul_reaper",
+    "name": "Faucheuse d'âmes",
+    "icon": "💀",
+    "classId": "assassin",
+    "levelReq": 140,
+    "cooldown": 13,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 54
+    },
+    "range": 3.2,
+    "damage": 4.6,
+    "anim": "attack",
+    "desc": "Un coup qui ne laisse aucune chance."
+  },
+  {
+    "id": "oblivion_strike",
+    "name": "Frappe de l'oubli",
+    "icon": "🌑",
+    "classId": "assassin",
+    "levelReq": 180,
+    "cooldown": 14,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 62
+    },
+    "range": 3.4,
+    "damage": 3.6,
+    "aoe": true,
+    "anim": "attack2",
+    "desc": "L'assassinat porté à son art le plus abouti."
+  },
+  {
+    "id": "charge",
+    "name": "Charge",
+    "icon": "🐂",
+    "classId": "warrior",
+    "levelReq": 2,
+    "cooldown": 9,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 20
+    },
+    "range": 9,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Fonce sur la cible et l'étourdit.",
+    "color": 14674165,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 8
+      },
+      "stun": 1.0,
+      "single": true
+    }
+  },
+  {
+    "id": "rend",
+    "name": "Entaille sanglante",
+    "icon": "🩸",
+    "classId": "warrior",
+    "levelReq": 4,
+    "cooldown": 7,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 18
+    },
+    "range": 3.4,
+    "damage": 1.2,
+    "anim": "attack",
+    "desc": "Une plaie qui saigne pendant plusieurs secondes.",
+    "color": 13773354,
+    "fx": {
+      "dot": [
+        0.45,
+        5,
+        "bleed"
+      ],
+      "single": true
+    }
+  },
+  {
+    "id": "stance",
+    "name": "Posture défensive",
+    "icon": "🛡️",
+    "classId": "warrior",
+    "levelReq": 7,
+    "cooldown": 22,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 20
+    },
+    "anim": "interact",
+    "desc": "Réduit fortement les dégâts subis pendant un moment.",
+    "color": 14674165,
+    "fx": {
+      "buff": {
+        "t": 8,
+        "taken": 0.6
+      }
+    }
+  },
+  {
+    "id": "leap",
+    "name": "Bond héroïque",
+    "icon": "🦘",
+    "classId": "warrior",
+    "levelReq": 10,
+    "cooldown": 12,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 30
+    },
+    "range": 4.6,
+    "damage": 1.8,
+    "anim": "attack2",
+    "desc": "Bondit vers la cible et frappe à l'atterrissage, ralentissant les ennemis.",
+    "color": 14266490,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 7
+      },
+      "slow": [
+        0.5,
+        3
+      ]
+    },
+    "aoe": true
+  },
+  {
+    "id": "hamstring",
+    "name": "Brise-genou",
+    "icon": "🦵",
+    "classId": "warrior",
+    "levelReq": 11,
+    "cooldown": 8,
+    "duration": 0.45,
+    "cost": {
+      "stamina": 16
+    },
+    "range": 3.4,
+    "damage": 1.4,
+    "anim": "attack",
+    "desc": "Entrave la cible : elle avance bien plus lentement.",
+    "color": 14674165,
+    "fx": {
+      "slow": [
+        0.4,
+        4
+      ],
+      "single": true
+    }
+  },
+  {
+    "id": "axe_throw",
+    "name": "Lancer de hache",
+    "icon": "🪓",
+    "classId": "warrior",
+    "levelReq": 15,
+    "cooldown": 9,
+    "duration": 0.55,
+    "cost": {
+      "stamina": 24
+    },
+    "range": 12,
+    "damage": 2.0,
+    "anim": "attack",
+    "desc": "Lance une hache sur un ennemi éloigné.",
+    "color": 14674165,
+    "fx": {
+      "single": true
+    }
+  },
+  {
+    "id": "bloodthirst",
+    "name": "Soif de sang",
+    "icon": "🧛",
+    "classId": "warrior",
+    "levelReq": 17,
+    "cooldown": 10,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 26
+    },
+    "range": 3.6,
+    "damage": 1.8,
+    "anim": "attack2",
+    "desc": "Chaque coup rend des PV au guerrier.",
+    "color": 13773354,
+    "fx": {
+      "lifesteal": 0.45,
+      "single": true
+    }
+  },
+  {
+    "id": "bulwark",
+    "name": "Muraille",
+    "icon": "🧱",
+    "classId": "warrior",
+    "levelReq": 25,
+    "cooldown": 28,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 30
+    },
+    "anim": "interact",
+    "desc": "Érige un bouclier d'énergie qui absorbe les dégâts.",
+    "color": 14266490,
+    "fx": {
+      "shield": [
+        0.3,
+        10
+      ]
+    }
+  },
+  {
+    "id": "shockwave",
+    "name": "Onde de choc",
+    "icon": "🌊",
+    "classId": "warrior",
+    "levelReq": 30,
+    "cooldown": 11,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 34
+    },
+    "range": 7,
+    "damage": 2.0,
+    "anim": "attack2",
+    "desc": "Une onde frontale qui repousse les ennemis.",
+    "color": 14266490,
+    "fx": {
+      "arc": 2.1,
+      "knock": 3
+    }
+  },
+  {
+    "id": "sunder",
+    "name": "Brise-armure",
+    "icon": "🔨",
+    "classId": "warrior",
+    "levelReq": 35,
+    "cooldown": 12,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 32
+    },
+    "range": 3.8,
+    "damage": 2.2,
+    "anim": "attack2",
+    "desc": "Fend l'armure : la cible subit plus de dégâts.",
+    "color": 14674165,
+    "fx": {
+      "vuln": [
+        0.3,
+        8
+      ],
+      "single": true
+    }
+  },
+  {
+    "id": "terrifying_roar",
+    "name": "Hurlement terrifiant",
+    "icon": "😱",
+    "classId": "warrior",
+    "levelReq": 50,
+    "cooldown": 20,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 40
+    },
+    "range": 7,
+    "damage": 0.8,
+    "anim": "attack2",
+    "desc": "Un cri qui paralyse de terreur les ennemis proches.",
+    "color": 13773354,
+    "fx": {
+      "stun": 1.5
+    },
+    "aoe": true
+  },
+  {
+    "id": "second_wind",
+    "name": "Second souffle",
+    "icon": "🌬️",
+    "classId": "warrior",
+    "levelReq": 55,
+    "cooldown": 40,
+    "duration": 0.5,
+    "cost": {},
+    "anim": "interact",
+    "desc": "Récupère de l'endurance et un peu de santé, sans rien dépenser.",
+    "color": 9169002,
+    "fx": {
+      "restore": {
+        "stamina": 0.7,
+        "hp": 0.12
+      }
+    }
+  },
+  {
+    "id": "executioner",
+    "name": "Bourreau",
+    "icon": "⚰️",
+    "classId": "warrior",
+    "levelReq": 60,
+    "cooldown": 14,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 42
+    },
+    "range": 3.8,
+    "damage": 2.6,
+    "anim": "attack2",
+    "desc": "Dégâts énormes contre les ennemis sous 30 % de PV.",
+    "color": 13773354,
+    "fx": {
+      "execute": [
+        0.3,
+        1.2
+      ],
+      "single": true
+    }
+  },
+  {
+    "id": "onslaught",
+    "name": "Déchaînement",
+    "icon": "🌪️",
+    "classId": "warrior",
+    "levelReq": 80,
+    "cooldown": 16,
+    "duration": 0.9,
+    "cost": {
+      "stamina": 50
+    },
+    "range": 4.8,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Quatre coups tournoyants en rafale.",
+    "color": 14674165,
+    "fx": {
+      "hits": 4
+    },
+    "aoe": true
+  },
+  {
+    "id": "stoneskin",
+    "name": "Peau de pierre",
+    "icon": "🪨",
+    "classId": "warrior",
+    "levelReq": 90,
+    "cooldown": 32,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 36
+    },
+    "anim": "interact",
+    "desc": "Bouclier et résistance accrue, au prix de la vitesse.",
+    "color": 14266490,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "taken": 0.5,
+        "speed": -0.15
+      },
+      "shield": [
+        0.2,
+        10
+      ]
+    }
+  },
+  {
+    "id": "titan_fall",
+    "name": "Chute du titan",
+    "icon": "🌋",
+    "classId": "warrior",
+    "levelReq": 110,
+    "cooldown": 20,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 55
+    },
+    "range": 6.2,
+    "damage": 3.2,
+    "anim": "attack2",
+    "desc": "Bond dévastateur qui étourdit tout autour.",
+    "color": 14266490,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 9
+      },
+      "stun": 1.5
+    },
+    "aoe": true
+  },
+  {
+    "id": "warblood",
+    "name": "Sang de guerre",
+    "icon": "🔥",
+    "classId": "warrior",
+    "levelReq": 130,
+    "cooldown": 40,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 40
+    },
+    "anim": "interact",
+    "desc": "Dégâts et vitesse de déplacement accrus.",
+    "color": 16742954,
+    "fx": {
+      "buff": {
+        "t": 12,
+        "dmg": 0.4,
+        "speed": 0.2
+      }
+    }
+  },
+  {
+    "id": "endless_fury",
+    "name": "Fureur sans fin",
+    "icon": "💢",
+    "classId": "warrior",
+    "levelReq": 160,
+    "cooldown": 60,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 40
+    },
+    "anim": "interact",
+    "desc": "Recharges accélérées, critiques plus fréquents, régénération.",
+    "color": 16742954,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "cdr": 0.4,
+        "crit": 0.15,
+        "regen": 0.015
+      }
+    }
+  },
+  {
+    "id": "champion_verdict",
+    "name": "Verdict du champion",
+    "icon": "👑",
+    "classId": "warrior",
+    "levelReq": 200,
+    "cooldown": 24,
+    "duration": 1.0,
+    "cost": {
+      "stamina": 70
+    },
+    "range": 7.5,
+    "damage": 2.2,
+    "anim": "attack2",
+    "desc": "Trois frappes écrasantes ; exécute les ennemis affaiblis.",
+    "color": 16769658,
+    "fx": {
+      "hits": 3,
+      "execute": [
+        0.35,
+        0.8
+      ],
+      "knock": 2
+    },
+    "aoe": true
+  },
+  {
+    "id": "hammer_toss",
+    "name": "Marteau béni",
+    "icon": "🔨",
+    "classId": "paladin",
+    "levelReq": 2,
+    "cooldown": 7,
+    "duration": 0.5,
+    "cost": {
+      "mana": 18
+    },
+    "range": 9,
+    "damage": 1.5,
+    "anim": "attack",
+    "desc": "Lance un marteau sacré qui étourdit brièvement.",
+    "color": 16769658,
+    "fx": {
+      "stun": 0.8,
+      "single": true
+    }
+  },
+  {
+    "id": "consecration",
+    "name": "Terre bénie",
+    "icon": "⛪",
+    "classId": "paladin",
+    "levelReq": 4,
+    "cooldown": 16,
+    "duration": 0.6,
+    "cost": {
+      "mana": 32
+    },
+    "anim": "interact",
+    "desc": "Sanctifie le sol : les ennemis qui y restent brûlent.",
+    "color": 16769658,
+    "fx": {
+      "zone": {
+        "r": 5,
+        "t": 8,
+        "dps": 0.6,
+        "at": "self"
+      }
+    }
+  },
+  {
+    "id": "vigor_aura",
+    "name": "Aura de vigueur",
+    "icon": "💛",
+    "classId": "paladin",
+    "levelReq": 7,
+    "cooldown": 24,
+    "duration": 0.5,
+    "cost": {
+      "mana": 30
+    },
+    "anim": "interact",
+    "desc": "Régénère des PV en continu.",
+    "color": 16769658,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "regen": 0.02
+      }
+    }
+  },
+  {
+    "id": "smite",
+    "name": "Châtiment",
+    "icon": "🔥",
+    "classId": "paladin",
+    "levelReq": 10,
+    "cooldown": 8,
+    "duration": 0.5,
+    "cost": {
+      "mana": 22
+    },
+    "range": 3.6,
+    "damage": 1.8,
+    "anim": "attack",
+    "desc": "Frappe de feu sacré qui continue de brûler.",
+    "color": 16742954,
+    "fx": {
+      "dot": [
+        0.4,
+        4,
+        "burn"
+      ],
+      "single": true
+    }
+  },
+  {
+    "id": "blessing",
+    "name": "Grâce solaire",
+    "icon": "🙏",
+    "classId": "paladin",
+    "levelReq": 11,
+    "cooldown": 20,
+    "duration": 0.5,
+    "cost": {
+      "mana": 34
+    },
+    "anim": "interact",
+    "desc": "Soigne et réduit un peu les dégâts subis.",
+    "color": 16769658,
+    "fx": {
+      "buff": {
+        "t": 8,
+        "taken": 0.85
+      }
+    },
+    "heal": 0.2
+  },
+  {
+    "id": "holy_charge",
+    "name": "Charge sacrée",
+    "icon": "🐎",
+    "classId": "paladin",
+    "levelReq": 15,
+    "cooldown": 11,
+    "duration": 0.55,
+    "cost": {
+      "mana": 28
+    },
+    "range": 9,
+    "damage": 1.7,
+    "anim": "attack2",
+    "desc": "Charge la cible, la frappe et l'étourdit.",
+    "color": 16769658,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 8
+      },
+      "stun": 1,
+      "single": true
+    }
+  },
+  {
+    "id": "blinding_light",
+    "name": "Lumière aveuglante",
+    "icon": "💡",
+    "classId": "paladin",
+    "levelReq": 17,
+    "cooldown": 14,
+    "duration": 0.5,
+    "cost": {
+      "mana": 30
+    },
+    "range": 6,
+    "damage": 0.9,
+    "anim": "attack",
+    "desc": "Aveugle les ennemis proches : ils ralentissent.",
+    "color": 16769658,
+    "fx": {
+      "slow": [
+        0.5,
+        5
+      ]
+    },
+    "aoe": true
+  },
+  {
+    "id": "aegis",
+    "name": "Égide",
+    "icon": "🛡️",
+    "classId": "paladin",
+    "levelReq": 25,
+    "cooldown": 30,
+    "duration": 0.5,
+    "cost": {
+      "mana": 40
+    },
+    "anim": "interact",
+    "desc": "Un solide bouclier de lumière.",
+    "color": 16769658,
+    "fx": {
+      "shield": [
+        0.4,
+        8
+      ]
+    }
+  },
+  {
+    "id": "sunbeam",
+    "name": "Rayon de soleil",
+    "icon": "🌞",
+    "classId": "paladin",
+    "levelReq": 30,
+    "cooldown": 9,
+    "duration": 0.6,
+    "cost": {
+      "mana": 36
+    },
+    "range": 14,
+    "damage": 2.4,
+    "anim": "attack",
+    "desc": "Un rayon brûlant sur un ennemi éloigné.",
+    "color": 16769658,
+    "fx": {
+      "single": true,
+      "dot": [
+        0.3,
+        4,
+        "burn"
+      ]
+    }
+  },
+  {
+    "id": "vengeance",
+    "name": "Représailles sacrées",
+    "icon": "⚔️",
+    "classId": "paladin",
+    "levelReq": 35,
+    "cooldown": 36,
+    "duration": 0.5,
+    "cost": {
+      "mana": 40
+    },
+    "anim": "interact",
+    "desc": "Dégâts accrus et vol de vie pendant 10 s.",
+    "color": 16742954,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "dmg": 0.35,
+        "lifesteal": 0.2
+      }
+    }
+  },
+  {
+    "id": "light_blade",
+    "name": "Lame de lumière",
+    "icon": "🗡️",
+    "classId": "paladin",
+    "levelReq": 50,
+    "cooldown": 10,
+    "duration": 0.6,
+    "cost": {
+      "mana": 38
+    },
+    "range": 6,
+    "damage": 1.3,
+    "anim": "attack2",
+    "desc": "Deux coups en arc de cercle.",
+    "color": 16769658,
+    "fx": {
+      "arc": 1.6,
+      "hits": 2
+    }
+  },
+  {
+    "id": "divine_intervention",
+    "name": "Intervention divine",
+    "icon": "😇",
+    "classId": "paladin",
+    "levelReq": 55,
+    "cooldown": 60,
+    "duration": 0.6,
+    "cost": {
+      "mana": 50
+    },
+    "anim": "interact",
+    "desc": "Invulnérable 3 s et soigne un quart des PV.",
+    "color": 16769658,
+    "fx": {
+      "invuln": 3
+    },
+    "heal": 0.25
+  },
+  {
+    "id": "wrath_hammer",
+    "name": "Marteau du courroux",
+    "icon": "🔨",
+    "classId": "paladin",
+    "levelReq": 60,
+    "cooldown": 13,
+    "duration": 0.7,
+    "cost": {
+      "mana": 46
+    },
+    "range": 10,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Un marteau gigantesque qui étourdit la cible.",
+    "color": 16769658,
+    "fx": {
+      "stun": 1.5,
+      "single": true
+    }
+  },
+  {
+    "id": "holy_hymn",
+    "name": "Hymne sacré",
+    "icon": "🎶",
+    "classId": "paladin",
+    "levelReq": 80,
+    "cooldown": 34,
+    "duration": 0.6,
+    "cost": {
+      "mana": 55
+    },
+    "anim": "interact",
+    "desc": "Zone sacrée : soigne le paladin, brûle les ennemis.",
+    "color": 16769658,
+    "fx": {
+      "zone": {
+        "r": 7,
+        "t": 8,
+        "heal": 0.04,
+        "dps": 0.5,
+        "at": "self"
+      }
+    }
+  },
+  {
+    "id": "light_column",
+    "name": "Colonne de lumière",
+    "icon": "🏛️",
+    "classId": "paladin",
+    "levelReq": 90,
+    "cooldown": 15,
+    "duration": 0.7,
+    "cost": {
+      "mana": 52
+    },
+    "range": 12,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Une colonne qui frappe en zone et rend vulnérable.",
+    "color": 16769658,
+    "fx": {
+      "at": "target",
+      "radius": 4,
+      "vuln": [
+        0.25,
+        6
+      ]
+    }
+  },
+  {
+    "id": "bastion",
+    "name": "Bastion",
+    "icon": "🏰",
+    "classId": "paladin",
+    "levelReq": 110,
+    "cooldown": 42,
+    "duration": 0.5,
+    "cost": {
+      "mana": 60
+    },
+    "anim": "interact",
+    "desc": "Bouclier massif et dégâts subis réduits.",
+    "color": 16769658,
+    "fx": {
+      "shield": [
+        0.6,
+        8
+      ],
+      "buff": {
+        "t": 8,
+        "taken": 0.7
+      }
+    }
+  },
+  {
+    "id": "redemption",
+    "name": "Rédemption",
+    "icon": "💖",
+    "classId": "paladin",
+    "levelReq": 130,
+    "cooldown": 50,
+    "duration": 0.6,
+    "cost": {
+      "mana": 40
+    },
+    "anim": "interact",
+    "desc": "Soin puissant et regain de mana.",
+    "color": 16769658,
+    "fx": {
+      "restore": {
+        "mana": 0.3
+      }
+    },
+    "heal": 0.5
+  },
+  {
+    "id": "holy_storm",
+    "name": "Tempête sacrée",
+    "icon": "🌩️",
+    "classId": "paladin",
+    "levelReq": 160,
+    "cooldown": 28,
+    "duration": 0.8,
+    "cost": {
+      "mana": 68
+    },
+    "range": 8,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Déchaîne une tempête de lumière qui persiste.",
+    "color": 16769658,
+    "fx": {
+      "zone": {
+        "r": 8,
+        "t": 7,
+        "dps": 1.2,
+        "at": "self"
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "ascension",
+    "name": "Ascension",
+    "icon": "🌟",
+    "classId": "paladin",
+    "levelReq": 200,
+    "cooldown": 90,
+    "duration": 0.6,
+    "cost": {
+      "mana": 80
+    },
+    "anim": "interact",
+    "desc": "Puissance, vitesse, recharges et régénération décuplées.",
+    "color": 16769658,
+    "fx": {
+      "buff": {
+        "t": 12,
+        "dmg": 0.5,
+        "speed": 0.25,
+        "cdr": 0.3,
+        "regen": 0.02
+      }
+    }
+  },
+  {
+    "id": "arcane_missile",
+    "name": "Projectile arcanique",
+    "icon": "✨",
+    "classId": "mage",
+    "levelReq": 2,
+    "cooldown": 1.1,
+    "duration": 0.4,
+    "cost": {
+      "mana": 8
+    },
+    "range": 14,
+    "damage": 1.3,
+    "anim": "attack",
+    "desc": "Un trait d'énergie rapide et économe.",
+    "color": 12093695,
+    "fx": {
+      "single": true
+    }
+  },
+  {
+    "id": "ice_lance",
+    "name": "Javelot de glace",
+    "icon": "🧊",
+    "classId": "mage",
+    "levelReq": 4,
+    "cooldown": 5,
+    "duration": 0.45,
+    "cost": {
+      "mana": 20
+    },
+    "range": 14,
+    "damage": 1.6,
+    "anim": "attack",
+    "desc": "Transperce et ralentit la cible.",
+    "color": 8378623,
+    "fx": {
+      "single": true,
+      "slow": [
+        0.5,
+        3
+      ]
+    }
+  },
+  {
+    "id": "spark",
+    "name": "Étincelle",
+    "icon": "⚡",
+    "classId": "mage",
+    "levelReq": 7,
+    "cooldown": 6,
+    "duration": 0.45,
+    "cost": {
+      "mana": 22
+    },
+    "range": 13,
+    "damage": 1.2,
+    "anim": "attack",
+    "desc": "Une étincelle qui touche les ennemis groupés.",
+    "color": 13625599,
+    "fx": {
+      "at": "target",
+      "radius": 3
+    }
+  },
+  {
+    "id": "blink",
+    "name": "Téléportation",
+    "icon": "🌀",
+    "classId": "mage",
+    "levelReq": 10,
+    "cooldown": 12,
+    "duration": 0.3,
+    "cost": {
+      "mana": 25
+    },
+    "anim": "interact",
+    "desc": "Se téléporte quelques mètres vers l'avant.",
+    "color": 12093695,
+    "fx": {
+      "blink": 9
+    }
+  },
+  {
+    "id": "fireball",
+    "name": "Boule de feu",
+    "icon": "🔥",
+    "classId": "mage",
+    "levelReq": 11,
+    "cooldown": 7,
+    "duration": 0.55,
+    "cost": {
+      "mana": 34
+    },
+    "range": 14,
+    "damage": 2.2,
+    "anim": "attack2",
+    "desc": "Explose en zone et enflamme les ennemis.",
+    "color": 16742954,
+    "fx": {
+      "at": "target",
+      "radius": 3.5,
+      "dot": [
+        0.35,
+        4,
+        "burn"
+      ]
+    }
+  },
+  {
+    "id": "flame_wall",
+    "name": "Mur de flammes",
+    "icon": "🧱",
+    "classId": "mage",
+    "levelReq": 15,
+    "cooldown": 18,
+    "duration": 0.6,
+    "cost": {
+      "mana": 44
+    },
+    "range": 12,
+    "anim": "attack",
+    "desc": "Un brasier qui consume les ennemis qui le traversent.",
+    "color": 16742954,
+    "fx": {
+      "zone": {
+        "r": 3.2,
+        "t": 7,
+        "dps": 0.8,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "ignite",
+    "name": "Embrasement",
+    "icon": "🕯️",
+    "classId": "mage",
+    "levelReq": 17,
+    "cooldown": 9,
+    "duration": 0.5,
+    "cost": {
+      "mana": 26
+    },
+    "range": 13,
+    "damage": 0.8,
+    "anim": "attack",
+    "desc": "Met le feu à la cible : de lourds dégâts dans le temps.",
+    "color": 16742954,
+    "fx": {
+      "single": true,
+      "dot": [
+        0.9,
+        6,
+        "burn"
+      ]
+    }
+  },
+  {
+    "id": "blizzard",
+    "name": "Tourmente glaciale",
+    "icon": "🌨️",
+    "classId": "mage",
+    "levelReq": 25,
+    "cooldown": 20,
+    "duration": 0.7,
+    "cost": {
+      "mana": 52
+    },
+    "range": 12,
+    "anim": "attack2",
+    "desc": "Tempête de glace qui ralentit et blesse.",
+    "color": 8378623,
+    "fx": {
+      "zone": {
+        "r": 5,
+        "t": 8,
+        "dps": 0.65,
+        "slow": 0.5,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "frost_armor",
+    "name": "Cuirasse de givre",
+    "icon": "🧥",
+    "classId": "mage",
+    "levelReq": 30,
+    "cooldown": 26,
+    "duration": 0.5,
+    "cost": {
+      "mana": 32
+    },
+    "anim": "interact",
+    "desc": "Un manteau de givre qui absorbe les coups.",
+    "color": 8378623,
+    "fx": {
+      "shield": [
+        0.3,
+        10
+      ],
+      "buff": {
+        "t": 10,
+        "taken": 0.9
+      }
+    }
+  },
+  {
+    "id": "energy_ray",
+    "name": "Rayon d'énergie",
+    "icon": "〰️",
+    "classId": "mage",
+    "levelReq": 35,
+    "cooldown": 10,
+    "duration": 0.9,
+    "cost": {
+      "mana": 40
+    },
+    "range": 13,
+    "damage": 0.8,
+    "anim": "attack",
+    "desc": "Un rayon continu : quatre impacts successifs.",
+    "color": 12093695,
+    "fx": {
+      "single": true,
+      "hits": 4
+    }
+  },
+  {
+    "id": "ice_prison",
+    "name": "Prison de glace",
+    "icon": "🧊",
+    "classId": "mage",
+    "levelReq": 50,
+    "cooldown": 16,
+    "duration": 0.6,
+    "cost": {
+      "mana": 46
+    },
+    "range": 12,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Emprisonne les ennemis dans la glace.",
+    "color": 8378623,
+    "fx": {
+      "at": "target",
+      "radius": 4,
+      "stun": 2.5
+    }
+  },
+  {
+    "id": "mana_siphon",
+    "name": "Siphon de mana",
+    "icon": "🔮",
+    "classId": "mage",
+    "levelReq": 55,
+    "cooldown": 12,
+    "duration": 0.5,
+    "cost": {
+      "mana": 20
+    },
+    "range": 13,
+    "damage": 1.8,
+    "anim": "attack",
+    "desc": "Frappe et restaure une partie de son mana.",
+    "color": 12093695,
+    "fx": {
+      "single": true,
+      "restore": {
+        "mana": 0.25
+      }
+    }
+  },
+  {
+    "id": "thunderbolt",
+    "name": "Foudre",
+    "icon": "⚡",
+    "classId": "mage",
+    "levelReq": 60,
+    "cooldown": 11,
+    "duration": 0.55,
+    "cost": {
+      "mana": 48
+    },
+    "range": 16,
+    "damage": 3.0,
+    "anim": "attack",
+    "desc": "Un éclair foudroyant qui sonne la cible.",
+    "color": 13625599,
+    "fx": {
+      "single": true,
+      "stun": 0.8
+    }
+  },
+  {
+    "id": "singularity",
+    "name": "Point de rupture",
+    "icon": "🕳️",
+    "classId": "mage",
+    "levelReq": 80,
+    "cooldown": 22,
+    "duration": 0.7,
+    "cost": {
+      "mana": 58
+    },
+    "range": 13,
+    "damage": 2.4,
+    "anim": "attack2",
+    "desc": "Attire les ennemis vers un point et les écrase.",
+    "color": 11562239,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "knock": -4
+    }
+  },
+  {
+    "id": "fire_rain",
+    "name": "Pluie de feu",
+    "icon": "☄️",
+    "classId": "mage",
+    "levelReq": 90,
+    "cooldown": 24,
+    "duration": 0.8,
+    "cost": {
+      "mana": 62
+    },
+    "range": 12,
+    "anim": "attack2",
+    "desc": "Une pluie de flammes sur une large zone.",
+    "color": 16742954,
+    "fx": {
+      "zone": {
+        "r": 6,
+        "t": 6,
+        "dps": 1.1,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "lightning_nova",
+    "name": "Nova d'éclairs",
+    "icon": "⚡",
+    "classId": "mage",
+    "levelReq": 110,
+    "cooldown": 16,
+    "duration": 0.6,
+    "cost": {
+      "mana": 55
+    },
+    "range": 8,
+    "damage": 2.6,
+    "anim": "attack2",
+    "desc": "Une décharge circulaire qui étourdit.",
+    "color": 13625599,
+    "fx": {
+      "stun": 1.0
+    },
+    "aoe": true
+  },
+  {
+    "id": "absolute_zero",
+    "name": "Zéro absolu",
+    "icon": "❄️",
+    "classId": "mage",
+    "levelReq": 130,
+    "cooldown": 26,
+    "duration": 0.8,
+    "cost": {
+      "mana": 66
+    },
+    "range": 8,
+    "damage": 3.2,
+    "anim": "attack2",
+    "desc": "Fige tout autour pendant trois secondes.",
+    "color": 8378623,
+    "fx": {
+      "stun": 3,
+      "slow": [
+        0.5,
+        4
+      ]
+    },
+    "aoe": true
+  },
+  {
+    "id": "arcane_overload",
+    "name": "Surcharge arcanique",
+    "icon": "💠",
+    "classId": "mage",
+    "levelReq": 160,
+    "cooldown": 60,
+    "duration": 0.5,
+    "cost": {
+      "mana": 40
+    },
+    "anim": "interact",
+    "desc": "Dégâts et recharges nettement améliorés.",
+    "color": 12093695,
+    "fx": {
+      "buff": {
+        "t": 8,
+        "dmg": 0.6,
+        "cdr": 0.5
+      }
+    }
+  },
+  {
+    "id": "cataclysm",
+    "name": "Cataclysme",
+    "icon": "🌋",
+    "classId": "mage",
+    "levelReq": 200,
+    "cooldown": 30,
+    "duration": 1.0,
+    "cost": {
+      "mana": 90
+    },
+    "range": 14,
+    "damage": 5.5,
+    "anim": "attack2",
+    "desc": "Le sort ultime : dévastation, brûlure et étourdissement.",
+    "color": 16742954,
+    "fx": {
+      "at": "target",
+      "radius": 9,
+      "dot": [
+        0.8,
+        6,
+        "burn"
+      ],
+      "stun": 1.2
+    }
+  },
+  {
+    "id": "precise_shot",
+    "name": "Tir précis",
+    "icon": "🎯",
+    "classId": "archer",
+    "levelReq": 2,
+    "cooldown": 3.5,
+    "duration": 0.45,
+    "cost": {
+      "mana": 14
+    },
+    "range": 18,
+    "damage": 1.6,
+    "anim": "attack",
+    "desc": "Tir tendu avec une forte chance de critique.",
+    "color": 9169002,
+    "fx": {
+      "single": true,
+      "crit": 0.25
+    }
+  },
+  {
+    "id": "poison_arrow",
+    "name": "Flèche empoisonnée",
+    "icon": "☠️",
+    "classId": "archer",
+    "levelReq": 4,
+    "cooldown": 6,
+    "duration": 0.45,
+    "cost": {
+      "mana": 18
+    },
+    "range": 16,
+    "damage": 1.0,
+    "anim": "attack",
+    "desc": "Empoisonne la cible pendant six secondes.",
+    "color": 8257370,
+    "fx": {
+      "single": true,
+      "dot": [
+        0.5,
+        6,
+        "poison"
+      ]
+    }
+  },
+  {
+    "id": "backflip",
+    "name": "Saut arrière",
+    "icon": "🤸",
+    "classId": "archer",
+    "levelReq": 7,
+    "cooldown": 10,
+    "duration": 0.4,
+    "cost": {
+      "mana": 20
+    },
+    "anim": "interact",
+    "desc": "Bondit en arrière pour reprendre ses distances.",
+    "color": 9169002,
+    "fx": {
+      "dash": {
+        "to": "back",
+        "d": 7
+      },
+      "buff": {
+        "t": 2,
+        "speed": 0.3
+      }
+    }
+  },
+  {
+    "id": "crippling_arrow",
+    "name": "Flèche entravante",
+    "icon": "🦶",
+    "classId": "archer",
+    "levelReq": 10,
+    "cooldown": 8,
+    "duration": 0.45,
+    "cost": {
+      "mana": 20
+    },
+    "range": 16,
+    "damage": 1.3,
+    "anim": "attack",
+    "desc": "Ralentit fortement la cible.",
+    "color": 9169002,
+    "fx": {
+      "single": true,
+      "slow": [
+        0.35,
+        4
+      ]
+    }
+  },
+  {
+    "id": "bear_trap",
+    "name": "Piège à ours",
+    "icon": "🪤",
+    "classId": "archer",
+    "levelReq": 11,
+    "cooldown": 14,
+    "duration": 0.5,
+    "cost": {
+      "mana": 24
+    },
+    "range": 12,
+    "damage": 1.4,
+    "anim": "attack",
+    "desc": "Piège qui immobilise les ennemis visés.",
+    "color": 14266490,
+    "fx": {
+      "at": "target",
+      "radius": 2.5,
+      "stun": 2.5
+    }
+  },
+  {
+    "id": "explosive_arrow",
+    "name": "Flèche explosive",
+    "icon": "💥",
+    "classId": "archer",
+    "levelReq": 15,
+    "cooldown": 9,
+    "duration": 0.55,
+    "cost": {
+      "mana": 30
+    },
+    "range": 16,
+    "damage": 2.2,
+    "anim": "attack2",
+    "desc": "Une flèche qui explose en zone.",
+    "color": 16742954,
+    "fx": {
+      "at": "target",
+      "radius": 3.5
+    }
+  },
+  {
+    "id": "rapid_fire",
+    "name": "Tir rapide",
+    "icon": "⚡",
+    "classId": "archer",
+    "levelReq": 17,
+    "cooldown": 8,
+    "duration": 0.8,
+    "cost": {
+      "mana": 28
+    },
+    "range": 15,
+    "damage": 0.9,
+    "anim": "attack",
+    "desc": "Trois flèches en rafale.",
+    "color": 9169002,
+    "fx": {
+      "single": true,
+      "hits": 3
+    }
+  },
+  {
+    "id": "flaming_arrow",
+    "name": "Flèche enflammée",
+    "icon": "🔥",
+    "classId": "archer",
+    "levelReq": 25,
+    "cooldown": 8,
+    "duration": 0.5,
+    "cost": {
+      "mana": 26
+    },
+    "range": 16,
+    "damage": 1.6,
+    "anim": "attack",
+    "desc": "Enflamme la cible.",
+    "color": 16742954,
+    "fx": {
+      "single": true,
+      "dot": [
+        0.55,
+        5,
+        "burn"
+      ]
+    }
+  },
+  {
+    "id": "camouflage",
+    "name": "Camouflage",
+    "icon": "🍃",
+    "classId": "archer",
+    "levelReq": 30,
+    "cooldown": 26,
+    "duration": 0.5,
+    "cost": {
+      "mana": 25
+    },
+    "anim": "interact",
+    "desc": "Moins de dégâts subis, plus de vitesse et de critiques.",
+    "color": 9169002,
+    "fx": {
+      "buff": {
+        "t": 6,
+        "taken": 0.6,
+        "speed": 0.3,
+        "crit": 0.15
+      }
+    }
+  },
+  {
+    "id": "frost_arrow",
+    "name": "Flèche glaciale",
+    "icon": "❄️",
+    "classId": "archer",
+    "levelReq": 35,
+    "cooldown": 10,
+    "duration": 0.5,
+    "cost": {
+      "mana": 30
+    },
+    "range": 17,
+    "damage": 2.0,
+    "anim": "attack",
+    "desc": "Gèle brièvement et ralentit la cible.",
+    "color": 8378623,
+    "fx": {
+      "single": true,
+      "slow": [
+        0.4,
+        5
+      ],
+      "stun": 0.8
+    }
+  },
+  {
+    "id": "fire_trap",
+    "name": "Piège enflammé",
+    "icon": "🧨",
+    "classId": "archer",
+    "levelReq": 50,
+    "cooldown": 18,
+    "duration": 0.6,
+    "cost": {
+      "mana": 36
+    },
+    "range": 12,
+    "anim": "attack",
+    "desc": "Un brasier au sol qui brûle ceux qui s'y trouvent.",
+    "color": 16742954,
+    "fx": {
+      "zone": {
+        "r": 4,
+        "t": 6,
+        "dps": 1.0,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "eagle_eye",
+    "name": "Œil d'aigle",
+    "icon": "🦅",
+    "classId": "archer",
+    "levelReq": 55,
+    "cooldown": 34,
+    "duration": 0.5,
+    "cost": {
+      "mana": 30
+    },
+    "anim": "interact",
+    "desc": "Critiques et dégâts augmentés pendant 12 s.",
+    "color": 9169002,
+    "fx": {
+      "buff": {
+        "t": 12,
+        "crit": 0.25,
+        "dmg": 0.2
+      }
+    }
+  },
+  {
+    "id": "phantom_shot",
+    "name": "Tir fantôme",
+    "icon": "👻",
+    "classId": "archer",
+    "levelReq": 60,
+    "cooldown": 12,
+    "duration": 0.6,
+    "cost": {
+      "mana": 38
+    },
+    "range": 20,
+    "damage": 3.0,
+    "anim": "attack",
+    "desc": "Une flèche spectrale qui traverse cinq ennemis.",
+    "color": 11562239,
+    "fx": {
+      "pierce": 5
+    }
+  },
+  {
+    "id": "arrow_storm",
+    "name": "Tempête de flèches",
+    "icon": "🌧️",
+    "classId": "archer",
+    "levelReq": 80,
+    "cooldown": 18,
+    "duration": 0.9,
+    "cost": {
+      "mana": 46
+    },
+    "range": 14,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Cinq salves sur une zone.",
+    "color": 9169002,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "hits": 5
+    }
+  },
+  {
+    "id": "nature_call",
+    "name": "Appel de la nature",
+    "icon": "🌿",
+    "classId": "archer",
+    "levelReq": 90,
+    "cooldown": 36,
+    "duration": 0.6,
+    "cost": {
+      "mana": 30
+    },
+    "anim": "interact",
+    "desc": "Soigne et régénère progressivement.",
+    "color": 9169002,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "regen": 0.015
+      }
+    },
+    "heal": 0.2
+  },
+  {
+    "id": "thunder_arrow",
+    "name": "Flèche tonnerre",
+    "icon": "🌩️",
+    "classId": "archer",
+    "levelReq": 110,
+    "cooldown": 15,
+    "duration": 0.6,
+    "cost": {
+      "mana": 48
+    },
+    "range": 17,
+    "damage": 2.8,
+    "anim": "attack2",
+    "desc": "Foudroie une zone et étourdit.",
+    "color": 13625599,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "stun": 1.5
+    }
+  },
+  {
+    "id": "zenith_mark",
+    "name": "Marque supérieure",
+    "icon": "🎯",
+    "classId": "archer",
+    "levelReq": 130,
+    "cooldown": 20,
+    "duration": 0.5,
+    "cost": {
+      "mana": 36
+    },
+    "range": 18,
+    "damage": 2.0,
+    "anim": "attack",
+    "desc": "La cible subit 50 % de dégâts en plus pendant 8 s.",
+    "color": 11562239,
+    "fx": {
+      "single": true,
+      "vuln": [
+        0.5,
+        8
+      ]
+    }
+  },
+  {
+    "id": "divine_wind",
+    "name": "Vent divin",
+    "icon": "🌬️",
+    "classId": "archer",
+    "levelReq": 160,
+    "cooldown": 60,
+    "duration": 0.5,
+    "cost": {
+      "mana": 40
+    },
+    "anim": "interact",
+    "desc": "Vitesse, recharges et dégâts fortement accrus.",
+    "color": 9169002,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "speed": 0.4,
+        "cdr": 0.4,
+        "dmg": 0.3
+      }
+    }
+  },
+  {
+    "id": "heavens_rain",
+    "name": "Pluie céleste",
+    "icon": "☄️",
+    "classId": "archer",
+    "levelReq": 200,
+    "cooldown": 30,
+    "duration": 1.0,
+    "cost": {
+      "mana": 70
+    },
+    "range": 14,
+    "damage": 2.0,
+    "anim": "attack2",
+    "desc": "Trois volées puis une pluie qui persiste au sol.",
+    "color": 16769658,
+    "fx": {
+      "at": "target",
+      "radius": 8,
+      "hits": 3,
+      "zone": {
+        "r": 8,
+        "t": 8,
+        "dps": 1.4,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "quick_stab",
+    "name": "Estoc rapide",
+    "icon": "🗡️",
+    "classId": "assassin",
+    "levelReq": 2,
+    "cooldown": 1.0,
+    "duration": 0.35,
+    "cost": {
+      "stamina": 8
+    },
+    "range": 2.8,
+    "damage": 1.3,
+    "anim": "attack",
+    "desc": "Une botte rapide et bon marché.",
+    "color": 14674165,
+    "fx": {
+      "single": true
+    }
+  },
+  {
+    "id": "throwing_knife",
+    "name": "Jet de dague",
+    "icon": "🔪",
+    "classId": "assassin",
+    "levelReq": 4,
+    "cooldown": 4,
+    "duration": 0.45,
+    "cost": {
+      "stamina": 14
+    },
+    "range": 11,
+    "damage": 1.5,
+    "anim": "attack",
+    "desc": "Lance une dague sur une cible éloignée.",
+    "color": 14674165,
+    "fx": {
+      "single": true
+    }
+  },
+  {
+    "id": "shadow_leap",
+    "name": "Bond furtif",
+    "icon": "🌑",
+    "classId": "assassin",
+    "levelReq": 7,
+    "cooldown": 10,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 22
+    },
+    "range": 9,
+    "damage": 1.6,
+    "anim": "attack2",
+    "desc": "Bondit sur la cible et frappe.",
+    "color": 11562239,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 8
+      },
+      "single": true
+    }
+  },
+  {
+    "id": "deep_cut",
+    "name": "Entaille profonde",
+    "icon": "🩸",
+    "classId": "assassin",
+    "levelReq": 10,
+    "cooldown": 7,
+    "duration": 0.45,
+    "cost": {
+      "stamina": 18
+    },
+    "range": 2.8,
+    "damage": 1.0,
+    "anim": "attack",
+    "desc": "Une blessure qui saigne longtemps.",
+    "color": 13773354,
+    "fx": {
+      "single": true,
+      "dot": [
+        0.7,
+        6,
+        "bleed"
+      ]
+    }
+  },
+  {
+    "id": "smoke_bomb",
+    "name": "Bombe fumigène",
+    "icon": "💨",
+    "classId": "assassin",
+    "levelReq": 11,
+    "cooldown": 18,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 24
+    },
+    "anim": "interact",
+    "desc": "Nuage qui ralentit les ennemis et protège l'assassin.",
+    "color": 11562239,
+    "fx": {
+      "zone": {
+        "r": 5,
+        "t": 5,
+        "slow": 0.6,
+        "at": "self"
+      },
+      "buff": {
+        "t": 5,
+        "taken": 0.75
+      }
+    }
+  },
+  {
+    "id": "paralyze",
+    "name": "Frappe paralysante",
+    "icon": "⚡",
+    "classId": "assassin",
+    "levelReq": 15,
+    "cooldown": 12,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 26
+    },
+    "range": 2.8,
+    "damage": 1.4,
+    "anim": "attack",
+    "desc": "Paralyse la cible deux secondes.",
+    "color": 13625599,
+    "fx": {
+      "single": true,
+      "stun": 2
+    }
+  },
+  {
+    "id": "twin_blades",
+    "name": "Lames jumelles",
+    "icon": "⚔️",
+    "classId": "assassin",
+    "levelReq": 17,
+    "cooldown": 6,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 20
+    },
+    "range": 2.8,
+    "damage": 1.3,
+    "anim": "attack",
+    "desc": "Deux coups rapprochés.",
+    "color": 14674165,
+    "fx": {
+      "single": true,
+      "hits": 2
+    }
+  },
+  {
+    "id": "eviscerate",
+    "name": "Éviscération",
+    "icon": "💀",
+    "classId": "assassin",
+    "levelReq": 25,
+    "cooldown": 10,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 32
+    },
+    "range": 2.8,
+    "damage": 2.2,
+    "anim": "attack2",
+    "desc": "Bien plus fort contre les ennemis sous 35 % de PV.",
+    "color": 13773354,
+    "fx": {
+      "single": true,
+      "execute": [
+        0.35,
+        1.5
+      ]
+    }
+  },
+  {
+    "id": "blade_dance",
+    "name": "Danse des lames",
+    "icon": "💃",
+    "classId": "assassin",
+    "levelReq": 30,
+    "cooldown": 12,
+    "duration": 0.8,
+    "cost": {
+      "stamina": 38
+    },
+    "range": 4.2,
+    "damage": 0.7,
+    "anim": "attack2",
+    "desc": "Trois tours de lame autour de soi.",
+    "color": 14674165,
+    "fx": {
+      "hits": 3
+    },
+    "aoe": true
+  },
+  {
+    "id": "life_drain",
+    "name": "Vol de vie",
+    "icon": "🩸",
+    "classId": "assassin",
+    "levelReq": 35,
+    "cooldown": 11,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 28
+    },
+    "range": 3,
+    "damage": 2.0,
+    "anim": "attack",
+    "desc": "Draine la vie de l'ennemi pour se soigner.",
+    "color": 13773354,
+    "fx": {
+      "single": true,
+      "lifesteal": 0.6
+    }
+  },
+  {
+    "id": "vanish",
+    "name": "Évanouissement",
+    "icon": "👤",
+    "classId": "assassin",
+    "levelReq": 50,
+    "cooldown": 30,
+    "duration": 0.4,
+    "cost": {
+      "stamina": 30
+    },
+    "anim": "interact",
+    "desc": "Disparaît : invulnérable 1,5 s, recule et accélère.",
+    "color": 11562239,
+    "fx": {
+      "invuln": 1.5,
+      "dash": {
+        "to": "back",
+        "d": 6
+      },
+      "buff": {
+        "t": 5,
+        "speed": 0.35
+      }
+    }
+  },
+  {
+    "id": "deadly_poison",
+    "name": "Poison mortel",
+    "icon": "☠️",
+    "classId": "assassin",
+    "levelReq": 55,
+    "cooldown": 12,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 30
+    },
+    "range": 2.8,
+    "damage": 1.2,
+    "anim": "attack",
+    "desc": "Un poison très virulent qui ralentit.",
+    "color": 8257370,
+    "fx": {
+      "single": true,
+      "dot": [
+        1.2,
+        8,
+        "poison"
+      ],
+      "slow": [
+        0.7,
+        5
+      ]
+    }
+  },
+  {
+    "id": "assassinate",
+    "name": "Assassinat",
+    "icon": "🗡️",
+    "classId": "assassin",
+    "levelReq": 60,
+    "cooldown": 14,
+    "duration": 0.6,
+    "cost": {
+      "stamina": 40
+    },
+    "range": 2.8,
+    "damage": 3.4,
+    "anim": "attack2",
+    "desc": "Frappe fatale, souvent critique.",
+    "color": 11562239,
+    "fx": {
+      "single": true,
+      "crit": 0.3
+    }
+  },
+  {
+    "id": "steel_tempest",
+    "name": "Tourbillon d'acier",
+    "icon": "🌀",
+    "classId": "assassin",
+    "levelReq": 80,
+    "cooldown": 16,
+    "duration": 1.0,
+    "cost": {
+      "stamina": 46
+    },
+    "range": 5,
+    "damage": 0.9,
+    "anim": "attack2",
+    "desc": "Quatre passages de lames tournoyantes.",
+    "color": 14674165,
+    "fx": {
+      "hits": 4
+    },
+    "aoe": true
+  },
+  {
+    "id": "shadow_veil",
+    "name": "Voile d'ombre",
+    "icon": "🌫️",
+    "classId": "assassin",
+    "levelReq": 90,
+    "cooldown": 34,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 34
+    },
+    "anim": "interact",
+    "desc": "Vitesse, critiques et résistance accrus.",
+    "color": 11562239,
+    "fx": {
+      "buff": {
+        "t": 8,
+        "speed": 0.35,
+        "taken": 0.6,
+        "crit": 0.2
+      }
+    }
+  },
+  {
+    "id": "phantom_blades",
+    "name": "Lames fantômes",
+    "icon": "👻",
+    "classId": "assassin",
+    "levelReq": 110,
+    "cooldown": 15,
+    "duration": 1.0,
+    "cost": {
+      "stamina": 48
+    },
+    "range": 3.2,
+    "damage": 0.8,
+    "anim": "attack2",
+    "desc": "Six coups d'une rapidité surnaturelle.",
+    "color": 11562239,
+    "fx": {
+      "single": true,
+      "hits": 6
+    }
+  },
+  {
+    "id": "black_plague",
+    "name": "Peste noire",
+    "icon": "☣️",
+    "classId": "assassin",
+    "levelReq": 130,
+    "cooldown": 26,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 50
+    },
+    "range": 10,
+    "anim": "attack",
+    "desc": "Un nuage de peste qui ronge et ralentit.",
+    "color": 8257370,
+    "fx": {
+      "zone": {
+        "r": 6,
+        "t": 8,
+        "dps": 1.0,
+        "slow": 0.6,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "shadow_master",
+    "name": "Maître des ombres",
+    "icon": "🥷",
+    "classId": "assassin",
+    "levelReq": 160,
+    "cooldown": 60,
+    "duration": 0.5,
+    "cost": {
+      "stamina": 40
+    },
+    "anim": "interact",
+    "desc": "Dégâts, critiques et recharges décuplés.",
+    "color": 11562239,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "dmg": 0.5,
+        "crit": 0.25,
+        "cdr": 0.3
+      }
+    }
+  },
+  {
+    "id": "silent_death",
+    "name": "Mort silencieuse",
+    "icon": "☠️",
+    "classId": "assassin",
+    "levelReq": 200,
+    "cooldown": 28,
+    "duration": 0.8,
+    "cost": {
+      "stamina": 66
+    },
+    "range": 3.2,
+    "damage": 5.0,
+    "anim": "attack2",
+    "desc": "Tue presque à coup sûr les ennemis sous 45 % de PV.",
+    "color": 11562239,
+    "fx": {
+      "single": true,
+      "execute": [
+        0.45,
+        2.5
+      ]
+    }
+  }
+]
