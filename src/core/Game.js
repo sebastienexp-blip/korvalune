@@ -882,6 +882,7 @@ export class Game {
       if (this.player) this.player.setCosmetics(this._shopCos());
       this._renderLune();
       this._renderHalloween();
+      if (this.player && !this.hud.q('#inventory-screen').classList.contains('hidden')) this.hud.renderWardrobe();
     });
     b.on('net:settings', (msg) => { // réglages enregistrés sur le compte : ils priment sur ceux du navigateur ; sinon on envoie les nôtres
       if (!msg.s || typeof msg.s !== 'object') { this.net.saveSettings(this.settings); return; }
@@ -935,6 +936,7 @@ export class Game {
     this.root.querySelector('#btn-lune').addEventListener('click', () => this._openLune());
     this.root.querySelector('#btn-mount').addEventListener('click', () => this._toggleMount());
     this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
+    this.root.querySelector('#inv-cos').addEventListener('click', (e) => { const b = e.target.closest('[data-cos]'); if (!b) return; this.audio.play('equip'); this.net.shopEquip(b.dataset.slot, b.dataset.on === '1' ? null : b.dataset.cos); });
     this.bus.on('ui:close-stable', () => this._closeModal());
     // V10.13 — Halloween : boutique de Jack, états envoyés par le serveur, récompenses de combat
     this.bus.on('ui:close-halloween', () => this._closeModal());

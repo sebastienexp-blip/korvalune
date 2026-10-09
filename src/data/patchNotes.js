@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.15', title: 'Garde-robe : cosmétiques liés au compte',
+    items: [
+      'Tous les cosmétiques (boutique des Lunes et Halloween) sont désormais des objets liés à ton compte : impossibles à vendre, à échanger ou à mettre en banque.',
+      'Nouvelle section « Cosmétiques » dans l’inventaire : touche un objet pour l’équiper, touche-le encore pour le retirer. Un seul par emplacement (aura, cercle, traînée, ailes, titre).'
+    ]
+  },
+  {
     version: '10.14', title: 'Ville sûre et mini-carte illustrée',
     items: [
       'La ville est un lieu sûr : les monstres d’Halloween n’y apparaissent plus et disparaissent si tu rentres en ville. Ils rôdent à l’extérieur.',

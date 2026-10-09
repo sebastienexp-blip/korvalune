@@ -30,6 +30,7 @@ import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
+import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
 import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
@@ -41,6 +42,8 @@ const HOST = process.env.HOST || '0.0.0.0';
 const DIST = path.resolve(process.env.DIST_DIR || path.join(path.dirname(fileURLToPath(import.meta.url)), 'dist'));
 const TRUST_PROXY = process.env.TRUST_PROXY === '1'; // à activer derrière un hébergeur / proxy (Render, Railway, Fly, Caddy, nginx…)
 const MAX_CONN_PER_IP = Number(process.env.MAX_CONN_PER_IP) || 12;
+// V10.14 : les cosmétiques sont liés au compte — jamais des objets d'inventaire : ni vendables, ni échangeables, ni stockables
+const noCosmetics = (slots) => (Array.isArray(slots) ? slots.map((x) => (x && typeof x.defId === 'string' && COSMETICS_BY_ID[x.defId] ? null : x)) : slots);
 const RESERVED_NAMES = new Set(['__proto__', 'constructor', 'prototype', 'tostring', 'valueof', 'hasownproperty', 'admin', 'administrateur', 'moderateur', 'system', 'systeme']);
 
 const accounts = await loadAccounts();
@@ -277,7 +280,7 @@ function sanitizeSave(prev, incoming, elapsedMs) {
     }
   }
 
-  clean.inventory = sanitizeItemSlots(incoming.inventory, 30, sanitize) ?? (prev?.inventory || []);
+  clean.inventory = noCosmetics(sanitizeItemSlots(incoming.inventory, 30, sanitize)) ?? (prev?.inventory || []);
 
   clean.equipment = {};
   if (incoming.equipment && typeof incoming.equipment === 'object') {
@@ -294,7 +297,7 @@ function sanitizeSave(prev, incoming, elapsedMs) {
 
   // V4.7 : coffres du monde déjà ouverts (identifiants courts)
   clean.chests = Array.isArray(incoming.chests) ? incoming.chests.filter((x) => typeof x === 'string' && x.length <= 20).slice(0, 300) : (prev?.chests || []);
-  clean.bank = sanitizeItemSlots(incoming.bank, 240, sanitize) ?? (prev?.bank || []);
+  clean.bank = noCosmetics(sanitizeItemSlots(incoming.bank, 240, sanitize)) ?? (prev?.bank || []);
 
   // V3.7 : spires de Éther (clés, éclats, cristaux, records) — bornées, jamais de gain brutal d'une sauvegarde à l'autre
   {
@@ -747,7 +750,7 @@ wss.on('connection', (ws, req) => {
       if (!other) { endTrade(player.id, 'L\u2019autre joueur est parti : échange annulé.'); return; }
       if (msg.t === 'trade:offer') {
         if (tr.phase !== 'edit') return;
-        const items = (sanitizeItemSlots(Array.isArray(msg.items) ? msg.items.slice(0, TRADE_MAX_ITEMS) : [], TRADE_MAX_ITEMS, sanitize) || []).filter(Boolean);
+        const items = (noCosmetics(sanitizeItemSlots(Array.isArray(msg.items) ? msg.items.slice(0, TRADE_MAX_ITEMS) : [], TRADE_MAX_ITEMS, sanitize)) || []).filter(Boolean);
         tr.off[me] = items; tr.ok = { a: false, b: false }; tr.t = Date.now();
         pushTrade(tr);
         return;

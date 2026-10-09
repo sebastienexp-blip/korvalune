@@ -1049,3 +1049,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `#halloween-screen` avait été oublié dans la liste des écrans de `style.css` (pas de défilement) : corrigé.
 - Mini-carte : petites images (`extra.icons`, construit par `Game._mapIcons()`) pour armes, armures, potions, écurie, barbier, banque, statue des spires, Jack, coffres non ouverts, boss, gobelin trésor (pulsant, accroché au bord), Roi Citrouille ; bonbons en petits points. La grande carte montre coffres/boss/gobelin/événement et une légende.
 - Les emoji dépendent de la police du téléphone (Android : Noto Color Emoji, aucun souci attendu) ; non vérifié sur un vrai téléphone.
+
+## V10.15 — Garde-robe : cosmétiques liés au compte
+
+- Les cosmétiques (Lunes et Halloween) ne sont pas des objets d'inventaire : ils sont liés au compte, ni vendables, ni échangeables.
+- Le serveur retire tout identifiant cosmétique des sauvegardes d'inventaire/banque et des offres d'échange (`noCosmetics` dans `server.js`).
+- Inventaire : section « 🎨 Cosmétiques », un toucher équipe, un second retire (message `shop:equip` existant).

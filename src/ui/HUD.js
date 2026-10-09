@@ -4,7 +4,7 @@ import { rarityGlow } from '../data/rarities.js';
 import { PRIMARY_STAT } from '../combat/Classes.js';
 import { countSets, describeBonus } from '../data/sets.js';
 import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
-import { CATALOG, CATEGORIES, CATALOG_BY_ID } from '../data/shopCatalog.js';
+import { CATALOG, CATEGORIES, CATALOG_BY_ID, COSMETIC_SLOTS } from '../data/shopCatalog.js';
 import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.14 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.15 — Korvalune</div>
         </div>
       </div>
 
@@ -273,6 +273,7 @@ export class HUD {
           <div id="inv-main">
             <div id="inv-grid"></div>
             <div id="inv-coins">🪙 <span id="inv-coins-val">0</span></div>
+            <div id="inv-cos"></div>
           </div>
         </div>
         <button data-act="close-inv">Fermer</button>
@@ -695,7 +696,20 @@ export class HUD {
   }
   hideDialogue() { this.q('#dialogue-box').classList.add('hidden'); }
 
+  // V10.14 — garde-robe : cosmétiques possédés (liés au compte : ni vendables ni échangeables), équipables d'un toucher
+  renderWardrobe() {
+    const el = this.q('#inv-cos'); if (!el) return;
+    const sh = this.game?._shop;
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const icon = { aura: '🗡️', ring: '⭕', trail: '✨', wings: '🪽', title: '🏷️' };
+    const label = { aura: 'Aura d’arme', ring: 'Cercle', trail: 'Traînée', wings: 'Ailes', title: 'Titre' };
+    const own = sh ? sh.owned.map((id) => CATALOG_BY_ID[id]).filter((it) => it && COSMETIC_SLOTS.includes(it.cat)) : [];
+    const cells = own.map((it) => { const on = sh.eq[it.cat] === it.id; return `<button class="cos-cell${on ? ' on' : ''}" data-cos="${it.id}" data-slot="${it.cat}" data-on="${on ? 1 : 0}" title="${esc(it.desc)}"><span class="cos-ico">${icon[it.cat]}</span><b>${esc(it.name)}</b><small>${label[it.cat]} · ${on ? 'équipé' : 'toucher pour équiper'}</small></button>`; }).join('');
+    el.innerHTML = `<div class="bank-col-title">🎨 Cosmétiques</div><small class="eq-hint">🔒 Liés à ton compte : ni vendables, ni échangeables. Un seul par emplacement.</small><div class="cos-grid">${cells || '<p class="menu-hint">Aucun cosmétique pour l’instant : boutique des Lunes ou événements.</p>'}</div>`;
+  }
+
   renderInventory(inventory, equipment, player, onAction) {
+    this.renderWardrobe();
     const grid = this.q('#inv-grid');
     grid.innerHTML = '';
     inventory.slots.forEach((slot, i) => {
