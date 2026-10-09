@@ -1133,3 +1133,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Objet secondaire** : `OFFHAND_BASES` (`itemBases.js`), catégorie `offhand` du générateur, apparence via `HumanoidModel.equipVisuals.offs`.
 - **Rangs de compétences** (`src/combat/SkillRanks.js`) : `effectiveSkill` renvoie une copie (dégâts × progression de niveau × rang × bonus d'objets, recharge, coût, rayon). `Player.skillRanks`, validé côté serveur (`cleanRanks`, +3 rangs par sauvegarde). Visuels : `SkillEffects.grandeur`.
 - **Besace des matériaux** (`src/data/satchel.js`) : `Player.satchel`, `Inventory.add` y verse `mat_*` et `rune_*`, `Crafting.countItem/takeMats` la lisent ; plafond de gain par minute côté serveur.
+
+
+## V10.27 — Empreintes de compétence sur les objets
+
+- `SkillRanks.js` : `SKILL_TEMPLATES` (puissance, portée, célérité, économie, cataclysme), `rollSkillBoosts` (Légendaire 1, Mythique 2, Absolu 3 compétences de la classe), `cleanSkillBoosts` (serveur). Un objet ne stocke que `gen.skills = [{id, t, q}]` ; les valeurs (dégâts, portée, recharge, coût) sont recalculées par `skillModValues` depuis le modèle, la qualité `q` et le niveau d'objet. `Equipment.apply` les additionne (plafonnées) dans `player.skillMods`, lu par `effectiveSkill`.
+- Atelier : la refonte retire au sort les empreintes (et reconstruit les objets de build), l'élévation de rareté n'est pas possible pour les objets de build.

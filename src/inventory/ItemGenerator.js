@@ -4,6 +4,7 @@ import { AFFIX_POOL, rollAffixValue } from '../data/affixPool.js';
 import { CLASS_WEAPONS } from '../combat/WeaponRules.js';
 import { SETS_BY_CLASS, SET_SLOTS } from '../data/sets.js';
 import { effectsAvailableForTier, rollEffectChance } from '../data/itemEffectPool.js';
+import { rollSkillBoosts } from '../combat/SkillRanks.js';
 import { getDifficulty } from '../data/difficulty.js';
 import { BUILDS_BY_CLASS, BUILDS, BUILD_TIER, BUILD_PIECES, buildProc } from '../data/builds.js';
 
@@ -120,6 +121,7 @@ export function generateItem({ category, baseKey, itemLevel = 1, rarityTier = 1 
 
   const affixes = rollAffixes(rarity, itemLevel);
   const effects = rollEffects(rarity, rarity.tier);
+  const skills = rollSkillBoosts(lootClass, rarity.tier, itemLevel); // V10.27 : maîtrises de compétences (Légendaire 1, Mythique 2, Absolu 3)
 
   const primaryValueBasis = Object.values(stats).reduce((a, b2) => a + (typeof b2 === 'number' ? Math.abs(b2) : 0), 0);
   const value = Math.max(1, Math.round((8 + itemLevel * 1.4 + primaryValueBasis * 1.8) * rarity.valueMult));
@@ -130,7 +132,7 @@ export function generateItem({ category, baseKey, itemLevel = 1, rarityTier = 1 
     name: buildName(baseName, rarity.tier),
     rarityTier: rarity.tier,
     itemLevel, levelReq,
-    stats, affixes, effects,
+    stats, affixes, effects, ...(skills.length ? { skills } : {}),
     value,
     desc: pickRandom(DESCRIPTIONS),
     stackable: false

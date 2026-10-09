@@ -1,4 +1,5 @@
 import { activeSetBonuses } from '../data/sets.js';
+import { sumSkillMods } from '../combat/SkillRanks.js';
 import { activeBuildBonuses, NEW_KEYS } from '../data/builds.js';
 import { getItem, resolveItem, nextInstanceId } from './Item.js';
 
@@ -62,7 +63,7 @@ export class Equipment {
 
   apply() {
     const bonus = Object.fromEntries(BONUS_KEYS.map((k) => [k, 0]));
-    const effects = [];
+    const effects = [], skillList = [];
     for (const s of SLOTS) {
       const item = this.slots[s];
       if (!item) continue;
@@ -71,6 +72,7 @@ export class Equipment {
       if (view.broken) continue; // V10.19 : un équipement brisé n'apporte plus rien (à réparer chez le forgeron)
       for (const [k, v] of Object.entries(view.stats || {})) if (k in bonus) bonus[k] += v;
       for (const aff of view.affixes || []) if (aff.key in bonus) bonus[aff.key] += aff.value;
+      for (const sk of view.skills || []) skillList.push({ b: sk, itemLevel: view.itemLevel });
       if (view.bmods) for (const [k, v] of Object.entries(view.bmods)) if (k in bonus) bonus[k] += v;
       if (view.socketBonus) for (const [k, v] of Object.entries(view.socketBonus)) if (k in bonus) bonus[k] += v;
       for (const eff of view.effects || []) effects.push({ ...eff, sourceSlot: s });
@@ -81,6 +83,7 @@ export class Equipment {
     const sb = activeSetBonuses(this.slots);
     for (const b of sb.bonus) for (const [k, v] of Object.entries(b)) if (k in bonus) bonus[k] += v;
     for (const e of sb.effects) effects.push(e);
+    this.player.setSkillMods?.(sumSkillMods(skillList));
     this.player.setEquipBonus(bonus);
     this.player.setEquipEffects(effects);
     this.bus.emit('equipmentChanged');

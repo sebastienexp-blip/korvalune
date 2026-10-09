@@ -37,6 +37,7 @@ export function resolveItem(slot) {
       sockets: g.sockets || 0, gems: g.gems || [], socketBonus: g.sockets ? socketBonus(g) : null, litany: g.sockets ? activeLitany(g) : null,
       dur: durOf(g), durMax: durMaxOf(g), broken: durOf(g) <= 0, ench: g.ench || 0,
       rarity: rarity.id, rarityInfo: rarity, itemLevel: Math.min(200, g.itemLevel), levelReq: Math.min(200, g.levelReq),
+      skills: g.skills || [],
       buildId: g.buildId || null, buildPiece: g.buildPiece ?? null, build: g.buildId ? BUILDS[g.buildId] || null : null, bmods: g.buildId && BUILDS[g.buildId] ? buildMods(g.buildId, g.buildPiece | 0, g.itemLevel) : null,
       stats: g.stats || {}, affixes: g.affixes || [], effects: g.effects || [],
       value: g.value, desc: g.desc, stackable: false, isGenerated: true, gen: g

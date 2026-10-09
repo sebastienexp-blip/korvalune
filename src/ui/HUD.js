@@ -4,7 +4,7 @@ import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../
 import { ITEMS, RARITY, resolveItem } from '../inventory/Item.js';
 import { SATCHEL_IDS } from '../data/satchel.js';
 import { activeBuildBonuses, describeMods, BUILDS_BY_CLASS } from '../data/builds.js';
-import { MAX_RANK, rankCost, rankLevelNeeded, upgradable, progMult, rankDmg } from '../combat/SkillRanks.js';
+import { describeSkillMod, SKILL_TEMPLATES, MAX_RANK, rankCost, rankLevelNeeded, upgradable, progMult, rankDmg } from '../combat/SkillRanks.js';
 import { rarityGlow } from '../data/rarities.js';
 import { PRIMARY_STAT } from '../combat/Classes.js';
 import { countSets, describeBonus } from '../data/sets.js';
@@ -137,7 +137,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.26 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.27 — Korvalune</div>
         </div>
       </div>
 
@@ -936,6 +936,7 @@ export class HUD {
     if (view.affixes && view.affixes.length) {
       affixEl.innerHTML = '<div class="is-section-title">Affixes</div>' + view.affixes.map((a) => `<div class="is-affix-line">+${a.kind === 'percent' ? Math.round(a.value * 1000) / 10 + '%' : a.value} ${a.label}</div>`).join('');
     } else affixEl.innerHTML = '';
+    if (view.skills && view.skills.length) affixEl.innerHTML += '<div class="is-section-title">Empreintes de compétence</div>' + view.skills.map((k) => `<div class="is-affix-line" style="color:#ffd98a">✦ ${(byId[k.id] || {}).name || k.id} — ${(SKILL_TEMPLATES[k.t] || {}).label || ''} : ${describeSkillMod(k, view.itemLevel)}</div>`).join('');
     if (view.bmods) affixEl.innerHTML += '<div class="is-section-title">Bonus de la voie</div>' + Object.entries(view.bmods).map(([k, v]) => `<div class="is-affix-line">${describeMods({ [k]: v })}</div>`).join('');
 
     // V10.19 : usure, emplacements / runes, litanie, enchantement
@@ -1112,20 +1113,21 @@ export class HUD {
       if (s.heal) meta.push(`Soigne ${Math.round(s.heal * 100)} %`);
       if (s.aoe) meta.push('Zone');
       if (s.fx) meta.push(...skillFxTags(s.fx, num));
+      const modLine = unlocked && player.skillMods && player.skillMods[s.id] ? `<span class="sk-rank max">✦ ${describeSkillMod({ ...player.skillMods[s.id], __raw: 1 }, 0)}</span>` : '';
       const tag = unlocked ? (equipped ? 'Dans la barre' : 'Disponible') : `Niveau ${s.levelReq}`;
       let rankHTML = '';
       if (unlocked && upgradable(s)) {
-        const r = (player.skillRanks && player.skillRanks[s.id]) | 0;
-        const dmgNow = s.damage ? ` · Dégâts ×${num((s.damage * progMult(s.levelReq) * rankDmg(r)).toFixed(1))}` : '';
-        if (r >= MAX_RANK) rankHTML = `<span class="sk-rank max">★ Rang ${r}/${MAX_RANK} — maîtrisée${dmgNow}</span>`;
+        const r = (player.skillRanks && player.skillRanks[s.id]) | 0, mo = player.skillMods && player.skillMods[s.id], bo = mo ? 1 : 0;
+        const dmgNow = s.damage ? ` · Dégâts ×${num((s.damage * progMult(s.levelReq) * rankDmg(r) * (1 + ((mo && mo.dmg) || 0))).toFixed(1))}` : '';
+        if (r >= MAX_RANK) rankHTML = `<span class="sk-rank max">★ Rang ${r}/${MAX_RANK}${bo ? ' ✦' : ''} — maîtrisée${dmgNow}</span>`;
         else {
           const need = rankLevelNeeded(s.levelReq, r + 1), cost = rankCost(s.levelReq, r), lvlOk = player.level >= need, coinOk = player.coins >= cost;
-          rankHTML = `<span class="sk-rank">Rang ${r}/${MAX_RANK}${dmgNow}<span class="sk-up${lvlOk && coinOk ? '' : ' off'}" data-up="${s.id}">${lvlOk ? `⬆ ${cost} 🪙` : `Niv. ${need}`}</span></span>`;
+          rankHTML = `<span class="sk-rank">Rang ${r}/${MAX_RANK}${bo ? ' ✦' : ''}${dmgNow}<span class="sk-up${lvlOk && coinOk ? '' : ' off'}" data-up="${s.id}">${lvlOk ? `⬆ ${cost} 🪙` : `Niv. ${need}`}</span></span>`;
         }
       }
       card.innerHTML = `
         <span class="sk-card-icon">${skillIconHTML(s)}</span>
-        <span class="sk-card-info"><b>${s.name}</b><small>${s.desc || ''}</small><span class="sk-meta">${meta.join(' · ')}</span>${rankHTML}</span>
+        <span class="sk-card-info"><b>${s.name}</b><small>${s.desc || ''}</small><span class="sk-meta">${meta.join(' · ')}</span>${rankHTML}${modLine}</span>
         <span class="sk-card-tag">${tag}</span>
       `;
       const up = card.querySelector('[data-up]');

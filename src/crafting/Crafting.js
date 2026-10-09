@@ -4,7 +4,7 @@
 // au moment de rendre les objets, l'inventaire et l'or sont remis exactement comme avant.
 import { resolveItem, getItem } from '../inventory/Item.js';
 import { SLOTS } from '../inventory/Equipment.js';
-import { generateItem, generateSetItem, rollReplacementAffix } from '../inventory/ItemGenerator.js';
+import { generateItem, generateBuildItem, generateSetItem, rollReplacementAffix } from '../inventory/ItemGenerator.js';
 import { SETS } from '../data/sets.js';
 import { getRarity } from '../data/rarities.js';
 import {
@@ -201,7 +201,8 @@ export function reforge(ctx, ref) {
   return run(ctx, {
     cost: reforgeCost(gen),
     apply: () => {
-      const ng = gen.setId && SETS[gen.setId] ? generateSetItem(SETS[gen.setId], gen.setPiece || 0, gen.itemLevel)
+      const ng = gen.buildId ? generateBuildItem(gen.buildId, gen.buildPiece || 0, gen.itemLevel)
+        : gen.setId && SETS[gen.setId] ? generateSetItem(SETS[gen.setId], gen.setPiece || 0, gen.itemLevel)
         : generateItem({ category: gen.category, baseKey: gen.baseKey, itemLevel: gen.itemLevel, rarityTier: gen.rarityTier });
       ng.name = gen.name; ng.levelReq = gen.levelReq; if (gen.free) ng.free = true;
       replaceGen(ctx, ref, ng, gen);
@@ -209,10 +210,11 @@ export function reforge(ctx, ref) {
     msg: `${gen.name} est refondu : toutes ses propriétés sont retirées au sort.`
   });
 }
-export function upgradeInfo(gen) { const i = clsIndex(gen); return i >= 1 && i < 5 && !gen.setId ? { from: getRarity(TIER_OF_CLASS[i]), to: getRarity(TIER_OF_CLASS[i + 1]) } : null; }
+export function upgradeInfo(gen) { const i = clsIndex(gen); return i >= 1 && i < 5 && !gen.setId && !gen.buildId ? { from: getRarity(TIER_OF_CLASS[i]), to: getRarity(TIER_OF_CLASS[i + 1]) } : null; }
 export function upgrade(ctx, ref) {
   const gen = genOf(ctx, ref); if (!gen) return fail('Objet introuvable.');
   if (gen.setId) return fail('Les pièces de panoplie ne peuvent pas être élevées.');
+  if (gen.buildId) return fail('Les objets de build ont déjà leur rareté définitive.');
   const i = clsIndex(gen);
   if (i < 1) return fail('Seuls les objets Magiques ou mieux peuvent être élevés.');
   if (i >= 5) return fail('Cet objet a atteint la rareté maximale.');

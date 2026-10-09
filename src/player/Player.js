@@ -190,6 +190,8 @@ export class Player {
   // V3.7 : bonus permanents des cristaux de spire
   setRiftBonus(b) { this.riftBonus = b; this.recomputeDerived(); this.hp = Math.min(this.hp, this.maxHp); }
 
+  setSkillMods(m) { this.skillMods = m || {}; } // V10.27 : empreintes de compétence de l'équipement {id: {dmg, rad, cd, cost}}
+
   setEquipBonus(b) { this.equipBonus = b; this.recomputeDerived(); }
 
   // ---------- Compétences : pool de la classe, déblocage par niveau, barre configurable ----------

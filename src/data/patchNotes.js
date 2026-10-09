@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.27', title: 'Empreintes de compétence sur les objets',
+    items: [
+      '✦ Les objets Légendaires modifient 1 compétence de ta classe, les Mythiques 2 et les Absolus 3. Chaque empreinte change la compétence : plus de dégâts, plus de portée, recharge réduite, coût réduit. Les empreintes Puissance, Portée, Célérité et Économie existent dès le Légendaire ; Cataclysme (dégâts + portée + recharge) arrive avec le Mythique.',
+      '🧩 Les objets de build (Mythiques) portent aussi 2 empreintes : choisis ta voie, puis les compétences que tu veux pousser.',
+      '📖 La fiche d’un objet détaille chaque empreinte ; le menu Compétences marque d’un ✦ celles qui sont modifiées par ton équipement.',
+      '🔨 Refondre un objet retire ses empreintes au sort ; élever sa rareté en ajoute. Les objets de build ne peuvent pas être élevés.'
+    ]
+  },
+  {
     version: '10.26', title: 'Builds, objet secondaire, compétences améliorables',
     items: [
       '🧩 150 objets de build : 6 voies par classe (explosif, rempart, sangsue, érudit, vélocité, chasseur de titans) × 5 pièces. Réunis 2, 4 ou 5 pièces d’une même voie pour des bonus de lignée. Ils tombent sur les monstres à partir de la rareté « Rare ».',
