@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.20', title: 'Combat plus fluide et monstres adoucis',
+    items: [
+      '🏃 Tu peux maintenant te déplacer (marche ou course) pendant que tu lances une compétence : tu gardes ta visée et tu avances en même temps. Seule la roulade t’immobilise.',
+      '🧪 Les potions de vie et de mana s’enchaînent sans temps d’attente (tu peux aussi laisser la touche appuyée).',
+      '⚖️ Équilibrage : les monstres de haut niveau ont beaucoup moins de points de vie et font moins de dégâts, et la défense réduit davantage les coups. Dis-nous si c’est mieux !',
+      '🔶 Les runes se trouvent partout dans le monde : sur tous les monstres (6 % de chance) et dans les coffres cachés, pas seulement dans les donjons.',
+      '🔧 Rappel : un équipement brisé n’est jamais détruit, tu peux toujours le réparer chez la forgeronne Helga.'
+    ]
+  },
+  {
     version: '10.19', title: 'Forge, Monolithe et mystique',
     items: [
       '🔨 Forgeronne Helga (à l’ouest de la ville) : répare ton équipement, creuse des emplacements, sertit des runes et démantèle les objets en matériaux.',

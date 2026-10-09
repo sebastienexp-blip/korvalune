@@ -1059,8 +1059,8 @@ export class Game {
       else if (act === 'skills') this.modalOpen ? this._closeModal() : this._openSkills();
       else if (act === 'interact') this._tryInteract();
       else if (act === 'mount' && !e.repeat) this._toggleMount();
-      else if (act === 'potionHeal' && !e.repeat) this._quickPotion('heal');
-      else if (act === 'potionMana' && !e.repeat) this._quickPotion('mana');
+      else if (act === 'potionHeal') this._quickPotion('heal');
+      else if (act === 'potionMana') this._quickPotion('mana');
       else if (act === 'chat' && !e.repeat && !this.paused && !this.modalOpen) { e.preventDefault(); document.exitPointerLock?.(); this.hud.toggleChat(); }
       else if (act === 'camReset') this.bus.emit('toggleCameraLock');
       else if (act.startsWith('skill')) this._useSkill(this.player.skillBar[+act.slice(5) - 1]);
@@ -1845,7 +1845,7 @@ export class Game {
     const slot = this.inventory.slots[pick.i];
     if (p.useConsumable(getItem(slot.defId))) {
       this.inventory.removeAt(pick.i, 1);
-      this._potionCdUntil = now + 900;
+      this._potionCdUntil = now + 120; // V10.19 : plus de temps de recharge notable, on peut enchaîner les potions
       this.audio.play('potion');
       this._potionFx(kind);
       this._tut('use');
@@ -2614,6 +2614,9 @@ export class Game {
       const a = (i / n) * Math.PI * 2 + 0.6;
       this._spawnGroundItem({ gen: rollLootItem({ sourceLevel: c.level, tierShift: 5 + c.tier }) }, c.x + Math.cos(a) * 1.3, c.z + Math.sin(a) * 1.3, true);
     }
+    // V10.19 : les coffres du monde contiennent aussi des runes et des matériaux
+    { const extra = []; if (Math.random() < 0.6) extra.push(LootSystem.rune(c.level)); extra.push(...LootSystem.mats(c.level, 1 + c.tier * 0.5));
+      extra.forEach((d, i) => { const a = (i / Math.max(1, extra.length)) * Math.PI * 2 + 2.2; this._spawnGroundItem(d, c.x + Math.cos(a) * 1.8, c.z + Math.sin(a) * 1.8, true); }); }
     const st = computeEnemyStats(c.level, 'elite');
     p.addCoins(Math.round(st.coins[1] * 2)); p.gainXp(Math.round(st.xp * 0.6));
     this.hud.notify(`Coffre au trésor ouvert ! ${n} objet${n > 1 ? 's' : ''} au sol.`, 'quest');

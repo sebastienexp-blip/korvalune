@@ -308,7 +308,7 @@ export class Player {
     else if (opts.dmgType === 'lightning') adjusted *= (1 - this.lightningRes);
     adjusted *= (1 - this.dmgReduction) * (this.takenMult || 1) * (this.sbTaken || 1);
     // V10.18 : la défense réduit les dégâts en pourcentage (rendements décroissants) au lieu de les soustraire : un équipement très défensif ne rend plus invulnérable
-    const dr = Math.min(0.8, this.def / (this.def + 14 * this.level + 80));
+    const dr = Math.min(0.75, this.def / (this.def + 6 * this.level + 60)); // V10.19 : la défense compte davantage
     let final = Math.max(1, Math.round(adjusted * (1 - dr)));
     if (this.shieldHp > 0) { // le bouclier absorbe d'abord
       const ab = Math.min(this.shieldHp, final);
@@ -478,12 +478,18 @@ export class Player {
     this.crouch = input.down('crouch');
     this.running = input.down('run') && !this.crouch;
     const busy = this.busyUntil > performance.now() / 1000;
-    const moving = (mv.x || mv.y) && !busy;
+    // V10.19 : on peut se déplacer (marche ou course) pendant qu'une compétence est lancée ; seule la roulade immobilise.
+    // Pendant le lancer, le personnage garde sa direction de visée et se déplace en « strafe » vers où pointe le joystick.
+    const casting = busy && !!this.action && this.action !== 'roll' && !this.dash;
+    const moving = (mv.x || mv.y) && (!busy || casting);
 
     if (moving) {
       const worldAngle = Math.atan2(mv.x, mv.y) + cameraYaw;
-      this.yaw = lerpAngle(this.yaw, worldAngle, Math.min(1, dt * 14));
-      this.yaw = ((this.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+      if (!casting) {
+        this.yaw = lerpAngle(this.yaw, worldAngle, Math.min(1, dt * 14));
+        this.yaw = ((this.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+      }
+      this._moveAng = casting ? worldAngle : this.yaw;
       const base = this.mount ? CONFIG.player.run * 0.8 * this.mount.speed : (this.crouch ? CONFIG.player.crouch : this.running && this.stamina > 1 ? CONFIG.player.run : CONFIG.player.walk);
       const spd = base * (this.swimming ? 0.7 : 1) * (this.speedMult || 1) * (this.sbSpeed || 1) * (1 + (this.moveSpeedBonus || 0));
       if (this.running && this.stamina > 1 && !this.crouch && !this.mount) this.stamina = Math.max(0, this.stamina - dt * 16);
@@ -501,7 +507,8 @@ export class Player {
     } else if (this.speed > 0.05) {
       // V8.6 : l'eau, le bord du monde et les falaises bloquent ; on glisse le long de l'obstacle (axe par axe)
       const x0 = this.pos.x, z0 = this.pos.z;
-      let nx = x0 + Math.sin(this.yaw) * this.speed * dt, nz = z0 + Math.cos(this.yaw) * this.speed * dt;
+      const ma = this._moveAng ?? this.yaw;
+      let nx = x0 + Math.sin(ma) * this.speed * dt, nz = z0 + Math.cos(ma) * this.speed * dt;
       const w = this.world;
       const mm = this.moveMode;
       if (!this.flying && !w.canStep(x0, z0, nx, nz, mm)) {

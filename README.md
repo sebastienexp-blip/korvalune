@@ -1061,6 +1061,13 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Nouvelle ambiance `halloween` dans `AudioManager` (5 variantes + base, gammes harmonique/phrygienne, cloches, grave, vent) ; active pendant l'événement hors combat (`setEnvironment({ hw })`).
 - Affiche SVG + dates (calculées depuis `EVENT` dans `src/data/halloween.js`) sur le menu principal ; disparaît après la fin de la boutique.
 
+## V10.20 — Compétences en mouvement, potions, équilibrage
+
+- `Player.update` : pendant un lancer de compétence (`casting`), le déplacement reste actif (direction de visée conservée, `_moveAng`) ; la roulade et les ruées imposent toujours l'immobilité.
+- Potions : temps de recharge réduit à 120 ms, répétition de touche autorisée.
+- Équilibrage : `hpScale = 1 + (L/80)·0,8`, `dmgScale = 1 + L/400`, défense en pourcentage `def / (def + 6·niveau + 60)` (plafond 75 %).
+- Runes : 6 % par monstre, coffres du monde (60 % de rune + matériaux).
+
 ## V10.19 — Forge, Monolithe des Métamorphoses, mystique
 
 - **Données** (`src/data/crafting.js`, partagées client/serveur) : 5 matériaux, 14 runes (bonus arme/armure/bijou), 10 litanies, plafonds d'emplacements par pièce, durabilité par rareté, tous les coûts.

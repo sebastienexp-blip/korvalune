@@ -31,6 +31,10 @@ function matsFor(level, rich = 0) {
 }
 
 export const LootSystem = {
+  // V10.19 : accès direct (coffres du monde…)
+  rune: runeFor,
+  mats: matsFor,
+
   // Butin d'un ennemi normal : potion probable + chance d'objet généré
   // proche de son niveau réel (pas celui, générique, de son espèce).
   rollForEnemy(enemy) {
@@ -41,7 +45,7 @@ export const LootSystem = {
     const ch = (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE) * D.drop;
     const n = Math.floor(ch) + (Math.random() < ch - Math.floor(ch) ? 1 : 0);
     for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: enemy.level || 1, tierShift: 0 }) });
-    if (Math.random() < 0.03 * D.drop) drops.push(runeFor(enemy.level)); // V10.19
+    if (Math.random() < 0.06 * D.drop) drops.push(runeFor(enemy.level)); // 6 % par monstre, partout dans le monde // V10.19
     if (Math.random() < 0.22 * Math.min(2, D.drop)) drops.push(...matsFor(enemy.level).slice(0, 2));
     return drops;
   },

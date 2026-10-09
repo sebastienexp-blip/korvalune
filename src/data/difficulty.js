@@ -24,8 +24,8 @@ export const setDifficultyId = (n) => { current = clampDifficulty(n); return DIF
 
 // Le matériel du joueur (objets de rareté croissante) grandit plus vite que la formule de base des monstres :
 // on durcit donc les monstres avec le niveau pour qu'ils restent un défi du niveau 1 au niveau 200.
-export const hpScale = (level) => 1 + Math.pow(level / 12, 1.1);
-export const dmgScale = (level) => 1 + level / 150;
+export const hpScale = (level) => 1 + (level / 80) * 0.8; // V10.19 : fortement adouci (niveau 100 ≈ ×2 ; niveau 200 ≈ ×3) — les monstres étaient trop coriaces
+export const dmgScale = (level) => 1 + level / 400;
 
 // Statistiques réelles d'un monstre : base du niveau et de l'espèce × durcissement par niveau × difficulté choisie.
 export function scaledEnemyStats(level, species) {
