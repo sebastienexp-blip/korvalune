@@ -121,7 +121,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.16 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.17 — Korvalune</div>
         </div>
       </div>
 
@@ -730,11 +730,17 @@ export class HUD {
     const el = this.q('#inv-cos'); if (!el) return;
     const sh = this.game?._shop;
     const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const icon = { aura: '🗡️', ring: '⭕', trail: '✨', wings: '🪽', title: '🏷️' };
-    const label = { aura: 'Aura d’arme', ring: 'Cercle', trail: 'Traînée', wings: 'Ailes', title: 'Titre' };
+    const SLOTS_UI = [['skin', '🧥', 'Skins'], ['pet', '🐾', 'Compagnons'], ['wings', '🪽', 'Ailes'], ['aura', '🗡️', 'Auras d’arme'], ['ring', '⭕', 'Cercles'], ['trail', '✨', 'Traînées'], ['title', '🏷️', 'Titres']];
     const own = sh ? sh.owned.map((id) => CATALOG_BY_ID[id]).filter((it) => it && COSMETIC_SLOTS.includes(it.cat)) : [];
-    const cells = own.map((it) => { const on = sh.eq[it.cat] === it.id; return `<button class="cos-cell${on ? ' on' : ''}" data-cos="${it.id}" data-slot="${it.cat}" data-on="${on ? 1 : 0}" title="${esc(it.desc)}"><span class="cos-ico">${icon[it.cat]}</span><b>${esc(it.name)}</b><small>${label[it.cat]} · ${on ? 'équipé' : 'toucher pour équiper'}</small></button>`; }).join('');
-    el.innerHTML = `<div class="bank-col-title">🎨 Cosmétiques</div><small class="eq-hint">🔒 Liés à ton compte : ni vendables, ni échangeables. Un seul par emplacement.</small><div class="cos-grid">${cells || '<p class="menu-hint">Aucun cosmétique pour l’instant : boutique des Lunes ou événements.</p>'}</div>`;
+    const cell = (it, ico) => { const on = sh.eq[it.cat] === it.id; return `<button class="cos-cell${on ? ' on' : ''}" data-cos="${it.id}" data-slot="${it.cat}" data-on="${on ? 1 : 0}" title="${esc(it.desc)}"><span class="cos-ico">${ico}</span><b>${esc(it.name)}</b><small>${on ? '✔ équipé · toucher pour retirer' : 'toucher pour équiper'}</small></button>`; };
+    let html = '';
+    for (const [slot, ico, lab] of SLOTS_UI) {
+      const mine = own.filter((it) => it.cat === slot);
+      if (!mine.length) continue;
+      const cur = sh.eq[slot] && CATALOG_BY_ID[sh.eq[slot]];
+      html += `<h4 class="cos-slot">${ico} ${lab} <small>${mine.length} · ${cur ? 'équipé : ' + esc(cur.name) : 'rien d’équipé'}</small></h4><div class="cos-grid">${mine.map((it) => cell(it, ico)).join('')}</div>`;
+    }
+    el.innerHTML = `<div class="bank-col-title">🎨 Garde-robe</div><small class="eq-hint">🔒 Liée à ton compte : ni vendable, ni échangeable. Touche un objet pour l’équiper à la place de l’ancien (un seul par catégorie).</small>${html || '<p class="menu-hint">Aucun cosmétique pour l’instant : boutique des Lunes, événement d’Halloween ou récompenses de niveau.</p>'}`;
   }
 
   renderInventory(inventory, equipment, player, onAction) {
@@ -1022,7 +1028,8 @@ export class HUD {
         if (d.canTry !== false) btns.push(`<button class="soc-btn" data-la="try" data-v="${it.id}">${prev ? 'Aperçu en cours' : 'Essayer'}</button>`);
         if (owned) btns.push(eqd ? `<button class="soc-btn" data-la="unequip" data-v="${it.cat}">Retirer</button>` : `<button class="soc-btn lune-go" data-la="equip" data-v="${it.id}">Équiper</button>`);
       }
-      if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
+      if (!owned && it.unlock) btns.push(`<button class="soc-btn lune-buy" disabled>🔒 Se débloque au niveau ${it.unlock.level}</button>`);
+      else if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
       return `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btns.join('')}</div></div>`;
     }).join('');
   }
@@ -1041,12 +1048,15 @@ export class HUD {
       <div class="soc-row lune-item${st.killBonus ? ' soc-on' : ''}"><div class="soc-name"><b>💀 Monstres vaincus : ${Math.min(st.kills, st.killGoal)}/${st.killGoal}</b><small>Squelettes, citrouilles, spectres, loups-garous, sorcières. Défi accompli : +10 🍬. ${st.killBonus ? '✔ Bonus reçu.' : ''} Gains de combat du jour : ${st.killCandy}/${st.killCap} 🍬. Le Roi Citrouille laisse 30 🍬.</small>${bar(st.kills, st.killGoal)}</div></div>` : '';
     const sh = d.shop || { owned: [], eq: {} };
     const items = d.items || [];
-    const catName = { aura: 'Auras d’arme', ring: 'Cercles', trail: 'Traînées', wings: 'Ailes', title: 'Titres' };
+    const catName = { aura: 'Auras d’arme', ring: 'Cercles', trail: 'Traînées', wings: 'Ailes', title: 'Titres', pet: 'Compagnons', skin: 'Skins' };
+    const order = Object.keys(catName);
+    const sorted = [...items].sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat));
     let html = '', last = '';
-    for (const it of items) {
+    for (const it of sorted) {
       if (it.cat !== last) { last = it.cat; html += `<h4 class="hw-cat">${catName[it.cat] || it.cat}</h4>`; }
       const owned = sh.owned.includes(it.id), eqd = sh.eq[it.cat] === it.id;
       const btn = owned ? (eqd ? `<button class="soc-btn" data-hw="unequip" data-v="${it.cat}">Retirer</button>` : `<button class="soc-btn lune-go" data-hw="equip" data-v="${it.id}" data-c="${it.cat}">Équiper</button>`)
+        : it.unlock ? `<button class="soc-btn lune-buy" disabled>🔒 Vaincre le Roi Citrouille${it.unlock.hwBoss > 1 ? ` (${st.bossKills || 0}/${it.unlock.hwBoss})` : ''}</button>`
         : `<button class="soc-btn lune-buy" data-hw="buy" data-v="${it.id}"${!st.shopOpen || st.candy < it.candy ? ' disabled' : ''}>Acheter · ${it.candy} 🍬</button>`;
       html += `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btn}</div></div>`;
     }

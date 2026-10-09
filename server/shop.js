@@ -15,6 +15,12 @@ export function ensureShop(acc) {
   s.eq = s.eq && typeof s.eq === 'object' ? s.eq : {};
   s.lvlMax = Number.isFinite(s.lvlMax) ? Math.max(1, Math.floor(s.lvlMax)) : 1;
   s.daily = typeof s.daily === 'string' ? s.daily : '';
+  // V10.17 : objets offerts par palier (niveau du compte, Rois Citrouille vaincus). Jamais achetables.
+  const boss = Number.isFinite(acc.event?.bossKills) ? acc.event.bossKills : 0;
+  for (const it of Object.values(CATALOG_BY_ID)) {
+    if (!it.unlock || s.owned.includes(it.id)) continue;
+    if ((it.unlock.level && s.lvlMax >= it.unlock.level) || (it.unlock.hwBoss && boss >= it.unlock.hwBoss)) s.owned.push(it.id);
+  }
   // un équipement n'est valide que si l'objet est possédé et du bon type
   for (const slot of COSMETIC_SLOTS) {
     const id = s.eq[slot];
@@ -46,6 +52,7 @@ export function buy(acc, id) {
   const s = ensureShop(acc);
   const it = CATALOG_BY_ID[typeof id === 'string' ? id : ''];
   if (!it) return { ok: false, error: 'Objet inconnu.' };
+  if (it.unlock) return { ok: false, error: 'Cet objet se débloque en jouant : il ne s’achète pas.' };
   if (it.candy) return { ok: false, error: 'Cet objet s’achète en bonbons chez Jack, pendant l’événement.' };
   if (s.owned.includes(it.id)) return { ok: false, error: 'Tu possèdes déjà cet objet.' };
   if (it.requires && !s.owned.includes(it.requires)) return { ok: false, error: 'Achète d’abord l’onglet précédent.' };

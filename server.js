@@ -405,6 +405,7 @@ wss.on('connection', (ws, req) => {
   const settingsLimiter = new RateLimiter(4, 5000);
   const tradeLimiter = new RateLimiter(30, 5000);
   const eventLimiter = new RateLimiter(20, 5000);
+  const shopLimiter = new RateLimiter(30, 10000); // V10.17 : la boutique n'est plus bridée par la limite des messages d'amis (8/10 s), qui ignorait des équipements en silence
   const pushShop = () => { if (authUsername && accounts[authUsername]) { send(ws, shopView(accounts[authUsername])); send(ws, eventView(accounts[authUsername])); } };
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
@@ -615,7 +616,7 @@ wss.on('connection', (ws, req) => {
 
     // --- Boutique des Lunes (V10.1) ---
     if (msg.t.startsWith('shop:')) {
-      if (!friendLimiter.allow()) return;
+      if (!shopLimiter.allow()) return;
       const key = authUsername && resolveAccount(authUsername);
       if (!key) { send(ws, { t: 'shop:msg', ok: false, text: 'Connecte-toi à ton compte pour utiliser la boutique.' }); return; }
       const acc = ensureChars(accounts[key]);

@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.17', title: 'Compagnons, skins et grande boutique',
+    items: [
+      '🐾 Compagnons : 19 petits animaux et créatures te suivent partout (chaton, renardeau, loup, hibou, dragonneau, phénix, licorne, fée, golem… et pour Halloween chauve-souris, fantôme, citrouillon, chat squelette, araignée). Les autres joueurs les voient.',
+      '🧥 Skins : 21 tenues qui changent les couleurs de ton personnage, certaines avec couronne, auréole, cornes, chapeau de sorcière ou tête de citrouille.',
+      'La boutique des Lunes passe de 25 à 90 objets (auras, cercles, traînées, ailes, titres, compagnons, skins). Celle de Jack gagne une trentaine d’objets, dont des compagnons et des skins d’Halloween.',
+      'À débloquer gratuitement : des récompenses de niveau (10, 15, 20, 25, 30, 40, 50, 60, 70, 100) et, en vainquant le Roi Citrouille, le Mini Roi Citrouille, le titre Terreur de la nuit et la tenue du Roi (3 victoires).',
+      'Garde-robe (inventaire) rangée par catégorie : toucher un objet l’équipe à la place de l’ancien. Correction : des changements rapides d’équipement pouvaient être ignorés.'
+    ]
+  },
+  {
     version: '10.16', title: 'Musiques d’Halloween et affiche de l’événement',
     items: [
       'Pendant l’événement, 6 ambiances musicales d’Halloween se succèdent au hasard : cloches lugubres, boîte à musique, graves profonds et vent qui gémit. Le combat garde sa musique.',

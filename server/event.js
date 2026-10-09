@@ -31,7 +31,7 @@ export function eventView(acc) {
     t: 'event', active: eventActive(now), shopOpen: shopOpen(now), endsAt: EVENT.end,
     candy: e.candy, total: e.total, hunt: e.hunt, huntTotal: HUNT_SPOTS.length,
     kills: e.kills, killGoal: CANDY.killGoal, killCandy: e.killCandy, killCap: CANDY.killCapPerDay,
-    dailyBag: !!e.dailyBag, huntBonus: !!e.huntBonus, killBonus: !!e.killBonus,
+    bossKills: e.bossKills, dailyBag: !!e.dailyBag, huntBonus: !!e.huntBonus, killBonus: !!e.killBonus,
     owned: s.owned.filter((id) => HALLOWEEN_BY_ID[id]), eq: { ...s.eq }
   };
 }
@@ -86,6 +86,7 @@ export function buy(acc, id) {
   const s = ensureShop(acc);
   const it = HALLOWEEN_BY_ID[typeof id === 'string' ? id : ''];
   if (!it) return { ok: false, error: 'Objet inconnu.' };
+  if (it.unlock || !Number.isFinite(it.candy)) return { ok: false, error: 'Cet objet se débloque en jouant : il ne s’achète pas.' };
   if (s.owned.includes(it.id)) return { ok: false, error: 'Tu possèdes déjà cet objet.' };
   if (e.candy < it.candy) return { ok: false, error: `Il te manque ${it.candy - e.candy} bonbons.` };
   e.candy -= it.candy;

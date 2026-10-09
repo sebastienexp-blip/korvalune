@@ -936,3 +936,7 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .hw-banner-txt b { font-family: var(--serif); font-size: 17px; color: #ffb25a; }
 .hw-banner-txt small { font-size: 12px; opacity: 0.92; }
 .hw-badge { position: absolute; top: 8px; left: 10px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #f5821f; color: #1a0a00; }
+
+/* V10.17 — garde-robe groupée par catégorie */
+#inv-cos .cos-slot { margin: 8px 0 2px; font-family: var(--serif); font-size: 14px; color: var(--brass-hi); display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+#inv-cos .cos-slot small { font-size: 11px; opacity: 0.7; font-family: inherit; color: var(--parch); }

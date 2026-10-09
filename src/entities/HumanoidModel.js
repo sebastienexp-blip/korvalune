@@ -356,7 +356,7 @@ function createHumanoidV25(opts = {}) {
     elbowR: armR.elbow, elbowL: armL.elbow, kneeR: legRr.knee, kneeL: legLr.knee, hairTail: customHair ? null : tail,
     look, lookScale, customHair, beard: beardGrp, hairBulky: !!(look && hairStyleOf(look.hair).bulky),
     tips: { sword: tipSword, dagger: tipDagger, staff: tipStaff, bow: tipBow }, landT: 0, prevYaw: 0, prevGrounded: true, bank: 0, weaponKind: 'sword',
-    mats: [skin, cloth, steel], matRefs, equipVisuals,
+    mats: [skin, cloth, steel], skinMats: { skin, cloth, clothDark, steel }, matRefs, equipVisuals,
     phase: 0, k: 0, t: 0, hurtT: 0, crouchK: 0
   };
 }

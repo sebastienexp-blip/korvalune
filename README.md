@@ -1060,3 +1060,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 
 - Nouvelle ambiance `halloween` dans `AudioManager` (5 variantes + base, gammes harmonique/phrygienne, cloches, grave, vent) ; active pendant l'événement hors combat (`setEnvironment({ hw })`).
 - Affiche SVG + dates (calculées depuis `EVENT` dans `src/data/halloween.js`) sur le menu principal ; disparaît après la fin de la boutique.
+
+## V10.17 — Compagnons, skins, boutiques élargies
+
+- Nouveaux emplacements cosmétiques `pet` et `skin` (`COSMETIC_SLOTS`), visibles des autres joueurs via `publicCos`. Rendu dans `src/visual/Cosmetics.js` (`buildPet`/`updatePet`, `applySkin`/`restoreSkin`, accessoires de tête).
+- Catalogue Lunes : 25 → 91 objets ; Halloween : 11 → 38. `unlock: { level }` / `{ hwBoss }` : offerts automatiquement par `ensureShop` (jamais achetables : refusés par `shop:buy` et `event:buy`).
+- Correctif : la boutique partageait la limite de messages d'amis (8 / 10 s) et ignorait des équipements rapides ; elle a sa propre limite (30 / 10 s).
