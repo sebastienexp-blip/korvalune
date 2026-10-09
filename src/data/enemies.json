@@ -1999,5 +1999,143 @@
    "hair": 14674416,
    "shield": true
   }
+ },
+ "hw_skeleton": {
+  "id": "hw_skeleton",
+  "name": "Squelette errant",
+  "species": "bandit",
+  "speed": 4.9,
+  "aggro": 14,
+  "leash": 60,
+  "attackRange": 2.1,
+  "attackCd": 1.1,
+  "respawn": 9999,
+  "rigType": "humanoid",
+  "itemDropChance": 0.25,
+  "flees": false,
+  "hw": true,
+  "model": {
+   "cloth": 14275776,
+   "armor": 9078386,
+   "hair": 14275776,
+   "shield": false
+  }
+ },
+ "hw_pumpkin": {
+  "id": "hw_pumpkin",
+  "name": "Citrouille rampante",
+  "species": "boar",
+  "speed": 5.2,
+  "aggro": 12,
+  "leash": 60,
+  "attackRange": 1.9,
+  "attackCd": 1.3,
+  "respawn": 9999,
+  "rigType": "creature",
+  "itemDropChance": 0.25,
+  "flees": false,
+  "hw": true,
+  "model": {
+   "fur": 14708762,
+   "belly": 9059594,
+   "scale": 0.95,
+   "bodyLen": 0.8,
+   "snout": 0.2,
+   "tusks": true
+  }
+ },
+ "hw_ghost": {
+  "id": "hw_ghost",
+  "name": "Spectre errant",
+  "species": "zealot",
+  "speed": 6.2,
+  "aggro": 15,
+  "leash": 60,
+  "attackRange": 1.9,
+  "attackCd": 1.0,
+  "respawn": 9999,
+  "rigType": "humanoid",
+  "itemDropChance": 0.25,
+  "flees": false,
+  "hw": true,
+  "ghost": true,
+  "model": {
+   "cloth": 13625599,
+   "armor": 11061480,
+   "hair": 15398143,
+   "shield": false
+  }
+ },
+ "hw_werewolf": {
+  "id": "hw_werewolf",
+  "name": "Loup-garou",
+  "species": "alpha",
+  "speed": 6.4,
+  "aggro": 16,
+  "leash": 60,
+  "attackRange": 2.2,
+  "attackCd": 1.1,
+  "respawn": 9999,
+  "rigType": "creature",
+  "itemDropChance": 0.3,
+  "flees": false,
+  "hw": true,
+  "model": {
+   "fur": 3811888,
+   "belly": 5915720,
+   "scale": 1.45,
+   "bodyLen": 1.15,
+   "snout": 0.4
+  }
+ },
+ "hw_witch": {
+  "id": "hw_witch",
+  "name": "Sorcière des marais",
+  "species": "mage",
+  "speed": 4.4,
+  "aggro": 18,
+  "leash": 60,
+  "attackRange": 2.0,
+  "attackCd": 2.2,
+  "respawn": 9999,
+  "rigType": "humanoid",
+  "itemDropChance": 0.3,
+  "flees": false,
+  "hw": true,
+  "model": {
+   "cloth": 4860526,
+   "armor": 2759232,
+   "hair": 1710618,
+   "shield": false
+  },
+  "ranged": {
+   "range": 16,
+   "min": 5,
+   "speed": 13,
+   "color": 10157914
+  }
+ },
+ "hw_pumpkin_king": {
+  "id": "hw_pumpkin_king",
+  "name": "Le Roi Citrouille",
+  "species": "elite",
+  "speed": 4.2,
+  "aggro": 22,
+  "leash": 90,
+  "attackRange": 3.2,
+  "attackCd": 1.4,
+  "respawn": 9999,
+  "rigType": "humanoid",
+  "itemDropChance": 1.0,
+  "flees": false,
+  "hw": true,
+  "boss": true,
+  "model": {
+   "cloth": 3808778,
+   "armor": 6957576,
+   "hair": 1706496,
+   "shield": true,
+   "scale": 2.1
+  }
  }
 }

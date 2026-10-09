@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.12 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.13 — Korvalune</div>
         </div>
       </div>
 
@@ -345,6 +345,17 @@ export class HUD {
         </div>
       </div>
 
+      <div id="halloween-screen" class="hidden panel-screen hw-screen">
+        <h2>🎃 Jack Tête-de-Citrouille</h2>
+        <div id="hw-head"></div>
+        <div id="hw-quests"></div>
+        <h3>Boutique d’Halloween</h3>
+        <div id="hw-list"></div>
+        <h3>Classement des bonbons</h3>
+        <div id="hw-top"></div>
+        <button data-act="close-halloween">Fermer</button>
+      </div>
+
       <div id="stable-screen" class="hidden panel-screen">
         <h2>Écurie de Korvalune</h2>
         <div id="stable-head"></div>
@@ -495,7 +506,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'halloween-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -970,6 +981,34 @@ export class HUD {
       if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
       return `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btns.join('')}</div></div>`;
     }).join('');
+  }
+
+  // V10.13 — boutique d'Halloween de Jack. d : { st: état serveur, shop: état boutique (équipement), top: classement }
+  renderHalloween(d) {
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const st = d.st;
+    if (!st) { this.q('#hw-head').innerHTML = '<p class="menu-hint">Chargement…</p>'; this.q('#hw-quests').innerHTML = ''; this.q('#hw-list').innerHTML = ''; return; }
+    const end = new Date(st.endsAt - 1).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    this.q('#hw-head').innerHTML = `<div class="lune-bal"><span class="lune-gem">🍬</span><b>${st.candy}</b><small>bonbons</small></div><p class="menu-hint">${st.active ? `Événement jusqu’au ${esc(end)} inclus.` : st.shopOpen ? 'L’événement est terminé : dépense tes derniers bonbons avant la fermeture de la boutique.' : 'L’événement est terminé.'} Ce que tu achètes est à toi pour toujours.</p>`;
+    const bar = (v, m) => `<span class="hw-bar"><i style="width:${Math.min(100, Math.round((v / m) * 100))}%"></i></span>`;
+    this.q('#hw-quests').innerHTML = st.active ? `
+      <div class="soc-row lune-item"><div class="soc-name"><b>🎒 Sac de bonbons du jour</b><small>+8 🍬 une fois par jour</small></div><div class="lune-btns"><button class="soc-btn lune-go" data-hw="daily"${st.dailyBag ? ' disabled' : ''}>${st.dailyBag ? 'Déjà pris' : 'Prendre'}</button></div></div>
+      <div class="soc-row lune-item${st.huntBonus ? ' soc-on' : ''}"><div class="soc-name"><b>🔍 Chasse aux bonbons : ${st.hunt.length}/${st.huntTotal}</b><small>Des bonbons brillent dans la ville (2 🍬 chacun). Ils reviennent chaque jour. Tous ramassés : +10 🍬. ${st.huntBonus ? '✔ Bonus reçu.' : ''}</small>${bar(st.hunt.length, st.huntTotal)}</div></div>
+      <div class="soc-row lune-item${st.killBonus ? ' soc-on' : ''}"><div class="soc-name"><b>💀 Monstres vaincus : ${Math.min(st.kills, st.killGoal)}/${st.killGoal}</b><small>Squelettes, citrouilles, spectres, loups-garous, sorcières. Défi accompli : +10 🍬. ${st.killBonus ? '✔ Bonus reçu.' : ''} Gains de combat du jour : ${st.killCandy}/${st.killCap} 🍬. Le Roi Citrouille laisse 30 🍬.</small>${bar(st.kills, st.killGoal)}</div></div>` : '';
+    const sh = d.shop || { owned: [], eq: {} };
+    const items = d.items || [];
+    const catName = { aura: 'Auras d’arme', ring: 'Cercles', trail: 'Traînées', wings: 'Ailes', title: 'Titres' };
+    let html = '', last = '';
+    for (const it of items) {
+      if (it.cat !== last) { last = it.cat; html += `<h4 class="hw-cat">${catName[it.cat] || it.cat}</h4>`; }
+      const owned = sh.owned.includes(it.id), eqd = sh.eq[it.cat] === it.id;
+      const btn = owned ? (eqd ? `<button class="soc-btn" data-hw="unequip" data-v="${it.cat}">Retirer</button>` : `<button class="soc-btn lune-go" data-hw="equip" data-v="${it.id}" data-c="${it.cat}">Équiper</button>`)
+        : `<button class="soc-btn lune-buy" data-hw="buy" data-v="${it.id}"${!st.shopOpen || st.candy < it.candy ? ' disabled' : ''}>Acheter · ${it.candy} 🍬</button>`;
+      html += `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btn}</div></div>`;
+    }
+    this.q('#hw-list').innerHTML = html;
+    const top = d.top;
+    this.q('#hw-top').innerHTML = top && top.length ? top.map((r, i) => `<div class="soc-row"><div class="soc-name"><b>${i + 1}. ${esc(r.name)}</b><small>${r.total} 🍬 gagnés${r.boss ? ` · ${r.boss} Roi(s) vaincu(s)` : ''}</small></div></div>`).join('') : '<p class="menu-hint">Personne n’a encore de bonbons. Sois le premier !</p>';
   }
 
   // V10.10 — écurie. d : { coins, level, list:[{ def, owned, sel }] }

@@ -29,6 +29,7 @@ import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
+import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
 import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
@@ -400,7 +401,8 @@ wss.on('connection', (ws, req) => {
   const pushSettings = () => { if (authUsername && accounts[authUsername]) send(ws, { t: 'settings', s: accounts[authUsername].settings || null }); };
   const settingsLimiter = new RateLimiter(4, 5000);
   const tradeLimiter = new RateLimiter(30, 5000);
-  const pushShop = () => { if (authUsername && accounts[authUsername]) send(ws, shopView(accounts[authUsername])); };
+  const eventLimiter = new RateLimiter(20, 5000);
+  const pushShop = () => { if (authUsername && accounts[authUsername]) { send(ws, shopView(accounts[authUsername])); send(ws, eventView(accounts[authUsername])); } };
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
   const authLimiter = new RateLimiter(5, 10000);
@@ -588,6 +590,23 @@ wss.on('connection', (ws, req) => {
       if (txt.length > 12000) return;
       accounts[key].settings = JSON.parse(txt);
       persistAccounts(accounts);
+      return;
+    }
+
+    // --- Événement Halloween (V10.13) ---
+    if (msg.t.startsWith('event:')) {
+      if (!eventLimiter.allow()) return;
+      const key = authUsername && resolveAccount(authUsername);
+      if (!key) { send(ws, { t: 'event:msg', ok: false, text: 'Connecte-toi à ton compte pour participer à l’événement.' }); return; }
+      const acc = ensureChars(accounts[key]);
+      const push = () => send(ws, eventView(acc));
+      const note = (ok, text) => { if (text) send(ws, { t: 'event:msg', ok, text }); };
+      if (msg.t === 'event:get') { push(); return; }
+      if (msg.t === 'event:top') { send(ws, { t: 'event:top', rows: evTop(accounts) }); return; }
+      if (msg.t === 'event:collect') { const r = evCollect(acc, msg.id, player?.pos); if (r.ok) { persistAccounts(accounts); note(true, `+${r.gained} 🍬${r.bonus ? ` · bonus de la chasse : +${r.bonus} 🍬 !` : ''}`); } else note(false, r.error); push(); return; }
+      if (msg.t === 'event:kill') { const r = evKill(acc, msg.kind); if (r.ok) { persistAccounts(accounts); if (r.gained || r.bonus) note(true, `+${r.gained + (r.bonus || 0)} 🍬${r.bonus ? ' · défi du jour accompli !' : ''}${r.capped ? ' (plafond du jour presque atteint)' : ''}`); } push(); return; }
+      if (msg.t === 'event:daily') { const r = evDaily(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `+${r.gained} 🍬 : sac de bonbons du jour !` : r.error); push(); return; }
+      if (msg.t === 'event:buy') { const r = evBuy(acc, msg.id); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `Acheté : ${r.item.name}` : r.error); push(); send(ws, shopView(acc)); return; }
       return;
     }
 

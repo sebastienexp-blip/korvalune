@@ -70,7 +70,7 @@ export function buildTown(world) {
   // Puits central
   const wy = world.heightAt(0, 0);
   add(new THREE.CylinderGeometry(1.5, 1.7, 1, 16), stone, 0, wy + 0.5, 0);
-  add(new THREE.CylinderGeometry(1.15, 1.15, 0.05, 16), new THREE.MeshStandardMaterial({ color: 0x2f6f96, roughness: 0.1, metalness: 0.2 }), 0, wy + 0.95, 0);
+  add(new THREE.CylinderGeometry(1.15, 1.15, 0.05, 16), new THREE.MeshStandardMaterial({ color: 0x2f6f96, roughness: 0.1, metalness: 0.2 }), 0, wy + 1.04, 0); // V10.13 : l'eau était cachée sous le dessus de la margelle (0.95 < 1.0) : elle affleure maintenant
   for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.09, 0.09, 2.6, 6), wood, sx * 1.3, wy + 2.1, 0);
   const wroof = add(new THREE.ConeGeometry(1.9, 0.9, 4), new THREE.MeshStandardMaterial({ color: 0x6a2f2f, flatShading: true }), 0, wy + 3.6, 0);
   wroof.rotation.y = Math.PI / 4;

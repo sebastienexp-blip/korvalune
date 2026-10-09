@@ -1,3 +1,4 @@
+import { HALLOWEEN_ITEMS } from './halloween.js';
 // V10.1 — Boutique des Lunes : catalogue PARTAGÉ (serveur + client).
 // Règle de conception : on ne vend QUE de l'apparence et du confort — jamais de puissance de combat.
 // Le serveur valide chaque achat (prix, possession, prérequis) ; le client ne fait qu'afficher.
@@ -62,4 +63,6 @@ export const CATALOG = [
 
 // objet SANS prototype : CATALOG_BY_ID['__proto__'] / ['constructor'] ne doit jamais renvoyer un « objet » valide (faille d'achat gratuit)
 export const CATALOG_BY_ID = Object.assign(Object.create(null), Object.fromEntries(CATALOG.map((c) => [c.id, c])));
+// V10.13 : les cosmétiques d'événement (payés en bonbons) sont connus de CATALOG_BY_ID, mais absents de la liste CATALOG de la boutique des Lunes
+for (const it of HALLOWEEN_ITEMS) CATALOG_BY_ID[it.id] = it;
 export const COSMETIC_SLOTS = ['aura', 'ring', 'trail', 'wings', 'title'];

@@ -907,3 +907,11 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 @media (max-width: 720px), (orientation: portrait) {
   #barber-screen .cc-form, #char-create .cc-form { padding-bottom: 12px; }
 }
+
+/* ===== V10.13 — Événement Halloween ===== */
+.hw-screen h2 { color: #ff9a3c; text-shadow: 0 0 12px rgba(255, 122, 26, 0.55); }
+.hw-screen .lune-gem { filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.8)); }
+.hw-screen .hw-cat { margin: 14px 0 4px; color: #ffb36b; font-size: 0.95rem; border-bottom: 1px solid rgba(255, 154, 60, 0.3); padding-bottom: 3px; }
+.hw-screen .hw-bar { display: block; height: 7px; margin-top: 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.hw-screen .hw-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff7a1a, #ffc23a); border-radius: 4px; }
+.hw-screen .lune-buy { border-color: #ff9a3c; }

@@ -7,6 +7,7 @@ import { glowTexture, cloudTexture, safeTexture } from '../visual/Textures.js';
 // h, ciel haut, ciel horizon, lumière, intensité, hémisphère, brouillard
 const K = (h, top, hor, light, li, hemi, fog) => ({ h, top: new THREE.Color(top), hor: new THREE.Color(hor), light: new THREE.Color(light), li, hemi, fog: new THREE.Color(fog) });
 const MOON = 0x8ea6e6;
+const HW_TOP = new THREE.Color(0x2d0f4a), HW_HOR = new THREE.Color(0xe0581a), HW_FOG = new THREE.Color(0x3a1a40), HW_LIGHT = new THREE.Color(0xff9a58), HW_MOON = new THREE.Color(0xffa24a);
 const KEYS = [
   K(0, 0x050a1c, 0x101a36, MOON, 0.35, 0.28, 0x0c1428),
   K(5, 0x050a1c, 0x101a36, MOON, 0.35, 0.28, 0x0c1428),
@@ -27,6 +28,7 @@ export class DayNight {
     this.v25 = !!v25;
     this.hour = CONFIG.dayNight.startHour;
     this.night = 0;
+    this.mood = 0; // V10.13 : 0 = normal, 1 = Halloween
     this.sunDir = new THREE.Vector3();
     this._white = new THREE.Color(0xffffff);
     this._moonDir = new THREE.Vector3();
@@ -175,6 +177,11 @@ void main(){
     this.cur.hor.lerpColors(a.hor, b.hor, t);
     this.cur.light.lerpColors(a.light, b.light, t);
     this.cur.fog.lerpColors(a.fog, b.fog, t);
+    if (this.mood > 0.001) { // V10.13 : ambiance d'Halloween — ciel violet, horizon orange, brume sombre, lune orangée
+      const m = this.mood;
+      this.cur.top.lerp(HW_TOP, 0.62 * m); this.cur.hor.lerp(HW_HOR, 0.55 * m); this.cur.fog.lerp(HW_FOG, 0.5 * m); this.cur.light.lerp(HW_LIGHT, 0.28 * m);
+    }
+    if (this.moonMesh) { this._moonMood = (this._moonMood || 0) + ((this.mood > 0 ? 1 : 0) - (this._moonMood || 0)) * Math.min(1, dt * 2); this.moonMesh.material.color.setHex(0xdfe8ff).lerp(HW_MOON, this._moonMood); this.moonMesh.scale.setScalar(1 + 0.5 * this._moonMood); }
     const li = a.li + (b.li - a.li) * t, hemi = a.hemi + (b.hemi - a.hemi) * t;
 
     const ang = ((this.hour - 6) / 12) * Math.PI;

@@ -348,7 +348,16 @@
       "cape": 0,
       "hair": 13224402,
       "skin": 12093035,
-      "shape": { "sex": "femme", "height": 164, "weight": 55, "muscle": 25, "face": "rond", "eyes": "amande", "nose": "retrousse", "hair": "chignon" }
+      "shape": {
+        "sex": "femme",
+        "height": 164,
+        "weight": 55,
+        "muscle": 25,
+        "face": "rond",
+        "eyes": "amande",
+        "nose": "retrousse",
+        "hair": "chignon"
+      }
     },
     "dialogues": {
       "intro": [
@@ -356,5 +365,33 @@
       ]
     },
     "barber": true
+  },
+  "jack": {
+    "id": "jack",
+    "name": "Jack Tête-de-Citrouille",
+    "title": "Marchand d’Halloween",
+    "look": {
+      "cloth": 3809618,
+      "armor": 5582970,
+      "cape": 8007450,
+      "hair": 1118481,
+      "skin": 6969930,
+      "shape": {
+        "sex": "homme",
+        "height": 198,
+        "weight": 8,
+        "muscle": 18,
+        "face": "long",
+        "eyes": "normaux",
+        "nose": "droit",
+        "hair": "chauve"
+      }
+    },
+    "dialogues": {
+      "intro": [
+        "Hihihi… Des bonbons, étranger ? Rapporte-m’en, et je te donnerai ce que les vivants n’osent pas porter."
+      ]
+    },
+    "halloween": true
   }
 }

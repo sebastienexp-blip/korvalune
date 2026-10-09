@@ -106,6 +106,9 @@ export class NetworkManager {
         break;
       case 'shop': this.bus.emit('net:shop', msg); break;
       case 'settings': this.bus.emit('net:settings', msg); break;
+      case 'event': this.bus.emit('net:event', msg); break;
+      case 'event:msg': this.bus.emit('net:eventMsg', msg); break;
+      case 'event:top': this.bus.emit('net:eventTop', msg); break;
       case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;
       case 'playerLook': this.bus.emit('net:playerLook', msg); break;
@@ -168,6 +171,12 @@ export class NetworkManager {
   shopGet() { this._send({ t: 'shop:get' }); }
   shopBuy(id) { this._send({ t: 'shop:buy', id }); }
   shopEquip(slot, id) { this._send({ t: 'shop:equip', slot, id: id || null }); }
+  eventGet() { this._send({ t: 'event:get' }); }
+  eventTop() { this._send({ t: 'event:top' }); }
+  eventCollect(id) { this._send({ t: 'event:collect', id }); }
+  eventKill(kind) { this._send({ t: 'event:kill', kind }); }
+  eventDaily() { this._send({ t: 'event:daily' }); }
+  eventBuy(id) { this._send({ t: 'event:buy', id }); }
   shopDaily() { this._send({ t: 'shop:daily' }); }
   // V10.2 : crée une session de paiement Stripe ; renvoie l'adresse de la page de paiement (le jeu ne touche jamais la carte)
   async startCheckout(pack, consent) {

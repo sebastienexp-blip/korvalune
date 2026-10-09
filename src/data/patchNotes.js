@@ -3,6 +3,17 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.13', title: 'Événement Halloween 🎃',
+    items: [
+      'Korvalune passe en mode Halloween : ciel violet et orangé, lune géante, citrouilles lumineuses, fantômes flottants et chauves-souris. Jusqu’au 1er novembre.',
+      'Jack Tête-de-Citrouille t’attend à côté du puits. Il échange des 🍬 bonbons contre des cosmétiques d’Halloween : auras, cercles, traînées, ailes de chauve-souris et du spectre, titres. Tout ce que tu achètes reste à toi pour toujours.',
+      'Gagne des bonbons : 14 bonbons cachés dans la ville (ils reviennent chaque jour), le sac quotidien de Jack, les monstres de saison et deux défis du jour. Le Roi Citrouille en laisse 30.',
+      'Des squelettes, citrouilles rampantes, spectres, loups-garous et sorcières rôdent autour de toi, avec une horde surprise toutes les 6 minutes. Il faut être connecté à ton compte.',
+      'Un classement des bonbons est visible chez Jack.',
+      'Le puits de la place a enfin de l’eau !'
+    ]
+  },
+  {
     version: '10.12', title: 'Apparence et barbier',
     items: [
       'Nouveau à la création : choisis le sexe, la taille, la corpulence et la musculature de ton héros, la forme du visage, des yeux et du nez, la barbe, et une coupe parmi 23 (hommes, femmes et mixtes).',

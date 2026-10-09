@@ -51,6 +51,8 @@ import { CharPreview } from '../ui/CharPreview.js';
 import { LookEditor } from '../ui/LookEditor.js';
 import { defaultLook, normalizeLook, computeLookCost, LOOK_PRICES, HAIR_COLORS, EYE_COLORS } from '../data/looks.js';
 import { buildBarberDecor } from '../world/BarberDecor.js';
+import { Halloween } from '../world/Halloween.js';
+import { HALLOWEEN_ITEMS } from '../data/halloween.js';
 import { CLASSES, RACES } from '../combat/Classes.js';
 import { Inventory } from '../inventory/Inventory.js';
 import { Equipment } from '../inventory/Equipment.js';
@@ -368,6 +370,9 @@ export class Game {
       try { this._barberDecor = buildBarberDecor(this.scene, this.world, { x: -11, z: 15, depth: 5, width: 5.5 }); } catch (e) { console.warn('[V10.12] façade du barbier ignorée', e); }
     }
 
+    // V10.13 — événement Halloween : décor, Jack (tête de citrouille, près du puits), bonbons cachés, monstres de saison
+    try { this.hw = new Halloween(this); } catch (e) { console.warn('[V10.13] événement Halloween ignoré', e); }
+
     // PNJ des quêtes principales (chaînes déclarées dans npcs.json).
     const questGivers = [
       { def: npcsData.hugo, pos: [-7, 28], yaw: 0.5 },          // accueil : près de la porte sud
@@ -675,7 +680,7 @@ export class Game {
       });
       b.on('ui:patch-back', () => this.hud.showScreen(this._patchReturn || 'main-menu'));
     }
-    b.on('ui:account-logout', () => { this._unreadN = null; this._dmOpen = null; this.net.logout(); this._shop = null; this._preview = null; this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
+    b.on('ui:account-logout', () => { this._unreadN = null; this._dmOpen = null; this.net.logout(); this._shop = null; this._event = null; this.hw?.reset(); this._preview = null; this._serverChars = null; this._serverBank = null; this.hud.setAccountState(null); this._refreshContinueButton(); });
     b.on('net:authResult', (msg) => {
       if (msg.ok) {
         this.hud.setAccountError('');
@@ -874,6 +879,7 @@ export class Game {
       this._growBank();
       if (this.player) this.player.setCosmetics(this._shopCos());
       this._renderLune();
+      this._renderHalloween();
     });
     b.on('net:settings', (msg) => { // réglages enregistrés sur le compte : ils priment sur ceux du navigateur ; sinon on envoie les nôtres
       if (!msg.s || typeof msg.s !== 'object') { this.net.saveSettings(this.settings); return; }
@@ -928,6 +934,13 @@ export class Game {
     this.root.querySelector('#btn-mount').addEventListener('click', () => this._toggleMount());
     this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
     this.bus.on('ui:close-stable', () => this._closeModal());
+    // V10.13 — Halloween : boutique de Jack, états envoyés par le serveur, récompenses de combat
+    this.bus.on('ui:close-halloween', () => this._closeModal());
+    this.root.querySelector('#halloween-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-hw]'); if (bt && !bt.disabled) this._halloweenAct(bt.dataset.hw, bt.dataset.v); });
+    this.bus.on('net:event', (msg) => { this._event = msg; this.hw?.onEvent(msg); this._renderHalloween(); });
+    this.bus.on('net:eventTop', (msg) => { this._eventTop = msg.rows || []; this._renderHalloween(); });
+    this.bus.on('net:eventMsg', (msg) => { if (msg.text) this.hud.notify(msg.ok ? '🍬 ' + msg.text : msg.text, msg.ok ? 'quest' : 'info'); });
+    this.bus.on('enemyKilled', (e) => { if (e?.def?.hw && this.net.loggedIn) this.net.eventKill(e.def.id); });
     this.bus.on('ui:close-barber', () => this._closeModal());
     this.root.querySelector('#barber-pay').addEventListener('click', () => this._barberPay());
     this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
@@ -1428,6 +1441,30 @@ export class Game {
     this.audio.play('click');
     this.hud.notify(p.flying ? 'Décollage ! Appuie à nouveau sur 🐎 pour atterrir.' : 'Tu montes en selle. 🐎 pour descendre.', 'info');
     this._syncMountBtn();
+  }
+
+  _openHalloween(npc) {
+    if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour participer à l\u2019événement d\u2019Halloween.', 'info'); return; }
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    const lines = npc.def.dialogues?.intro;
+    if (lines?.length) this.hud.notify(lines[0], 'info');
+    this.hud.showScreen('halloween-screen');
+    this._renderHalloween();
+    this.net.eventGet(); this.net.eventTop(); this.net.shopGet();
+  }
+
+  _renderHalloween() {
+    if (this.hud.q('#halloween-screen').classList.contains('hidden')) return;
+    this.hud.renderHalloween({ st: this._event, shop: this._shop, top: this._eventTop, items: HALLOWEEN_ITEMS });
+  }
+
+  _halloweenAct(act, v) {
+    this.audio.play('click');
+    if (act === 'daily') this.net.eventDaily();
+    else if (act === 'buy') this.net.eventBuy(v);
+    else if (act === 'equip') { const it = HALLOWEEN_ITEMS.find((x) => x.id === v); if (it) this.net.shopEquip(it.cat, it.id); }
+    else if (act === 'unequip') this.net.shopEquip(v, null);
   }
 
   _openStable(npc) {
@@ -2422,7 +2459,7 @@ export class Game {
     }
     for (const n of this.npcs) {
       if (n.pos.distanceTo(this.player.pos) < 3.2) {
-        return n.def.stable ? this._openStable(n) : n.def.barber ? this._openBarber(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
+        return n.def.halloween ? this._openHalloween(n) : n.def.stable ? this._openStable(n) : n.def.barber ? this._openBarber(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
       }
     }
     const wc = this.worldChests?.nearest(this.player.pos, 2.8);
@@ -2627,6 +2664,7 @@ export class Game {
     for (const n of this.npcs) n.update(dt, this._camQuat);
     for (const m of this._stableDisplay || []) updateMount(m, dt, 0, false);
     this._barberDecor?.update(dt);
+    this.hw?.update(dt, this._camQuat);
     if (this.player.mount && this.rift?.active) { this.player.setMount(null); this.hud.notify('Les montures ne sont pas autorisées dans les spires.', 'info'); }
     if (this._mntOn !== !!this.player.mount) { this._mntOn = !!this.player.mount; this._syncMountBtn(); }
     for (const e of this.enemies) e.label.quaternion.copy(this._camQuat);

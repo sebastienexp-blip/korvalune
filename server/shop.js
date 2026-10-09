@@ -46,6 +46,7 @@ export function buy(acc, id) {
   const s = ensureShop(acc);
   const it = CATALOG_BY_ID[typeof id === 'string' ? id : ''];
   if (!it) return { ok: false, error: 'Objet inconnu.' };
+  if (it.candy) return { ok: false, error: 'Cet objet s’achète en bonbons chez Jack, pendant l’événement.' };
   if (s.owned.includes(it.id)) return { ok: false, error: 'Tu possèdes déjà cet objet.' };
   if (it.requires && !s.owned.includes(it.requires)) return { ok: false, error: 'Achète d’abord l’onglet précédent.' };
   if (s.gems < it.price) return { ok: false, error: `Il te manque ${it.price - s.gems} Lunes.` };

@@ -1034,3 +1034,12 @@ Audit du code (analyse statique), du jeu lancé pour de vrai (démarrage, régio
 - Nouveau dossier `android-app/` (WebView plein écran, écran toujours allumé, paysage, retour = Échap).
 - Compilation automatique par GitHub Actions, APK publié dans *Releases* (`apk-latest`).
 - Non testé sur un vrai téléphone au moment de l'écriture ; l'APK n'a pas pu être compilé dans le bac à sable.
+
+## V10.13 — Événement Halloween
+Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack ouverte jusqu'au 4 novembre). Les dates sont dans `src/data/halloween.js` (`EVENT`) : l'événement démarre et s'arrête tout seul, rien à faire.
+- **Ambiance** : ciel violet/orange et lune orangée (`DayNight.mood`), ~90 citrouilles lumineuses (instances), fantômes et chauves-souris (`src/world/Halloween.js`).
+- **Jack Tête-de-Citrouille** (PNJ à côté du puits, tête de citrouille sculptée en 3D) : boutique en **bonbons**. 11 cosmétiques d'événement (aura, cercle, traînée, ailes, titre) ; ils sont dans `CATALOG_BY_ID` mais pas dans la boutique des Lunes, et restent possédés après l'événement.
+- **Bonbons, côté serveur** (`server/event.js`, messages `event:*`) : 14 bonbons cachés (2 🍬, distance vérifiée par le serveur, renouvelés chaque jour UTC, +10 si tous), sac quotidien (+8), monstres de l'événement (plafond de 120 🍬/jour, 1 victoire déclarée max toutes les 0,7 s), défi « 25 monstres » (+10), Roi Citrouille (+30, hors plafond), classement top 10.
+- **Monstres** (`enemies.json`, préfixe `hw_`) : squelette, citrouille rampante, spectre, loup-garou, sorcière (à distance), Roi Citrouille. Générés autour du joueur connecté (3 à 5 à la fois, une horde de 7 toutes les 6 min, le Roi 3 min après la connexion puis toutes les 12 min). Ils sont locaux à chaque joueur (non partagés en groupe).
+- Le puits de la place : l'eau était cachée sous le rebord, elle est maintenant visible.
+- Limites connues : les monstres d'événement ne sont pas synchronisés entre joueurs ; le serveur ne peut pas vérifier qu'un monstre a vraiment été tué (d'où les plafonds) ; modèles en géométrie procédurale (pas de modèles 3D réalistes).
