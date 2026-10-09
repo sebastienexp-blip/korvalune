@@ -1,4 +1,5 @@
-import { rollLootItem, generateItem } from './ItemGenerator.js';
+import { rollLootItem, generateItem, rollItemLevel } from './ItemGenerator.js';
+import { getDifficulty } from '../data/difficulty.js';
 import { rollRarityTier } from '../data/rarities.js';
 
 // Tirage de loot. Les ennemis normaux et les boss passent tous les deux par
@@ -18,10 +19,12 @@ export const LootSystem = {
   // proche de son niveau réel (pas celui, générique, de son espèce).
   rollForEnemy(enemy) {
     const drops = [];
-    if (Math.random() < CONSUMABLE_CHANCE) drops.push({ defId: CONSUMABLES[Math.floor(Math.random() * CONSUMABLES.length)], qty: 1 });
-    if (Math.random() < (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE)) {
-      drops.push({ gen: rollLootItem({ sourceLevel: enemy.level || 1, tierShift: 0 }) });
-    }
+    const D = getDifficulty();
+    if (Math.random() < Math.min(0.8, CONSUMABLE_CHANCE * (1 + (D.drop - 1) * 0.4))) drops.push({ defId: CONSUMABLES[Math.floor(Math.random() * CONSUMABLES.length)], qty: 1 });
+    // chance d'objet × difficulté ; au-delà de 100 %, objets supplémentaires (ex. 126 % = 1 objet + 26 % d'un second)
+    const ch = (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE) * D.drop;
+    const n = Math.floor(ch) + (Math.random() < ch - Math.floor(ch) ? 1 : 0);
+    for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: enemy.level || 1, tierShift: 0 }) });
     return drops;
   },
 
@@ -37,7 +40,7 @@ export const LootSystem = {
   rollForMajorBoss(level = 14) {
     const drops = [{ gen: rollLootItem({ sourceLevel: level, tierShift: MAJOR_BOSS_TIER_SHIFT, levelSpread: [4, 12] }) }];
     if (Math.random() < 0.03) {
-      drops.push({ gen: generateItem({ category: Math.random() < 0.5 ? 'weapon' : 'armor', itemLevel: level + 8, rarityTier: rollRarityTier({ minTier: 19, maxTier: 25 }) }) });
+      drops.push({ gen: generateItem({ category: Math.random() < 0.5 ? 'weapon' : 'armor', itemLevel: rollItemLevel(level + 8), rarityTier: rollRarityTier({ minTier: 19, maxTier: 25 }) }) });
     }
     return drops;
   },

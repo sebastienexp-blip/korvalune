@@ -1,4 +1,5 @@
 import skillDefs from '../data/skills.json';
+import { DIFFICULTIES } from '../data/difficulty.js';
 import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../data/halloween.js';
 import { ITEMS, RARITY, resolveItem } from '../inventory/Item.js';
 import { rarityGlow } from '../data/rarities.js';
@@ -121,7 +122,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.17 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.18 — Korvalune</div>
         </div>
       </div>
 
@@ -386,6 +387,13 @@ export class HUD {
         <button data-act="close-halloween">Fermer</button>
       </div>
 
+      <div id="difficulty-screen" class="hidden panel-screen diff-screen">
+        <h2>⚔️ Difficulté</h2>
+        <p class="menu-hint" id="diff-hint"></p>
+        <div id="diff-list"></div>
+        <button data-act="close-difficulty">Retour</button>
+      </div>
+
       <div id="stable-screen" class="hidden panel-screen">
         <h2>Écurie de Korvalune</h2>
         <div id="stable-head"></div>
@@ -490,6 +498,7 @@ export class HUD {
         <div class="menu-buttons">
           <button data-act="resume">Reprendre</button>
           <button data-act="teleport-town" id="btn-teleport">Téléportation vers Korvalune — <span id="teleport-cost">?</span> 🪙</button>
+          <button data-act="difficulty" id="btn-difficulty">⚔️ Difficulté</button>
           <button data-act="lune">🌙 Boutique des Lunes</button>
           <button data-act="fullscreen">Plein écran</button>
           <button data-act="settings">Paramètres</button>
@@ -537,7 +546,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'halloween-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'halloween-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -1031,6 +1040,18 @@ export class HUD {
       if (!owned && it.unlock) btns.push(`<button class="soc-btn lune-buy" disabled>🔒 Se débloque au niveau ${it.unlock.level}</button>`);
       else if (!owned) btns.push(`<button class="soc-btn lune-buy" data-la="buy" data-v="${it.id}"${locked || sh.gems < it.price ? ' disabled' : ''}>${locked ? 'Verrouillé' : `Acheter · ${it.price} 🌙`}</button>`);
       return `<div class="soc-row lune-item${owned ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(it.name)}${eqd ? ' <em>(équipé)</em>' : owned ? ' <em>(possédé)</em>' : ''}</b><small>${esc(it.desc)}</small></div><div class="lune-btns">${btns.join('')}</div></div>`;
+    }).join('');
+  }
+
+  // V10.18 — choix de la difficulté. d : { cur, level, canChange, why }
+  renderDifficulty(d) {
+    this.q('#diff-hint').textContent = d.canChange ? 'Plus la difficulté est haute, plus les monstres sont forts… et plus l’or, l’expérience et les objets rares abondent. Ton choix est enregistré avec ton personnage.' : d.why;
+    this.q('#diff-list').innerHTML = DIFFICULTIES.map((x) => {
+      const locked = d.level < x.lvl, on = d.cur === x.id;
+      const pc = (v) => (v >= 1 ? `×${v}` : '');
+      return `<div class="soc-row lune-item diff-row${on ? ' soc-on' : ''}"><div class="soc-name"><b style="color:${x.color}">${x.name}${on ? ' <em>(actuelle)</em>' : ''}</b>` +
+        `<small>Monstres : PV ${pc(x.hp)} · dégâts ${pc(x.dmg)} — Récompenses : XP ${pc(x.xp)} · or ${pc(x.gold)} · chance d’objet ${pc(x.drop)}${x.shift ? ` · raretés +${x.shift}` : ''}</small></div>` +
+        `<div class="lune-btns"><button class="soc-btn${on ? '' : ' lune-go'}" data-diff="${x.id}"${on || locked || !d.canChange ? ' disabled' : ''}>${on ? 'Choisie' : locked ? `🔒 Niveau ${x.lvl}` : 'Choisir'}</button></div></div>`;
     }).join('');
   }
 

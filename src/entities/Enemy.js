@@ -3,7 +3,7 @@ import { clamp, mulberry32 } from '../core/math.js';
 import { createCreature, animateCreature } from './CreatureModel.js';
 import { createHumanoid, animateHumanoid } from './HumanoidModel.js';
 import { makeLabel } from '../ui/Label.js';
-import { computeEnemyStats } from '../data/enemyScaling.js';
+import { scaledEnemyStats } from '../data/difficulty.js';
 import { tickStatus, vulnMult } from '../combat/Status.js';
 import { share } from '../network/NetShare.js';
 
@@ -18,7 +18,7 @@ export class Enemy {
   constructor(scene, world, def, level, pos, bus, id) {
     this.scene = scene; this.world = world; this.def = def; this.bus = bus; this.id = id;
     this.level = Math.max(1, Math.round(level));
-    const stats = computeEnemyStats(this.level, def.species);
+    const stats = scaledEnemyStats(this.level, def.species);
     this.maxHp = stats.hp; this.hp = stats.hp;
     this.damage = stats.damage; this.defense = stats.defense;
     this.xp = stats.xp; this.coins = stats.coins;
@@ -256,12 +256,12 @@ export class Enemy {
     } else if (this.state === STATE.CHASE) {
       if (player.dead || distHome > this.def.leash) { this.state = STATE.RETURN; }
       else if (this.def.alwaysFlee) { this.state = STATE.FLEE; this.stateT = 0; }
-      else if (distP < this._reach()) { this.state = STATE.ATTACK; this.stateT = 0; }
+      else if (distP < this._reach() && !this.world.losBlocked(this.pos.x, this.pos.z, player.pos.x, player.pos.z)) { this.state = STATE.ATTACK; this.stateT = 0; }
       else if (this.def.flees && this.hp / this.maxHp < 0.22 && this.rand() < 0.01) { this.state = STATE.FLEE; this.stateT = 0; }
       else targetVel = toPlayer.clone().normalize().multiplyScalar(this.def.speed);
     } else if (this.state === STATE.ATTACK) {
       this.stateT += dt;
-      if (distP > this._reach() * 1.15) { this.state = STATE.CHASE; }
+      if (distP > this._reach() * 1.15 || this.world.losBlocked(this.pos.x, this.pos.z, player.pos.x, player.pos.z)) { this.state = STATE.CHASE; }
       else {
         const R = this.def.ranged;
         if (R && distP < R.min) targetVel = this.pos.clone().sub(player.pos).setY(0).normalize().multiplyScalar(this.def.speed * 0.8); // recule pour garder la distance
@@ -310,7 +310,7 @@ export class Enemy {
       }
       if (this._pendingHit && this.actionT > this.actionDur * 0.45) {
         this._pendingHit = false;
-        if (this.pos.distanceTo(player.pos) < this.def.attackRange * 1.2) {
+        if (this.pos.distanceTo(player.pos) < this.def.attackRange * 1.2 && !this.world.losBlocked(this.pos.x, this.pos.z, player.pos.x, player.pos.z)) {
           const dealt = player.takeDamage(this.damage);
           if (this.onPlayerHit) this.onPlayerHit(dealt);
         }

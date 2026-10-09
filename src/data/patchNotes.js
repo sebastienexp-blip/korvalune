@@ -3,6 +3,18 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.18', title: 'Difficulté, équilibrage et traversée des eaux',
+    items: [
+      '⚔️ Difficulté façon Diablo : Normal, Difficile, Expert, Maître et 4 niveaux de Tourment. Plus c’est dur, plus les monstres sont solides, mais plus l’or, l’expérience et les objets rares abondent. Se règle en ville (menu pause) et se sauvegarde avec le personnage.',
+      '🐴 Chevaux et 🦅 griffons traversent l’eau : les chevaux nagent (un peu plus lentement), les griffons la survolent sans être ramenés sur la berge.',
+      '🧱 Plus de tirs ni de coups à travers les murs : les cibles derrière un bâtiment ne peuvent plus être touchées, ni toucher.',
+      '🛡️ Les monstres de haut niveau sont plus coriaces et la défense devient un pourcentage de réduction qui plafonne, pour que le défi suive ta progression.',
+      '🎁 Butin : les objets trouvés ont toujours un niveau de 0 à 5 au-dessus du tien, quel que soit le niveau du monstre tué.',
+      '📜 Quêtes de découverte pour tout le nouveau contenu (boutique, compagnons, skins, Halloween, montures, nage, difficulté). La liste des quêtes à gauche de l’écran peut maintenant défiler.',
+      '🚀 Caméra libre et caméra proche nettement plus fluides : brouillard plus court et masquage des décors et personnages lointains.'
+    ]
+  },
+  {
     version: '10.17', title: 'Compagnons, skins et grande boutique',
     items: [
       '🐾 Compagnons : 19 petits animaux et créatures te suivent partout (chaton, renardeau, loup, hibou, dragonneau, phénix, licorne, fée, golem… et pour Halloween chauve-souris, fantôme, citrouillon, chat squelette, araignée). Les autres joueurs les voient.',

@@ -1061,6 +1061,16 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Nouvelle ambiance `halloween` dans `AudioManager` (5 variantes + base, gammes harmonique/phrygienne, cloches, grave, vent) ; active pendant l'événement hors combat (`setEnvironment({ hw })`).
 - Affiche SVG + dates (calculées depuis `EVENT` dans `src/data/halloween.js`) sur le menu principal ; disparaît après la fin de la boutique.
 
+## V10.18 — Difficulté, équilibrage, eau et lignes de vue
+
+- **Difficulté** (`src/data/difficulty.js`, partagé client/serveur) : 8 paliers (Normal → Tourment IV) avec multiplicateurs de PV/dégâts des monstres et d'or/XP/chance de drop/rareté du butin. Changement en ville uniquement ; enregistré dans la sauvegarde (`difficulty`, validé 0..7 par `sanitizeSave`).
+- **Eau** : `World.terrainOk/canStep(…, mode)` ; `Player.moveMode` = `'fly'` (griffons), `'swim'` (chevaux sur l'eau, vitesse ×0.7) ; `_ensureOnLand` respecte le mode.
+- **Lignes de vue** : `World.losBlocked` (boîtes uniquement, les arbres/rochers ne bloquent pas) utilisée par l'auto-ciblage, les attaques du joueur et des monstres et les projectiles.
+- **Équilibrage** : `scaledEnemyStats` (durcissement par niveau × difficulté), défense en pourcentage plafonnée à 80 %.
+- **Butin** : niveau d'objet = niveau du joueur + 0..5 (`setLootLevel`, `rollItemLevel`).
+- **Quêtes** : `src/data/discoveryQuests.js` (quêtes de découverte), panneau de quêtes défilant.
+- **Performance** : en caméra libre/proche, `Game._cullFar` masque les groupes lointains et le brouillard est raccourci (≈ 780 appels de dessin au lieu de 1650 sur le point de mesure).
+
 ## V10.17 — Compagnons, skins, boutiques élargies
 
 - Nouveaux emplacements cosmétiques `pet` et `skin` (`COSMETIC_SLOTS`), visibles des autres joueurs via `publicCos`. Rendu dans `src/visual/Cosmetics.js` (`buildPet`/`updatePet`, `applySkin`/`restoreSkin`, accessoires de tête).

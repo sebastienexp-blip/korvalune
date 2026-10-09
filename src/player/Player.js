@@ -307,7 +307,9 @@ export class Player {
     else if (opts.dmgType === 'ice') adjusted *= (1 - this.iceRes);
     else if (opts.dmgType === 'lightning') adjusted *= (1 - this.lightningRes);
     adjusted *= (1 - this.dmgReduction) * (this.takenMult || 1) * (this.sbTaken || 1);
-    let final = Math.max(1, Math.round(adjusted - this.def * 0.5));
+    // V10.18 : la défense réduit les dégâts en pourcentage (rendements décroissants) au lieu de les soustraire : un équipement très défensif ne rend plus invulnérable
+    const dr = Math.min(0.8, this.def / (this.def + 14 * this.level + 80));
+    let final = Math.max(1, Math.round(adjusted * (1 - dr)));
     if (this.shieldHp > 0) { // le bouclier absorbe d'abord
       const ab = Math.min(this.shieldHp, final);
       this.shieldHp -= ab; final -= ab;
@@ -379,6 +381,9 @@ export class Player {
     this._mountRig.group.position.copy(this.pos);
     this.flying = !!def.fly; this.landing = false; this.dash = null;
   }
+
+  // V10.18 : mode de déplacement pour le terrain : griffon 'fly', cheval 'swim' (traverse l'eau), à pied undefined
+  get moveMode() { return !this.mount ? undefined : this.flying ? 'fly' : 'swim'; }
 
   // Descente : cheval = immédiat ; griffon = atterrissage progressif (refusé au-dessus de l'eau / d'un obstacle). -> 'ok' | 'landing' | 'blocked'
   requestDismount() {
@@ -480,7 +485,7 @@ export class Player {
       this.yaw = lerpAngle(this.yaw, worldAngle, Math.min(1, dt * 14));
       this.yaw = ((this.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
       const base = this.mount ? CONFIG.player.run * 0.8 * this.mount.speed : (this.crouch ? CONFIG.player.crouch : this.running && this.stamina > 1 ? CONFIG.player.run : CONFIG.player.walk);
-      const spd = base * (this.speedMult || 1) * (this.sbSpeed || 1) * (1 + (this.moveSpeedBonus || 0));
+      const spd = base * (this.swimming ? 0.7 : 1) * (this.speedMult || 1) * (this.sbSpeed || 1) * (1 + (this.moveSpeedBonus || 0));
       if (this.running && this.stamina > 1 && !this.crouch && !this.mount) this.stamina = Math.max(0, this.stamina - dt * 16);
       this.speed = damp(this.speed, spd, 10, dt);
     } else {
@@ -498,9 +503,10 @@ export class Player {
       const x0 = this.pos.x, z0 = this.pos.z;
       let nx = x0 + Math.sin(this.yaw) * this.speed * dt, nz = z0 + Math.cos(this.yaw) * this.speed * dt;
       const w = this.world;
-      if (!this.flying && !w.canStep(x0, z0, nx, nz)) {
-        if (w.canStep(x0, z0, nx, z0)) nz = z0;
-        else if (w.canStep(x0, z0, x0, nz)) nx = x0;
+      const mm = this.moveMode;
+      if (!this.flying && !w.canStep(x0, z0, nx, nz, mm)) {
+        if (w.canStep(x0, z0, nx, z0, mm)) nz = z0;
+        else if (w.canStep(x0, z0, x0, nz, mm)) nx = x0;
         else { nx = x0; nz = z0; }
       }
       this.pos.x = nx; this.pos.z = nz;
@@ -529,6 +535,9 @@ export class Player {
     }
     const wasGrounded = this.grounded, stickable = wasGrounded && this.vel.y <= 0;
     let groundY = this.world.heightAt(this.pos.x, this.pos.z), fallV = this.vel.y;
+    // V10.18 : le cheval nage : il flotte à la surface (le fond est plus bas), éclaboussures et allure réduite
+    this.swimming = !!this.mount && !this.flying && groundY < this.world.waterLevel - 0.15;
+    if (this.swimming) groundY = this.world.waterLevel - 0.3;
     if (this.flying) { // V10.10 : vol du griffon — altitude de croisière au-dessus du terrain (ou de l'eau), atterrissage en douceur
       const gy = Math.max(groundY, this.world.waterLevel);
       this.pos.y = damp(this.pos.y, this.landing ? groundY : gy + 4.8, this.landing ? 2.4 : 2.8, dt);

@@ -54,6 +54,8 @@ const CHALLENGES = [
   { key: 'champion', need: 3, name: 'Briseur de champions', text: (n) => `Vaincre ${n} champions ★ (monstres à titre doré)`, event: 'champion' },
   { key: 'chest', need: 2, name: 'Chasseur de trésors', text: (n) => `Ouvrir ${n} coffres cachés dans le monde (étincelles dorées)`, event: 'chest' },
   { key: 'caravan', need: 1, name: 'Escorte marchande', text: (n) => `Mener ${n} caravane${n > 1 ? 's' : ''} à bon port (événement aléatoire en terrain découvert)`, event: 'caravan' },
+  { key: 'hard', need: 20, name: 'Épreuve du feu', text: (n) => `Vaincre ${n} monstres en difficulté Difficile ou plus`, event: 'diffkill' },
+  { key: 'swim', need: 1, name: 'Traversée à la nage', text: (n) => `Traverser ${n} plan d'eau à cheval (les chevaux nagent)`, event: 'swim' },
   { key: 'elite', need: 3, name: "Chasseur d'élites", text: (n, t) => `Vaincre ${n} élites : ${t.eliteLabel}`, kill: true }
 ];
 const ELITE_LABEL = { 6: 'gardiens d\'ambre', 7: 'gardiens de la brume', 8: 'gardiens de givre', 1: 'loups alpha', 2: 'gardiens corrompus', 3: 'gardiens célestes', 4: 'hérauts des abysses', 5: 'souverains primordiaux' };
@@ -64,7 +66,7 @@ export function generateSecondaryQuests() {
     const [lo, hi] = tier.levelRange;
     const level = Math.round((lo + hi) / 2);
     CHALLENGES.forEach((c) => {
-      const need = c.need + (tier.id - 1) * (c.key === 'meteor' || c.key === 'caravan' ? Math.floor((tier.id - 1) / 2) : c.key === 'equip' || c.key === 'elite' ? 1 : 3);
+      const need = c.need + (tier.id - 1) * (c.key === 'meteor' || c.key === 'caravan' || c.key === 'swim' ? Math.floor((tier.id - 1) / 2) : c.key === 'equip' || c.key === 'elite' ? 1 : 3);
       const step = c.kill
         ? { id: 'k', text: c.text(need, { eliteLabel: ELITE_LABEL[tier.id] }), type: 'kill', target: tier.id === 1 ? 'wolf_alpha' : tier.elite, need }
         : { id: 'k', text: c.text(need), type: 'event', target: c.event, need };

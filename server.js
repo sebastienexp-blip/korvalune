@@ -269,6 +269,7 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   clean.completed = Array.isArray(incoming.completed) ? incoming.completed.slice(0, 400).map((s) => sanitize(s, 60)) : [];
   // V10.10 : montures de l'écurie (identifiants du catalogue uniquement)
   clean.mounts = [...new Set((Array.isArray(incoming.mounts) ? incoming.mounts : []).filter(isMountId))].slice(0, MAX_MOUNTS);
+  clean.difficulty = Number.isInteger(incoming.difficulty) ? Math.max(0, Math.min(7, incoming.difficulty)) : (prev?.difficulty | 0); // V10.18
   clean.mountSel = isMountId(incoming.mountSel) && clean.mounts.includes(incoming.mountSel) ? incoming.mountSel : '';
   clean.progress = incoming.progress && typeof incoming.progress === 'object' ? incoming.progress : {};
   // Compteurs d'objectifs (ex: 3/8 loups tués) : uniquement des entiers bornés.

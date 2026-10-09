@@ -25,7 +25,9 @@ import { GroundHazards } from '../combat/GroundHazards.js';
 import { EnemyProjectiles } from '../combat/EnemyProjectiles.js';
 import { tryTriggerEquipEffects } from '../combat/ItemEffects.js';
 import { computeEnemyStats } from '../data/enemyScaling.js';
-import { rollLootItem, setLootClass } from '../inventory/ItemGenerator.js';
+import { rollLootItem, setLootClass, setLootLevel } from '../inventory/ItemGenerator.js';
+import { DISCOVERY_QUESTS } from '../data/discoveryQuests.js';
+import { setDifficultyId, getDifficulty, DIFFICULTIES, clampDifficulty } from '../data/difficulty.js';
 
 import { makeLabel } from '../ui/Label.js';
 import { CombatSystem } from '../combat/CombatSystem.js';
@@ -800,7 +802,7 @@ export class Game {
       this.hud.showScreen('death-screen');
     }, 900));
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
-    b.on('levelup', (lvl) => { try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
+    b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
     b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || '' }));
     b.on('enemyShoot', (d) => { this.enemyProj.spawn(d); this.audio.play(d.enemy?.def?.species === 'mage' ? 'cast' : 'bow', d.from); });
     b.on('hazard', (d) => { if (!this.hazards) this.hazards = new GroundHazards(this.scene, this.world, this.bus); this.hazards.spawn(d); });
@@ -825,7 +827,7 @@ export class Game {
     b.on('shake', (amt) => { this._shake = Math.max(this._shake || 0, amt * (this.settings.shake ?? 100) / 100); });
     b.on('questStarted', (q) => this.hud.notify(`Nouvelle quête : ${q.name}`, 'quest'));
     b.on('questUpdated', (qm) => this.hud.renderQuests(qm));
-    b.on('questCompleted', (q) => {
+    b.on('questCompleted', (q) => { setTimeout(() => this._startDiscoveryQuests(), 1500);
       this.hud.notify(`Quête terminée : ${q.name} (+${q.reward.xp} XP, +${q.reward.coins} 🪙)`, 'quest');
       this.audio.play('quest');
       this.player.gainXp(q.reward.xp);
@@ -900,9 +902,16 @@ export class Game {
         this.audio.setMix({ music: m.musicVol / 100, sfx: m.sfxVol / 100, ui: m.uiVol / 100, ambience: m.ambVol / 100 });
       } catch (e) { console.warn('[V10.7] réglages du compte', e); }
     });
-    b.on('net:shopMsg', (msg) => { this._luneMsg = { ok: msg.ok, text: msg.text }; if (msg.text) this.hud.notify(msg.text, msg.ok ? 'quest' : 'info'); this._renderLune(); });
+    b.on('net:shopMsg', (msg) => { if (msg.ok && /quotidienne/.test(msg.text || '')) this._tut('lunedaily'); this._luneMsg = { ok: msg.ok, text: msg.text }; if (msg.text) this.hud.notify(msg.text, msg.ok ? 'quest' : 'info'); this._renderLune(); });
     b.on('net:playerCos', (msg) => { this.remotePlayers.get(msg.id)?.setCos(msg.cos); });
     b.on('ui:close-lune', () => this._closeLune());
+    // V10.18 — difficulté (depuis le menu pause)
+    b.on('ui:difficulty', () => { this.hud.showScreen('difficulty-screen'); this._renderDifficulty(); });
+    b.on('ui:close-difficulty', () => this.hud.showScreen('pause-menu'));
+    this.root.querySelector('#difficulty-screen').addEventListener('click', (e) => {
+      const bt = e.target.closest('[data-diff]'); if (!bt || bt.disabled) return;
+      this._setDifficulty(parseInt(bt.dataset.diff, 10));
+    });
     b.on('net:friends', (msg) => {
       const before = this._friends?.requests?.length || 0;
       this._friends = msg;
@@ -937,15 +946,15 @@ export class Game {
     this.root.querySelector('#btn-lune').addEventListener('click', () => this._openLune());
     this.root.querySelector('#btn-mount').addEventListener('click', () => this._toggleMount());
     this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
-    this.root.querySelector('#inv-cos').addEventListener('click', (e) => { const b = e.target.closest('[data-cos]'); if (!b) return; this.audio.play('equip'); this.net.shopEquip(b.dataset.slot, b.dataset.on === '1' ? null : b.dataset.cos); });
+    this.root.querySelector('#inv-cos').addEventListener('click', (e) => { const b = e.target.closest('[data-cos]'); if (!b) return; this.audio.play('equip'); this._equipCos(b.dataset.slot, b.dataset.on === '1' ? null : b.dataset.cos); });
     this.bus.on('ui:close-stable', () => this._closeModal());
     // V10.13 — Halloween : boutique de Jack, états envoyés par le serveur, récompenses de combat
     this.bus.on('ui:close-halloween', () => this._closeModal());
     this.root.querySelector('#halloween-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-hw]'); if (bt && !bt.disabled) this._halloweenAct(bt.dataset.hw, bt.dataset.v); });
-    this.bus.on('net:event', (msg) => { this._event = msg; this.hw?.onEvent(msg); this._renderHalloween(); });
+    this.bus.on('net:event', (msg) => { this._event = msg; this.hw?.onEvent(msg); this._renderHalloween(); this._startDiscoveryQuests(); });
     this.bus.on('net:eventTop', (msg) => { this._eventTop = msg.rows || []; this._renderHalloween(); });
-    this.bus.on('net:eventMsg', (msg) => { if (msg.text) this.hud.notify(msg.ok ? '🍬 ' + msg.text : msg.text, msg.ok ? 'quest' : 'info'); });
-    this.bus.on('enemyKilled', (e) => { if (e?.def?.hw && this.net.loggedIn) this.net.eventKill(e.def.id); });
+    this.bus.on('net:eventMsg', (msg) => { if (msg.ok && /^Acheté/.test(msg.text || '')) this._tut('hwbuy'); if (msg.text) this.hud.notify(msg.ok ? '🍬 ' + msg.text : msg.text, msg.ok ? 'quest' : 'info'); });
+    this.bus.on('enemyKilled', (e) => { if (e?.def?.hw && this.net.loggedIn) this.net.eventKill(e.def.id); if (e?.def?.hw) this._tut('hwkill'); if (getDifficulty().id >= 1) this._tut('diffkill'); });
     this.bus.on('ui:close-barber', () => this._closeModal());
     this.root.querySelector('#barber-pay').addEventListener('click', () => this._barberPay());
     this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
@@ -963,7 +972,7 @@ export class Game {
           return;
         }
         case 'buy': this.net.shopBuy(v); return;
-        case 'equip': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = null; this.net.shopEquip(it.cat, v); } return; }
+        case 'equip': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = null; this._equipCos(it.cat, v); } return; }
         case 'unequip': this._preview = null; this.net.shopEquip(v, null); return;
         case 'try': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = this._preview?.id === v ? null : { slot: it.cat, id: v }; this.player?.setCosmetics(this._shopCos()); } break; }
         default: return;
@@ -1043,6 +1052,7 @@ export class Game {
     if (!this.player) return;
     const data = {
       ...this.player.serialize(),
+      difficulty: getDifficulty().id,
       ...this.quests.serialize(),
       inventory: this.inventory.serialize(),
       equipment: this.equipment.serialize(),
@@ -1175,7 +1185,8 @@ export class Game {
 
   _startGameInner(save) {
     this.player = new Player(this.scene, this.world, this.audio, this.particles, this.bus, save);
-    setLootClass(this.player.classId);
+    setLootClass(this.player.classId); setLootLevel(this.player.level);
+    setDifficultyId(clampDifficulty(save?.difficulty)); this._updateDifficultyButton();
     // V8.0 : le continent a été redessiné — une ancienne sauvegarde posée en mer ou hors terre ferme repart de Korvalune
     try {
       const pp = this.player.pos;
@@ -1186,7 +1197,8 @@ export class Game {
     } catch (e) { /* ignoré */ }
     netShare.localPlayer = this.player;
     this._secondaryQuests = this._secondaryQuests || generateSecondaryQuests();
-    this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...this._secondaryQuests]);
+    this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...DISCOVERY_QUESTS, ...this._secondaryQuests]);
+    setTimeout(() => this._startDiscoveryQuests(), 4000);
     this.mounts = Array.isArray(save?.mounts) ? save.mounts.filter((m) => MOUNT_BY_ID[m]) : [];
     this.mountSel = MOUNT_BY_ID[save?.mountSel] ? save.mountSel : '';
     this.inventory = new Inventory(this.bus, 30, save?.inventory);
@@ -1395,6 +1407,7 @@ export class Game {
 
   // from : écran de départ ('main-menu' | 'pause-menu' | undefined = en jeu via le bouton 🌙)
   _openLune(from) {
+    this._tut('lune');
     if (from === 'main-menu') { // depuis le menu principal : pas de personnage en jeu, donc pas d'aperçu « Essayer »
       if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte (menu Compte) pour utiliser la boutique des Lunes.', 'info'); return; }
       this._luneReturn = 'main-menu';
@@ -1442,7 +1455,7 @@ export class Game {
     if (!this.mounts?.length) { this.hud.notify('Tu n\u2019as pas de monture : va voir le maître d\u2019écurie à Korvalune.', 'info'); return; }
     if (this.rift?.active) { this.hud.notify('Les montures ne sont pas autorisées dans les spires.', 'info'); return; }
     const id = this.mounts.includes(this.mountSel) ? this.mountSel : this.mounts.slice().sort((a, b) => MOUNT_BY_ID[b].speed - MOUNT_BY_ID[a].speed)[0];
-    p.setMount(id);
+    p.setMount(id); this._tut('mount');
     this.audio.play('click');
     this.hud.notify(p.flying ? 'Décollage ! Appuie à nouveau sur 🐎 pour atterrir.' : 'Tu montes en selle. 🐎 pour descendre.', 'info');
     this._syncMountBtn();
@@ -1450,6 +1463,7 @@ export class Game {
 
   _openHalloween(npc) {
     if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour participer à l\u2019événement d\u2019Halloween.', 'info'); return; }
+    this._tut('halloween');
     document.exitPointerLock?.();
     this.modalOpen = true;
     const lines = npc.def.dialogues?.intro;
@@ -1468,11 +1482,12 @@ export class Game {
     this.audio.play('click');
     if (act === 'daily') this.net.eventDaily();
     else if (act === 'buy') this.net.eventBuy(v);
-    else if (act === 'equip') { const it = HALLOWEEN_ITEMS.find((x) => x.id === v); if (it) this.net.shopEquip(it.cat, it.id); }
+    else if (act === 'equip') { const it = HALLOWEEN_ITEMS.find((x) => x.id === v); if (it) this._equipCos(it.cat, it.id); }
     else if (act === 'unequip') this.net.shopEquip(v, null);
   }
 
   _openStable(npc) {
+    this._tut('stable');
     document.exitPointerLock?.();
     this.modalOpen = true;
     const lines = npc.def.dialogues?.intro;
@@ -1493,7 +1508,7 @@ export class Game {
       if (this.player.level < def.levelReq) { this.hud.notify(`Niveau ${def.levelReq} requis.`, 'info'); return; }
       if (this.player.coins < def.price) { this.hud.notify('Pas assez de pièces.', 'info'); return; }
       this.player.addCoins(-def.price);
-      this.mounts.push(id); this.mountSel = id;
+      this.mounts.push(id); this.mountSel = id; this._tut('mountbuy');
       this.audio.play('coin');
       this.hud.notify(`${def.name} est à toi ! Monte avec le bouton 🐎.`, 'quest');
       try { this._doSave(); } catch { /* ignoré */ }
@@ -1513,6 +1528,7 @@ export class Game {
   }
 
   _openBarber(npc) {
+    this._tut('barber');
     if (!this.player) return;
     document.exitPointerLock?.();
     this.modalOpen = true;
@@ -1701,6 +1717,51 @@ export class Game {
     refresh();
   }
 
+  // V10.18 — quêtes de découverte : démarrent quand le tutoriel est fini (ou sur une ancienne sauvegarde) et que le niveau est atteint
+  _startDiscoveryQuests() {
+    const q = this.quests, p = this.player;
+    if (!q || !p) return;
+    if (!q.completed.has('commencement') && !q.completed.has('tuto_3')) return; // le tutoriel d'abord
+    for (const d of DISCOVERY_QUESTS) {
+      if (p.level < d.startLevel || q.completed.has(d.id) || q.active.has(d.id)) continue;
+      if (d.eventOnly === 'halloween' && !(this._event?.active)) continue;
+      q.start(d.id);
+    }
+  }
+
+  // V10.18 : équipe / retire un cosmétique (le serveur valide) ; alimente les quêtes de découverte
+  _equipCos(slot, id) {
+    this.net.shopEquip(slot, id);
+    if (id) this._tut(slot === 'pet' ? 'pet' : slot === 'skin' ? 'skin' : 'cosmetic');
+  }
+
+  _diffState() {
+    const p = this.player, inTown = !!p && Math.abs(p.pos.x) < 44 && Math.abs(p.pos.z) < 44 && !this.rift?.active;
+    return { cur: getDifficulty().id, level: p ? p.level : 1, canChange: inTown, why: 'La difficulté se change en ville (Korvalune) : retourne-y d’abord (menu pause → téléportation).' };
+  }
+  _renderDifficulty() { this.hud.renderDifficulty(this._diffState()); }
+  _setDifficulty(n) {
+    const st = this._diffState(), d = DIFFICULTIES[clampDifficulty(n)];
+    if (!st.canChange || st.level < d.lvl) return;
+    setDifficultyId(d.id);
+    if (d.id >= 1) this._tut('difficulty');
+    this.audio.play('click');
+    // les monstres déjà présents sont retirés : ils reviennent aussitôt avec les nouvelles statistiques
+    for (const sp of this.spawnPoints || []) {
+      if (!sp.active) continue;
+      const e = sp.enemyRef, i = this.enemies.indexOf(e);
+      if (i !== -1) this.enemies.splice(i, 1);
+      if (this.player.target === e) this.player.target = null;
+      e?.dispose?.(this.scene);
+      sp.active = false; sp.enemyRef = null;
+    }
+    this._updateDifficultyButton();
+    this._renderDifficulty();
+    this.hud.notify(`Difficulté : ${d.name}. Les récompenses augmentent avec elle.`, 'quest');
+    this._doSave();
+  }
+  _updateDifficultyButton() { const b = this.root.querySelector('#btn-difficulty'); if (b) { const d = getDifficulty(); b.innerHTML = `⚔️ Difficulté : <span style="color:${d.color}">${d.name}</span>`; } }
+
   _closeModal(returnTo = 'game-ui') {
     this.modalOpen = false; this._dmOpen = null;
     if (this._barber) { this._barber.preview.dispose(); this._barber = null; }
@@ -1859,6 +1920,7 @@ export class Game {
     this.paused = v;
     if (v) document.exitPointerLock?.();
     this.hud.showScreen(v ? 'pause-menu' : 'game-ui');
+    if (v) this._updateDifficultyButton();
     if (v && this.player) {
       const cost = this._teleportCost();
       const btn = this.root.querySelector('#btn-teleport');
@@ -1935,13 +1997,13 @@ export class Game {
     // après toute poussée : on respecte les obstacles fixes et le terrain
     this.world.pushOut(P.pos, 0.45);
     for (const n of near) if (movable(n.e)) { this.world.pushOut(n.e.pos, n.r); n.e.pos.y = this.world.heightAt(n.e.pos.x, n.e.pos.z); }
-    if (!this.world.terrainOk(P.pos.x, P.pos.z) && this._lastSafe) { P.pos.x = this._lastSafe.x; P.pos.z = this._lastSafe.z; }
+    if (!this.world.terrainOk(P.pos.x, P.pos.z, P.moveMode) && this._lastSafe) { P.pos.x = this._lastSafe.x; P.pos.z = this._lastSafe.z; }
   }
 
   _ensureOnLand() {
     const p = this.player.pos, w = this.world;
     if (p.x > 1500) return;
-    if (w.terrainOk(p.x, p.z) && !w.blockedCircle(p.x, p.z, 0.2)) { (this._lastSafe || (this._lastSafe = new THREE.Vector3())).copy(p); return; }
+    if (w.terrainOk(p.x, p.z, this.player.moveMode) && (this.player.flying || !w.blockedCircle(p.x, p.z, 0.2))) { if (!this.player.mount || w.terrainOk(p.x, p.z)) (this._lastSafe || (this._lastSafe = new THREE.Vector3())).copy(p); return; }
     for (let r = 2; r <= 80; r += 2) {
       for (let k = 0; k < 14; k++) {
         const a = (k / 14) * Math.PI * 2, x = p.x + Math.cos(a) * r, z = p.z + Math.sin(a) * r;
@@ -2045,11 +2107,13 @@ export class Game {
           this.trail.update(dt, active, tp, bp, skillColor(p.pendingSkill || { id: 'strike' }, p.classId));
         } else this.trail.update(dt, false);
       }
+      if (p.swimming && !this._wasSwim) this._tut('swim');
+      this._wasSwim = !!p.swimming;
       // poussière de course, éclaboussures, atterrissage
       this._stepT = (this._stepT || 0) - dt;
       if (p.grounded && p.speed > 4.5 && this._stepT <= 0 && !p.dead) {
         this._stepT = 0.24;
-        const wet = this.world.heightAt(p.pos.x, p.pos.z) < this.world.waterLevel + 0.15;
+        const wet = p.swimming || this.world.heightAt(p.pos.x, p.pos.z) < this.world.waterLevel + 0.15;
         this.particles.emit(p.pos.x - Math.sin(p.yaw) * 0.3, p.pos.y + 0.08, p.pos.z - Math.cos(p.yaw) * 0.3,
           wet ? { count: 5, color: 0xbfe6ff, speed: 2.2, life: 0.5, gravity: 9, spread: 0.5 } : { count: 3, color: 0x8a7a5c, speed: 0.9, life: 0.55, gravity: -0.4, up: 0.8, spread: 0.6 });
       }
@@ -2445,7 +2509,8 @@ export class Game {
     const RANGE = this.player.classId === 'archer' ? 20 : this.player.classId === 'mage' ? 17 : 11; // archer/mage verrouillent de loin
     const cur = this.player.target;
     const curD = cur && cur.alive ? this.player.pos.distanceTo(cur.pos) : Infinity;
-    const curOk = curD <= RANGE;
+    const w = this.world, pp = this.player.pos;
+    const curOk = curD <= RANGE && !w.losBlocked(pp.x, pp.z, cur.pos.x, cur.pos.z);
     // un tap manuel garde la cible 2,5 s ; ensuite l'ennemi le plus proche reprend la main
     if (curOk && performance.now() - (this._manualTargetT || 0) < 2500) return;
     const now = performance.now();
@@ -2456,12 +2521,12 @@ export class Game {
     for (const e of this.enemies) {
       if (!e.alive) continue;
       const d = this.player.pos.distanceTo(e.pos);
-      if (d < bestD) { bestD = d; best = e; }
+      if (d < bestD && !w.losBlocked(pp.x, pp.z, e.pos.x, e.pos.z)) { bestD = d; best = e; }
     }
     for (const b of this.bosses) {
       if (!b.alive || b.state === 'dormant') continue;
       const d = this.player.pos.distanceTo(b.pos);
-      if (d < bestD) { bestD = d; best = b; }
+      if (d < bestD && !w.losBlocked(pp.x, pp.z, b.pos.x, b.pos.z)) { bestD = d; best = b; }
     }
     // l'ennemi le plus proche prend la place de la cible actuelle (petite marge pour éviter le clignotement)
     if (curOk && best && best !== cur && bestD > curD - 0.8) best = cur;
@@ -2785,7 +2850,39 @@ export class Game {
     // vue aérienne : la caméra est loin du joueur → on repousse le brouillard d'autant (rendu uniquement)
     const fog = this.scene.fog, fogOff = this.cameraRig.isIso ? Math.max(0, this.cameraRig.dist - 6) : 0;
     if (fog && fogOff) { fog.near += fogOff; fog.far += fogOff; }
+    // V10.18 — caméra libre / proche : champ de vision large (des centaines de petits objets à dessiner). Brouillard raccourci + masquage de ce qui est trop loin.
+    const freeCam = !this.cameraRig.isIso && !!fog && !this.rift?.active;
+    let fogN = 0, fogF = 0;
+    if (freeCam) {
+      fogN = fog.near; fogF = fog.far;
+      fog.far = fogF * 0.5; fog.near = Math.min(fogN, fog.far * 0.3);
+      this._cullT = (this._cullT || 0) - dt;
+      if (this._cullT <= 0) { this._cullT = 0.25; this._cullFar(fog.far * 1.08); }
+    } else if (this._cullHid?.length) this._cullFar(Infinity);
     this.renderer.render(this.scene, this.camera);
     if (fog && fogOff) { fog.near -= fogOff; fog.far -= fogOff; }
+    if (freeCam) { fog.near = fogN; fog.far = fogF; }
   };
+
+  /** V10.18 — masque les groupes de la scène plus loin que `maxD` du joueur (Infinity = tout réafficher). */
+  _cullFar(maxD) {
+    const hid = this._cullHid || (this._cullHid = []);
+    for (const o of hid) o.visible = true;
+    hid.length = 0;
+    if (!isFinite(maxD)) return;
+    const px = this.player.pos.x, pz = this.player.pos.z, m2 = maxD * maxD;
+    const test = (o) => {
+      if (!o.visible) return;
+      const dx = o.position.x - px, dz = o.position.z - pz;
+      if (o.userData._mc === undefined) { let n = 0; o.traverse((x) => { if (x.isMesh) n++; }); o.userData._mc = n; }
+      // les personnages (≈190 pièces chacun) sont masqués plus tôt que le décor : ils sont minuscules de loin
+      if (dx * dx + dz * dz > (o.userData._mc > 100 ? m2 * 0.3 : m2)) { o.visible = false; hid.push(o); }
+    };
+    const walk = (o, depth) => {
+      if (!o.visible || o.isInstancedMesh || o.isLight) return;
+      if (o.position.lengthSq() > 1 && (o.isGroup || o.isMesh)) { test(o); return; }
+      if (depth < 3 && o.isGroup) for (const k of o.children) walk(k, depth + 1);
+    };
+    for (const c of this.scene.children) if (c.isGroup) walk(c, 0);
+  }
 }

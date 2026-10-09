@@ -341,7 +341,7 @@ export class Halloween {
       c.obj.position.y = c.y + Math.sin(t * 2 + c.ph) * 0.12;
       if (!c.taken && !g.player.dead && Math.hypot(pp.x - c.h.x, pp.z - c.h.z) < 1.8) {
         c.taken = true; c.obj.visible = false;
-        g.net.eventCollect(c.h.id);
+        g.net.eventCollect(c.h.id); g.bus.emit('tut', 'candy');
         g.audio.play('coin');
         g.particles?.emit(c.h.x, c.obj.position.y, c.h.z, { count: 14, color: 0xffd45a, speed: 3, life: 0.6, up: 2 });
       }

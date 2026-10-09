@@ -61,6 +61,11 @@ export class CombatSystem {
       for (const b of this.bosses) if (b.alive && b.state !== 'dormant') consider(b, b.pos);
     }
 
+    // V10.18 : on ne touche rien à travers un mur ou un bâtiment (le monstre doit être en ligne de vue)
+    if (p.world && p.world.losBlocked) {
+      for (let i = targets.length - 1; i >= 0; i--) { const t = targets[i]; if (t !== p && p.world.losBlocked(p.pos.x, p.pos.z, t.pos.x, t.pos.z)) targets.splice(i, 1); }
+    }
+
     // Une flèche ciblée ne touche qu'un ennemi (la cible verrouillée, sinon le plus proche) ; la flèche perforante en traverse jusqu'à 4.
     if (!custom && !skill.fx && kind && !skill.aoe && !skill.heal && targets.length > 1) {
       const rest = targets.filter((e) => e !== lockedTarget).sort((a, b) => a.pos.distanceToSquared(p.pos) - b.pos.distanceToSquared(p.pos));

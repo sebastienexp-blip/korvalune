@@ -4,6 +4,7 @@ import { AFFIX_POOL, rollAffixValue } from '../data/affixPool.js';
 import { CLASS_WEAPONS } from '../combat/WeaponRules.js';
 import { SETS_BY_CLASS, SET_SLOTS } from '../data/sets.js';
 import { effectsAvailableForTier, rollEffectChance } from '../data/itemEffectPool.js';
+import { getDifficulty } from '../data/difficulty.js';
 
 export const MAX_ITEM_LEVEL = 200;
 let lootClass = null;
@@ -132,6 +133,12 @@ export function generateItem({ category, baseKey, itemLevel = 1, rarityTier = 1 
 // accessoire), une rareté (pondérée, avec décalage optionnel pour les
 // boss), un niveau d'objet proche de `sourceLevel`, puis génère l'objet.
 export function setLootClass(c) { lootClass = c; }
+// V10.18 : tout le butin a un niveau d'objet de 0 à 5 niveaux AU-DESSUS du niveau du joueur, quel que soit le niveau du monstre vaincu.
+let lootLevel = 0;
+export function setLootLevel(n) { lootLevel = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0; }
+export function rollItemLevel(fallback = 1) {
+  return Math.min(MAX_ITEM_LEVEL, Math.max(1, (lootLevel > 0 ? lootLevel : fallback) + Math.floor(Math.random() * 6)));
+}
 
 // Pièce de set pour une classe : statistiques de rareté Légendaire (+15 %), 3 à 5 affixes, pas d'effet aléatoire
 // (l'effet vient du bonus de set à 6 pièces).
@@ -155,11 +162,13 @@ export function rollSetItem(sourceLevel, itemLevel) {
 export const SET_DROP_CHANCE = 0.4; // part des objets Légendaire+ qui deviennent une pièce de set
 
 export function rollLootItem({ sourceLevel = 1, tierShift = 0, minTier = 1, maxTier = 25, levelSpread = [-1, 3] } = {}) {
+  if (lootLevel > 0) { sourceLevel = lootLevel; levelSpread = [0, 5]; }
+  tierShift += getDifficulty().shift; // difficulté choisie : plus de raretés élevées
   const roll = Math.random();
   const category = roll < 0.4 ? 'weapon' : roll < 0.8 ? 'armor' : 'accessory';
   const rarityTier = rollRarityTier({ shift: tierShift, minTier, maxTier });
   const [lo, hi] = levelSpread;
-  const itemLevel = Math.max(1, sourceLevel + Math.round(lo + Math.random() * (hi - lo)));
+  const itemLevel = Math.max(1, sourceLevel + Math.floor(lo + Math.random() * (hi - lo + 1)));
   if (rarityTier >= 13 && lootClass && Math.random() < SET_DROP_CHANCE) { const si = rollSetItem(sourceLevel, itemLevel); if (si) return si; }
   return generateItem({ category, itemLevel, rarityTier });
 }

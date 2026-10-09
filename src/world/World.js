@@ -817,6 +817,20 @@ export class World {
     return false;
   }
 
+  // V10.18 : ligne de vue — vrai si un mur / bâtiment (boîte) coupe le segment. Les arbres et rochers (cercles) ne bloquent pas : on peut viser entre les troncs.
+  losBlocked(x0, z0, x1, z1) {
+    const dx = x1 - x0, dz = z1 - z0, d = Math.hypot(dx, dz);
+    if (d < 0.8) return false;
+    const n = Math.min(120, Math.ceil(d / 0.4));
+    for (let i = 1; i < n; i++) {
+      const t = i / n, x = x0 + dx * t, z = z0 + dz * t;
+      const list = this.grid.get(this._key(Math.floor(x / CELL), Math.floor(z / CELL)));
+      if (!list) continue;
+      for (const o of list) if (o.t === 1 && !o.off && Math.abs(x - o.x) < o.hw && Math.abs(z - o.z) < o.hd) return true;
+    }
+    return false;
+  }
+
   collidesPoint(x, y, z) {
     const list = this.grid.get(this._key(Math.floor(x / CELL), Math.floor(z / CELL)));
     if (!list) return false;
@@ -834,12 +848,15 @@ export class World {
   }
 
   // V8.6 — terrain : eau/océan, limites du monde et falaises (pente montante trop raide). Les obstacles sont gérés par pushOut (glissement).
-  terrainOk(x, z) {
+  // V10.18 : mode = 'fly' (griffon : survole tout, dans les limites du monde) | 'swim' (cheval : traverse l'eau, pas l'océan profond) | undefined (à pied)
+  terrainOk(x, z, mode) {
     if (x > 1500) return true;
-    return Math.hypot(x, z) < CONFIG.world.bound && this.heightAt(x, z) > this.waterLevel - 0.35;
+    if (Math.hypot(x, z) >= CONFIG.world.bound) return false;
+    if (mode === 'fly') return true;
+    return this.heightAt(x, z) > this.waterLevel - (mode === 'swim' ? 6.5 : 0.35);
   }
-  canStep(x0, z0, x1, z1) {
-    if (!this.terrainOk(x1, z1)) return false;
+  canStep(x0, z0, x1, z1, mode) {
+    if (!this.terrainOk(x1, z1, mode)) return false;
     if (x1 > 1500) return true;
     const d = Math.hypot(x1 - x0, z1 - z0);
     if (d > 1e-6 && (this.heightAt(x1, z1) - this.heightAt(x0, z0)) / d > 1.8) return false; // falaise

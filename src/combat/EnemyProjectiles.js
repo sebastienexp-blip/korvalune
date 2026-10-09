@@ -37,7 +37,7 @@ export class EnemyProjectiles {
       if (!player.dead && Math.abs(pos.x - player.pos.x) < 0.7 && Math.abs(pos.z - player.pos.z) < 0.7 && pos.y > player.pos.y - 0.1 && pos.y < player.pos.y + 2.1) {
         hit = true;
         if (player.takeDamage(p.damage)) this.bus.emit('enemyProjectileHit', pos);
-      } else if (world && pos.y < world.heightAt(pos.x, pos.z)) end = true;
+      } else if (world && (pos.y < world.heightAt(pos.x, pos.z) || world.collidesPoint(pos.x, pos.y, pos.z))) end = true; // V10.18 : les murs arrêtent les tirs
       if (hit || end) {
         this.bus.emit('particles', { pos: pos.clone(), color: p.color, count: hit ? 12 : 6, speed: 2.2, life: 0.35 });
         this._free(p); this.list.splice(i, 1);

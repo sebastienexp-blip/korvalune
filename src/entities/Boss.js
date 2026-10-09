@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { createCreature, animateCreature } from './CreatureModel.js';
-import { computeEnemyStats } from '../data/enemyScaling.js';
+import { scaledEnemyStats } from '../data/difficulty.js';
 import { tickStatus, vulnMult } from '../combat/Status.js';
 import { share } from '../network/NetShare.js';
 
@@ -17,7 +17,7 @@ export class Boss {
     this.home = pos.clone();
     this.id = opts.id || 'boss';
     this.level = Math.max(1, Math.round(opts.level || 14));
-    const stats = computeEnemyStats(this.level, 'boss');
+    const stats = scaledEnemyStats(this.level, 'boss');
     this.maxHp = stats.hp; this.hp = stats.hp;
     this.damage = stats.damage; this.defense = stats.defense;
     this.xp = stats.xp; this.coins = stats.coins;
