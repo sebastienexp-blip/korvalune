@@ -730,6 +730,7 @@ export class RiftSystem {
     const g = this.g, run = this.run;
     if (!this.active || !run || run.done) return;
     run.done = true; this.state = 'complete';
+    if (run.mode.rewards) g.bus.emit('passEvent', 'rift');
     const mode = run.mode, L = run.level, p = g.player;
     const elapsed = Math.round(run.elapsed);
     const rewards = { xp: 0, coins: 0, shards: 0, keys: 0, zkeys: 0, steps: 0, items: 0 };

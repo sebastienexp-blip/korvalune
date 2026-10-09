@@ -28,6 +28,7 @@ import { computeEnemyStats } from '../data/enemyScaling.js';
 import { rollLootItem, setLootClass, setLootLevel } from '../inventory/ItemGenerator.js';
 import { DISCOVERY_QUESTS } from '../data/discoveryQuests.js';
 import { wearGear } from '../crafting/Crafting.js';
+import { PASS_ITEM_BY_ID, rewardOf as passRewardOf } from '../data/battlePass.js';
 import { Workshop } from '../ui/Workshop.js';
 import { buildForgeDecor } from '../world/Monolith.js';
 import { setDifficultyId, getDifficulty, DIFFICULTIES, clampDifficulty } from '../data/difficulty.js';
@@ -856,7 +857,7 @@ export class Game {
     b.on('shake', (amt) => { this._shake = Math.max(this._shake || 0, amt * (this.settings.shake ?? 100) / 100); });
     b.on('questStarted', (q) => this.hud.notify(`Nouvelle quête : ${q.name}`, 'quest'));
     b.on('questUpdated', (qm) => this.hud.renderQuests(qm));
-    b.on('questCompleted', (q) => { setTimeout(() => this._startDiscoveryQuests(), 1500);
+    b.on('questCompleted', (q) => { b.emit('passEvent', 'quest'); setTimeout(() => this._startDiscoveryQuests(), 1500);
       this.hud.notify(`Quête terminée : ${q.name} (+${q.reward.xp} XP, +${q.reward.coins} 🪙)`, 'quest');
       this.audio.play('quest');
       this.player.gainXp(q.reward.xp);
@@ -980,11 +981,25 @@ export class Game {
     this.bus.on('ui:close-workshop', () => { this._closeModal(); try { this._doSave(); } catch { /* ignoré */ } });
     // V10.13 — Halloween : boutique de Jack, états envoyés par le serveur, récompenses de combat
     this.bus.on('ui:close-halloween', () => this._closeModal());
+    // V10.23 — pass de combat : état envoyé par le serveur, événements de jeu regroupés puis envoyés par lots
+    this._passBuf = {}; this._pass = null; this._passMsg = null;
+    this.bus.on('ui:close-pass', () => this._closeModal());
+    this.root.querySelector('#btn-pass').addEventListener('click', () => this._openPass());
+    this.root.querySelector('#pass-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-ps]'); if (bt && !bt.disabled) this._passAct(bt.dataset.ps, bt.dataset.v, bt.dataset.track); });
+    this.bus.on('net:pass', (msg) => {
+      const prev = this._pass?.tier;
+      this._pass = msg;
+      if (prev != null && msg.tier > prev) this.hud.notify(`🏅 Pass de combat : palier ${msg.tier} atteint !`, 'quest');
+      this._updatePassDot(); this._renderPass();
+    });
+    this.bus.on('net:passMsg', (msg) => { this._passMsg = { ok: msg.ok, text: msg.text }; if (msg.text) this.hud.notify((msg.ok ? '🏅 ' : '') + msg.text, msg.ok ? 'quest' : 'info'); this._renderPass(); });
+    this.bus.on('passEvent', (k) => { if (k && this.net.loggedIn) this._passBuf[k] = (this._passBuf[k] || 0) + 1; });
+    this._passTimer = setInterval(() => this._flushPass(), 8000);
     this.root.querySelector('#halloween-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-hw]'); if (bt && !bt.disabled) this._halloweenAct(bt.dataset.hw, bt.dataset.v); });
     this.bus.on('net:event', (msg) => { this._event = msg; this.hw?.onEvent(msg); this._renderHalloween(); this._startDiscoveryQuests(); });
     this.bus.on('net:eventTop', (msg) => { this._eventTop = msg.rows || []; this._renderHalloween(); });
     this.bus.on('net:eventMsg', (msg) => { if (msg.ok && /^Acheté/.test(msg.text || '')) this._tut('hwbuy'); if (msg.text) this.hud.notify(msg.ok ? '🍬 ' + msg.text : msg.text, msg.ok ? 'quest' : 'info'); });
-    this.bus.on('enemyKilled', (e) => { if (e?.def?.hw && this.net.loggedIn) this.net.eventKill(e.def.id); if (e?.def?.hw) this._tut('hwkill'); if (getDifficulty().id >= 1) this._tut('diffkill'); });
+    this.bus.on('enemyKilled', (e) => { this.bus.emit('passEvent', e?.def?.boss || e?.isBoss ? 'boss' : e?.champion ? 'elite' : 'kill'); if (e?.def?.hw && this.net.loggedIn) this.net.eventKill(e.def.id); if (e?.def?.hw) this._tut('hwkill'); if (getDifficulty().id >= 1) this._tut('diffkill'); });
     this.bus.on('ui:close-barber', () => this._closeModal());
     this.root.querySelector('#barber-pay').addEventListener('click', () => this._barberPay());
     this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
@@ -1520,6 +1535,52 @@ export class Game {
     else if (act === 'buy') this.net.eventBuy(v);
     else if (act === 'equip') { const it = HALLOWEEN_ITEMS.find((x) => x.id === v); if (it) this._equipCos(it.cat, it.id); }
     else if (act === 'unequip') this.net.shopEquip(v, null);
+  }
+
+  // ---- V10.23 : pass de combat ----
+  _flushPass() {
+    if (!this.net?.loggedIn) return;
+    const b = this._passBuf; const keys = Object.keys(b);
+    if (!keys.length) { if (!this._pass) this.net.passGet(); return; }
+    this._passBuf = {};
+    this.net.passEv(b);
+  }
+
+  _updatePassDot() {
+    const st = this._pass; const dot = this.root.querySelector('#btn-pass .pass-dot'); if (!st || !dot) return;
+    let n = 0; for (let t = 1; t <= st.tier; t++) { if (!st.free.includes(t)) n++; if (st.premium && !st.prem.includes(t)) n++; }
+    if (!n) for (const m of [...st.daily, ...st.weekly]) if (!m.claimed && m.progress >= m.goal) n++;
+    dot.classList.toggle('hidden', !n);
+  }
+
+  _openPass() {
+    if (!this.player || this.dialogueOpen || this.modalOpen) return;
+    if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour utiliser le pass de combat.', 'info'); return; }
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    this._passMsg = null;
+    this.hud.showScreen('pass-screen');
+    this._flushPass();
+    this.net.passGet();
+    this._renderPass(true);
+  }
+
+  _renderPass(scroll) {
+    if (this.hud.q('#pass-screen').classList.contains('hidden')) return;
+    const keep = this.hud.q('#pass-screen').scrollTop;
+    this.hud.renderPass({ st: this._pass, msg: this._passMsg, items: PASS_ITEM_BY_ID, rewards: passRewardOf });
+    const scr = this.hud.q('#pass-screen');
+    if (scroll && this._pass) { const cur = scr.querySelector('.pass-row.cur') || scr.querySelector('.pass-row[data-tier="1"]'); if (cur && this._pass.tier > 0) { scr.scrollTop = Math.max(0, cur.offsetTop - scr.clientHeight * 0.35); return; } }
+    scr.scrollTop = keep;
+  }
+
+  _passAct(act, v, track) {
+    this.audio.play('click');
+    if (act === 'claim') this.net.passClaim(track, Number(v));
+    else if (act === 'claimAll') this.net.passClaimAll();
+    else if (act === 'mission') this.net.passMission(v);
+    else if (act === 'premium') this.net.passPremium();
+    else if (act === 'tier') this.net.passTier();
   }
 
   _openWorkshop(npc) {
@@ -2694,6 +2755,7 @@ export class Game {
   // V4.7 : coffre caché du monde (butin selon le niveau de la zone ; 15 % de piège à éviter)
   _openWorldChest(c) {
     this.worldChests.markOpen(c);
+    this.bus.emit('passEvent', 'chest');
     const p = this.player;
     this.audio.play('open'); this.audio.play('loot', new THREE.Vector3(c.x, 0, c.z));
     this.bus.emit('particles', { pos: new THREE.Vector3(c.x, c.group.position.y + 0.7, c.z), color: 0xffd23f, count: 34, speed: 3.5, life: 0.8, up: 3 });
@@ -2751,6 +2813,7 @@ export class Game {
       return;
     }
     const chest = this.dungeon.chest;
+    this.bus.emit('passEvent', 'chest');
     chest.opened = true;
     chest.lid.rotation.x = -1.9;
     chest.glow.intensity = 0;

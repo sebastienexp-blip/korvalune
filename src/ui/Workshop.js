@@ -264,6 +264,7 @@ export class Workshop {
   _done(r, keepSel = true) {
     this.msg = { ok: r.ok, text: r.msg };
     if (r.ok) {
+      if (this._lastAct !== 'look') this.g.bus.emit('passEvent', 'craft');
       const ev = { repair1: 'repair', repairAll: 'repair', socket1: 'socket', insert: 'rune', salv1: 'salvage', salvBulk: 'salvage', enchRoll: 'enchant', look: 'look' }[this._lastAct] || (this.kind === 'monolith' ? 'cube' : null);
       if (ev) this.g._tut(ev);
     }

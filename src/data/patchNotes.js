@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.23', title: 'Pass de combat : gratuit et premium',
+    items: [
+      '🏅 Nouveau pass de combat (bouton 🏅 en jeu) : 50 paliers par saison, une voie gratuite et une voie premium. Tu gagnes de l’XP de pass en jouant : monstres, champions, boss, coffres, quêtes, atelier et spires.',
+      '🎁 Voie gratuite : des Lunes à chaque palier et 4 cosmétiques exclusifs. Voie premium (400 Lunes, rétroactive) : plus de Lunes, 9 cosmétiques exclusifs (auras, ailes, compagnons, tenue, titres) et 2 onglets de coffre.',
+      '📅 Missions du jour (3) et de la semaine (3) pour monter plus vite. Un palier peut aussi s’acheter en Lunes (40). Le pass ne donne jamais de puissance de combat.',
+      '🔄 Une saison dure 8 semaines. À la fin, la progression repart de zéro, mais tous les cosmétiques gagnés restent à toi pour toujours.'
+    ]
+  },
+  {
     version: '10.22', title: 'Potions permanentes, jeu à la verticale et compétences spectaculaires',
     items: [
       '🧪 Les potions sont désormais permanentes : une fois trouvée ou achetée, une potion est à toi pour toujours et s’utilise à l’infini. En contrepartie, chaque potion a un temps de recharge (30 s pour une Commune, jusqu’à 10 s pour une Absolue). Les boutons et les touches V / B utilisent la potion que tu as choisie dans l’inventaire. Tes anciennes potions en sac sont converties automatiquement.',

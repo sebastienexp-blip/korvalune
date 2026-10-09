@@ -131,7 +131,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.22 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.23 — Korvalune</div>
         </div>
       </div>
 
@@ -262,6 +262,7 @@ export class HUD {
           <button id="btn-ach" class="tbtn small">🏆</button>
           <button id="btn-social" class="tbtn small">👥</button>
           <button id="btn-mount" class="tbtn small hidden" aria-label="Monter ou descendre de monture" title="Monture (H)">🐎</button>
+          <button id="btn-pass" class="tbtn small" aria-label="Pass de combat" title="Pass de combat">🏅<i class="pass-dot hidden"></i></button>
           <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes" title="Boutique des Lunes"><span class="bl-ico">🌙</span><span class="bl-txt">Boutique</span></button>
           <button id="btn-chat" class="tbtn small">💬</button>
         </div>
@@ -401,6 +402,14 @@ export class HUD {
         <h3>Classement des bonbons</h3>
         <div id="hw-top"></div>
         <button data-act="close-halloween">Fermer</button>
+      </div>
+
+      <div id="pass-screen" class="hidden panel-screen pass-screen">
+        <div id="pass-head"></div>
+        <div id="pass-msg" class="menu-hint"></div>
+        <div id="pass-missions"></div>
+        <div id="pass-track"></div>
+        <button data-act="close-pass">Fermer</button>
       </div>
 
       <div id="difficulty-screen" class="hidden panel-screen diff-screen">
@@ -567,7 +576,7 @@ export class HUD {
     }
     this._curScreen = id;
     if (prev !== id) this.ms.reset();
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'workshop-screen', 'halloween-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'workshop-screen', 'halloween-screen', 'pass-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -1147,6 +1156,50 @@ export class HUD {
     this.q('#hw-list').innerHTML = html;
     const top = d.top;
     this.q('#hw-top').innerHTML = top && top.length ? top.map((r, i) => `<div class="soc-row"><div class="soc-name"><b>${i + 1}. ${esc(r.name)}</b><small>${r.total} 🍬 gagnés${r.boss ? ` · ${r.boss} Roi(s) vaincu(s)` : ''}</small></div></div>`).join('') : '<p class="menu-hint">Personne n’a encore de bonbons. Sois le premier !</p>';
+  }
+
+
+  // V10.23 — Pass de combat. d : { st (état serveur), msg }
+  renderPass(d) {
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const st = d.st;
+    const head = this.q('#pass-head'), ms = this.q('#pass-missions'), tr = this.q('#pass-track');
+    if (!st) { head.innerHTML = '<p class="menu-hint">Chargement…</p>'; ms.innerHTML = ''; tr.innerHTML = ''; return; }
+    const days = Math.max(0, Math.ceil((st.endsAt - Date.now()) / 86400000));
+    const into = st.tier >= st.tiers ? st.xpPerTier : st.xp - st.tier * st.xpPerTier;
+    const pct = st.tier >= st.tiers ? 100 : Math.round((into / st.xpPerTier) * 100);
+    const claimable = (() => { let n = 0; for (let t = 1; t <= st.tier; t++) { if (!st.free.includes(t)) n++; if (st.premium && !st.prem.includes(t)) n++; } return n; })();
+    head.innerHTML = `
+      <div class="pass-title"><h2>🏅 ${esc(st.name)}</h2><small>Saison ${st.season} · encore ${days} jour${days > 1 ? 's' : ''}</small></div>
+      <div class="pass-level"><b>Palier ${st.tier}<span> / ${st.tiers}</span></b><span class="pass-bar"><i style="width:${pct}%"></i></span><small>${st.tier >= st.tiers ? 'Pass terminé !' : `${into.toLocaleString('fr-FR')} / ${st.xpPerTier.toLocaleString('fr-FR')} XP`} · XP de jeu aujourd’hui : ${st.dayXp}/${st.dayXpCap}</small></div>
+      <div class="pass-actions">
+        <span class="lune-bal"><span class="lune-gem">🌙</span><b>${st.gems}</b></span>
+        <button class="soc-btn lune-go" data-ps="claimAll"${claimable ? '' : ' disabled'}>Tout récupérer${claimable ? ` (${claimable})` : ''}</button>
+        ${st.premium ? '<span class="pass-prem-on">★ Premium actif</span>' : `<button class="soc-btn pass-prem" data-ps="premium"${st.gems < st.premiumPrice ? ' disabled' : ''}>★ Débloquer le premium · ${st.premiumPrice} 🌙</button>`}
+        ${st.tier < st.tiers ? `<button class="soc-btn lune-buy" data-ps="tier"${st.gems < st.tierPrice ? ' disabled' : ''}>Palier suivant · ${st.tierPrice} 🌙</button>` : ''}
+      </div>
+      ${!st.premium ? '<p class="menu-hint">La voie premium ne change que l’apparence et les Lunes : aucune puissance de combat. Une fois débloquée, tout ce que tu as déjà atteint se récupère.</p>' : ''}`;
+    const mrow = (m, wk) => `<div class="soc-row lune-item${m.claimed ? ' soc-on' : ''}"><div class="soc-name"><b>${esc(m.label)}</b><small>${m.progress}/${m.goal} · +${m.xp} XP de pass</small><span class="hw-bar"><i style="width:${Math.round(100 * m.progress / m.goal)}%"></i></span></div><div class="lune-btns"><button class="soc-btn lune-go" data-ps="mission" data-v="${m.id}"${m.claimed || m.progress < m.goal ? ' disabled' : ''}>${m.claimed ? 'Récupérée' : m.progress >= m.goal ? 'Récupérer' : 'En cours'}</button></div></div>`;
+    ms.innerHTML = `<h3>Missions du jour</h3>${st.daily.map((m) => mrow(m)).join('')}<h3>Missions de la semaine</h3>${st.weekly.map((m) => mrow(m, true)).join('')}`;
+    const itemName = (id) => d.items?.[id]?.name || id;
+    const icon = { aura: '🗡️', ring: '⭕', trail: '✨', wings: '🪽', title: '🏷️', pet: '🐾', skin: '🧥', perk: '🎒' };
+    const cell = (track, t) => {
+      const r = d.rewards(track, t); const got = (track === 'free' ? st.free : st.prem).includes(t);
+      const reach = t <= st.tier, lockedPrem = track === 'premium' && !st.premium;
+      const cls = 'pass-cell' + (got ? ' got' : reach && !lockedPrem ? ' ready' : '') + (lockedPrem ? ' lock' : '') + (r.item || r.perk ? ' big' : '');
+      const parts = [];
+      if (r.item) parts.push(`<span class="pc-item">${icon[d.items?.[r.item]?.cat] || '🎁'} ${esc(itemName(r.item))}</span>`);
+      if (r.perk) parts.push(`<span class="pc-item">🎒 ${esc(itemName(r.perk))}</span>`);
+      if (r.lunes) parts.push(`<span class="pc-lunes">+${r.lunes} 🌙</span>`);
+      const act = got ? '<em>✔</em>' : reach && !lockedPrem ? `<button class="soc-btn lune-go" data-ps="claim" data-track="${track}" data-v="${t}">Prendre</button>` : lockedPrem ? '<em>🔒</em>' : '';
+      return `<div class="${cls}">${parts.join('')}${act}</div>`;
+    };
+    let rows = '';
+    for (let t = 1; t <= st.tiers; t++) rows += `<div class="pass-row${t === st.tier ? ' cur' : ''}${t <= st.tier ? ' reached' : ''}" data-tier="${t}"><div class="pass-t">${t}</div>${cell('free', t)}${cell('premium', t)}</div>`;
+    tr.innerHTML = `<div class="pass-row pass-colhead"><div class="pass-t"></div><div>Gratuit</div><div>★ Premium</div></div>${rows}`;
+    this.q('#pass-msg').textContent = d.msg?.text || '';
+    this.q('#pass-msg').className = 'menu-hint' + (d.msg ? (d.msg.ok ? ' lune-ok' : ' lune-ko') : '');
+    const dot = this.q('#btn-pass .pass-dot'); if (dot) dot.classList.toggle('hidden', !claimable);
   }
 
   // V10.10 — écurie. d : { coins, level, list:[{ def, owned, sel }] }

@@ -29,6 +29,7 @@ import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots, sanitizeCubePowers } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
+import { passView, addEvents as passEvents, claim as passClaim, claimAll as passClaimAll, missionClaim as passMission, buyPremium as passBuyPremium, buyTier as passBuyTier } from './server/pass.js';
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
 import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
 import { cleanPotions } from './src/data/potions.js';
@@ -415,6 +416,7 @@ wss.on('connection', (ws, req) => {
   const settingsLimiter = new RateLimiter(4, 5000);
   const tradeLimiter = new RateLimiter(30, 5000);
   const eventLimiter = new RateLimiter(20, 5000);
+  const passLimiter = new RateLimiter(30, 10000);
   const shopLimiter = new RateLimiter(30, 10000); // V10.17 : la boutique n'est plus bridée par la limite des messages d'amis (8/10 s), qui ignorait des équipements en silence
   const pushShop = () => { if (authUsername && accounts[authUsername]) { send(ws, shopView(accounts[authUsername])); send(ws, eventView(accounts[authUsername])); } };
   const moveLimiter = new RateLimiter(20, 1000);
@@ -621,6 +623,25 @@ wss.on('connection', (ws, req) => {
       if (msg.t === 'event:kill') { const r = evKill(acc, msg.kind); if (r.ok) { persistAccounts(accounts); if (r.gained || r.bonus) note(true, `+${r.gained + (r.bonus || 0)} 🍬${r.bonus ? ' · défi du jour accompli !' : ''}${r.capped ? ' (plafond du jour presque atteint)' : ''}`); } push(); return; }
       if (msg.t === 'event:daily') { const r = evDaily(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `+${r.gained} 🍬 : sac de bonbons du jour !` : r.error); push(); return; }
       if (msg.t === 'event:buy') { const r = evBuy(acc, msg.id); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `Acheté : ${r.item.name}` : r.error); push(); send(ws, shopView(acc)); return; }
+      return;
+    }
+
+    // --- Pass de combat (V10.23) ---
+    if (msg.t.startsWith('pass:')) {
+      if (!passLimiter.allow()) return;
+      const key = authUsername && resolveAccount(authUsername);
+      if (!key) { send(ws, { t: 'pass:msg', ok: false, text: 'Connecte-toi à ton compte pour utiliser le pass de combat.' }); return; }
+      const acc = ensureChars(accounts[key]);
+      const push = () => { send(ws, passView(acc)); send(ws, shopView(acc)); };
+      const note = (ok, text) => { if (text) send(ws, { t: 'pass:msg', ok, text }); };
+      const gainText = (r) => `${r.lunes ? `+${r.lunes} 🌙` : ''}${r.items?.length ? ` · ${r.items.join(', ')}` : ''}`.replace(/^ · /, '');
+      if (msg.t === 'pass:get') { push(); return; }
+      if (msg.t === 'pass:ev') { const r = passEvents(acc, msg.c); if (r.ok) persistAccounts(accounts); send(ws, passView(acc)); return; }
+      if (msg.t === 'pass:claim') { const r = passClaim(acc, msg.track, msg.tier | 0); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `Récompense : ${gainText(r)}` : r.error); push(); return; }
+      if (msg.t === 'pass:claimAll') { const r = passClaimAll(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `${r.n} récompense${r.n > 1 ? 's' : ''} : ${gainText(r)}` : r.error); push(); return; }
+      if (msg.t === 'pass:mission') { const r = passMission(acc, msg.id); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `+${r.xp} XP de pass` : r.error); push(); return; }
+      if (msg.t === 'pass:premium') { const r = passBuyPremium(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? 'Pass premium débloqué ! Récupère tes récompenses.' : r.error); push(); return; }
+      if (msg.t === 'pass:tier') { const r = passBuyTier(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `Palier ${r.tier} atteint !` : r.error); push(); return; }
       return;
     }
 

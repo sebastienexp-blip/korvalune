@@ -109,6 +109,8 @@ export class NetworkManager {
       case 'event': this.bus.emit('net:event', msg); break;
       case 'event:msg': this.bus.emit('net:eventMsg', msg); break;
       case 'event:top': this.bus.emit('net:eventTop', msg); break;
+      case 'pass': this.bus.emit('net:pass', msg); break;
+      case 'pass:msg': this.bus.emit('net:passMsg', msg); break;
       case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;
       case 'playerLook': this.bus.emit('net:playerLook', msg); break;
@@ -177,6 +179,13 @@ export class NetworkManager {
   eventKill(kind) { this._send({ t: 'event:kill', kind }); }
   eventDaily() { this._send({ t: 'event:daily' }); }
   eventBuy(id) { this._send({ t: 'event:buy', id }); }
+  passGet() { this._send({ t: 'pass:get' }); }
+  passEv(c) { this._send({ t: 'pass:ev', c }); }
+  passClaim(track, tier) { this._send({ t: 'pass:claim', track, tier }); }
+  passClaimAll() { this._send({ t: 'pass:claimAll' }); }
+  passMission(id) { this._send({ t: 'pass:mission', id }); }
+  passPremium() { this._send({ t: 'pass:premium' }); }
+  passTier() { this._send({ t: 'pass:tier' }); }
   shopDaily() { this._send({ t: 'shop:daily' }); }
   // V10.2 : crée une session de paiement Stripe ; renvoie l'adresse de la page de paiement (le jeu ne touche jamais la carte)
   async startCheckout(pack, consent) {

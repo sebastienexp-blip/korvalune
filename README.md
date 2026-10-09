@@ -1099,6 +1099,15 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Vente groupée** (`src/ui/MultiSell.js`) : bouton « Sélection multiple » dans l'inventaire et le coffre ; section « Vendre vos objets » chez les marchands (toujours active). Sélection rapide de l'équipement par rareté, total en direct, confirmation en deux temps. `Game._sellEntries` vend valeur × quantité.
 - **Serveur** : le client envoie un cumul monotone `soldTotal` ; seule sa hausse relève le plafond de gains de la sauvegarde (les gros objets valent des centaines de milliers de pièces). Plafond de pièces porté à 99 999 999.
 
+## V10.23 — Pass de combat (gratuit et premium)
+
+- **Données partagées** : `src/data/battlePass.js` (50 paliers, XP par palier, prix, plafonds, missions, récompenses, cosmétiques exclusifs). Tous les nombres sont des valeurs de départ, à ajuster dans ce seul fichier.
+- **Serveur** : `server/pass.js` est la seule source de vérité (XP, missions, récompenses, achat du premium et des paliers en Lunes). Messages `pass:get | ev | claim | claimAll | mission | premium | tier`, limités en débit, compte connecté obligatoire.
+- **Anti-triche** : le client ne signale que des événements (monstre, champion, boss, coffre, quête, atelier, spire) regroupés par lot toutes les 8 s ; le serveur borne le rythme selon le temps écoulé et plafonne l'XP de jeu par jour (hors missions).
+- **Saisons** : 56 jours, enchaînées automatiquement depuis le 1er octobre 2026 (UTC). Nouvelle saison = progression remise à zéro ; cosmétiques conservés.
+- **Règle de conception** : seulement de l'apparence, des Lunes et du confort — jamais de puissance de combat. Les cosmétiques du pass ne sont jamais en vente.
+- Paiement : le premium s'achète avec des Lunes (qui s'achètent via Stripe, toujours en mode test tant que les clés live ne sont pas configurées).
+
 ## V10.22 — Potions permanentes, mode vertical, compétences spectaculaires
 
 - **Potions permanentes** : `Player.potions = { owned, heal, mana }` (sauvegardé, nettoyé côté serveur par `cleanPotions`). `Inventory.add` redirige toute potion vers `Game._collectPotion` (nouvelle → débloquée, déjà connue → quelques pièces). Recharge par rareté dans `src/data/potions.js` (`POTION_CD`, renouveau ×1,3). Choix de la potion active dans l'inventaire ; les anciennes potions en sac sont converties au chargement.
