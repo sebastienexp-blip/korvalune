@@ -6,8 +6,8 @@ import { makeLabel } from '../ui/Label.js';
 // Statue de la Spire, sur la place de Korvalune (ouest, près de l'entrée sud) :
 // un Veilleur de pierre qui tend un orbe d'éther. Quand une spire est ouverte, un portail
 // apparaît à côté et l'orbe s'embrase.
-export const STATUE_POS = [-12, 22];
-export const STATUE_PORTAL_POS = [-12, 29.2];
+export const STATUE_POS = [-10, 24.5];
+export const STATUE_PORTAL_POS = [-10, 31.7];
 
 export function buildRiftStatue(world) {
   const g = new THREE.Group();

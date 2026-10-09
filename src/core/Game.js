@@ -361,7 +361,7 @@ export class Game {
 
     // V10.12 — barbier : la barbière devant la maison de la rue sud-ouest (enseigne + poteau rayé)
     {
-      const bx = -12.6, bz = 19.1, by = this.world.heightAt(bx, bz);
+      const bx = -10.6, bz = 19.0, by = this.world.heightAt(bx, bz);
       const odile = new NPC(this.scene, npcsData.barber, new THREE.Vector3(bx, by, bz), 0.25);
       odile.id = 'barber';
       this.npcs.push(odile);

@@ -7,7 +7,8 @@ export const PATCH_NOTES = [
     items: [
       'Nouveau à la création : choisis le sexe, la taille, la corpulence et la musculature de ton héros, la forme du visage, des yeux et du nez, la barbe, et une coupe parmi 23 (hommes, femmes et mixtes).',
       'Nouveau : la barbière Odile t’attend devant la maison à l’enseigne ✂ Barbier, rue sud-ouest. Elle change ton apparence contre des pièces d’or : seules les catégories modifiées sont payées.',
-      'Les autres joueurs voient ta nouvelle apparence. Les personnages existants gardent exactement leur look d’origine tant qu’ils ne passent pas chez le barbier.'
+      'Les autres joueurs voient ta nouvelle apparence. Les personnages existants gardent exactement leur look d’origine tant qu’ils ne passent pas chez le barbier.',
+      'Correction : le barbier n’est plus collé à la statue de la Spire, qui a été légèrement déplacée vers le sud-est de la place.'
     ]
   },
   {
