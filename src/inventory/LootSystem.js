@@ -1,6 +1,7 @@
 import { rollLootItem, generateItem, rollItemLevel } from './ItemGenerator.js';
 import { getDifficulty } from '../data/difficulty.js';
-import { rollRarityTier } from '../data/rarities.js';
+import { rollRarityTier, RARITIES, classForTier } from '../data/rarities.js';
+import { POTION_IDS } from '../data/potions.js';
 import { RUNES } from '../data/crafting.js';
 
 // Tirage de loot. Les ennemis normaux et les boss passent tous les deux par
@@ -13,7 +14,18 @@ const BOSS_TIER_SHIFT = 8;       // boss normal : décale la courbe de ~8 palier
 const MAJOR_BOSS_TIER_SHIFT = 14; // boss majeur : encore plus généreux
 const GOBLIN_TIER_SHIFT = 12;     // lutin trésor : rare à attraper, donc très généreux
 const CONSUMABLE_CHANCE = 0.35;
-const CONSUMABLES = ['potion_heal_small', 'potion_mana'];
+
+// V10.21 — potions dans les 6 raretés. Famille : soin 45 %, mana 35 %, renouveau 20 %.
+// La rareté suit la même courbe que les objets (décalée pour boss/coffres) ; le niveau de la source
+// plafonne la rareté pour qu'un monstre de bas niveau ne lâche pas un nectar absolu.
+function rollPotion(level = 1, shift = 0) {
+  const r = Math.random();
+  const fam = r < 0.45 ? 'heal' : r < 0.8 ? 'mana' : 'rejuv';
+  const cap = level < 8 ? 1 : level < 20 ? 8 : level < 40 ? 13 : level < 70 ? 19 : 25;
+  const tier = rollRarityTier({ shift, maxTier: cap });
+  const idx = RARITIES.indexOf(classForTier(tier));
+  return { defId: POTION_IDS[Math.max(0, idx)][fam], qty: 1 };
+}
 
 // V10.19 — runes (rang selon le niveau) et matériaux d'artisanat
 function runeFor(level) {
@@ -33,6 +45,7 @@ function matsFor(level, rich = 0) {
 export const LootSystem = {
   // V10.19 : accès direct (coffres du monde…)
   rune: runeFor,
+  potion: rollPotion,
   mats: matsFor,
 
   // Butin d'un ennemi normal : potion probable + chance d'objet généré
@@ -40,7 +53,7 @@ export const LootSystem = {
   rollForEnemy(enemy) {
     const drops = [];
     const D = getDifficulty();
-    if (Math.random() < Math.min(0.8, CONSUMABLE_CHANCE * (1 + (D.drop - 1) * 0.4))) drops.push({ defId: CONSUMABLES[Math.floor(Math.random() * CONSUMABLES.length)], qty: 1 });
+    if (Math.random() < Math.min(0.8, CONSUMABLE_CHANCE * (1 + (D.drop - 1) * 0.4))) drops.push(rollPotion(enemy.level || 1, 0));
     // chance d'objet × difficulté ; au-delà de 100 %, objets supplémentaires (ex. 126 % = 1 objet + 26 % d'un second)
     const ch = (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE) * D.drop;
     const n = Math.floor(ch) + (Math.random() < ch - Math.floor(ch) ? 1 : 0);
@@ -53,7 +66,7 @@ export const LootSystem = {
   // Butin d'un boss "normal" (ex: chef bandit du donjon) : objet généré garanti,
   // avec une courbe de rareté bien plus généreuse.
   rollForBoss(level = 10) {
-    return [{ gen: rollLootItem({ sourceLevel: level, tierShift: BOSS_TIER_SHIFT, levelSpread: [2, 8] }) }, runeFor(level), ...matsFor(level, 2)];
+    return [{ gen: rollLootItem({ sourceLevel: level, tierShift: BOSS_TIER_SHIFT, levelSpread: [2, 8] }) }, runeFor(level), rollPotion(level + 10, BOSS_TIER_SHIFT), ...matsFor(level, 2)];
   },
 
   // Butin d'un boss majeur (ex: Le Gardien des Ruines) : un objet garanti
@@ -61,7 +74,7 @@ export const LootSystem = {
   // non négligeable, de toucher directement Mythique / Absolu.
   rollForMajorBoss(level = 14) {
     const drops = [{ gen: rollLootItem({ sourceLevel: level, tierShift: MAJOR_BOSS_TIER_SHIFT, levelSpread: [4, 12] }) }];
-    drops.push(runeFor(level + 10), runeFor(level), ...matsFor(level, 3));
+    drops.push(runeFor(level + 10), runeFor(level), rollPotion(level + 20, MAJOR_BOSS_TIER_SHIFT), rollPotion(level + 20, MAJOR_BOSS_TIER_SHIFT), ...matsFor(level, 3));
     if (Math.random() < 0.3) drops.push({ defId: 'mat_ame', qty: 1 });
     if (Math.random() < 0.03) {
       drops.push({ gen: generateItem({ category: Math.random() < 0.5 ? 'weapon' : 'armor', itemLevel: rollItemLevel(level + 8), rarityTier: rollRarityTier({ minTier: 19, maxTier: 25 }) }) });
@@ -72,7 +85,7 @@ export const LootSystem = {
   // Butin d'un coffre de donjon : un ou deux objets généralement solides.
   rollForChest(level = 20) {
     const drops = [{ gen: rollLootItem({ sourceLevel: level, tierShift: 3, levelSpread: [0, 5] }) }];
-    if (Math.random() < 0.5) drops.push({ defId: 'potion_heal_big', qty: 2 });
+    if (Math.random() < 0.6) drops.push(rollPotion(level, 3), rollPotion(level, 3));
     if (Math.random() < 0.4) drops.push(runeFor(level));
     drops.push(...matsFor(level, 1));
     return drops;
@@ -87,7 +100,7 @@ export const LootSystem = {
     for (let i = 0; i < count; i++) {
       drops.push({ gen: rollLootItem({ sourceLevel: level, tierShift: GOBLIN_TIER_SHIFT, levelSpread: [0, 6] }) });
     }
-    drops.push(runeFor(level + 5), runeFor(level), ...matsFor(level, 3));
+    drops.push(runeFor(level + 5), runeFor(level), rollPotion(level + 20, GOBLIN_TIER_SHIFT), rollPotion(level + 20, GOBLIN_TIER_SHIFT), ...matsFor(level, 3));
     return drops;
   }
 };

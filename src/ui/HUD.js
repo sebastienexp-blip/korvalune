@@ -8,6 +8,7 @@ import { countSets, describeBonus } from '../data/sets.js';
 import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
 import { CATALOG, CATEGORIES, CATALOG_BY_ID, COSMETIC_SLOTS } from '../data/shopCatalog.js';
 import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
+import { MultiSell } from './MultiSell.js';
 import { slotCategory, RUNE_BY_ID, fmtBonusMap } from '../data/crafting.js';
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
@@ -86,6 +87,8 @@ export class HUD {
   constructor(root, bus, game) {
     this.root = root; this.bus = bus; this.game = game;
     this.el = {};
+    this.ms = new MultiSell(); // V10.21 : sélection multiple / vente groupée
+    this.onSellMany = null;
     this._buildDom();
     this._bindEvents();
   }
@@ -123,7 +126,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.20 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.21 — Korvalune</div>
         </div>
       </div>
 
@@ -303,6 +306,7 @@ export class HUD {
           <div class="eq-box"><div class="bank-col-title">Équipé</div><div class="eq-mini" id="inv-eq"></div><small class="eq-hint">Touchez pour retirer</small></div>
           <div id="inv-main">
             <div id="inv-grid"></div>
+            <div id="inv-sellbar"></div>
             <div id="inv-coins">🪙 <span id="inv-coins-val">0</span></div>
             <div id="inv-cos"></div>
           </div>
@@ -323,6 +327,11 @@ export class HUD {
         <h2 id="shop-title">Boutique</h2>
         <div id="shop-coins">🪙 <span id="shop-coins-val">0</span></div>
         <div id="shop-list"></div>
+        <div id="shop-sell">
+          <div class="bank-col-title">Vendre vos objets</div>
+          <div id="shop-sellbar"></div>
+          <div id="shop-sell-grid"></div>
+        </div>
         <button data-act="close-shop">Fermer</button>
       </div>
 
@@ -452,6 +461,7 @@ export class HUD {
           <div class="bank-col">
             <div class="bank-col-title">Coffre</div>
             <div id="bank-grid"></div>
+            <div id="bank-sellbar"></div>
             <div id="bank-pager">
               <button id="bank-prev" class="tbtn small">◀</button>
               <span id="bank-page-label">Page 1/4</span>
@@ -550,6 +560,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
+    if (prev !== id) this.ms.reset();
     for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'workshop-screen', 'halloween-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
@@ -758,6 +769,7 @@ export class HUD {
 
   renderInventory(inventory, equipment, player, onAction) {
     this.renderWardrobe();
+    const rerender = () => this.renderInventory(inventory, equipment, player, onAction);
     const grid = this.q('#inv-grid');
     grid.innerHTML = '';
     inventory.slots.forEach((slot, i) => {
@@ -771,9 +783,11 @@ export class HUD {
         const betterBadge = this._isUpgrade(view, equipment) ? '<span class="inv-upgrade">▲</span>' : '';
         cell.innerHTML = `<span class="inv-icon">${view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}${betterBadge}`;
         cell.onclick = () => this.openItemSheet(slot, i, equipment, player, onAction);
+        if (this.ms.on) this._msDecorate(cell, 'inv', i, rerender);
       }
       grid.appendChild(cell);
     });
+    this.ms.renderBar(this.q('#inv-sellbar'), [{ scope: 'inv', slots: inventory.slots, from: 0, to: inventory.slots.length }], rerender, (e) => this._doSellMany(e, rerender));
     this.q('#inv-coins-val').textContent = this._coins || 0;
     this.renderEquipMini('#inv-eq', equipment);
   }
@@ -1222,7 +1236,8 @@ export class HUD {
 
   renderBank(bank, inventory, page, pageCount, onTransfer, equipment) {
     const PAGE_SIZE = 30;
-    const drawGrid = (elId, slots, startIdx, onTap) => {
+    const rerender = () => this.renderBank(bank, inventory, page, pageCount, onTransfer, equipment);
+    const drawGrid = (elId, slots, startIdx, onTap, scope) => {
       const grid = this.q(elId);
       grid.innerHTML = '';
       slots.forEach((slot, i) => {
@@ -1234,18 +1249,23 @@ export class HUD {
           cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
           cell.innerHTML = `<span class="inv-icon">${view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}`;
           cell.onclick = () => onTap(startIdx + i);
+          if (this.ms.on) this._msDecorate(cell, scope, startIdx + i, rerender);
         }
         grid.appendChild(cell);
       });
     };
     const pageSlots = bank.slots.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-    drawGrid('#bank-grid', pageSlots, page * PAGE_SIZE, (idx) => onTransfer('bank', idx));
-    drawGrid('#bank-inv-grid', inventory.slots, 0, (idx) => onTransfer('inv', idx));
+    drawGrid('#bank-grid', pageSlots, page * PAGE_SIZE, (idx) => onTransfer('bank', idx), 'bank');
+    drawGrid('#bank-inv-grid', inventory.slots, 0, (idx) => onTransfer('inv', idx), 'inv');
+    this.ms.renderBar(this.q('#bank-sellbar'), [
+      { scope: 'bank', slots: bank.slots, from: page * PAGE_SIZE, to: Math.min(bank.slots.length, page * PAGE_SIZE + PAGE_SIZE) },
+      { scope: 'inv', slots: inventory.slots, from: 0, to: inventory.slots.length }
+    ], rerender, (e) => this._doSellMany(e, rerender));
     this.q('#bank-page-label').textContent = `Page ${page + 1}/${pageCount}`;
     if (equipment) this.renderEquipMini('#bank-eq', equipment);
   }
 
-  renderShop(npc, player, onBuy) {
+  renderShop(npc, player, onBuy, inventory) {
     this.q('#shop-title').textContent = npc.name;
     this.q('#shop-coins-val').textContent = player.coins;
     const list = this.q('#shop-list');
@@ -1263,6 +1283,43 @@ export class HUD {
       row.querySelector('.shop-buy').onclick = () => onBuy(entry);
       list.appendChild(row);
     }
+    // V10.21 : vente groupée chez le vendeur (mode de sélection toujours actif)
+    const sellBox = this.q('#shop-sell');
+    if (sellBox) sellBox.classList.toggle('hidden', !inventory);
+    if (inventory) {
+      this.ms.on = true;
+      const rerender = () => this.renderShop(npc, player, onBuy, inventory);
+      const grid = this.q('#shop-sell-grid');
+      grid.innerHTML = '';
+      inventory.slots.forEach((slot, i) => {
+        const cell = document.createElement('button');
+        cell.className = 'inv-cell';
+        if (slot) {
+          const view = resolveItem(slot);
+          cell.style.borderColor = view.rarityInfo.color;
+          cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
+          cell.innerHTML = `<span class="inv-icon">${view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}`;
+          cell.title = `${view.name} — ${(view.isGenerated ? view.value : view.value * slot.qty).toLocaleString('fr-FR')} 🪙`;
+          this._msDecorate(cell, 'inv', i, rerender);
+        }
+        grid.appendChild(cell);
+      });
+      this.ms.renderBar(this.q('#shop-sellbar'), [{ scope: 'inv', slots: inventory.slots, from: 0, to: inventory.slots.length }], rerender, (e) => this._doSellMany(e, rerender), true);
+    }
+  }
+
+  // V10.21 : en mode sélection, toucher une case la (dé)sélectionne au lieu de l'ouvrir
+  _msDecorate(cell, scope, index, rerender) {
+    const on = this.ms.isSel(scope, index);
+    cell.classList.toggle('ms-sel', !!on);
+    if (on) cell.insertAdjacentHTML('beforeend', '<span class="ms-check">✓</span>');
+    cell.onclick = () => { this.ms.toggle(scope, index); rerender(); };
+  }
+  _doSellMany(entries, rerender) {
+    if (!entries.length) return;
+    if (this.onSellMany) this.onSellMany(entries);
+    this.ms.clearSel();
+    rerender();
   }
 
   // ---------- Réseau : chat, groupe, statut de connexion ----------

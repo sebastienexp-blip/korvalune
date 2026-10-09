@@ -1092,3 +1092,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Nouveaux emplacements cosmétiques `pet` et `skin` (`COSMETIC_SLOTS`), visibles des autres joueurs via `publicCos`. Rendu dans `src/visual/Cosmetics.js` (`buildPet`/`updatePet`, `applySkin`/`restoreSkin`, accessoires de tête).
 - Catalogue Lunes : 25 → 91 objets ; Halloween : 11 → 38. `unlock: { level }` / `{ hwBoss }` : offerts automatiquement par `ensureShop` (jamais achetables : refusés par `shop:buy` et `event:buy`).
 - Correctif : la boutique partageait la limite de messages d'amis (8 / 10 s) et ignorait des équipements rapides ; elle a sa propre limite (30 / 10 s).
+
+## V10.21 — Potions de toutes raretés, vente groupée
+
+- **Potions** (`src/data/potions.js`, `items.json`) : 3 familles (soin, mana, renouveau) × 6 raretés. `LootSystem.potion(level, shift)` tire famille (45/35/20 %) puis rareté (courbe des objets, plafonnée selon le niveau de la source) ; utilisé par monstres, boss, coffres de donjon/monde et lutin trésor. La potion rapide (V/B) préfère les potions « pures » avant le renouveau.
+- **Vente groupée** (`src/ui/MultiSell.js`) : bouton « Sélection multiple » dans l'inventaire et le coffre ; section « Vendre vos objets » chez les marchands (toujours active). Sélection rapide de l'équipement par rareté, total en direct, confirmation en deux temps. `Game._sellEntries` vend valeur × quantité.
+- **Serveur** : le client envoie un cumul monotone `soldTotal` ; seule sa hausse relève le plafond de gains de la sauvegarde (les gros objets valent des centaines de milliers de pièces). Plafond de pièces porté à 99 999 999.

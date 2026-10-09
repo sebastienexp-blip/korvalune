@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.21', title: 'Potions de toutes raretés et vente groupée',
+    items: [
+      '🧪 Trois familles de potions : soin, mana et renouveau (vie + mana), chacune en 6 raretés — Commun, Magique, Rare, Légendaire, Mythique et Absolu. Plus la rareté est haute, plus la potion rend de vie ou de mana.',
+      '🎁 Les monstres, boss, coffres et lutins trésors lâchent des potions de rareté variable (les sources puissantes en donnent de meilleures). La marchande Wren vend maintenant les potions jusqu’au rang Rare.',
+      '☑️ Vente groupée : dans l’inventaire, dans le coffre et chez la marchande, touche « Sélection multiple » puis choisis plusieurs objets (ou « Équipement : Commun / ≤ Magique / ≤ Rare »). Le total s’affiche, puis « Vendre la sélection » demande une confirmation.',
+      '💰 Correctif : une pile d’objets (ex. 5 potions) est maintenant payée à sa vraie valeur, et les ventes d’objets très chers ne sont plus rabotées par la sauvegarde du serveur.'
+    ]
+  },
+  {
     version: '10.20', title: 'Combat plus fluide et monstres adoucis',
     items: [
       '🏃 Tu peux maintenant te déplacer (marche ou course) pendant que tu lances une compétence : tu gardes ta visée et tu avances en même temps. Seule la roulade t’immobilise.',

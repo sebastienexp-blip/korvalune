@@ -170,6 +170,26 @@
       {
         "itemId": "potion_mana",
         "price": 8
+      },
+      {
+        "itemId": "potion_mana_magique",
+        "price": 18
+      },
+      {
+        "itemId": "potion_rejuv_commun",
+        "price": 12
+      },
+      {
+        "itemId": "potion_rejuv_magique",
+        "price": 30
+      },
+      {
+        "itemId": "potion_heal_rare",
+        "price": 55
+      },
+      {
+        "itemId": "potion_mana_rare",
+        "price": 60
       }
     ]
   },

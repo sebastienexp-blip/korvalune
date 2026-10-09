@@ -47,6 +47,7 @@ import { ModelLibrary } from '../visual/ModelLibrary.js';
 import { setSafeMode, isSafeMode, updateVisualUniforms } from '../visual/Safe.js';
 import { AudioManager } from '../audio/AudioManager.js';
 import { HUD } from '../ui/HUD.js';
+import { sellValueOf } from '../ui/MultiSell.js';
 import { TouchControls } from '../ui/TouchControls.js';
 import { MOUNTS, MOUNT_BY_ID } from '../data/mounts.js';
 import { createMount, updateMount } from '../visual/MountModel.js';
@@ -99,6 +100,7 @@ export class Game {
     if (typeof saved.shadows !== 'boolean') this.settings.shadows = CONFIG.quality[this.settings.quality].shadows;
     this._resScale = 1; this._lowN = 0; this._highN = 0; this._adaptCool = 0;
     this.hud = new HUD(root, this.bus, this);
+    this.hud.onSellMany = (entries) => this._sellEntries(entries); // V10.21
     const unlock = () => {
       removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true);
       try {
@@ -1813,13 +1815,35 @@ export class Game {
     } else if (action === 'use') {
       if (!slot.gen && this.player.useConsumable(getItem(slot.defId))) { this.inventory.removeAt(index, 1); this._tut('use'); }
     } else if (action === 'sell') {
-      this.player.addCoins(view.value || 0);
-      this.audio.play('coin');
-      this.inventory.removeAt(index, slot.qty);
+      this._sellEntries([{ scope: 'inv', index }]); // V10.21 : valeur × quantité (avant, une pile n'était payée qu'une fois)
     } else if (action === 'drop') {
       this._dropToGround(slot, index);
     }
     this.hud.renderInventory(this.inventory, this.equipment, this.player, (a, i) => this._onItemAction(a, i));
+  }
+
+  // V10.21 : vente d'un ou plusieurs objets (inventaire / coffre). Total = valeur × quantité pour les piles.
+  _sellEntries(entries) {
+    const src = { inv: this.inventory, bank: this.bank };
+    let total = 0, n = 0;
+    const seen = new Set();
+    for (const { scope, index } of entries) {
+      const key = scope + ':' + index;
+      const inv = src[scope];
+      if (seen.has(key) || !inv) continue;
+      seen.add(key);
+      const slot = inv.slots[index];
+      if (!slot) continue;
+      total += sellValueOf(slot);
+      n += slot.gen ? 1 : (slot.qty || 1);
+      inv.takeWhole(index);
+    }
+    if (!n) return;
+    this.player.addSale(total);
+    this.audio.play('coin');
+    if (entries.length > 1 || n > 1) this.hud.notify(`${n} objet${n > 1 ? 's' : ''} vendu${n > 1 ? 's' : ''} : +${total.toLocaleString('fr-FR')} 🪙`, 'quest');
+    this._updatePotionBadges();
+    this._doSave();
   }
 
   // V4.0 : raccourcis potions (boutons 🧪 / 🔷 et touches V / B). Choisit la meilleure potion adaptée.
@@ -1832,9 +1856,11 @@ export class Game {
     this.inventory.slots.forEach((sl, i) => {
       if (!sl || sl.gen) return;
       const st = getItem(sl.defId)?.stats || {};
-      if (kind === 'heal' && st.healPct) list.push({ i, v: st.healPct });
-      if (kind === 'mana' && st.manaPct) list.push({ i, v: st.manaPct });
+      const pure = !(st.healPct && st.manaPct); // V10.21 : les potions de renouveau ne servent qu'à défaut d'une potion pure
+      if (kind === 'heal' && st.healPct) list.push({ i, v: st.healPct, pure });
+      if (kind === 'mana' && st.manaPct) list.push({ i, v: st.manaPct, pure });
     });
+    if (list.some((x) => x.pure)) list.splice(0, list.length, ...list.filter((x) => x.pure));
     const label = kind === 'heal' ? 'de vie' : 'de mana';
     if (!list.length) { this.hud.notify(`Plus de potion ${label} !`, 'boss'); this.audio.play('error'); return; }
     const missing = kind === 'heal' ? 1 - p.hp / p.maxHp : 1 - p.mana / p.maxMana;
@@ -2615,7 +2641,7 @@ export class Game {
       this._spawnGroundItem({ gen: rollLootItem({ sourceLevel: c.level, tierShift: 5 + c.tier }) }, c.x + Math.cos(a) * 1.3, c.z + Math.sin(a) * 1.3, true);
     }
     // V10.19 : les coffres du monde contiennent aussi des runes et des matériaux
-    { const extra = []; if (Math.random() < 0.6) extra.push(LootSystem.rune(c.level)); extra.push(...LootSystem.mats(c.level, 1 + c.tier * 0.5));
+    { const extra = []; if (Math.random() < 0.6) extra.push(LootSystem.rune(c.level)); extra.push(LootSystem.potion(c.level + 15, 6 + c.tier), ...LootSystem.mats(c.level, 1 + c.tier * 0.5));
       extra.forEach((d, i) => { const a = (i / Math.max(1, extra.length)) * Math.PI * 2 + 2.2; this._spawnGroundItem(d, c.x + Math.cos(a) * 1.8, c.z + Math.sin(a) * 1.8, true); }); }
     const st = computeEnemyStats(c.level, 'elite');
     p.addCoins(Math.round(st.coins[1] * 2)); p.gainXp(Math.round(st.xp * 0.6));
@@ -2661,7 +2687,7 @@ export class Game {
     chest.opened = true;
     chest.lid.rotation.x = -1.9;
     chest.glow.intensity = 0;
-    const drops = LootSystem.rollForChest();
+    const drops = LootSystem.rollForChest(); // (inclut des potions de rareté variable, V10.21)
     for (const d of drops) {
       if (d.gen) this.inventory.addGenerated(d.gen);
       else this.inventory.add(d.defId, d.qty);
@@ -2681,11 +2707,12 @@ export class Game {
     this.hud.showScreen('shop-screen');
     const refresh = () => this.hud.renderShop(npc.def, this.player, (entry) => {
       if (this.player.coins < entry.price) return;
+      const left = this.inventory.add(entry.itemId, 1);
+      if (left === false || left > 0) { this.hud.notify('Inventaire plein !', 'boss'); return; }
       this.player.addCoins(-entry.price);
       this.audio.play('coin');
-      this.inventory.add(entry.itemId, 1);
       refresh();
-    });
+    }, this.inventory);
     refresh();
   }
 

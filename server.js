@@ -254,8 +254,14 @@ function sanitizeSave(prev, incoming, elapsedMs) {
 
   const prevCoins = prev?.coins ?? 0;
   const wantCoins = Number.isFinite(incoming.coins) ? Math.floor(incoming.coins) : prevCoins;
-  const coinCap = prevCoins + Math.ceil(4000 * elapsedMin); // plafond généreux mais fini
-  clean.coins = Math.max(0, Math.min(wantCoins, coinCap, 999999));
+  // V10.21 : les ventes d'objets (valeurs très élevées en haute rareté) ne doivent pas être rabotées par le plafond
+  // de gains par minute : le client tient un compteur cumulé `soldTotal` (monotone), seule la hausse est acceptée.
+  const prevSold = Math.max(0, Math.floor(prev?.soldTotal ?? 0));
+  const wantSold = Number.isFinite(incoming.soldTotal) ? Math.max(prevSold, Math.floor(incoming.soldTotal)) : prevSold;
+  const saleAllow = Math.min(wantSold - prevSold, 50000000);
+  clean.soldTotal = prevSold + saleAllow;
+  const coinCap = prevCoins + Math.ceil(4000 * elapsedMin) + saleAllow; // plafond généreux mais fini
+  clean.coins = Math.max(0, Math.min(wantCoins, coinCap, 99999999));
 
   clean.stats = {};
   for (const k of ['str', 'agi', 'int', 'vit', 'spi', 'luck']) {

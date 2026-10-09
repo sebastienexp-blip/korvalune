@@ -487,22 +487,7 @@
     "value": 5,
     "stackable": true,
     "maxStack": 20,
-    "desc": "Restaure 25% des PV max."
-  },
-  {
-    "id": "potion_heal_big",
-    "name": "Potion de soin",
-    "icon": "🧪",
-    "type": "consumable",
-    "rarity": "peu_commun",
-    "levelReq": 1,
-    "stats": {
-      "healPct": 0.5
-    },
-    "value": 12,
-    "stackable": true,
-    "maxStack": 20,
-    "desc": "Restaure 50% des PV max."
+    "desc": "Restaure 25 % des PV max."
   },
   {
     "id": "potion_mana",
@@ -517,7 +502,253 @@
     "value": 6,
     "stackable": true,
     "maxStack": 20,
-    "desc": "Restaure 40% du mana max."
+    "desc": "Restaure 40 % du mana max."
+  },
+  {
+    "id": "potion_rejuv_commun",
+    "name": "Tonique mineur",
+    "icon": "⚗️",
+    "type": "consumable",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.15,
+      "manaPct": 0.15
+    },
+    "value": 9,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 15 % des PV max et 15 % du mana max."
+  },
+  {
+    "id": "potion_heal_big",
+    "name": "Potion de soin",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "peu_commun",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.5
+    },
+    "value": 12,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 50 % des PV max."
+  },
+  {
+    "id": "potion_mana_magique",
+    "name": "Fiole de mana magique",
+    "icon": "🔵",
+    "type": "consumable",
+    "rarity": "peu_commun",
+    "levelReq": 1,
+    "stats": {
+      "manaPct": 0.6
+    },
+    "value": 13,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 60 % du mana max."
+  },
+  {
+    "id": "potion_rejuv_magique",
+    "name": "Tonique",
+    "icon": "⚗️",
+    "type": "consumable",
+    "rarity": "peu_commun",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.3,
+      "manaPct": 0.3
+    },
+    "value": 22,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 30 % des PV max et 30 % du mana max."
+  },
+  {
+    "id": "potion_heal_rare",
+    "name": "Potion de soin supérieure",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "rare",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.65
+    },
+    "value": 40,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 65 % des PV max."
+  },
+  {
+    "id": "potion_mana_rare",
+    "name": "Fiole de mana supérieure",
+    "icon": "🔵",
+    "type": "consumable",
+    "rarity": "rare",
+    "levelReq": 1,
+    "stats": {
+      "manaPct": 0.75
+    },
+    "value": 44,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 75 % du mana max."
+  },
+  {
+    "id": "potion_rejuv_rare",
+    "name": "Tonique supérieur",
+    "icon": "⚗️",
+    "type": "consumable",
+    "rarity": "rare",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.4,
+      "manaPct": 0.4
+    },
+    "value": 72,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 40 % des PV max et 40 % du mana max."
+  },
+  {
+    "id": "potion_heal_legendaire",
+    "name": "Élixir de soin légendaire",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "epique",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.8
+    },
+    "value": 150,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 80 % des PV max."
+  },
+  {
+    "id": "potion_mana_legendaire",
+    "name": "Élixir de mana légendaire",
+    "icon": "🔵",
+    "type": "consumable",
+    "rarity": "epique",
+    "levelReq": 1,
+    "stats": {
+      "manaPct": 0.9
+    },
+    "value": 165,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 90 % du mana max."
+  },
+  {
+    "id": "potion_rejuv_legendaire",
+    "name": "Élixir de renouveau légendaire",
+    "icon": "⚗️",
+    "type": "consumable",
+    "rarity": "epique",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.55,
+      "manaPct": 0.55
+    },
+    "value": 270,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 55 % des PV max et 55 % du mana max."
+  },
+  {
+    "id": "potion_heal_mythique",
+    "name": "Élixir de soin mythique",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "legendaire",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.95
+    },
+    "value": 600,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 95 % des PV max."
+  },
+  {
+    "id": "potion_mana_mythique",
+    "name": "Élixir de mana mythique",
+    "icon": "🔵",
+    "type": "consumable",
+    "rarity": "legendaire",
+    "levelReq": 1,
+    "stats": {
+      "manaPct": 1
+    },
+    "value": 660,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 100 % du mana max."
+  },
+  {
+    "id": "potion_rejuv_mythique",
+    "name": "Élixir de renouveau mythique",
+    "icon": "⚗️",
+    "type": "consumable",
+    "rarity": "legendaire",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 0.75,
+      "manaPct": 0.75
+    },
+    "value": 1080,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 75 % des PV max et 75 % du mana max."
+  },
+  {
+    "id": "potion_heal_absolu",
+    "name": "Nectar de vie absolu",
+    "icon": "🧪",
+    "type": "consumable",
+    "rarity": "mythique",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 1
+    },
+    "value": 2500,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 100 % des PV max."
+  },
+  {
+    "id": "potion_mana_absolu",
+    "name": "Nectar d’arcanes absolu",
+    "icon": "🔵",
+    "type": "consumable",
+    "rarity": "mythique",
+    "levelReq": 1,
+    "stats": {
+      "manaPct": 1
+    },
+    "value": 2750,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 100 % du mana max."
+  },
+  {
+    "id": "potion_rejuv_absolu",
+    "name": "Ambroisie absolue",
+    "icon": "⚗️",
+    "type": "consumable",
+    "rarity": "mythique",
+    "levelReq": 1,
+    "stats": {
+      "healPct": 1,
+      "manaPct": 1
+    },
+    "value": 4500,
+    "stackable": true,
+    "maxStack": 20,
+    "desc": "Restaure 100 % des PV max et 100 % du mana max."
   },
   {
     "id": "mat_wood",

@@ -46,6 +46,7 @@ export class Player {
     this.level = save?.level || 1;
     this.xp = save?.xp || 0;
     this.coins = save?.coins ?? 25;
+    this.soldTotal = Math.max(0, Math.floor(save?.soldTotal || 0)); // V10.21 : cumul des ventes (le serveur n'accepte que la hausse)
     this.stats = { str: 5, agi: 5, int: 5, vit: 5, spi: 5, luck: 5, ...(save?.stats || {}) };
     this.statPoints = save?.statPoints || 0;
     this.applyClassBase(cls);
@@ -286,6 +287,7 @@ export class Player {
   }
 
   addCoins(n) { this.coins += n; this.bus.emit('hud'); }
+  addSale(n) { n = Math.max(0, Math.floor(n)); this.soldTotal += n; this.addCoins(n); } // V10.21
 
   spendStatPoint(statName) {
     if (this.statPoints <= 0 || !(statName in this.stats)) return false;
@@ -604,7 +606,7 @@ export class Player {
   serialize() {
     return {
       classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, look: this.look, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
-      level: this.level, xp: this.xp, coins: this.coins, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
+      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
       skillBar: this.skillBar
     };
   }
