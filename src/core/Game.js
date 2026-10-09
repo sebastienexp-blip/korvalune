@@ -51,8 +51,8 @@ import { CharPreview } from '../ui/CharPreview.js';
 import { LookEditor } from '../ui/LookEditor.js';
 import { defaultLook, normalizeLook, computeLookCost, LOOK_PRICES, HAIR_COLORS, EYE_COLORS } from '../data/looks.js';
 import { buildBarberDecor } from '../world/BarberDecor.js';
-import { Halloween } from '../world/Halloween.js';
-import { HALLOWEEN_ITEMS } from '../data/halloween.js';
+import { Halloween, JACK_POS } from '../world/Halloween.js';
+import { HALLOWEEN_ITEMS, eventActive as eventActiveNow } from '../data/halloween.js';
 import { CLASSES, RACES } from '../combat/Classes.js';
 import { Inventory } from '../inventory/Inventory.js';
 import { Equipment } from '../inventory/Equipment.js';
@@ -76,6 +76,8 @@ const DUNGEON_SPAWNS = [
 const DUNGEON_CHIEF_LEVEL = 24;
 const MAX_ACTIVE_SECONDARY_QUESTS = 6;
 const GUARDIAN_BOSS_LEVEL = 28;
+
+const MAP_ICON_NPCS = new Set(['weaponsmith', 'armorsmith', 'apothecary', 'stablemaster', 'barber', 'jack']);
 
 export class Game {
   constructor(root) {
@@ -2107,6 +2109,24 @@ export class Game {
     this.hud.notify('Tutoriel relancé : suivez le journal de quêtes.', 'quest');
   }
 
+  // V10.14 — petites images de la mini-carte et de la grande carte
+  _mapIcons() {
+    const out = [], pl = this.player.pos;
+    const NPC_ICON = { weaponsmith: '⚔️', armorsmith: '🛡️', apothecary: '🧪', stablemaster: '🐎', barber: '✂️', jack: '🎃' };
+    for (const n of this.npcs) { const ch = NPC_ICON[n.id || n.def?.id]; if (ch) out.push({ x: n.pos.x, z: n.pos.z, ch, edge: ch === '🎃' }); }
+    const bp = this.world.town?.bankPos; if (bp) out.push({ x: bp.x, z: bp.z, ch: '🏦' });
+    out.push({ x: STATUE_POS[0], z: STATUE_POS[1], ch: '🗿', color: '#5ee6d0' });
+    for (const c of this.worldChests?.list || []) { if (!c.open && Math.hypot(c.x - pl.x, c.z - pl.z) < 120) out.push({ x: c.x, z: c.z, ch: '📦' }); }
+    for (const b of this.bosses || []) if (b.alive && Math.hypot(b.pos.x - pl.x, b.pos.z - pl.z) < 260) out.push({ x: b.pos.x, z: b.pos.z, ch: '💀', edge: true, color: '#ff6a5a' });
+    if (this.lootSprite?.alive) out.push({ x: this.lootSprite.pos.x, z: this.lootSprite.pos.z, ch: '👺', edge: true, pulse: true, color: '#ffd45a' });
+    const hw = this.hw;
+    if (hw?.on) {
+      for (const c of hw._candies.values()) if (!c.taken) out.push({ x: c.h.x, z: c.h.z, ch: '🍬', color: '#ff9a3c', small: true });
+      if (hw.king?.alive) out.push({ x: hw.king.pos.x, z: hw.king.pos.z, ch: '👑', edge: true, pulse: true, color: '#ff9a3c' });
+    }
+    return out;
+  }
+
   // V4.3 : repères dorés « ! » sur la mini-carte (PNJ à voir, coffre, statue…) pour la quête de tutoriel et les remises de quête
   _questSpots() {
     const spots = [];
@@ -2374,6 +2394,13 @@ export class Game {
       const lbl = `${o.name} Nv.${o.level}`;
       g.strokeText(lbl, ox, oy - 12); g.fillText(lbl, ox, oy - 12);
     }
+    // V10.14 : coffres, boss, gobelin, événement
+    g.font = '15px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const wmIcon = (wx, wz, ch, ring) => { const x = toX(wx), y = toY(wz); g.fillStyle = 'rgba(8,12,24,0.8)'; g.strokeStyle = ring || 'rgba(226,184,102,0.8)'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 10, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.fillText(ch, x, y + 1); };
+    for (const c of this.worldChests?.list || []) if (!c.open) wmIcon(c.x, c.z, '📦');
+    for (const b of this.bosses || []) if (b.alive) wmIcon(b.pos.x, b.pos.z, '💀', '#ff6a5a');
+    if (this.lootSprite?.alive) wmIcon(this.lootSprite.pos.x, this.lootSprite.pos.z, '👺', '#ffd45a');
+    if (this.hw?.on && eventActiveNow()) { wmIcon(JACK_POS[0] + 4, JACK_POS[1] - 6, '🎃', '#ff9a3c'); if (this.hw.king?.alive) wmIcon(this.hw.king.pos.x, this.hw.king.pos.z, '👑', '#ff9a3c'); }
     // joueur : flèche orientée (devant = (sin yaw, cos yaw), la carte a z vers le bas)
     if (this.player) {
       const px = toX(this.player.pos.x), pz = toY(this.player.pos.z);
@@ -2750,7 +2777,7 @@ export class Game {
     if (this._stuckT > 0.6 && !this.rift?.active && !this.player.dead) { this._stuckT = 0; this._ensureOnLand(); }
     this._mmExtra.zone = this._zoneNameAt(this.player.pos.x, this.player.pos.z);
     if (inRift) { this.rift.mmExtra.zone = this.rift.zoneName; this.rift.mmExtra.players = this._mapPlayers(); this.hud.drawMinimap(this.player, this.rift.mmWorld, this.enemies, [], [], this.rift.mmExtra); }
-    else { this._mmExtra.players = this._mapPlayers(); this.hud.drawMinimap(this.player, this._mmWorld, this.enemies, this.npcs, this._questSpots(), this._mmExtra); }
+    else { this._mmExtra.players = this._mapPlayers(); this._mmExtra.icons = this._mapIcons(); this.hud.drawMinimap(this.player, this._mmWorld, this.enemies, this.npcs.filter((n) => !MAP_ICON_NPCS.has(n.id || n.def?.id)), this._questSpots(), this._mmExtra); }
 
     // vue aérienne : la caméra est loin du joueur → on repousse le brouillard d'autant (rendu uniquement)
     const fog = this.scene.fog, fogOff = this.cameraRig.isIso ? Math.max(0, this.cameraRig.dist - 6) : 0;

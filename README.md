@@ -1043,3 +1043,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Monstres** (`enemies.json`, préfixe `hw_`) : squelette, citrouille rampante, spectre, loup-garou, sorcière (à distance), Roi Citrouille. Générés autour du joueur connecté (3 à 5 à la fois, une horde de 7 toutes les 6 min, le Roi 3 min après la connexion puis toutes les 12 min). Ils sont locaux à chaque joueur (non partagés en groupe).
 - Le puits de la place : l'eau était cachée sous le rebord, elle est maintenant visible.
 - Limites connues : les monstres d'événement ne sont pas synchronisés entre joueurs ; le serveur ne peut pas vérifier qu'un monstre a vraiment été tué (d'où les plafonds) ; modèles en géométrie procédurale (pas de modèles 3D réalistes).
+
+## V10.14 — Ville sûre, boutique de Jack qui défile, mini-carte illustrée
+- Les monstres d'Halloween n'apparaissent jamais en ville (zone ±38 m, apparition interdite à ±42 m) et disparaissent quand le joueur y entre (`inTown` dans `src/world/Halloween.js`).
+- `#halloween-screen` avait été oublié dans la liste des écrans de `style.css` (pas de défilement) : corrigé.
+- Mini-carte : petites images (`extra.icons`, construit par `Game._mapIcons()`) pour armes, armures, potions, écurie, barbier, banque, statue des spires, Jack, coffres non ouverts, boss, gobelin trésor (pulsant, accroché au bord), Roi Citrouille ; bonbons en petits points. La grande carte montre coffres/boss/gobelin/événement et une légende.
+- Les emoji dépendent de la police du téléphone (Android : Noto Color Emoji, aucun souci attendu) ; non vérifié sur un vrai téléphone.

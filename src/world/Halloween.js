@@ -14,6 +14,9 @@ export const JACK_POS = [3.4, 1.3];   // à côté du puits (centre de la ville)
 
 const mk = (geo, mat, parent, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; };
 
+// La ville (enceinte de 36 m de demi-côté + marge) reste un lieu sûr : aucun monstre d'événement n'y apparaît ni n'y entre.
+export const inTown = (x, z, m = 38) => Math.abs(x) < m && Math.abs(z) < m;
+
 // ---------------------------------------------------------------- tête de citrouille sculptée
 // R = rayon. La tête regarde vers +Z. Retourne { group, glows } (glows : matériaux lumineux animés).
 export function buildPumpkinHead(R = 0.23) {
@@ -280,7 +283,7 @@ export class Halloween {
     for (let t = 0; t < 14; t++) {
       const a = Math.random() * Math.PI * 2, r = minR + Math.random() * (maxR - minR);
       const x = near.x + Math.cos(a) * r, z = near.z + Math.sin(a) * r;
-      if (!w.isWalkable(x, z, 0.6)) continue;
+      if (!w.isWalkable(x, z, 0.6) || inTown(x, z, 42)) continue;
       const pos = new THREE.Vector3(x, w.heightAt(x, z), z);
       const level = Math.max(1, g.player.level + levelAdd + Math.round((Math.random() - 0.5) * 2));
       const e = new Enemy(g.scene, w, def, level, pos, g.bus, this._eid++);
@@ -350,6 +353,10 @@ export class Halloween {
       if ((e.state === 5 && e.deadT > 6) || far || !allowed && e.alive) this._despawn(e);
     }
     if (!allowed) return;
+    if (inTown(pp.x, pp.z)) { // le joueur est en ville : les monstres d'événement disparaissent dans la fumée, rien ne se déclenche
+      for (const e of [...this.enemies]) { this._fx(e.pos); this._despawn(e); }
+      return;
+    }
     const maxN = g.settings?.quality === 'verylow' || g.settings?.quality === 'low' ? 3 : 5;
     this.spawnT -= dt; this.hordeT -= dt; this.kingT -= dt;
     const alive = [...this.enemies].filter((e) => e.alive && !e.def.boss).length;
@@ -362,7 +369,7 @@ export class Halloween {
     }
     if (this.hordeT <= 0 && Math.hypot(pp.x, pp.z) < 90) {
       this.hordeT = 360;
-      g.hud.notify('🎃 Une horde de morts-vivants sort de terre autour de toi !', 'quest');
+      g.hud.notify('🎃 Une horde de morts-vivants sort de terre autour de toi ! (la ville reste à l’abri)', 'quest');
       g.audio.play('quest');
       const kinds = ['hw_skeleton', 'hw_skeleton', 'hw_pumpkin', 'hw_pumpkin', 'hw_ghost', 'hw_werewolf', 'hw_witch'];
       for (let i = 0; i < 7; i++) this._spawn(kinds[i], pp, 14, 24);

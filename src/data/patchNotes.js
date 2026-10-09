@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.14', title: 'Ville sûre et mini-carte illustrée',
+    items: [
+      'La ville est un lieu sûr : les monstres d’Halloween n’y apparaissent plus et disparaissent si tu rentres en ville. Ils rôdent à l’extérieur.',
+      'La boutique de Jack défile maintenant jusqu’en bas (cosmétiques et classement).',
+      'La mini-carte affiche de petites images : ⚔️ armes, 🛡️ armures, 🧪 potions, 🐎 écurie, ✂️ barbier, 🏦 banque, 🗿 statue des spires, 🎃 Jack, 📦 coffres, 💀 boss, 👺 gobelin trésor, 👑 Roi Citrouille. Les bonbons sont de petits points orange.',
+      'La carte du monde montre coffres, boss, gobelin et événement, avec une légende sous la carte.'
+    ]
+  },
+  {
     version: '10.13', title: 'Événement Halloween 🎃',
     items: [
       'Korvalune passe en mode Halloween : ciel violet et orangé, lune géante, citrouilles lumineuses, fantômes flottants et chauves-souris. Jusqu’au 1er novembre.',

@@ -92,7 +92,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.13 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.14 — Korvalune</div>
         </div>
       </div>
 
@@ -451,6 +451,7 @@ export class HUD {
       <div id="worldmap-screen" class="hidden panel-screen">
         <h2>Carte du monde</h2>
         <div id="worldmap-canvas-wrap"><canvas id="worldmap-canvas" width="640" height="640"></canvas></div>
+        <div id="worldmap-legend"><span>⚔️ Armes</span><span>🛡️ Armures</span><span>🧪 Potions</span><span>🐎 Écurie</span><span>✂️ Barbier</span><span>🏦 Banque</span><span>🗿 Spires</span><span>🎃 Événement</span><span>🍬 Bonbons</span><span>📦 Coffre</span><span>💀 Boss</span><span>👺 Gobelin</span><span>👑 Roi Citrouille</span><span>◆ PNJ de quêtes</span><span>❗ Quête</span><span>🟢 Groupe</span><span>🔵 Joueurs</span></div>
         <button data-act="close-map">Fermer</button>
       </div>
 
@@ -1350,6 +1351,24 @@ export class HUD {
       const ddx = x - H, ddy = y - H;
       if (ddx * ddx + ddy * ddy > lim) continue;
       g.beginPath(); g.moveTo(x, y - 4.5); g.lineTo(x + 3.6, y); g.lineTo(x, y + 4.5); g.lineTo(x - 3.6, y); g.closePath(); g.fill(); g.stroke();
+    }
+
+    // V10.14 — petites images : boutiques, écurie, banque, événement, coffres, gobelin, boss… (extra.icons = [{ x, z, ch, edge?, pulse? }])
+    if (extra.icons && extra.icons.length) {
+      g.font = '11px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (const ic of extra.icons) {
+        let x = sx(ic.x, ic.z), y = sy(ic.x, ic.z);
+        const ddx = x - H, ddy = y - H, d = Math.hypot(ddx, ddy), maxR = H - 12;
+        let far = false;
+        if (d > maxR) { if (!ic.edge) continue; x = H + (ddx / d) * maxR; y = H + (ddy / d) * maxR; far = true; }
+        if (ic.small) { g.fillStyle = ic.color || '#ff9a3c'; g.strokeStyle = 'rgba(8,12,24,0.9)'; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, 3.3, 0, TAU); g.fill(); g.stroke(); continue; } // petit point : bonbons (nombreux)
+        g.globalAlpha = far ? 0.8 : 1;
+        if (ic.pulse) { g.strokeStyle = 'rgba(255,214,90,' + (0.35 + 0.35 * Math.sin(now / 200)) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 9.5 + Math.sin(now / 200) * 1.2, 0, TAU); g.stroke(); }
+        g.fillStyle = 'rgba(8,12,24,0.84)'; g.strokeStyle = ic.color || 'rgba(226,184,102,0.75)'; g.lineWidth = 1.2;
+        g.beginPath(); g.arc(x, y, 7.2, 0, TAU); g.fill(); g.stroke();
+        g.fillStyle = '#fff'; g.fillText(ic.ch, x, y + 0.8);
+        g.globalAlpha = 1;
+      }
     }
 
     // marqueurs qui restent accrochés au bord quand ils sont hors de portée (portails, quêtes)
