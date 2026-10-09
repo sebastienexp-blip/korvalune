@@ -48,6 +48,7 @@ import { setSafeMode, isSafeMode, updateVisualUniforms } from '../visual/Safe.js
 import { AudioManager } from '../audio/AudioManager.js';
 import { HUD } from '../ui/HUD.js';
 import { sellValueOf } from '../ui/MultiSell.js';
+import { POTION_INFO, DEFAULT_POTIONS, potionCooldown, potionServes } from '../data/potions.js';
 import { TouchControls } from '../ui/TouchControls.js';
 import { MOUNTS, MOUNT_BY_ID } from '../data/mounts.js';
 import { createMount, updateMount } from '../visual/MountModel.js';
@@ -94,13 +95,14 @@ export class Game {
     // V3.5 : sur téléphone/tablette, qualité « Moyenne » par défaut + résolution adaptative + plein écran au lancement
     const saved = SaveManager.loadSettings();
     this.settings = { ...DEFAULTS, quality: coarse ? 'medium' : 'high', autoFullscreen: coarse, cameraLock: true, cameraMode: 'iso', visualV25: true, adaptive: true, ...saved };
-    this.settings.touch = { ...TOUCH_DEFAULTS, ...(saved.touch || {}), layout: { ...((saved.touch && saved.touch.layout) || {}) } };
+    this.settings.touch = { ...TOUCH_DEFAULTS, ...(saved.touch || {}), layout: { ...((saved.touch && saved.touch.layout) || {}) }, layoutP: { ...((saved.touch && saved.touch.layoutP) || {}) } };
     this.settings.keys = normalizeKeys(saved.keys);
     if (!CONFIG.quality[this.settings.quality]) this.settings.quality = coarse ? 'medium' : 'high';
     if (typeof saved.shadows !== 'boolean') this.settings.shadows = CONFIG.quality[this.settings.quality].shadows;
     this._resScale = 1; this._lowN = 0; this._highN = 0; this._adaptCool = 0;
     this.hud = new HUD(root, this.bus, this);
     this.hud.onSellMany = (entries) => this._sellEntries(entries); // V10.21
+    this.hud.onPotionSelect = (kind, id) => this._selectPotion(kind, id); // V10.22
     const unlock = () => {
       removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true);
       try {
@@ -188,7 +190,7 @@ export class Game {
     this.renderer.toneMappingExposure = 0.95 * (this.settings.exposure || 100) / 100;
     if (this.scene) this.scene.environment = on ? (this._envTex || null) : null;
     this.root.classList.toggle('v25-on', on);
-    if (!on && this.camera) { this._runFov = 0; this._fovKick = 0; this.camera.fov = (this.cameraRig ? this.cameraRig.fov : CONFIG.camera.fov) + (this.settings.fovAdj || 0); this.camera.updateProjectionMatrix(); }
+    if (!on && this.camera) { this._runFov = 0; this._fovKick = 0; this.camera.fov = ((this.cameraRig ? this.cameraRig.fov : CONFIG.camera.fov) + (this.settings.fovAdj || 0)) * (this._fovMul || 1); this.camera.updateProjectionMatrix(); }
     if (this.fx) this.fx.setEnabled(on);
     if (this.ambient) this.ambient.setEnabled(on && this.settings.quality !== 'verylow');
     if (this.trail && !on) this.trail.mesh.visible = false;
@@ -197,8 +199,14 @@ export class Game {
 
   _resize() {
     const w = innerWidth, h = innerHeight;
+    // V10.22 : téléphone à la verticale — on élargit le champ de vision vertical pour garder une vue horizontale correcte
+    const portrait = h > w * 1.02;
+    this._fovMul = portrait ? 1 + Math.min(1, Math.max(0, (1.3 - w / h) / 1.3)) * 0.85 : 1;
+    this.root?.classList.toggle('portrait', portrait);
     this.camera.aspect = w / h;
+    this.camera.fov = ((this.cameraRig ? this.cameraRig.fov : CONFIG.camera.fov) + (this.settings?.fovAdj || 0)) * this._fovMul;
     this.camera.updateProjectionMatrix();
+    this.touch?.orientationChanged?.(portrait);
     this.renderer.setSize(w, h);
   }
 
@@ -1233,6 +1241,7 @@ export class Game {
     this.bank = new Inventory(this.bus, 120 + 30 * Math.min(LUNES.maxBankTabs, this._shop?.bankTabs || 0), save?.bank);
     this.player.setCosmetics(this._shopCos());
     this.bankPage = 0;
+    this._initPotions();
     this.rift = this.riftStatue ? new RiftSystem(this, save?.rift) : null;
     if (!save || !Array.isArray(save.inventory)) { // nouveau personnage (la création passe un objet sans inventaire)
       const cls = CLASSES[this.player.classId] || CLASSES.warrior;
@@ -1253,7 +1262,7 @@ export class Game {
     this._applyCamRotate();
     this._applyCameraMode();
     this.touch = new TouchControls(this.root, this.input, this.bus);
-    this.touch.onLayout = (layout) => { this.settings.touch.layout = layout; this._persistSettings(); };
+    this.touch.onLayout = (layout, portrait) => { this.settings.touch[portrait ? 'layoutP' : 'layout'] = layout; this._persistSettings(); };
     this._applyExtra();
     this.hud.buildSkillbar(this.player.skillBar);
     this._updatePotionBadges();
@@ -1846,32 +1855,74 @@ export class Game {
     this._doSave();
   }
 
-  // V4.0 : raccourcis potions (boutons 🧪 / 🔷 et touches V / B). Choisit la meilleure potion adaptée.
+  // V10.22 — potions permanentes : on les trouve une fois, on les garde pour toujours et on les utilise à l'infini,
+  // avec un temps de recharge qui baisse quand la rareté monte. Les boutons / touches V et B utilisent la potion choisie.
+  _initPotions() {
+    this._potionReady = { heal: 0, mana: 0 };
+    this.inventory.potionHook = (id, qty) => this._collectPotion(id, qty);
+    // anciennes sauvegardes : les potions en sac (inventaire et coffre) deviennent des potions permanentes
+    let found = 0;
+    for (const inv of [this.inventory, this.bank]) {
+      inv.slots.forEach((sl, i) => {
+        if (!sl || sl.gen || !POTION_INFO[sl.defId]) return;
+        this.player.addPotion(sl.defId); found++; inv.slots[i] = null;
+      });
+    }
+    const p = this.player.potions;
+    for (const kind of ['heal', 'mana']) { // au moins la meilleure potion de la famille est sélectionnée
+      const best = this._bestPotion(kind);
+      if (best && this._potionPower(best, kind) > this._potionPower(p[kind], kind)) p[kind] = best;
+    }
+    if (found) setTimeout(() => this.hud?.notify('🧪 Tes potions sont désormais permanentes : illimitées, avec un temps de recharge. Choisis-les dans l’inventaire.', 'quest'), 2500);
+  }
+  _potionPower(id, kind) { const st = getItem(id)?.stats || {}; return (kind === 'heal' ? st.healPct : st.manaPct) || 0; }
+  _bestPotion(kind) {
+    let best = null;
+    for (const id of this.player.potions.owned) { const i = POTION_INFO[id]; if (i && i.fam === kind && (!best || this._potionPower(id, kind) > this._potionPower(best, kind))) best = id; }
+    return best;
+  }
+  _collectPotion(id, qty = 1) {
+    const p = this.player, def = getItem(id);
+    if (!p || !def) return;
+    if (p.addPotion(id)) {
+      const fam = POTION_INFO[id].fam;
+      if (fam !== 'rejuv' && this._potionPower(id, fam) > this._potionPower(p.potions[fam], fam)) p.potions[fam] = id;
+      this.hud.notify(`🧪 Nouvelle potion permanente : ${def.name} — illimitée, recharge ${potionCooldown(id)} s.${fam !== 'rejuv' && p.potions[fam] === id ? ' Elle est équipée.' : ' Choisis-la dans l’inventaire.'}`, 'quest');
+      this.audio.play('legendary');
+      this._doSave();
+    } else {
+      const gold = Math.max(1, Math.round((def.value || 5) * 0.5)) * Math.max(1, qty);
+      p.addCoins(gold);
+      if (!Object.values(DEFAULT_POTIONS).includes(id)) this.hud.notify(`🧪 ${def.name} (déjà connue) : +${gold} 🪙`, 'info');
+    }
+    this._updatePotionBadges();
+    if (!this.hud.q('#inventory-screen').classList.contains('hidden')) this.hud.renderInventory(this.inventory, this.equipment, this.player, (a, i) => this._onItemAction(a, i));
+  }
+  _selectPotion(kind, id) {
+    const p = this.player;
+    if (!p.potions.owned.includes(id) || !potionServes(id, kind)) return;
+    p.potions[kind] = id;
+    this.audio.play('click');
+    this._updatePotionBadges();
+    this.hud.renderInventory(this.inventory, this.equipment, this.player, (a, i) => this._onItemAction(a, i));
+    this._doSave();
+  }
+
   _quickPotion(kind) {
     const p = this.player;
     if (!p || p.dead || this.paused || this.dialogueOpen || this.modalOpen) return;
     const now = performance.now();
-    if (now < (this._potionCdUntil || 0)) return;
-    const list = [];
-    this.inventory.slots.forEach((sl, i) => {
-      if (!sl || sl.gen) return;
-      const st = getItem(sl.defId)?.stats || {};
-      const pure = !(st.healPct && st.manaPct); // V10.21 : les potions de renouveau ne servent qu'à défaut d'une potion pure
-      if (kind === 'heal' && st.healPct) list.push({ i, v: st.healPct, pure });
-      if (kind === 'mana' && st.manaPct) list.push({ i, v: st.manaPct, pure });
-    });
-    if (list.some((x) => x.pure)) list.splice(0, list.length, ...list.filter((x) => x.pure));
-    const label = kind === 'heal' ? 'de vie' : 'de mana';
-    if (!list.length) { this.hud.notify(`Plus de potion ${label} !`, 'boss'); this.audio.play('error'); return; }
+    if (now < (this._potionReady?.[kind] || 0)) return;
+    const id = p.potions[kind], def = getItem(id);
+    if (!def) return;
     const missing = kind === 'heal' ? 1 - p.hp / p.maxHp : 1 - p.mana / p.maxMana;
     if (missing < 0.04) { this.hud.notify(kind === 'heal' ? 'Vos PV sont déjà au maximum.' : 'Votre mana est déjà au maximum.', 'info'); return; }
-    list.sort((a, b) => a.v - b.v);
-    // la plus petite qui suffit à peu près, sinon la plus grosse
-    const pick = list.find((x) => x.v >= missing * 0.9) || list[list.length - 1];
-    const slot = this.inventory.slots[pick.i];
-    if (p.useConsumable(getItem(slot.defId))) {
-      this.inventory.removeAt(pick.i, 1);
-      this._potionCdUntil = now + 120; // V10.19 : plus de temps de recharge notable, on peut enchaîner les potions
+    if (p.useConsumable(def)) {
+      const cd = potionCooldown(id) * 1000, fam = POTION_INFO[id].fam;
+      this._potionReady[kind] = now + cd;
+      if (fam === 'rejuv') this._potionReady.heal = this._potionReady.mana = now + cd; // le renouveau occupe les deux boutons
+      this._potionCdLen = { ...(this._potionCdLen || {}), [kind]: cd };
+      if (fam === 'rejuv') this._potionCdLen = { heal: cd, mana: cd };
       this.audio.play('potion');
       this._potionFx(kind);
       this._tut('use');
@@ -1898,15 +1949,31 @@ export class Game {
   }
 
   _updatePotionBadges() {
-    if (!this.inventory || !this.hud) return;
-    let h = 0, m = 0;
-    for (const sl of this.inventory.slots) {
-      if (!sl || sl.gen) continue;
-      const st = getItem(sl.defId)?.stats || {};
-      if (st.healPct) h += sl.qty; if (st.manaPct) m += sl.qty;
+    if (!this.player || !this.hud) return;
+    for (const [sel, kind] of [['#pq-heal', 'heal'], ['#pq-mana', 'mana']]) {
+      const b = this.hud.q(sel); if (!b) continue;
+      const id = this.player.potions[kind], def = getItem(id);
+      if (!def) continue;
+      b.querySelector('.pq-ic').textContent = def.icon;
+      b.querySelector('.pq-n').textContent = potionCooldown(id) + 's';
+      b.title = `${def.name} (${kind === 'heal' ? 'V' : 'B'}) — recharge ${potionCooldown(id)} s`;
+      b.style.setProperty('--pc', this.hud.rarityColorOf?.(def) || '#e2b866');
     }
-    const set = (id, n) => { const b = this.hud.q(id); if (b) { b.querySelector('.pq-n').textContent = n; b.classList.toggle('empty', n === 0); } };
-    set('#pq-heal', h); set('#pq-mana', m);
+  }
+  // recharge visible sur les boutons de potion (appelé à chaque image, ne touche au DOM que si la valeur change)
+  _tickPotionCd() {
+    if (!this._potionReady) return;
+    const now = performance.now();
+    for (const [sel, kind] of [['#pq-heal', 'heal'], ['#pq-mana', 'mana']]) {
+      const left = Math.max(0, (this._potionReady[kind] || 0) - now), len = (this._potionCdLen?.[kind]) || 1;
+      const frac = left > 0 ? Math.min(1, left / len) : 0;
+      const q = Math.round(frac * 100);
+      if (this._pqLast?.[kind] === q) continue;
+      (this._pqLast = this._pqLast || {})[kind] = q;
+      const b = this.hud.q(sel); if (!b) continue;
+      b.style.setProperty('--cd', q + '%');
+      b.classList.toggle('cooling', q > 0);
+    }
   }
 
   _refreshEquipPanels() {
@@ -2152,7 +2219,7 @@ export class Game {
       if (this._fovKick > 0.01) this._fovKick *= Math.pow(0.002, dt);
       else this._fovKick = 0;
       const fovK = this.cameraRig?.isIso ? 0.35 : 1;
-      const wantFov = (this.cameraRig ? this.cameraRig.fov : CONFIG.camera.fov) + (this.settings.fovAdj || 0) + (this._runFov - 3.5 * this._fovKick) * fovK;
+      const wantFov = ((this.cameraRig ? this.cameraRig.fov : CONFIG.camera.fov) + (this.settings.fovAdj || 0)) * (this._fovMul || 1) + (this._runFov - 3.5 * this._fovKick) * fovK;
       if (Math.abs(wantFov - this.camera.fov) > 0.03) { this.camera.fov = wantFov; this.camera.updateProjectionMatrix(); }
       // traînée de l'arme pendant la frappe
       if (this.trail && this.fx?.enabled) {
@@ -2209,7 +2276,7 @@ export class Game {
     this._applyCamRotate();
     this.input.pointerLock = !r.isIso;
     if (r.isIso) document.exitPointerLock?.();
-    this.camera.fov = r.fov + (this.settings.fovAdj || 0); this.camera.updateProjectionMatrix();
+    this.camera.fov = (r.fov + (this.settings.fovAdj || 0)) * (this._fovMul || 1); this.camera.updateProjectionMatrix();
     this._runFov = 0; this._fovKick = 0;
   }
 
@@ -2308,7 +2375,7 @@ export class Game {
     if (this.particles && this._q) this.particles.factor = this._q.particles * (s.particleScale ?? 100) / 100;
     if (this.renderer) this.renderer.toneMappingExposure = 0.95 * (s.exposure || 100) / 100;
     if (this.world && this._q) this.world.setGrassVisible(this._v25 && s.quality !== 'verylow' && s.grass !== false);
-    if (this.camera && this.cameraRig && (key === 'fovAdj' || !this._v25)) { this.camera.fov = this.cameraRig.fov + (s.fovAdj || 0); this.camera.updateProjectionMatrix(); }
+    if (this.camera && this.cameraRig && (key === 'fovAdj' || !this._v25)) { this.camera.fov = (this.cameraRig.fov + (s.fovAdj || 0)) * (this._fovMul || 1); this.camera.updateProjectionMatrix(); }
     const vg = this.root.querySelector('#v25-vignette'); if (vg) vg.style.display = s.vignette === false ? 'none' : '';
     this.root.classList.toggle('hide-quests', s.showQuests === false);
     this.root.classList.toggle('hide-minimap', s.showMinimap === false);
@@ -2334,7 +2401,7 @@ export class Game {
     const layout = {};
     this.settings = { ...DEFAULTS, quality: coarse ? 'medium' : 'high', autoFullscreen: coarse, cameraLock: true, cameraMode: 'iso', visualV25: true, adaptive: true };
     this.settings.shadows = CONFIG.quality[this.settings.quality].shadows;
-    this.settings.touch = { ...TOUCH_DEFAULTS, layout };
+    this.settings.touch = { ...TOUCH_DEFAULTS, layout, layoutP: {} };
     this.settings.keys = defaultKeys();
     this._resScale = 1;
     this._applyQuality(this.settings.quality); this._applyVisualMode(); this._applyCameraMode();
@@ -2385,7 +2452,7 @@ export class Game {
     if (!req) { this.hud.notify('Plein écran indisponible : menu ⋮ du navigateur → « Ajouter à l\'écran d\'accueil ».', 'boss'); return; }
     try {
       const p = req.call(el, { navigationUI: 'hide' });
-      Promise.resolve(p).then(() => { try { screen.orientation?.lock?.('landscape').catch(() => {}); } catch (e) { /* ignore */ } }).catch(() => {});
+      Promise.resolve(p).catch(() => {}); // V10.22 : plus de verrouillage en paysage, l'écran suit l'orientation du téléphone
     } catch (e) { /* refusé par le navigateur */ }
   }
   _toggleFullscreen() {
@@ -2707,12 +2774,13 @@ export class Game {
     this.hud.showScreen('shop-screen');
     const refresh = () => this.hud.renderShop(npc.def, this.player, (entry) => {
       if (this.player.coins < entry.price) return;
+      if (POTION_INFO[entry.itemId] && this.player.potions.owned.includes(entry.itemId)) return; // déjà acquise (permanente)
       const left = this.inventory.add(entry.itemId, 1);
       if (left === false || left > 0) { this.hud.notify('Inventaire plein !', 'boss'); return; }
       this.player.addCoins(-entry.price);
       this.audio.play('coin');
       refresh();
-    }, this.inventory);
+    }, this.inventory, (id) => this.player.potions.owned.includes(id));
     refresh();
   }
 
@@ -2731,7 +2799,7 @@ export class Game {
     let lines = npc.def.dialogues[key] || npc.def.dialogues.intro;
     if (npc.id === 'guard' && this.quests.tutorialStep()?.target === 'guard') {
       lines = ['Bienvenue à Korvalune, voyageur ! Moi, c\'est Halvar. Je veille sur cette place.',
-        'Tu n\'as presque rien sur toi, je le vois bien. Tiens, voici trois potions de soin.',
+        'Tu n\'as presque rien sur toi, je le vois bien. Ma potion de soin est à toi pour toujours : elle ne s’épuise jamais, il faut juste attendre un peu entre deux gorgées.',
         'J\'ai aussi posé une armure à tes pieds : ramasse-la avec E, puis équipe-la depuis ton inventaire.'];
     }
     this.hud.showDialogue(npc.def, lines, {
@@ -2792,6 +2860,7 @@ export class Game {
     const look = blocked ? { dx: 0, dy: 0 } : this.input.lookDelta();
     const wheel = this.input.consumeWheel();
     this._lowHpFx(dt);
+    this._tickPotionCd();
     if (!blocked) this.player.update(dt, this.input, this.cameraRig.yaw);
     else this.player.update(0, { moveVector: () => ({ x: 0, y: 0 }), held: () => false, down: () => false, action: () => false, actions: new Set() }, this.cameraRig.yaw);
 

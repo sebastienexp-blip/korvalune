@@ -14,7 +14,7 @@ export const DEFAULTS = {
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
 };
-export const TOUCH_DEFAULTS = { mode: 'auto', joySize: 1, btnSize: 1, opacity: 1, look: 1, pinch: 1, deadzone: 0.08, vibrate: true, leftHand: false, layout: {} };
+export const TOUCH_DEFAULTS = { mode: 'auto', joySize: 1, btnSize: 1, opacity: 1, look: 1, pinch: 1, deadzone: 0.08, vibrate: true, leftHand: false, layout: {}, layoutP: {} };
 
 const pct = (v) => `${v} %`;
 const TABS = [
@@ -231,7 +231,7 @@ export class SettingsUI {
     edit.disabled = !inGame;
     edit.onclick = () => this.game.startTouchEdit();
     const reset = document.createElement('button'); reset.className = 'st-btn'; reset.textContent = 'Rétablir la disposition';
-    reset.onclick = () => { this.s.touch.layout = {}; this.game.applySettings('layout', 'touch'); this.hud.notify('Disposition rétablie.', 'info'); };
+    reset.onclick = () => { this.s.touch.layout = {}; this.s.touch.layoutP = {}; this.game.applySettings('layout', 'touch'); this.hud.notify('Disposition rétablie.', 'info'); };
     box.append(edit, reset);
     const n = document.createElement('small');
     n.textContent = inGame ? 'Fait glisser chaque bouton (joystick, attaque, roulade, potions…) à l’endroit voulu.' : 'La modification de la disposition est disponible en jeu (menu pause → Paramètres).';

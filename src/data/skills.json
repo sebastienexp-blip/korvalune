@@ -83,7 +83,7 @@
   {
     "id": "rampage",
     "name": "Furie",
-    "icon": "💥",
+    "icon": "🐗",
     "classId": "warrior",
     "levelReq": 12,
     "cooldown": 14,
@@ -99,7 +99,7 @@
   {
     "id": "holy_strike",
     "name": "Frappe sacrée",
-    "icon": "✨",
+    "icon": "🌟",
     "classId": "paladin",
     "levelReq": 1,
     "cooldown": 3,
@@ -247,7 +247,7 @@
   {
     "id": "mana_surge",
     "name": "Vague arcanique",
-    "icon": "🌊",
+    "icon": "💧",
     "classId": "mage",
     "levelReq": 13,
     "cooldown": 11,
@@ -295,7 +295,7 @@
   {
     "id": "multi_shot",
     "name": "Salve en éventail",
-    "icon": "🏹",
+    "icon": "🎏",
     "classId": "archer",
     "levelReq": 6,
     "cooldown": 9,
@@ -327,7 +327,7 @@
   {
     "id": "piercing_arrow",
     "name": "Flèche perforante",
-    "icon": "🏹",
+    "icon": "📍",
     "classId": "archer",
     "levelReq": 13,
     "cooldown": 13,
@@ -343,7 +343,7 @@
   {
     "id": "backstab",
     "name": "Coup bas",
-    "icon": "🗡️",
+    "icon": "🔪",
     "classId": "assassin",
     "levelReq": 1,
     "cooldown": 2,
@@ -359,7 +359,7 @@
   {
     "id": "poison_blade",
     "name": "Lame empoisonnée",
-    "icon": "☠️",
+    "icon": "🧪",
     "classId": "assassin",
     "levelReq": 3,
     "cooldown": 5,
@@ -435,7 +435,7 @@
   {
     "id": "iron_will",
     "name": "Volonté de fer",
-    "icon": "🛡️",
+    "icon": "🏋️",
     "classId": "warrior",
     "levelReq": 20,
     "cooldown": 20,
@@ -464,7 +464,13 @@
     "anim": "attack2",
     "desc": "Frappe le sol de toutes ses forces.",
     "fx": {
-      "stun": 1.0
+      "stun": 1.0,
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 7,
+        "mult": 0.6
+      }
     }
   },
   {
@@ -478,15 +484,24 @@
     "cost": {
       "stamina": 48
     },
-    "range": 3.8,
+    "range": 4.5,
     "damage": 3.6,
     "anim": "attack2",
-    "desc": "Une frappe nourrie par la fureur du combat."
+    "desc": "Une frappe nourrie par la fureur du combat.",
+    "fx": {
+      "waves": {
+        "n": 2,
+        "gap": 0.3,
+        "r": 5,
+        "mult": 0.8
+      }
+    },
+    "aoe": true
   },
   {
     "id": "colossus_strike",
     "name": "Frappe du colosse",
-    "icon": "💢",
+    "icon": "🦣",
     "classId": "warrior",
     "levelReq": 100,
     "cooldown": 12,
@@ -498,12 +513,20 @@
     "damage": 2.6,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Un coup si puissant qu'il ébranle les environs."
+    "desc": "Un coup si puissant qu'il ébranle les environs.",
+    "fx": {
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 0.8
+      }
+    }
   },
   {
     "id": "titan_fury",
     "name": "Furie du Titan",
-    "icon": "⚡",
+    "icon": "💪",
     "classId": "warrior",
     "levelReq": 140,
     "cooldown": 11,
@@ -511,10 +534,19 @@
     "cost": {
       "stamina": 58
     },
-    "range": 4.0,
+    "range": 5.5,
     "damage": 4.4,
     "anim": "attack2",
-    "desc": "La force d'un titan concentrée en un seul coup."
+    "desc": "La force d'un titan concentrée en un seul coup.",
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 7,
+        "mult": 1.0
+      }
+    },
+    "aoe": true
   },
   {
     "id": "ascendant_blade",
@@ -531,12 +563,20 @@
     "damage": 3.4,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Le sommet de l'art du combat à l'épée."
+    "desc": "Le sommet de l'art du combat à l'épée.",
+    "fx": {
+      "waves": {
+        "n": 4,
+        "gap": 0.3,
+        "r": 9,
+        "mult": 1.2
+      }
+    }
   },
   {
     "id": "divine_wrath",
     "name": "Courroux divin",
-    "icon": "✨",
+    "icon": "🔱",
     "classId": "paladin",
     "levelReq": 20,
     "cooldown": 8,
@@ -552,7 +592,7 @@
   {
     "id": "radiant_burst",
     "name": "Éclat radieux",
-    "icon": "🌟",
+    "icon": "💫",
     "classId": "paladin",
     "levelReq": 40,
     "cooldown": 12,
@@ -564,12 +604,20 @@
     "damage": 1.8,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Une explosion de lumière sacrée."
+    "desc": "Une explosion de lumière sacrée.",
+    "fx": {
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 6,
+        "mult": 0.5
+      }
+    }
   },
   {
     "id": "guardian_light",
     "name": "Lumière gardienne",
-    "icon": "💫",
+    "icon": "🌤️",
     "classId": "paladin",
     "levelReq": 70,
     "cooldown": 18,
@@ -596,12 +644,20 @@
     "damage": 2.9,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Le ciel lui-même s'abat sur les impies."
+    "desc": "Le ciel lui-même s'abat sur les impies.",
+    "fx": {
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 0.8
+      }
+    }
   },
   {
     "id": "eternal_vow",
     "name": "Vœu éternel",
-    "icon": "🕊️",
+    "icon": "💍",
     "classId": "paladin",
     "levelReq": 140,
     "cooldown": 20,
@@ -616,7 +672,7 @@
   {
     "id": "celestial_judgment",
     "name": "Jugement céleste",
-    "icon": "⚖️",
+    "icon": "📜",
     "classId": "paladin",
     "levelReq": 180,
     "cooldown": 14,
@@ -628,12 +684,22 @@
     "damage": 3.8,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Le verdict ultime des cieux."
+    "desc": "Le verdict ultime des cieux.",
+    "fx": {
+      "rain": {
+        "n": 8,
+        "r": 9,
+        "t": 2.6,
+        "mult": 1.4,
+        "rad": 3,
+        "at": "self"
+      }
+    }
   },
   {
     "id": "chain_lightning",
     "name": "Éclair en chaîne",
-    "icon": "⚡",
+    "icon": "🌩️",
     "classId": "mage",
     "levelReq": 20,
     "cooldown": 9,
@@ -650,7 +716,7 @@
   {
     "id": "void_bolt",
     "name": "Trait du néant",
-    "icon": "🌀",
+    "icon": "🌌",
     "classId": "mage",
     "levelReq": 40,
     "cooldown": 7,
@@ -661,7 +727,11 @@
     "range": 15,
     "damage": 2.6,
     "anim": "attack",
-    "desc": "Un projectile venu d'ailleurs."
+    "desc": "Un projectile venu d'ailleurs.",
+    "fx": {
+      "at": "target",
+      "radius": 3
+    }
   },
   {
     "id": "elemental_storm",
@@ -694,7 +764,11 @@
     "range": 16,
     "damage": 3.8,
     "anim": "attack",
-    "desc": "La magie pure réduite à sa plus simple expression : la destruction."
+    "desc": "La magie pure réduite à sa plus simple expression : la destruction.",
+    "fx": {
+      "at": "target",
+      "radius": 5
+    }
   },
   {
     "id": "timefracture",
@@ -726,12 +800,20 @@
     "damage": 4.6,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Un sort que peu de mages osent encore invoquer."
+    "desc": "Un sort que peu de mages osent encore invoquer.",
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.35,
+        "r": 11,
+        "mult": 1.1
+      }
+    }
   },
   {
     "id": "rain_of_arrows",
     "name": "Averse de traits",
-    "icon": "🏹",
+    "icon": "🌧️",
     "classId": "archer",
     "levelReq": 20,
     "cooldown": 10,
@@ -748,7 +830,7 @@
   {
     "id": "hunters_mark",
     "name": "Marque du chasseur",
-    "icon": "🎯",
+    "icon": "🔖",
     "classId": "archer",
     "levelReq": 40,
     "cooldown": 8,
@@ -771,7 +853,7 @@
   {
     "id": "windrunner",
     "name": "Course du vent",
-    "icon": "💨",
+    "icon": "🏃",
     "classId": "archer",
     "levelReq": 70,
     "cooldown": 19,
@@ -786,7 +868,7 @@
   {
     "id": "barrage",
     "name": "Barrage",
-    "icon": "🏹",
+    "icon": "🎪",
     "classId": "archer",
     "levelReq": 100,
     "cooldown": 12,
@@ -798,7 +880,16 @@
     "damage": 2.0,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Une cadence de tir impossible à soutenir longtemps."
+    "desc": "Une cadence de tir impossible à soutenir longtemps.",
+    "fx": {
+      "rain": {
+        "n": 6,
+        "r": 6,
+        "t": 1.6,
+        "mult": 0.7,
+        "rad": 2.4
+      }
+    }
   },
   {
     "id": "deadeye",
@@ -819,7 +910,7 @@
   {
     "id": "skyfall_volley",
     "name": "Volée du ciel déchu",
-    "icon": "🌠",
+    "icon": "🎑",
     "classId": "archer",
     "levelReq": 180,
     "cooldown": 14,
@@ -831,7 +922,16 @@
     "damage": 3.2,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Les flèches tombent comme des étoiles filantes."
+    "desc": "Les flèches tombent comme des étoiles filantes.",
+    "fx": {
+      "rain": {
+        "n": 10,
+        "r": 9,
+        "t": 3,
+        "mult": 1.2,
+        "rad": 3
+      }
+    }
   },
   {
     "id": "shadow_clone",
@@ -852,7 +952,7 @@
   {
     "id": "venom_burst",
     "name": "Explosion de venin",
-    "icon": "☠️",
+    "icon": "🐍",
     "classId": "assassin",
     "levelReq": 40,
     "cooldown": 10,
@@ -870,7 +970,13 @@
         0.5,
         6,
         "poison"
-      ]
+      ],
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 5,
+        "mult": 0.5
+      }
     }
   },
   {
@@ -891,7 +997,7 @@
   {
     "id": "thousand_cuts",
     "name": "Mille entailles",
-    "icon": "🔪",
+    "icon": "✂️",
     "classId": "assassin",
     "levelReq": 100,
     "cooldown": 11,
@@ -903,12 +1009,20 @@
     "damage": 2.4,
     "aoe": true,
     "anim": "attack2",
-    "desc": "Trop de coups pour les compter, trop rapides pour les éviter."
+    "desc": "Trop de coups pour les compter, trop rapides pour les éviter.",
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 5,
+        "mult": 0.7
+      }
+    }
   },
   {
     "id": "soul_reaper",
     "name": "Faucheuse d'âmes",
-    "icon": "💀",
+    "icon": "🦇",
     "classId": "assassin",
     "levelReq": 140,
     "cooldown": 13,
@@ -919,12 +1033,16 @@
     "range": 3.2,
     "damage": 4.6,
     "anim": "attack",
-    "desc": "Un coup qui ne laisse aucune chance."
+    "desc": "Un coup qui ne laisse aucune chance.",
+    "fx": {
+      "at": "target",
+      "radius": 4
+    }
   },
   {
     "id": "oblivion_strike",
     "name": "Frappe de l'oubli",
-    "icon": "🌑",
+    "icon": "🌚",
     "classId": "assassin",
     "levelReq": 180,
     "cooldown": 14,
@@ -936,7 +1054,23 @@
     "damage": 3.6,
     "aoe": true,
     "anim": "attack2",
-    "desc": "L'assassinat porté à son art le plus abouti."
+    "desc": "L'assassinat porté à son art le plus abouti.",
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 1.1
+      },
+      "rain": {
+        "n": 6,
+        "r": 7,
+        "t": 2,
+        "mult": 1.0,
+        "rad": 2.6,
+        "at": "self"
+      }
+    }
   },
   {
     "id": "charge",
@@ -991,7 +1125,7 @@
   {
     "id": "stance",
     "name": "Posture défensive",
-    "icon": "🛡️",
+    "icon": "🤺",
     "classId": "warrior",
     "levelReq": 7,
     "cooldown": 22,
@@ -1126,7 +1260,7 @@
   {
     "id": "shockwave",
     "name": "Onde de choc",
-    "icon": "🌊",
+    "icon": "🔔",
     "classId": "warrior",
     "levelReq": 30,
     "cooldown": 11,
@@ -1147,7 +1281,7 @@
   {
     "id": "sunder",
     "name": "Brise-armure",
-    "icon": "🔨",
+    "icon": "⛏️",
     "classId": "warrior",
     "levelReq": 35,
     "cooldown": 12,
@@ -1235,7 +1369,7 @@
   {
     "id": "onslaught",
     "name": "Déchaînement",
-    "icon": "🌪️",
+    "icon": "🐺",
     "classId": "warrior",
     "levelReq": 80,
     "cooldown": 16,
@@ -1249,7 +1383,13 @@
     "desc": "Quatre coups tournoyants en rafale.",
     "color": 14674165,
     "fx": {
-      "hits": 4
+      "hits": 4,
+      "waves": {
+        "n": 2,
+        "gap": 0.4,
+        "r": 5.5,
+        "mult": 0.7
+      }
     },
     "aoe": true
   },
@@ -1282,7 +1422,7 @@
   {
     "id": "titan_fall",
     "name": "Chute du titan",
-    "icon": "🌋",
+    "icon": "🏔️",
     "classId": "warrior",
     "levelReq": 110,
     "cooldown": 20,
@@ -1300,14 +1440,20 @@
         "to": "target",
         "d": 9
       },
-      "stun": 1.5
+      "stun": 1.5,
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 0.9
+      }
     },
     "aoe": true
   },
   {
     "id": "warblood",
     "name": "Sang de guerre",
-    "icon": "🔥",
+    "icon": "🏴",
     "classId": "warrior",
     "levelReq": 130,
     "cooldown": 40,
@@ -1371,14 +1517,22 @@
         0.35,
         0.8
       ],
-      "knock": 2
+      "knock": 2,
+      "rain": {
+        "n": 8,
+        "r": 9,
+        "t": 2.5,
+        "mult": 1.3,
+        "rad": 3,
+        "at": "self"
+      }
     },
     "aoe": true
   },
   {
     "id": "hammer_toss",
     "name": "Marteau béni",
-    "icon": "🔨",
+    "icon": "⚒️",
     "classId": "paladin",
     "levelReq": 2,
     "cooldown": 7,
@@ -1443,7 +1597,7 @@
   {
     "id": "smite",
     "name": "Châtiment",
-    "icon": "🔥",
+    "icon": "🧨",
     "classId": "paladin",
     "levelReq": 10,
     "cooldown": 8,
@@ -1539,7 +1693,7 @@
   {
     "id": "aegis",
     "name": "Égide",
-    "icon": "🛡️",
+    "icon": "🏛️",
     "classId": "paladin",
     "levelReq": 25,
     "cooldown": 30,
@@ -1585,7 +1739,7 @@
   {
     "id": "vengeance",
     "name": "Représailles sacrées",
-    "icon": "⚔️",
+    "icon": "🔁",
     "classId": "paladin",
     "levelReq": 35,
     "cooldown": 36,
@@ -1607,7 +1761,7 @@
   {
     "id": "light_blade",
     "name": "Lame de lumière",
-    "icon": "🗡️",
+    "icon": "🪄",
     "classId": "paladin",
     "levelReq": 50,
     "cooldown": 10,
@@ -1647,7 +1801,7 @@
   {
     "id": "wrath_hammer",
     "name": "Marteau du courroux",
-    "icon": "🔨",
+    "icon": "🛠️",
     "classId": "paladin",
     "levelReq": 60,
     "cooldown": 13,
@@ -1692,7 +1846,7 @@
   {
     "id": "light_column",
     "name": "Colonne de lumière",
-    "icon": "🏛️",
+    "icon": "🕍",
     "classId": "paladin",
     "levelReq": 90,
     "cooldown": 15,
@@ -1711,7 +1865,14 @@
       "vuln": [
         0.25,
         6
-      ]
+      ],
+      "rain": {
+        "n": 3,
+        "r": 3,
+        "t": 0.8,
+        "mult": 1.2,
+        "rad": 3
+      }
     }
   },
   {
@@ -1763,7 +1924,7 @@
   {
     "id": "holy_storm",
     "name": "Tempête sacrée",
-    "icon": "🌩️",
+    "icon": "⛈️",
     "classId": "paladin",
     "levelReq": 160,
     "cooldown": 28,
@@ -1782,6 +1943,14 @@
         "t": 7,
         "dps": 1.2,
         "at": "self"
+      },
+      "rain": {
+        "n": 6,
+        "r": 8,
+        "t": 3,
+        "mult": 1.0,
+        "rad": 2.6,
+        "at": "self"
       }
     },
     "aoe": true
@@ -1789,7 +1958,7 @@
   {
     "id": "ascension",
     "name": "Ascension",
-    "icon": "🌟",
+    "icon": "🪽",
     "classId": "paladin",
     "levelReq": 200,
     "cooldown": 90,
@@ -1857,7 +2026,7 @@
   {
     "id": "spark",
     "name": "Étincelle",
-    "icon": "⚡",
+    "icon": "🎇",
     "classId": "mage",
     "levelReq": 7,
     "cooldown": 6,
@@ -1878,7 +2047,7 @@
   {
     "id": "blink",
     "name": "Téléportation",
-    "icon": "🌀",
+    "icon": "🚪",
     "classId": "mage",
     "levelReq": 10,
     "cooldown": 12,
@@ -1896,7 +2065,7 @@
   {
     "id": "fireball",
     "name": "Boule de feu",
-    "icon": "🔥",
+    "icon": "🏮",
     "classId": "mage",
     "levelReq": 11,
     "cooldown": 7,
@@ -1922,7 +2091,7 @@
   {
     "id": "flame_wall",
     "name": "Mur de flammes",
-    "icon": "🧱",
+    "icon": "🚧",
     "classId": "mage",
     "levelReq": 15,
     "cooldown": 18,
@@ -1996,7 +2165,7 @@
   {
     "id": "frost_armor",
     "name": "Cuirasse de givre",
-    "icon": "🧥",
+    "icon": "🥶",
     "classId": "mage",
     "levelReq": 30,
     "cooldown": 26,
@@ -2021,7 +2190,7 @@
   {
     "id": "energy_ray",
     "name": "Rayon d'énergie",
-    "icon": "〰️",
+    "icon": "🔦",
     "classId": "mage",
     "levelReq": 35,
     "cooldown": 10,
@@ -2042,7 +2211,7 @@
   {
     "id": "ice_prison",
     "name": "Prison de glace",
-    "icon": "🧊",
+    "icon": "⛓️",
     "classId": "mage",
     "levelReq": 50,
     "cooldown": 16,
@@ -2064,7 +2233,7 @@
   {
     "id": "mana_siphon",
     "name": "Siphon de mana",
-    "icon": "🔮",
+    "icon": "🧿",
     "classId": "mage",
     "levelReq": 55,
     "cooldown": 12,
@@ -2108,7 +2277,7 @@
   {
     "id": "singularity",
     "name": "Point de rupture",
-    "icon": "🕳️",
+    "icon": "⚫",
     "classId": "mage",
     "levelReq": 80,
     "cooldown": 22,
@@ -2124,13 +2293,20 @@
     "fx": {
       "at": "target",
       "radius": 6,
-      "knock": -4
+      "knock": -4,
+      "zone": {
+        "r": 6,
+        "t": 4,
+        "pull": 6,
+        "dps": 0.6,
+        "at": "target"
+      }
     }
   },
   {
     "id": "fire_rain",
     "name": "Pluie de feu",
-    "icon": "☄️",
+    "icon": "🧯",
     "classId": "mage",
     "levelReq": 90,
     "cooldown": 24,
@@ -2148,13 +2324,20 @@
         "t": 6,
         "dps": 1.1,
         "at": "target"
+      },
+      "rain": {
+        "n": 6,
+        "r": 6,
+        "t": 2.2,
+        "mult": 0.8,
+        "rad": 2.6
       }
     }
   },
   {
     "id": "lightning_nova",
     "name": "Nova d'éclairs",
-    "icon": "⚡",
+    "icon": "🔆",
     "classId": "mage",
     "levelReq": 110,
     "cooldown": 16,
@@ -2168,14 +2351,20 @@
     "desc": "Une décharge circulaire qui étourdit.",
     "color": 13625599,
     "fx": {
-      "stun": 1.0
+      "stun": 1.0,
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 8,
+        "mult": 0.8
+      }
     },
     "aoe": true
   },
   {
     "id": "absolute_zero",
     "name": "Zéro absolu",
-    "icon": "❄️",
+    "icon": "☃️",
     "classId": "mage",
     "levelReq": 130,
     "cooldown": 26,
@@ -2193,7 +2382,13 @@
       "slow": [
         0.5,
         4
-      ]
+      ],
+      "waves": {
+        "n": 3,
+        "gap": 0.35,
+        "r": 9,
+        "mult": 0.9
+      }
     },
     "aoe": true
   },
@@ -2222,7 +2417,7 @@
   {
     "id": "cataclysm",
     "name": "Cataclysme",
-    "icon": "🌋",
+    "icon": "🌠",
     "classId": "mage",
     "levelReq": 200,
     "cooldown": 30,
@@ -2243,13 +2438,20 @@
         6,
         "burn"
       ],
-      "stun": 1.2
+      "stun": 1.2,
+      "rain": {
+        "n": 10,
+        "r": 10,
+        "t": 3,
+        "mult": 1.2,
+        "rad": 3
+      }
     }
   },
   {
     "id": "precise_shot",
     "name": "Tir précis",
-    "icon": "🎯",
+    "icon": "🔎",
     "classId": "archer",
     "levelReq": 2,
     "cooldown": 3.5,
@@ -2366,7 +2568,7 @@
   {
     "id": "explosive_arrow",
     "name": "Flèche explosive",
-    "icon": "💥",
+    "icon": "💣",
     "classId": "archer",
     "levelReq": 15,
     "cooldown": 9,
@@ -2387,7 +2589,7 @@
   {
     "id": "rapid_fire",
     "name": "Tir rapide",
-    "icon": "⚡",
+    "icon": "🎞️",
     "classId": "archer",
     "levelReq": 17,
     "cooldown": 8,
@@ -2408,7 +2610,7 @@
   {
     "id": "flaming_arrow",
     "name": "Flèche enflammée",
-    "icon": "🔥",
+    "icon": "🚀",
     "classId": "archer",
     "levelReq": 25,
     "cooldown": 8,
@@ -2456,7 +2658,7 @@
   {
     "id": "frost_arrow",
     "name": "Flèche glaciale",
-    "icon": "❄️",
+    "icon": "🎿",
     "classId": "archer",
     "levelReq": 35,
     "cooldown": 10,
@@ -2481,7 +2683,7 @@
   {
     "id": "fire_trap",
     "name": "Piège enflammé",
-    "icon": "🧨",
+    "icon": "🎰",
     "classId": "archer",
     "levelReq": 50,
     "cooldown": 18,
@@ -2547,7 +2749,7 @@
   {
     "id": "arrow_storm",
     "name": "Tempête de flèches",
-    "icon": "🌧️",
+    "icon": "🌦️",
     "classId": "archer",
     "levelReq": 80,
     "cooldown": 18,
@@ -2563,7 +2765,14 @@
     "fx": {
       "at": "target",
       "radius": 5,
-      "hits": 5
+      "hits": 5,
+      "rain": {
+        "n": 6,
+        "r": 5,
+        "t": 2,
+        "mult": 0.7,
+        "rad": 2.2
+      }
     }
   },
   {
@@ -2591,7 +2800,7 @@
   {
     "id": "thunder_arrow",
     "name": "Flèche tonnerre",
-    "icon": "🌩️",
+    "icon": "🌈",
     "classId": "archer",
     "levelReq": 110,
     "cooldown": 15,
@@ -2607,13 +2816,20 @@
     "fx": {
       "at": "target",
       "radius": 5,
-      "stun": 1.5
+      "stun": 1.5,
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 5,
+        "mult": 0.8,
+        "at": "target"
+      }
     }
   },
   {
     "id": "zenith_mark",
     "name": "Marque supérieure",
-    "icon": "🎯",
+    "icon": "📌",
     "classId": "archer",
     "levelReq": 130,
     "cooldown": 20,
@@ -2637,7 +2853,7 @@
   {
     "id": "divine_wind",
     "name": "Vent divin",
-    "icon": "🌬️",
+    "icon": "🍂",
     "classId": "archer",
     "levelReq": 160,
     "cooldown": 60,
@@ -2660,7 +2876,7 @@
   {
     "id": "heavens_rain",
     "name": "Pluie céleste",
-    "icon": "☄️",
+    "icon": "🪐",
     "classId": "archer",
     "levelReq": 200,
     "cooldown": 30,
@@ -2682,13 +2898,20 @@
         "t": 8,
         "dps": 1.4,
         "at": "target"
+      },
+      "rain": {
+        "n": 14,
+        "r": 10,
+        "t": 4,
+        "mult": 1.2,
+        "rad": 3
       }
     }
   },
   {
     "id": "quick_stab",
     "name": "Estoc rapide",
-    "icon": "🗡️",
+    "icon": "📎",
     "classId": "assassin",
     "levelReq": 2,
     "cooldown": 1.0,
@@ -2708,7 +2931,7 @@
   {
     "id": "throwing_knife",
     "name": "Jet de dague",
-    "icon": "🔪",
+    "icon": "🗑️",
     "classId": "assassin",
     "levelReq": 4,
     "cooldown": 4,
@@ -2728,7 +2951,7 @@
   {
     "id": "shadow_leap",
     "name": "Bond furtif",
-    "icon": "🌑",
+    "icon": "🐈",
     "classId": "assassin",
     "levelReq": 7,
     "cooldown": 10,
@@ -2752,7 +2975,7 @@
   {
     "id": "deep_cut",
     "name": "Entaille profonde",
-    "icon": "🩸",
+    "icon": "🥩",
     "classId": "assassin",
     "levelReq": 10,
     "cooldown": 7,
@@ -2777,7 +3000,7 @@
   {
     "id": "smoke_bomb",
     "name": "Bombe fumigène",
-    "icon": "💨",
+    "icon": "🌫️",
     "classId": "assassin",
     "levelReq": 11,
     "cooldown": 18,
@@ -2804,7 +3027,7 @@
   {
     "id": "paralyze",
     "name": "Frappe paralysante",
-    "icon": "⚡",
+    "icon": "🕸️",
     "classId": "assassin",
     "levelReq": 15,
     "cooldown": 12,
@@ -2825,7 +3048,7 @@
   {
     "id": "twin_blades",
     "name": "Lames jumelles",
-    "icon": "⚔️",
+    "icon": "✌️",
     "classId": "assassin",
     "levelReq": 17,
     "cooldown": 6,
@@ -2846,7 +3069,7 @@
   {
     "id": "eviscerate",
     "name": "Éviscération",
-    "icon": "💀",
+    "icon": "🪚",
     "classId": "assassin",
     "levelReq": 25,
     "cooldown": 10,
@@ -2891,7 +3114,7 @@
   {
     "id": "life_drain",
     "name": "Vol de vie",
-    "icon": "🩸",
+    "icon": "🧬",
     "classId": "assassin",
     "levelReq": 35,
     "cooldown": 11,
@@ -2938,7 +3161,7 @@
   {
     "id": "deadly_poison",
     "name": "Poison mortel",
-    "icon": "☠️",
+    "icon": "🦂",
     "classId": "assassin",
     "levelReq": 55,
     "cooldown": 12,
@@ -2967,7 +3190,7 @@
   {
     "id": "assassinate",
     "name": "Assassinat",
-    "icon": "🗡️",
+    "icon": "🎭",
     "classId": "assassin",
     "levelReq": 60,
     "cooldown": 14,
@@ -2988,7 +3211,7 @@
   {
     "id": "steel_tempest",
     "name": "Tourbillon d'acier",
-    "icon": "🌀",
+    "icon": "⚙️",
     "classId": "assassin",
     "levelReq": 80,
     "cooldown": 16,
@@ -3002,14 +3225,20 @@
     "desc": "Quatre passages de lames tournoyantes.",
     "color": 14674165,
     "fx": {
-      "hits": 4
+      "hits": 4,
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 5.5,
+        "mult": 0.6
+      }
     },
     "aoe": true
   },
   {
     "id": "shadow_veil",
     "name": "Voile d'ombre",
-    "icon": "🌫️",
+    "icon": "🌒",
     "classId": "assassin",
     "levelReq": 90,
     "cooldown": 34,
@@ -3032,7 +3261,7 @@
   {
     "id": "phantom_blades",
     "name": "Lames fantômes",
-    "icon": "👻",
+    "icon": "🃏",
     "classId": "assassin",
     "levelReq": 110,
     "cooldown": 15,
@@ -3071,14 +3300,15 @@
         "t": 8,
         "dps": 1.0,
         "slow": 0.6,
-        "at": "target"
+        "at": "target",
+        "pull": 3
       }
     }
   },
   {
     "id": "shadow_master",
     "name": "Maître des ombres",
-    "icon": "🥷",
+    "icon": "🕶️",
     "classId": "assassin",
     "levelReq": 160,
     "cooldown": 60,
@@ -3101,7 +3331,7 @@
   {
     "id": "silent_death",
     "name": "Mort silencieuse",
-    "icon": "☠️",
+    "icon": "🪦",
     "classId": "assassin",
     "levelReq": 200,
     "cooldown": 28,
@@ -3119,7 +3349,950 @@
       "execute": [
         0.45,
         2.5
+      ],
+      "waves": {
+        "n": 1,
+        "gap": 0.1,
+        "r": 6,
+        "mult": 1.5,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "rupture_wave",
+    "name": "Onde de rupture",
+    "icon": "🌐",
+    "classId": "warrior",
+    "levelReq": 45,
+    "cooldown": 12,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 42
+    },
+    "range": 8,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Le sol se fend : trois ondes de choc successives repoussent tout autour de toi.",
+    "color": 14266490,
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 8,
+        "mult": 0.95
+      },
+      "knock": 2
+    },
+    "aoe": true
+  },
+  {
+    "id": "blade_cyclone",
+    "name": "Cyclone d’acier",
+    "icon": "🎡",
+    "classId": "warrior",
+    "levelReq": 65,
+    "cooldown": 16,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 48
+    },
+    "range": 5,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Tu deviens un cyclone de lames qui aspire les ennemis et les taille en pièces pendant 5 s.",
+    "color": 12634328,
+    "fx": {
+      "zone": {
+        "r": 5.5,
+        "t": 5,
+        "dps": 2.1,
+        "pull": 3,
+        "at": "self"
+      },
+      "waves": {
+        "n": 2,
+        "gap": 0.5,
+        "r": 5.5,
+        "mult": 0.6
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "meteor_leap",
+    "name": "Impact météoritique",
+    "icon": "🛰️",
+    "classId": "warrior",
+    "levelReq": 95,
+    "cooldown": 20,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 58
+    },
+    "range": 8,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Tu bondis très haut et retombes en météore : cratère, étourdissement et ondes de choc.",
+    "color": 16742954,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 10
+      },
+      "stun": 1.8,
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 0.9
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "warlord_horn",
+    "name": "Cor du seigneur de guerre",
+    "icon": "📯",
+    "classId": "warrior",
+    "levelReq": 125,
+    "cooldown": 34,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 45
+    },
+    "range": 9,
+    "damage": 0.8,
+    "anim": "attack2",
+    "desc": "Un coup de cor terrifiant : ennemis étourdis, et ta puissance et ta vitesse montent 10 s.",
+    "color": 16769658,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "dmg": 0.3,
+        "speed": 0.2
+      },
+      "waves": {
+        "n": 2,
+        "gap": 0.45,
+        "r": 9,
+        "mult": 0.7
+      },
+      "stun": 1.2
+    },
+    "aoe": true
+  },
+  {
+    "id": "chains_of_ruin",
+    "name": "Chaînes de ruine",
+    "icon": "🪝",
+    "classId": "warrior",
+    "levelReq": 150,
+    "cooldown": 24,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 52
+    },
+    "range": 10,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Des chaînes jaillissent du sol : les ennemis sont attirés, entravés et affaiblis.",
+    "color": 9079449,
+    "fx": {
+      "at": "target",
+      "radius": 7,
+      "zone": {
+        "r": 7,
+        "t": 6,
+        "dps": 1.7,
+        "pull": 5,
+        "stun": 0.6,
+        "at": "target"
+      },
+      "vuln": [
+        0.2,
+        6
       ]
     }
+  },
+  {
+    "id": "world_breaker",
+    "name": "Brise-monde",
+    "icon": "🌍",
+    "classId": "warrior",
+    "levelReq": 175,
+    "cooldown": 32,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 70
+    },
+    "range": 9,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Tu frappes le monde : une pluie de rochers s’abat tout autour et le sol tremble.",
+    "color": 14266490,
+    "fx": {
+      "rain": {
+        "n": 10,
+        "r": 9,
+        "t": 3,
+        "mult": 1.3,
+        "rad": 3,
+        "at": "self"
+      },
+      "waves": {
+        "n": 2,
+        "gap": 0.5,
+        "r": 9,
+        "mult": 1.0
+      },
+      "stun": 1.2,
+      "knock": 2
+    },
+    "aoe": true
+  },
+  {
+    "id": "frost_comet",
+    "name": "Comète polaire",
+    "icon": "🎐",
+    "classId": "mage",
+    "levelReq": 45,
+    "cooldown": 14,
+    "duration": 0.7,
+    "cost": {
+      "mana": 46
+    },
+    "range": 13,
+    "damage": 2.4,
+    "anim": "attack2",
+    "desc": "Trois comètes de glace s’écrasent sur la zone ciblée et ralentissent les survivants.",
+    "color": 8378623,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "slow": [
+        0.5,
+        4
+      ],
+      "rain": {
+        "n": 3,
+        "r": 3,
+        "t": 0.9,
+        "mult": 1.2,
+        "rad": 3.2
+      }
+    }
+  },
+  {
+    "id": "inferno_ring",
+    "name": "Anneau infernal",
+    "icon": "⭕",
+    "classId": "mage",
+    "levelReq": 65,
+    "cooldown": 18,
+    "duration": 0.7,
+    "cost": {
+      "mana": 52
+    },
+    "range": 7,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Un cercle de flammes jaillit autour de toi, brûle tout ce qu’il touche et persiste 7 s.",
+    "color": 16742954,
+    "fx": {
+      "zone": {
+        "r": 6.5,
+        "t": 7,
+        "dps": 1.4,
+        "at": "self"
+      },
+      "waves": {
+        "n": 3,
+        "gap": 0.4,
+        "r": 6.5,
+        "mult": 0.7
+      },
+      "dot": [
+        0.4,
+        5,
+        "burn"
+      ]
+    },
+    "aoe": true
+  },
+  {
+    "id": "storm_cage",
+    "name": "Cage d’orage",
+    "icon": "🔌",
+    "classId": "mage",
+    "levelReq": 95,
+    "cooldown": 22,
+    "duration": 0.7,
+    "cost": {
+      "mana": 58
+    },
+    "range": 13,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Une cage de foudre emprisonne la zone : les ennemis y sont sans cesse étourdis.",
+    "color": 13625599,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "zone": {
+        "r": 6,
+        "t": 6,
+        "dps": 1.9,
+        "stun": 0.6,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "starfall",
+    "name": "Chute d’étoiles",
+    "icon": "⭐",
+    "classId": "mage",
+    "levelReq": 125,
+    "cooldown": 26,
+    "duration": 0.7,
+    "cost": {
+      "mana": 70
+    },
+    "range": 14,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Douze étoiles tombent du ciel sur une large zone, l’une après l’autre.",
+    "color": 12093695,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "rain": {
+        "n": 14,
+        "r": 9,
+        "t": 3.4,
+        "mult": 1.7,
+        "rad": 3.2
+      }
+    }
+  },
+  {
+    "id": "gravity_well",
+    "name": "Puits de gravité",
+    "icon": "🧲",
+    "classId": "mage",
+    "levelReq": 150,
+    "cooldown": 28,
+    "duration": 0.7,
+    "cost": {
+      "mana": 64
+    },
+    "range": 13,
+    "damage": 2.0,
+    "anim": "attack2",
+    "desc": "Un puits sombre aspire tous les ennemis vers son centre et les broie 6 s.",
+    "color": 11562239,
+    "fx": {
+      "at": "target",
+      "radius": 9,
+      "zone": {
+        "r": 9,
+        "t": 6,
+        "dps": 1.3,
+        "pull": 6,
+        "at": "target"
+      },
+      "vuln": [
+        0.25,
+        6
+      ]
+    }
+  },
+  {
+    "id": "arcane_apocalypse",
+    "name": "Apocalypse arcanique",
+    "icon": "🔯",
+    "classId": "mage",
+    "levelReq": 175,
+    "cooldown": 40,
+    "duration": 0.7,
+    "cost": {
+      "mana": 95
+    },
+    "range": 12,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Cinq ondes arcaniques puis une pluie d’éclats : la zone entière est dévastée.",
+    "color": 12093695,
+    "fx": {
+      "waves": {
+        "n": 5,
+        "gap": 0.3,
+        "r": 11,
+        "mult": 1.4
+      },
+      "rain": {
+        "n": 8,
+        "r": 9,
+        "t": 2.5,
+        "mult": 1.2,
+        "rad": 3,
+        "at": "self"
+      },
+      "stun": 1
+    },
+    "aoe": true
+  },
+  {
+    "id": "holy_nova",
+    "name": "Nova sacrée",
+    "icon": "🔅",
+    "classId": "paladin",
+    "levelReq": 45,
+    "cooldown": 13,
+    "duration": 0.7,
+    "cost": {
+      "mana": 44
+    },
+    "range": 7,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Deux ondes de lumière blessent les ennemis et te soignent à chaque pulsation.",
+    "color": 16769658,
+    "fx": {
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 0.8,
+        "heal": 0.04
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "dawn_lance",
+    "name": "Lance de l’aube",
+    "icon": "📐",
+    "classId": "paladin",
+    "levelReq": 65,
+    "cooldown": 12,
+    "duration": 0.7,
+    "cost": {
+      "mana": 46
+    },
+    "range": 16,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Un trait de lumière transperce jusqu’à 8 ennemis alignés et les rend vulnérables.",
+    "color": 16769658,
+    "fx": {
+      "pierce": 8,
+      "vuln": [
+        0.2,
+        5
+      ]
+    }
+  },
+  {
+    "id": "heaven_gate",
+    "name": "Portail céleste",
+    "icon": "🌅",
+    "classId": "paladin",
+    "levelReq": 95,
+    "cooldown": 24,
+    "duration": 0.7,
+    "cost": {
+      "mana": 58
+    },
+    "range": 12,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Le ciel s’ouvre : huit colonnes de lumière frappent la zone.",
+    "color": 16769658,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "rain": {
+        "n": 8,
+        "r": 7,
+        "t": 2.6,
+        "mult": 1.2,
+        "rad": 2.8
+      }
+    }
+  },
+  {
+    "id": "chains_of_light",
+    "name": "Entraves de lumière",
+    "icon": "🔗",
+    "classId": "paladin",
+    "levelReq": 125,
+    "cooldown": 26,
+    "duration": 0.7,
+    "cost": {
+      "mana": 56
+    },
+    "range": 11,
+    "damage": 1.2,
+    "anim": "attack",
+    "desc": "Des liens lumineux attirent et immobilisent les ennemis de la zone.",
+    "color": 16774064,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "zone": {
+        "r": 6,
+        "t": 6,
+        "dps": 0.9,
+        "pull": 5,
+        "stun": 0.5,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "archangel_wings",
+    "name": "Ailes de l’archange",
+    "icon": "🦢",
+    "classId": "paladin",
+    "levelReq": 150,
+    "cooldown": 60,
+    "duration": 0.7,
+    "cost": {
+      "mana": 70
+    },
+    "range": 8,
+    "damage": 1.5,
+    "anim": "attack2",
+    "desc": "Des ailes de lumière te rendent invulnérable 2 s, rapide et plus fort pendant 10 s.",
+    "color": 16774064,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "dmg": 0.4,
+        "speed": 0.35,
+        "regen": 0.03
+      },
+      "invuln": 2,
+      "waves": {
+        "n": 2,
+        "gap": 0.5,
+        "r": 8,
+        "mult": 0.9,
+        "heal": 0.08
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "final_verdict",
+    "name": "Verdict final",
+    "icon": "🌇",
+    "classId": "paladin",
+    "levelReq": 175,
+    "cooldown": 34,
+    "duration": 0.7,
+    "cost": {
+      "mana": 82
+    },
+    "range": 10,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Le jugement tombe : colonnes de lumière et ondes sacrées sur toute la zone.",
+    "color": 16769658,
+    "fx": {
+      "rain": {
+        "n": 8,
+        "r": 8,
+        "t": 2.6,
+        "mult": 1.6,
+        "rad": 3,
+        "at": "self"
+      },
+      "waves": {
+        "n": 3,
+        "gap": 0.4,
+        "r": 9,
+        "mult": 1.0
+      },
+      "stun": 1.2
+    },
+    "aoe": true
+  },
+  {
+    "id": "volley_ring",
+    "name": "Cercle de flèches",
+    "icon": "🏵️",
+    "classId": "archer",
+    "levelReq": 45,
+    "cooldown": 13,
+    "duration": 0.7,
+    "cost": {
+      "mana": 44
+    },
+    "range": 9,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Tu tournes sur toi-même en tirant : trois cercles de flèches balaient les alentours.",
+    "color": 11985018,
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 9,
+        "mult": 0.7
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "razor_net",
+    "name": "Filet de lames",
+    "icon": "🥅",
+    "classId": "archer",
+    "levelReq": 65,
+    "cooldown": 18,
+    "duration": 0.7,
+    "cost": {
+      "mana": 42
+    },
+    "range": 13,
+    "damage": 1.2,
+    "anim": "attack",
+    "desc": "Un filet de fils tranchants ralentit fortement et taillade la zone 5 s.",
+    "color": 13226720,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "zone": {
+        "r": 5,
+        "t": 5,
+        "dps": 1.2,
+        "slow": 0.7,
+        "at": "target"
+      },
+      "slow": [
+        0.6,
+        4
+      ]
+    }
+  },
+  {
+    "id": "meteor_arrow",
+    "name": "Flèche météore",
+    "icon": "🛸",
+    "classId": "archer",
+    "levelReq": 95,
+    "cooldown": 20,
+    "duration": 0.7,
+    "cost": {
+      "mana": 54
+    },
+    "range": 17,
+    "damage": 2.4,
+    "anim": "attack2",
+    "desc": "Une flèche enflammée appelle quatre météores sur la cible et l’étourdit.",
+    "color": 16742954,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "stun": 1.2,
+      "rain": {
+        "n": 4,
+        "r": 4,
+        "t": 1,
+        "mult": 1.5,
+        "rad": 3.2
+      }
+    }
+  },
+  {
+    "id": "blade_hail",
+    "name": "Grêle d’acier",
+    "icon": "🧷",
+    "classId": "archer",
+    "levelReq": 125,
+    "cooldown": 24,
+    "duration": 0.7,
+    "cost": {
+      "mana": 58
+    },
+    "range": 14,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Quatorze lames d’acier tombent du ciel en grêle serrée.",
+    "color": 12634328,
+    "fx": {
+      "at": "target",
+      "radius": 7,
+      "rain": {
+        "n": 14,
+        "r": 8,
+        "t": 3,
+        "mult": 0.9,
+        "rad": 2.4
+      }
+    }
+  },
+  {
+    "id": "storm_quiver",
+    "name": "Carquois de tempête",
+    "icon": "🎒",
+    "classId": "archer",
+    "levelReq": 150,
+    "cooldown": 60,
+    "duration": 0.7,
+    "cost": {
+      "mana": 60
+    },
+    "range": 10,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Ton carquois crépite : 10 s de tirs bien plus rapides et destructeurs, et deux ondes d’éclairs.",
+    "color": 13625599,
+    "fx": {
+      "buff": {
+        "t": 10,
+        "dmg": 0.4,
+        "cdr": 0.35,
+        "crit": 0.15
+      },
+      "waves": {
+        "n": 2,
+        "gap": 0.4,
+        "r": 10,
+        "mult": 0.9
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "sky_collapse",
+    "name": "Effondrement du ciel",
+    "icon": "🌄",
+    "classId": "archer",
+    "levelReq": 175,
+    "cooldown": 34,
+    "duration": 0.7,
+    "cost": {
+      "mana": 84
+    },
+    "range": 15,
+    "damage": 2.5,
+    "anim": "attack2",
+    "desc": "Le ciel s’effondre en pluie de traits spectraux sur une immense zone, puis brûle le sol.",
+    "color": 12093695,
+    "fx": {
+      "at": "target",
+      "radius": 10,
+      "rain": {
+        "n": 14,
+        "r": 11,
+        "t": 4,
+        "mult": 1.3,
+        "rad": 3
+      },
+      "zone": {
+        "r": 8,
+        "t": 6,
+        "dps": 1.0,
+        "at": "target"
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "shuriken_storm",
+    "name": "Tempête de shurikens",
+    "icon": "✴️",
+    "classId": "assassin",
+    "levelReq": 45,
+    "cooldown": 13,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 44
+    },
+    "range": 7,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Tu lances une tempête d’étoiles d’acier en trois vagues autour de toi.",
+    "color": 12634328,
+    "fx": {
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 7,
+        "mult": 0.7
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "shadow_swarm",
+    "name": "Nuée d’ombres",
+    "icon": "🦉",
+    "classId": "assassin",
+    "levelReq": 65,
+    "cooldown": 18,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 46
+    },
+    "range": 5,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Une nuée d’ombres te suit 6 s : elle mord, ralentit et rapproche les ennemis.",
+    "color": 11562239,
+    "fx": {
+      "zone": {
+        "r": 5.5,
+        "t": 6,
+        "dps": 1.5,
+        "slow": 0.5,
+        "pull": 2,
+        "at": "self"
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "blade_rain",
+    "name": "Pluie de lames",
+    "icon": "🍁",
+    "classId": "assassin",
+    "levelReq": 95,
+    "cooldown": 20,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 54
+    },
+    "range": 6,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Dix lames tombent autour de toi, l’une après l’autre.",
+    "color": 12634328,
+    "fx": {
+      "rain": {
+        "n": 10,
+        "r": 6,
+        "t": 2.5,
+        "mult": 1.1,
+        "rad": 2.4,
+        "at": "self"
+      }
+    },
+    "aoe": true
+  },
+  {
+    "id": "void_reap",
+    "name": "Fauchage du vide",
+    "icon": "🕷️",
+    "classId": "assassin",
+    "levelReq": 125,
+    "cooldown": 22,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 58
+    },
+    "range": 7,
+    "damage": 3.0,
+    "anim": "attack2",
+    "desc": "Tu traverses le vide jusqu’à ta cible : fauchage en zone, redoutable contre les blessés.",
+    "color": 11562239,
+    "fx": {
+      "dash": {
+        "to": "target",
+        "d": 9
+      },
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 7,
+        "mult": 1.1
+      },
+      "execute": [
+        0.3,
+        0.8
+      ]
+    },
+    "aoe": true
+  },
+  {
+    "id": "death_lotus",
+    "name": "Lotus mortel",
+    "icon": "🌸",
+    "classId": "assassin",
+    "levelReq": 150,
+    "cooldown": 28,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 62
+    },
+    "range": 7,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Un lotus de lames empoisonnées s’ouvre autour de toi : quatre ondes et un poison tenace.",
+    "color": 8257370,
+    "fx": {
+      "zone": {
+        "r": 7,
+        "t": 6,
+        "dps": 1.8,
+        "at": "self"
+      },
+      "waves": {
+        "n": 4,
+        "gap": 0.4,
+        "r": 7,
+        "mult": 0.9
+      },
+      "dot": [
+        0.5,
+        6,
+        "poison"
+      ]
+    },
+    "aoe": true
+  },
+  {
+    "id": "eclipse",
+    "name": "Éclipse",
+    "icon": "🌘",
+    "classId": "assassin",
+    "levelReq": 175,
+    "cooldown": 45,
+    "duration": 0.7,
+    "cost": {
+      "stamina": 72
+    },
+    "range": 9,
+    "damage": 2.0,
+    "anim": "attack2",
+    "desc": "Le monde s’assombrit : 2 s d’invulnérabilité, une pluie de lames d’ombre et une onde finale.",
+    "color": 11562239,
+    "fx": {
+      "invuln": 2,
+      "buff": {
+        "t": 8,
+        "dmg": 0.4,
+        "speed": 0.3
+      },
+      "rain": {
+        "n": 8,
+        "r": 8,
+        "t": 2.5,
+        "mult": 1.5,
+        "rad": 2.8,
+        "at": "self"
+      },
+      "waves": {
+        "n": 2,
+        "gap": 0.5,
+        "r": 9,
+        "mult": 1.0
+      }
+    },
+    "aoe": true
   }
 ]

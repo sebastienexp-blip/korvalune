@@ -31,6 +31,7 @@ import { sanitizeGeneratedItem, sanitizeItemSlots, sanitizeCubePowers } from './
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
 import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
+import { cleanPotions } from './src/data/potions.js';
 import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
@@ -276,6 +277,7 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   // V10.10 : montures de l'écurie (identifiants du catalogue uniquement)
   clean.mounts = [...new Set((Array.isArray(incoming.mounts) ? incoming.mounts : []).filter(isMountId))].slice(0, MAX_MOUNTS);
   clean.difficulty = Number.isInteger(incoming.difficulty) ? Math.max(0, Math.min(7, incoming.difficulty)) : (prev?.difficulty | 0); // V10.18
+  clean.potions = cleanPotions(incoming.potions, prev?.potions); // V10.22 : potions permanentes
   clean.mountSel = isMountId(incoming.mountSel) && clean.mounts.includes(incoming.mountSel) ? incoming.mountSel : '';
   clean.progress = incoming.progress && typeof incoming.progress === 'object' ? incoming.progress : {};
   // Compteurs d'objectifs (ex: 3/8 loups tués) : uniquement des entiers bornés.
@@ -314,9 +316,8 @@ function sanitizeSave(prev, incoming, elapsedMs) {
     const mig = (o) => {
       if (!o || typeof o !== 'object') return o;
       const x = { ...o };
-      const mode = (m) => (m === 'nephalem' ? 'ascent' : m === 'greater' ? 'zenith' : m);
+      const mode = (m) => (m === 'greater' ? 'zenith' : m);
       if (x.zkeys === undefined && x.gkeys !== undefined) x.zkeys = x.gkeys;
-      if (x.bestAscent === undefined && x.bestNephalem !== undefined) x.bestAscent = x.bestNephalem;
       if (x.bestZenith === undefined && x.bestGreater !== undefined) x.bestZenith = x.bestGreater;
       if (x.open && typeof x.open === 'object') x.open = { ...x.open, modeId: mode(x.open.modeId) };
       if (Array.isArray(x.history)) x.history = x.history.map((h) => (h && typeof h === 'object' ? { ...h, mode: mode(h.mode) } : h));

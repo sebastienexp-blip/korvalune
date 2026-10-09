@@ -13,7 +13,7 @@ const ENEMY_ITEM_CHANCE = 0.3;
 const BOSS_TIER_SHIFT = 8;       // boss normal : décale la courbe de ~8 paliers
 const MAJOR_BOSS_TIER_SHIFT = 14; // boss majeur : encore plus généreux
 const GOBLIN_TIER_SHIFT = 12;     // lutin trésor : rare à attraper, donc très généreux
-const CONSUMABLE_CHANCE = 0.35;
+const CONSUMABLE_CHANCE = 0.12; // V10.22 : potions permanentes, donc plus rares
 
 // V10.21 — potions dans les 6 raretés. Famille : soin 45 %, mana 35 %, renouveau 20 %.
 // La rareté suit la même courbe que les objets (décalée pour boss/coffres) ; le niveau de la source

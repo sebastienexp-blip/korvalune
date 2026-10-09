@@ -154,42 +154,34 @@
     },
     "dialogues": {
       "intro": [
-        "Potions de soin, fioles de mana… tout est frais du matin, foi d'herboriste.",
-        "N'oublie jamais d'en emporter avant de partir à l'aventure."
+        "Mes potions sont à toi pour toujours : une fois achetée, une fiole ne s'épuise jamais, elle a juste besoin de temps pour se recharger.",
+        "Les plus rares ne se vendent pas : il faut les trouver sur les monstres et dans les coffres."
       ]
     },
     "shop": [
       {
-        "itemId": "potion_heal_small",
-        "price": 6
-      },
-      {
         "itemId": "potion_heal_big",
-        "price": 14
-      },
-      {
-        "itemId": "potion_mana",
-        "price": 8
+        "price": 120
       },
       {
         "itemId": "potion_mana_magique",
-        "price": 18
+        "price": 120
       },
       {
         "itemId": "potion_rejuv_commun",
-        "price": 12
+        "price": 100
       },
       {
         "itemId": "potion_rejuv_magique",
-        "price": 30
+        "price": 350
       },
       {
         "itemId": "potion_heal_rare",
-        "price": 55
+        "price": 900
       },
       {
         "itemId": "potion_mana_rare",
-        "price": 60
+        "price": 950
       }
     ]
   },

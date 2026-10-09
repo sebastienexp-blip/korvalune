@@ -146,9 +146,8 @@ export function defaultRiftSave() {
 export function migrateRiftSave(raw) {
   if (!raw || typeof raw !== 'object') return raw;
   const r = { ...raw };
-  const mode = (m) => (m === 'nephalem' ? 'ascent' : m === 'greater' ? 'zenith' : m);
+  const mode = (m) => (m === 'greater' ? 'zenith' : m);
   if (r.zkeys === undefined && r.gkeys !== undefined) r.zkeys = r.gkeys;
-  if (r.bestAscent === undefined && r.bestNephalem !== undefined) r.bestAscent = r.bestNephalem;
   if (r.bestZenith === undefined && r.bestGreater !== undefined) r.bestZenith = r.bestGreater;
   if (r.open && typeof r.open === 'object') r.open = { ...r.open, modeId: mode(r.open.modeId) };
   if (Array.isArray(r.history)) r.history = r.history.map((h) => (h && typeof h === 'object' ? { ...h, mode: mode(h.mode) } : h));

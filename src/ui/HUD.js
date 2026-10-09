@@ -9,6 +9,8 @@ import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
 import { CATALOG, CATEGORIES, CATALOG_BY_ID, COSMETIC_SLOTS } from '../data/shopCatalog.js';
 import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
 import { MultiSell } from './MultiSell.js';
+import { POTION_INFO, potionCooldown, potionServes } from '../data/potions.js';
+import { skillIconHTML } from './SkillIcon.js';
 import { slotCategory, RUNE_BY_ID, fmtBonusMap } from '../data/crafting.js';
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
@@ -31,7 +33,9 @@ function skillFxTags(f, num) {
   if (f.shield) t.push(`Bouclier ${pc(f.shield[0])} PV`);
   if (f.invuln) t.push(`Invulnérable ${num(f.invuln)} s`);
   if (f.restore) { const r = f.restore; t.push(`Rend ${[r.mana && 'mana', r.stamina && 'endurance', r.hp && 'PV'].filter(Boolean).join(' + ')}`); }
-  if (f.zone) t.push(`Zone au sol ${num(f.zone.t)} s${f.zone.heal ? ' (soigne)' : ''}`);
+  if (f.zone) t.push(`Zone au sol ${num(f.zone.t)} s${f.zone.heal ? ' (soigne)' : ''}${f.zone.pull ? ' · attire' : ''}${f.zone.stun ? ' · étourdit' : ''}`);
+  if (f.rain) t.push(`Pluie de ${f.rain.n} impacts (${f.rain.r} m)`);
+  if (f.waves) t.push(`${f.waves.n} onde${f.waves.n > 1 ? 's' : ''} de choc (${f.waves.r} m)${f.waves.heal ? ' · soigne' : ''}`);
   if (f.buff) {
     const b = f.buff, u = [];
     if (b.dmg) u.push(`dégâts +${pc(b.dmg)}`); if (b.speed) u.push(`vitesse ${b.speed > 0 ? '+' : ''}${pc(b.speed)}`);
@@ -89,6 +93,7 @@ export class HUD {
     this.el = {};
     this.ms = new MultiSell(); // V10.21 : sélection multiple / vente groupée
     this.onSellMany = null;
+    this.onPotionSelect = null;
     this._buildDom();
     this._bindEvents();
   }
@@ -126,7 +131,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.21 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.22 — Korvalune</div>
         </div>
       </div>
 
@@ -279,8 +284,8 @@ export class HUD {
         </div>
 
         <div id="potion-quick">
-          <button id="pq-heal" class="pq pq-heal" title="Potion de vie (V)">🧪<span class="pq-n">0</span><span class="pq-k">V</span></button>
-          <button id="pq-mana" class="pq pq-mana" title="Potion de mana (B)">🔷<span class="pq-n">0</span><span class="pq-k">B</span></button>
+          <button id="pq-heal" class="pq pq-heal" title="Potion de vie (V)"><span class="pq-ic">🧪</span><span class="pq-n">30s</span><span class="pq-k">V</span></button>
+          <button id="pq-mana" class="pq pq-mana" title="Potion de mana (B)"><span class="pq-ic">🔷</span><span class="pq-n">30s</span><span class="pq-k">B</span></button>
         </div>
 
         <div id="float-layer"></div>
@@ -306,6 +311,7 @@ export class HUD {
           <div class="eq-box"><div class="bank-col-title">Équipé</div><div class="eq-mini" id="inv-eq"></div><small class="eq-hint">Touchez pour retirer</small></div>
           <div id="inv-main">
             <div id="inv-grid"></div>
+            <div id="inv-potions"></div>
             <div id="inv-sellbar"></div>
             <div id="inv-coins">🪙 <span id="inv-coins-val">0</span></div>
             <div id="inv-cos"></div>
@@ -590,7 +596,7 @@ export class HUD {
       if (id && byId[id]) {
         const s = byId[id];
         b.dataset.skill = id;
-        b.innerHTML = `<span class="sk-icon">${s.icon}</span><span class="sk-key">${keyLabel}</span><div class="sk-cd"></div>`;
+        b.innerHTML = `<span class="sk-icon">${skillIconHTML(s)}</span><span class="sk-key">${keyLabel}</span><div class="sk-cd"></div>`;
         b.addEventListener('click', () => this.bus.emit('skillPressed', id));
       } else {
         b.className += ' skill-slot-empty';
@@ -790,6 +796,24 @@ export class HUD {
     this.ms.renderBar(this.q('#inv-sellbar'), [{ scope: 'inv', slots: inventory.slots, from: 0, to: inventory.slots.length }], rerender, (e) => this._doSellMany(e, rerender));
     this.q('#inv-coins-val').textContent = this._coins || 0;
     this.renderEquipMini('#inv-eq', equipment);
+    this.renderPotionPanel(player);
+  }
+
+  // V10.22 : potions permanentes — choix de la potion associée à chaque bouton (vie / mana)
+  renderPotionPanel(player) {
+    const el = this.q('#inv-potions');
+    if (!el || !player || !player.potions) return;
+    const rows = [['heal', '🧪 Potion de vie (V)'], ['mana', '🔷 Potion de mana (B)']].map(([kind, title]) => {
+      const list = player.potions.owned.filter((id) => potionServes(id, kind)).map((id) => ({ id, def: ITEMS[id] })).filter((x) => x.def)
+        .sort((a, b) => (POTION_INFO[a.id].idx - POTION_INFO[b.id].idx) || (a.id < b.id ? -1 : 1));
+      const btns = list.map(({ id, def }) => {
+        const r = resolveItem({ defId: id, qty: 1 }), on = player.potions[kind] === id;
+        return `<button class="pot-btn${on ? ' on' : ''}" data-pot="${kind}:${id}" style="--pc:${r.rarityInfo.color}" title="${def.desc || ''}"><span>${def.icon}</span><b>${def.name}</b><small>${r.rarityInfo.name} · recharge ${potionCooldown(id)} s</small></button>`;
+      }).join('');
+      return `<div class="pot-row"><div class="pot-title">${title}</div><div class="pot-list">${btns}</div></div>`;
+    }).join('');
+    el.innerHTML = `<div class="pot-head">Potions permanentes <small>(illimitées, avec recharge)</small></div>${rows}`;
+    el.querySelectorAll('[data-pot]').forEach((b) => { b.onclick = () => { const [k, id] = b.dataset.pot.split(':'); if (this.onPotionSelect) this.onPotionSelect(k, id); }; });
   }
 
   // V4.0 : panneau « Équipé » compact (inventaire et coffre). Toucher un objet le retire (this.onUnequip).
@@ -1008,7 +1032,7 @@ export class HUD {
       const cell = document.createElement('button');
       cell.className = 'skill-slot' + (id ? '' : ' skill-slot-empty');
       const keyLabel = i < 9 ? String(i + 1) : '0';
-      cell.innerHTML = id && byId[id] ? `<span class="sk-icon">${byId[id].icon}</span><span class="sk-key">${keyLabel}</span>` : `<span class="sk-key">${keyLabel}</span>`;
+      cell.innerHTML = id && byId[id] ? `<span class="sk-icon">${skillIconHTML(byId[id])}</span><span class="sk-key">${keyLabel}</span>` : `<span class="sk-key">${keyLabel}</span>`;
       if (id) { cell.onclick = () => onToggleBarSlot(i); cell.title = 'Retirer de la barre'; }
       barEl.appendChild(cell);
     });
@@ -1031,7 +1055,7 @@ export class HUD {
       if (s.fx) meta.push(...skillFxTags(s.fx, num));
       const tag = unlocked ? (equipped ? 'Dans la barre' : 'Disponible') : `Niveau ${s.levelReq}`;
       card.innerHTML = `
-        <span class="sk-card-icon">${s.icon}</span>
+        <span class="sk-card-icon">${skillIconHTML(s)}</span>
         <span class="sk-card-info"><b>${s.name}</b><small>${s.desc || ''}</small><span class="sk-meta">${meta.join(' · ')}</span></span>
         <span class="sk-card-tag">${tag}</span>
       `;
@@ -1265,7 +1289,7 @@ export class HUD {
     if (equipment) this.renderEquipMini('#bank-eq', equipment);
   }
 
-  renderShop(npc, player, onBuy, inventory) {
+  renderShop(npc, player, onBuy, inventory, isOwned) {
     this.q('#shop-title').textContent = npc.name;
     this.q('#shop-coins-val').textContent = player.coins;
     const list = this.q('#shop-list');
@@ -1274,11 +1298,13 @@ export class HUD {
       const def = ITEMS[entry.itemId];
       const row = document.createElement('div');
       row.className = 'shop-row';
-      const afford = player.coins >= entry.price;
+      const owned = !!(isOwned && POTION_INFO[entry.itemId] && isOwned(entry.itemId));
+      const afford = player.coins >= entry.price && !owned;
+      const perm = POTION_INFO[entry.itemId] ? `<br><small>Permanente · recharge ${potionCooldown(entry.itemId)} s · ${def.desc || ''}</small>` : '';
       row.innerHTML = `
         <span class="inv-icon" style="border-color:${RARITY[def.rarity]?.color || '#666'}">${def.icon}</span>
-        <div class="shop-info"><b>${def.name}</b><br><span style="color:${RARITY[def.rarity]?.color}">${RARITY[def.rarity]?.label}</span></div>
-        <button class="shop-buy" ${afford ? '' : 'disabled'}>${entry.price} 🪙</button>
+        <div class="shop-info"><b>${def.name}</b><br><span style="color:${RARITY[def.rarity]?.color}">${RARITY[def.rarity]?.label}</span>${perm}</div>
+        <button class="shop-buy" ${afford ? '' : 'disabled'}>${owned ? 'Possédée ✓' : entry.price + ' 🪙'}</button>
       `;
       row.querySelector('.shop-buy').onclick = () => onBuy(entry);
       list.appendChild(row);
@@ -1288,7 +1314,7 @@ export class HUD {
     if (sellBox) sellBox.classList.toggle('hidden', !inventory);
     if (inventory) {
       this.ms.on = true;
-      const rerender = () => this.renderShop(npc, player, onBuy, inventory);
+      const rerender = () => this.renderShop(npc, player, onBuy, inventory, isOwned);
       const grid = this.q('#shop-sell-grid');
       grid.innerHTML = '';
       inventory.slots.forEach((slot, i) => {

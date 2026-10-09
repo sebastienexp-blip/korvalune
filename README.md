@@ -502,7 +502,7 @@ dans Termux. Réglage : **Pause → Paramètres → « Effets visuels V2.5 »** 
 
 
 
-## V6.1 — Caméra façon Diablo 3, décor translucide, sons et torches retirés
+## V6.1 — Caméra isométrique, décor translucide, sons et torches retirés
 
 - **Caméra fixe** (mode « Vue aérienne », par défaut) : angle et inclinaison verrouillés, plus aucune rotation ; le zoom (molette / pincement) reste possible dans une plage resserrée. Le mode « Libre (3ᵉ personne) » existe toujours dans les paramètres.
 - **Décor translucide** : arbres, rochers, murs et toits qui se trouvent entre la caméra et le personnage s'estompent (tramage dans le shader, sans doublon ni coût notable) ; les ombres restent. Le héros, les PNJ et les monstres restent toujours visibles.
@@ -643,7 +643,7 @@ Tous les réglages s'appliquent immédiatement et sont sauvegardés sur l'appare
 ## V3.9 — Coffre réparé et noms 100 % originaux
 
 - **Coffre de la ville** : les objets générés (équipement à affixes) déposés dans le coffre disparaissaient au lieu d'apparaître ; le transfert coffre ⇄ inventaire fonctionne maintenant pour tous les objets, avec gestion des cas « inventaire plein » / « coffre plein » (rien n'est perdu).
-- **Propriété intellectuelle** : tout le vocabulaire qui rappelait de trop près un autre jeu a été remplacé par des noms propres à Korvalune — *Failles de Nephalem* → **Spires d'Éther** (modes **Ascension** et **Zénith**), pylônes → **obélisques**, sanctuaires → **totems**, gemmes → **cristaux**, Gloire → **Ferveur d'éther**, éclats de sang → **poussière d'éther**, gobelin au trésor → **lutin pillard**, coffre maudit → **coffre piégé**, « Vue Diablo » → **Vue aérienne**, affixes d'élites et quelques noms de compétences (Blizzard, Singularité, Vengeance, Consécration, Météore…) renommés. Les mécaniques de jeu restent les mêmes.
+- **Propriété intellectuelle** : tout le vocabulaire qui rappelait de trop près un autre jeu a été remplacé par des noms propres à Korvalune (spires d'éther, obélisques, totems, cristaux, ferveur d'éther, poussière d'éther, lutin pillard, coffre piégé, vue aérienne…). Les mécaniques de jeu restent les mêmes.
 - Les anciennes sauvegardes (V3.7/V3.8) sont converties automatiquement (clés, cristaux, records, spire ouverte, réglage de caméra).
 - Note : ce nettoyage porte sur les noms et textes. Pour une commercialisation, faites aussi vérifier le jeu par un professionnel (recherche de marques, textes, musiques, ressources externes) : je ne suis pas juriste.
 
@@ -802,12 +802,12 @@ Dites-moi ce qui vous intéresse et on continue.
 - **Musique** : 4 à 6 variantes par ambiance (tonalité, gamme, tempo, progression, timbre), tirées au hasard à chaque nouveau morceau (16 à 28 mesures), jamais deux fois la même d'affilée.
 - **Drops** : la rareté 25 (Absolu) a 1 % de chance par objet généré ; les 24 autres décroissent proportionnellement (rareté 1 ≈ 10 %, rareté 13 ≈ 3 %). Les boss gardent un bonus de rareté. Réglage : `TOP_TIER_CHANCE` dans `src/data/rarities.js`.
 
-## V6.4 — Courbe de butin façon Diablo 3
+## V6.4 — Courbe de butin
 - Nouvelle courbe de rareté (sans décalage) : raretés 1-3 ≈ 53 %, 4-7 ≈ 22 %, 8-12 ≈ 10 %, 13-24 ≈ 13 % (≈ 1,0 à 1,25 % chacune), 25 (Absolu) = 1 %. Commun ≈ 25 %, Épique ≈ 1,6 %.
 - Les boss / coffres / lutin trésor gardent leur bonus de rareté (courbe décalée vers le haut).
 - Réglage : tableau `BASE_PCT` dans `src/data/rarities.js`.
 
-## V6.5 — 6 raretés façon Diablo 3/4, nouvelles failles, butin plus spectaculaire
+## V6.5 — 6 raretés, nouvelles failles, butin plus spectaculaire
 - **Raretés réduites à 6** : Commun (gris/blanc), Magique (bleu), Rare (jaune), Légendaire (orange), Mythique (violet), Absolu (arc-en-ciel). Chance par objet (ennemi normal) : 48 / 30 / 15 / 4,5 / 1,5 / 1 %. Les boss, coffres, lutin trésor et gardiens de faille décalent la courbe vers le haut.
 - Les anciens objets des sauvegardes (ancien système 1-25) sont **convertis automatiquement** dans la classe correspondante, leurs statistiques ne changent pas.
 - Chaque rareté : plus de bonus aléatoires ; Légendaire / Mythique / Absolu ont toujours au moins 1 / 2 / 3 effets spéciaux.
@@ -920,7 +920,7 @@ Nouveau bouton 🌙 dans la barre latérale du jeu (connexion à un compte requi
 
 - Le jeu s'appelle désormais **Korvalune** (nom inventé : aucune occurrence trouvée dans mes recherches web de jeux, studios et marques — ce n'est PAS une garantie juridique : fais une recherche officielle et envisage un dépôt de marque avant toute commercialisation).
 - Remplacé partout où le joueur le voit : titre, écran d'accueil, crédits, ville, région « Prairies de Korvalune », quêtes, PNJ, succès, objets, messages serveur, titre de la page.
-- Retiré toute mention d'autres jeux dans l'interface (« façon Diablo ») et dans les commentaires du code.
+- Retiré toute mention d'autres jeux dans l'interface (références à d’autres jeux) et dans les commentaires du code.
 - Conservés volontairement (invisibles pour les joueurs) : clés internes de sauvegarde du navigateur (`aetheria.*`), dossier `aetheria/` du zip, noms du service et du disque sur Render/Fly (renommer demanderait de recréer le service). Les sauvegardes existantes restent donc lisibles.
 - Reste à faire de ton côté : renommer le dépôt GitHub et recréer le service Render si tu veux une adresse `…korvalune…onrender.com`.
 
@@ -1098,3 +1098,11 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Potions** (`src/data/potions.js`, `items.json`) : 3 familles (soin, mana, renouveau) × 6 raretés. `LootSystem.potion(level, shift)` tire famille (45/35/20 %) puis rareté (courbe des objets, plafonnée selon le niveau de la source) ; utilisé par monstres, boss, coffres de donjon/monde et lutin trésor. La potion rapide (V/B) préfère les potions « pures » avant le renouveau.
 - **Vente groupée** (`src/ui/MultiSell.js`) : bouton « Sélection multiple » dans l'inventaire et le coffre ; section « Vendre vos objets » chez les marchands (toujours active). Sélection rapide de l'équipement par rareté, total en direct, confirmation en deux temps. `Game._sellEntries` vend valeur × quantité.
 - **Serveur** : le client envoie un cumul monotone `soldTotal` ; seule sa hausse relève le plafond de gains de la sauvegarde (les gros objets valent des centaines de milliers de pièces). Plafond de pièces porté à 99 999 999.
+
+## V10.22 — Potions permanentes, mode vertical, compétences spectaculaires
+
+- **Potions permanentes** : `Player.potions = { owned, heal, mana }` (sauvegardé, nettoyé côté serveur par `cleanPotions`). `Inventory.add` redirige toute potion vers `Game._collectPotion` (nouvelle → débloquée, déjà connue → quelques pièces). Recharge par rareté dans `src/data/potions.js` (`POTION_CD`, renouveau ×1,3). Choix de la potion active dans l'inventaire ; les anciennes potions en sac sont converties au chargement.
+- **Vertical + horizontal** : plus de message « tourne ton téléphone », plus de verrouillage paysage (manifeste Android en `fullSensor`). Bloc CSS `@media (orientation: portrait)`, champ de vision vertical élargi (`Game._fovMul`), disposition des boutons tactiles mémorisée par orientation (`layout` / `layoutP`).
+- **Compétences** : nouveaux effets `fx.rain` (pluie d'impacts), `fx.waves` (ondes de choc successives) et zones avec `pull` (attire) / `stun` (étourdit en continu) dans `SkillEffects.js`. 30 nouvelles compétences et ~35 compétences existantes renforcées (`src/data/skills.json`).
+- **Icônes uniques** : 181 compétences, 181 pictogrammes distincts + cadre SVG généré par identifiant (`src/ui/SkillIcon.js`).
+- Difficultés renommées (Voyageur, Aguerri, Vétéran, Champion, Fléau I–IV) ; plus aucune mention d'autres jeux.

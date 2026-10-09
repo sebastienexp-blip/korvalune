@@ -21,7 +21,7 @@ export class TouchControls {
       this.el[id] = e; this.home[id] = { parent: e.parentElement, next: e.nextSibling };
       if (id !== 'joy') e.dataset.tid = id;
     }
-    this.joyScale = 1; this.editing = false; this.layout = {};
+    this.joyScale = 1; this.editing = false; this.layoutL = {}; this.layoutP = {}; this.portrait = innerHeight > innerWidth * 1.02;
     this.mode = 'auto';
     this._bindStick();
     this._bindButtons(root);
@@ -49,10 +49,15 @@ export class TouchControls {
     st.setProperty('--joy', String(this.joyScale));
     st.setProperty('--tbo', String(t.opacity ?? 1));
     this.root.classList.toggle('lefthand', !!t.leftHand);
-    this.layout = t.layout || {};
+    this.layoutL = t.layout || {}; this.layoutP = t.layoutP || {};
     this.applyLayout();
     this.refreshEnabled();
   }
+
+  // V10.22 : une disposition personnalisée par orientation (vertical / horizontal)
+  get layout() { return this.portrait ? this.layoutP : this.layoutL; }
+  set layout(v) { if (this.portrait) this.layoutP = v; else this.layoutL = v; }
+  orientationChanged(portrait) { if (portrait === this.portrait) return; this.portrait = portrait; this.applyLayout(); }
 
   applyLayout() {
     for (const id of Object.keys(this.el)) {
@@ -123,7 +128,7 @@ export class TouchControls {
   // --- mode « modifier la disposition » ---
   startEdit() { this.editing = true; this.root.classList.add('touch-edit'); this.refreshEnabled(); }
   stopEdit() { this.editing = false; this.root.classList.remove('touch-edit'); this.refreshEnabled(); }
-  resetLayout() { this.layout = {}; this.applyLayout(); this.onLayout && this.onLayout(this.layout); }
+  resetLayout() { this.layout = {}; this.applyLayout(); this.onLayout && this.onLayout(this.layout, this.portrait); }
 
   _bindEdit() {
     for (const [id, e] of Object.entries(this.el)) {
@@ -145,7 +150,7 @@ export class TouchControls {
         this.layout[id] = { x: +x.toFixed(4), y: +y.toFixed(4) };
         e.style.left = (x * 100) + '%'; e.style.top = (y * 100) + '%';
       });
-      const end = () => { if (!drag) return; drag = null; e.classList.remove('dragging'); this.onLayout && this.onLayout(this.layout); };
+      const end = () => { if (!drag) return; drag = null; e.classList.remove('dragging'); this.onLayout && this.onLayout(this.layout, this.portrait); };
       e.addEventListener('pointerup', end); e.addEventListener('pointercancel', end);
     }
   }

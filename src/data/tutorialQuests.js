@@ -11,7 +11,7 @@ export const TUTORIAL_QUESTS = [
       ev('camera', 'Zoomez la caméra (molette ou pincement à deux doigts)', 'camera'),
       ev('roll', 'Faites une roulade ({k:roll} ou bouton 🌀) : brève invulnérabilité !', 'roll'),
       { id: 'talk', text: 'Parlez au garde Halvar (touche {k:interact} près de lui)', type: 'talk', target: 'guard',
-        give: { items: [{ defId: 'potion_heal_small', qty: 3 }], ground: ['chest_common'] } },
+        give: { items: [], ground: ['chest_common'] } },
       ev('loot', 'Halvar a posé une armure au sol : ramassez-la ({k:interact} à côté)', 'loot'),
       ev('inventory', 'Ouvrez l\'inventaire ({k:inventory} ou bouton 🎒)', 'inventory'),
       ev('equip', 'Touchez l\'armure puis « Équiper »', 'equip'),

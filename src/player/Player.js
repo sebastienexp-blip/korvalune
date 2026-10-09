@@ -1,3 +1,4 @@
+import { cleanPotions } from '../data/potions.js';
 import { playSkillCast, playSkillImpact } from '../audio/SkillSounds.js';
 import * as THREE from 'three';
 import { CONFIG } from '../core/config.js';
@@ -46,6 +47,7 @@ export class Player {
     this.level = save?.level || 1;
     this.xp = save?.xp || 0;
     this.coins = save?.coins ?? 25;
+    this.potions = cleanPotions(save?.potions); // V10.22 : potions permanentes {owned, heal, mana}
     this.soldTotal = Math.max(0, Math.floor(save?.soldTotal || 0)); // V10.21 : cumul des ventes (le serveur n'accepte que la hausse)
     this.stats = { str: 5, agi: 5, int: 5, vit: 5, spi: 5, luck: 5, ...(save?.stats || {}) };
     this.statPoints = save?.statPoints || 0;
@@ -287,6 +289,8 @@ export class Player {
   }
 
   addCoins(n) { this.coins += n; this.bus.emit('hud'); }
+  // V10.22 : retourne true si la potion est nouvelle
+  addPotion(id) { if (this.potions.owned.includes(id)) return false; this.potions.owned.push(id); return true; }
   addSale(n) { n = Math.max(0, Math.floor(n)); this.soldTotal += n; this.addCoins(n); } // V10.21
 
   spendStatPoint(statName) {
@@ -606,7 +610,7 @@ export class Player {
   serialize() {
     return {
       classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, look: this.look, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
-      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
+      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, potions: this.potions, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
       skillBar: this.skillBar
     };
   }

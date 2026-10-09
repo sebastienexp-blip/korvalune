@@ -1,3 +1,4 @@
+import { POTION_INFO } from '../data/potions.js';
 import { getItem, nextInstanceId } from './Item.js';
 
 const ROWS = 5, COLS = 6;
@@ -43,6 +44,7 @@ export class Inventory {
   add(defId, qty = 1) {
     const def = getItem(defId);
     if (!def) return false;
+    if (this.potionHook && POTION_INFO[defId]) { this.potionHook(defId, qty); return 0; } // V10.22 : les potions sont permanentes, elles ne vont plus dans le sac
     let remaining = qty;
     if (def.stackable) {
       let idx;

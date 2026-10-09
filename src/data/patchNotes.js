@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.22', title: 'Potions permanentes, jeu à la verticale et compétences spectaculaires',
+    items: [
+      '🧪 Les potions sont désormais permanentes : une fois trouvée ou achetée, une potion est à toi pour toujours et s’utilise à l’infini. En contrepartie, chaque potion a un temps de recharge (30 s pour une Commune, jusqu’à 10 s pour une Absolue). Les boutons et les touches V / B utilisent la potion que tu as choisie dans l’inventaire. Tes anciennes potions en sac sont converties automatiquement.',
+      '📱 Le jeu se joue maintenant aussi à la verticale : tourne ton téléphone ou ta tablette quand tu veux, l’écran, les commandes et la vue s’adaptent tout seuls. Chaque orientation garde sa propre disposition de boutons.',
+      '✨ 30 nouvelles compétences (6 par classe, du niveau 45 au niveau 175) : pluies de météores, ondes de choc successives, puits de gravité, cages d’orage, ailes de l’archange, éclipse… et une vingtaine de compétences existantes de haut niveau deviennent des attaques de zone.',
+      '🖼️ Chaque compétence a maintenant sa propre icône, unique, avec un cadre qui s’enrichit avec le niveau.',
+      '⚔️ Les niveaux de difficulté changent de noms : Voyageur, Aguerri, Vétéran, Champion et Fléau I à IV.'
+    ]
+  },
+  {
     version: '10.21', title: 'Potions de toutes raretés et vente groupée',
     items: [
       '🧪 Trois familles de potions : soin, mana et renouveau (vie + mana), chacune en 6 raretés — Commun, Magique, Rare, Légendaire, Mythique et Absolu. Plus la rareté est haute, plus la potion rend de vie ou de mana.',
@@ -36,7 +46,7 @@ export const PATCH_NOTES = [
   {
     version: '10.18', title: 'Difficulté, équilibrage et traversée des eaux',
     items: [
-      '⚔️ Difficulté façon Diablo : Normal, Difficile, Expert, Maître et 4 niveaux de Tourment. Plus c’est dur, plus les monstres sont solides, mais plus l’or, l’expérience et les objets rares abondent. Se règle en ville (menu pause) et se sauvegarde avec le personnage.',
+      '⚔️ Difficulté à paliers : Voyageur, Aguerri, Vétéran, Champion et 4 niveaux de Fléau. Plus c’est dur, plus les monstres sont solides, mais plus l’or, l’expérience et les objets rares abondent. Se règle en ville (menu pause) et se sauvegarde avec le personnage.',
       '🐴 Chevaux et 🦅 griffons traversent l’eau : les chevaux nagent (un peu plus lentement), les griffons la survolent sans être ramenés sur la berge.',
       '🧱 Plus de tirs ni de coups à travers les murs : les cibles derrière un bâtiment ne peuvent plus être touchées, ni toucher.',
       '🛡️ Les monstres de haut niveau sont plus coriaces et la défense devient un pourcentage de réduction qui plafonne, pour que le défi suive ta progression.',

@@ -71,7 +71,7 @@ const VARIANTS = {
 };
 const HARP_PATTERNS = [[0, 1, 2, 3, 2, 1, 2, 1], [0, 2, 1, 3, 2, 4, 3, 2], [0, 1, 2, 1, 3, 2, 1, 0], [0, 2, 3, 2, 4, 3, 2, 1]];
 const LEAD_RHYTHMS = [[1, 1, 2], [2, 1, 1], [1, 0.5, 0.5, 2], [3, 1], [1.5, 0.5, 1, 1], [1, 1, 1, 1]];
-const MIN_GAP = { hit: 40, swing: 70, click: 30, step: 80, bow: 60, cast: 80, arrowHit: 35, boltHit: 35, enemyAttack: 140, enemyHurt: 90, kill: 100, loot: 120, pickup: 60, land: 120, legendary: 600, absolute: 900, coin: 50, globe: 60, pylon: 200 };
+const MIN_GAP = { hit: 40, swing: 70, click: 30, step: 80, bow: 60, cast: 80, arrowHit: 35, boltHit: 35, enemyAttack: 140, enemyHurt: 90, kill: 100, loot: 120, pickup: 60, land: 120, legendary: 600, absolute: 900, explode: 120, coin: 50, globe: 60, pylon: 200 };
 const UI_SOUNDS = new Set(['click', 'open', 'close', 'quest', 'zone', 'coin', 'equip', 'error', 'legendary', 'absolute']);
 const SENDS = { sfx: 0.2, ui: 0.08, ambience: 0.28, music: 0.5 };
 const BUS_LEVEL = { sfx: 1.5, ui: 1.2, ambience: 0.4, music: 0.7 };
