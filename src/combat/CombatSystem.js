@@ -77,6 +77,7 @@ export class CombatSystem {
     const flight = skill.heal || !skill.damage ? null : (kind === 'arrow' ? this._shootArrows(skill, p, targets, lockedTarget) : kind === 'bolt' ? this._shootBolts(skill, p, targets, lockedTarget) : null);
     this._castFx(skill, p, targets, !!flight);
     if (skill.fx) { this.sfx.onCast(skill, p, targets, lockedTarget); this.sfx.visual(skill, p, targets, lockedTarget, !!flight); }
+    this.sfx.grandeur(skill, p, lockedTarget); // V10.26 : mise en scène qui grandit avec le niveau et le rang
     if (skill.heal) {
       p.heal(p.maxHp * skill.heal);
       return;
@@ -99,9 +100,10 @@ export class CombatSystem {
     const crit = Math.random() < p.critChance + (p.sbCrit || 0) + (f.crit || 0);
     let mult = 1;
     if (f.execute && t.maxHp && t.hp / t.maxHp < f.execute[0]) mult += f.execute[1];
+    if (p.bossDmgPct && (t.def?.boss || t.isBoss || t.champion)) mult += p.bossDmgPct; // V10.26
     const dmg = Math.round(p.atk * skill.damage * (p.dmgMult || 1) * (p.sbDmg || 1) * mult * (crit ? p.critMult : 1) * (0.9 + Math.random() * 0.2));
     const dealt = t.takeDamage(dmg, crit, p) || 0;
-    const ls = (f.lifesteal || 0) + (p.sbLifesteal || 0);
+    const ls = (f.lifesteal || 0) + (p.sbLifesteal || 0) + (p.lifestealPct || 0);
     if (ls > 0 && dealt > 0) p.heal(dealt * ls, true);
     if (k === 0 && skill.fx) this.sfx.hitExtras(skill, p, t, dealt);
     this.particles.emit(t.pos.x, t.pos.y + 1, t.pos.z, { count: crit ? 22 : 12, color: crit ? 0xffd23f : 0xffffff, speed: 3.4, life: 0.5 });

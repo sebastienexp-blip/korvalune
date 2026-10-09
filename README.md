@@ -1125,3 +1125,11 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Compétences** : nouveaux effets `fx.rain` (pluie d'impacts), `fx.waves` (ondes de choc successives) et zones avec `pull` (attire) / `stun` (étourdit en continu) dans `SkillEffects.js`. 30 nouvelles compétences et ~35 compétences existantes renforcées (`src/data/skills.json`).
 - **Icônes uniques** : 181 compétences, 181 pictogrammes distincts + cadre SVG généré par identifiant (`src/ui/SkillIcon.js`).
 - Difficultés renommées (Voyageur, Aguerri, Vétéran, Champion, Fléau I–IV) ; plus aucune mention d'autres jeux.
+
+
+## V10.26 — Builds, objet secondaire, rangs de compétences, besace
+
+- **Objets de build** (`src/data/builds.js`) : 6 voies × 5 pièces × 5 classes = 150 objets. Seuls `buildId` et `buildPiece` sont stockés ; bonus (`buildMods`), pouvoir de l'arme (`buildProc`) et bonus de lignée 2/4/5 pièces (`activeBuildBonuses`) sont recalculés depuis les définitions, y compris côté serveur (`server/itemValidate.js`). Nouveaux bonus : `skillDmgPct, bossDmgPct, lifestealPct, cdrPct, costRedPct, killHealPct` (lus dans `Player.recomputeDerived`, `CombatSystem._applyHit`, `Game` pour les soins à la victoire).
+- **Objet secondaire** : `OFFHAND_BASES` (`itemBases.js`), catégorie `offhand` du générateur, apparence via `HumanoidModel.equipVisuals.offs`.
+- **Rangs de compétences** (`src/combat/SkillRanks.js`) : `effectiveSkill` renvoie une copie (dégâts × progression de niveau × rang × bonus d'objets, recharge, coût, rayon). `Player.skillRanks`, validé côté serveur (`cleanRanks`, +3 rangs par sauvegarde). Visuels : `SkillEffects.grandeur`.
+- **Besace des matériaux** (`src/data/satchel.js`) : `Player.satchel`, `Inventory.add` y verse `mat_*` et `rune_*`, `Crafting.countItem/takeMats` la lisent ; plafond de gain par minute côté serveur.

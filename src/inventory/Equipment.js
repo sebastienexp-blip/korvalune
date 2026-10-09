@@ -1,4 +1,5 @@
 import { activeSetBonuses } from '../data/sets.js';
+import { activeBuildBonuses, NEW_KEYS } from '../data/builds.js';
 import { getItem, resolveItem, nextInstanceId } from './Item.js';
 
 export const SLOTS = ['head', 'shoulders', 'chest', 'gloves', 'legs', 'boots', 'cape', 'mainhand', 'offhand', 'ring', 'necklace'];
@@ -10,7 +11,8 @@ export const SLOT_LABELS = {
 const BONUS_KEYS = [
   'atk', 'def', 'hp', 'mana', 'crit', 'str', 'agi', 'int', 'vit', 'spi', 'luck',
   'atkSpeedPct', 'critDmgPct', 'fireResPct', 'iceResPct', 'lightningResPct', 'dmgReductionPct', 'hpRegen', 'manaRegen',
-  'moveSpeedPct', 'xpPct', 'goldPct', 'staRegenPct'
+  'moveSpeedPct', 'xpPct', 'goldPct', 'staRegenPct',
+  ...NEW_KEYS // V10.26 : bonus des objets de build
 ];
 
 // Emplacements d'équipement du joueur. Calcule le bonus total de stats
@@ -69,11 +71,13 @@ export class Equipment {
       if (view.broken) continue; // V10.19 : un équipement brisé n'apporte plus rien (à réparer chez le forgeron)
       for (const [k, v] of Object.entries(view.stats || {})) if (k in bonus) bonus[k] += v;
       for (const aff of view.affixes || []) if (aff.key in bonus) bonus[aff.key] += aff.value;
+      if (view.bmods) for (const [k, v] of Object.entries(view.bmods)) if (k in bonus) bonus[k] += v;
       if (view.socketBonus) for (const [k, v] of Object.entries(view.socketBonus)) if (k in bonus) bonus[k] += v;
       for (const eff of view.effects || []) effects.push({ ...eff, sourceSlot: s });
     }
     // V10.19 : pouvoirs extraits au Monolithe (un par catégorie : arme / armure / bijou)
     for (const eff of Object.values(this.player.cubePowers || {})) if (eff) effects.push({ ...eff, sourceSlot: 'cube' });
+    for (const ab of activeBuildBonuses(this.slots, resolveItem)) for (const m of ab.bonus) for (const [k, v] of Object.entries(m)) if (k in bonus) bonus[k] += v;
     const sb = activeSetBonuses(this.slots);
     for (const b of sb.bonus) for (const [k, v] of Object.entries(b)) if (k in bonus) bonus[k] += v;
     for (const e of sb.effects) effects.push(e);

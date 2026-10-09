@@ -1,10 +1,11 @@
 import { RARITIES, getRarity, rollRarityTier } from '../data/rarities.js';
-import { WEAPON_BASES, ARMOR_BASES, ACCESSORY_BASES, ACCESSORY_STAT_POOL, NAME_PREFIXES, NAME_SUFFIXES, namePoolForTier } from '../data/itemBases.js';
+import { OFFHAND_BASES, OFFHAND_BY_CLASS, WEAPON_BASES, ARMOR_BASES, ACCESSORY_BASES, ACCESSORY_STAT_POOL, NAME_PREFIXES, NAME_SUFFIXES, namePoolForTier } from '../data/itemBases.js';
 import { AFFIX_POOL, rollAffixValue } from '../data/affixPool.js';
 import { CLASS_WEAPONS } from '../combat/WeaponRules.js';
 import { SETS_BY_CLASS, SET_SLOTS } from '../data/sets.js';
 import { effectsAvailableForTier, rollEffectChance } from '../data/itemEffectPool.js';
 import { getDifficulty } from '../data/difficulty.js';
+import { BUILDS_BY_CLASS, BUILDS, BUILD_TIER, BUILD_PIECES, buildProc } from '../data/builds.js';
 
 export const MAX_ITEM_LEVEL = 200;
 let lootClass = null;
@@ -101,6 +102,13 @@ export function generateItem({ category, baseKey, itemLevel = 1, rarityTier = 1 
     stats.def = Math.max(1, Math.round((b.base + itemLevel * b.perLevel) * rarity.statMult));
     stats.hp = Math.max(1, Math.round((b.hpBase + itemLevel * b.hpPerLevel) * rarity.statMult));
     baseKey = key;
+  } else if (category === 'offhand') { // V10.26 : objet secondaire
+    const key = baseKey && OFFHAND_BASES[baseKey] ? baseKey : pickRandom((lootClass && OFFHAND_BY_CLASS[lootClass]) || Object.keys(OFFHAND_BASES));
+    const b = OFFHAND_BASES[key];
+    type = 'armor'; slot = 'offhand'; visual = b.visual; icon = b.icon; baseName = b.name;
+    for (const st of ['atk', 'def', 'hp', 'int', 'agi', 'mana']) if (b[st]) stats[st] = Math.max(1, Math.round((b[st][0] + itemLevel * b[st][1]) * rarity.statMult));
+    if (b.crit) stats.crit = Math.round(b.crit * rarity.statMult * 1000) / 1000;
+    baseKey = key;
   } else { // accessory
     const key = baseKey && ACCESSORY_BASES[baseKey] ? baseKey : pickRandom(Object.keys(ACCESSORY_BASES));
     const b = ACCESSORY_BASES[key];
@@ -159,17 +167,41 @@ export function rollSetItem(sourceLevel, itemLevel) {
   const set = sets[Math.floor(Math.random() * sets.length)];
   return generateSetItem(set, Math.floor(Math.random() * 6), itemLevel);
 }
+// V10.26 — objet de build : 6 voies × 5 pièces par classe, rareté fixe, bonus recalculés depuis builds.js (pas d'affixes aléatoires).
+export function generateBuildItem(buildId, pieceIdx, itemLevel) {
+  const b = BUILDS[buildId], pc = BUILD_PIECES[pieceIdx];
+  const wi = BUILDS_BY_CLASS[b.classId].indexOf(b);
+  const cw = CLASS_WEAPONS[b.classId] || ['sword'];
+  const offKey = (OFFHAND_BY_CLASS[b.classId] || ['shield'])[0];
+  const baseKey = pc.category === 'weapon' ? cw[wi % cw.length] : pc.category === 'offhand' ? offKey : pc.baseKey;
+  const prev = lootClass; lootClass = b.classId;
+  let it; try { it = generateItem({ category: pc.category, baseKey, itemLevel: Math.max(1, itemLevel), rarityTier: BUILD_TIER }); } finally { lootClass = prev; }
+  const baseName = ({ ...WEAPON_BASES, ...ARMOR_BASES, ...ACCESSORY_BASES, ...OFFHAND_BASES }[it.baseKey] || {}).name || it.name;
+  it.affixes = [];
+  it.effects = pieceIdx === 0 && buildProc(buildId) ? [buildProc(buildId)] : [];
+  it.name = `${baseName} ${b.epithet}`;
+  it.buildId = buildId; it.buildPiece = pieceIdx;
+  it.value = Math.round(it.value * 1.4);
+  it.desc = `Voie « ${b.name} » (${b.wayLabel}) — ${b.blurb}`;
+  return it;
+}
+export function rollBuildItem(itemLevel) {
+  const list = BUILDS_BY_CLASS[lootClass]; if (!list) return null;
+  return generateBuildItem(list[Math.floor(Math.random() * list.length)].id, Math.floor(Math.random() * 5), itemLevel);
+}
+export const BUILD_DROP_CHANCE = 0.3; // part des objets de rareté 9+ qui deviennent un objet de build
 export const SET_DROP_CHANCE = 0.4; // part des objets Légendaire+ qui deviennent une pièce de set
 
 export function rollLootItem({ sourceLevel = 1, tierShift = 0, minTier = 1, maxTier = 25, levelSpread = [-1, 3] } = {}) {
   if (lootLevel > 0) { sourceLevel = lootLevel; levelSpread = [0, 5]; }
   tierShift += getDifficulty().shift; // difficulté choisie : plus de raretés élevées
   const roll = Math.random();
-  const category = roll < 0.4 ? 'weapon' : roll < 0.8 ? 'armor' : 'accessory';
+  const category = roll < 0.34 ? 'weapon' : roll < 0.68 ? 'armor' : roll < 0.85 ? 'accessory' : 'offhand';
   const rarityTier = rollRarityTier({ shift: tierShift, minTier, maxTier });
   const [lo, hi] = levelSpread;
   const itemLevel = Math.max(1, sourceLevel + Math.floor(lo + Math.random() * (hi - lo + 1)));
   if (rarityTier >= 13 && lootClass && Math.random() < SET_DROP_CHANCE) { const si = rollSetItem(sourceLevel, itemLevel); if (si) return si; }
+  if (rarityTier >= 9 && lootClass && Math.random() < BUILD_DROP_CHANCE) { const bi = rollBuildItem(itemLevel); if (bi) return bi; }
   return generateItem({ category, itemLevel, rarityTier });
 }
 

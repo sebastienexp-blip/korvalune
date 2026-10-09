@@ -300,6 +300,23 @@ function createHumanoidV25(opts = {}) {
   const bossGem = add(new THREE.SphereGeometry(0.07, 10, 8), leather, shieldGrp, 0.14, 0, 0);
   bossGem.scale.set(0.5, 1, 1);
   shieldGrp.visible = !!(o.equipVisible && o.shield);
+  // V10.26 — autres objets secondaires : orbe flottant (mage), carquois dans le dos (archer), dague de la main gauche (assassin)
+  const orbMat = mat(0x8a6cff, { emissive: 0x6a4cff, emissiveIntensity: 0.9, roughness: 0.15, metalness: 0.2 });
+  const orbGrp = new THREE.Group(); armL.hand.add(orbGrp); orbGrp.position.set(0.04, 0.05, 0.12);
+  add(new THREE.SphereGeometry(0.1, 14, 12), orbMat, orbGrp, 0, 0, 0);
+  const orbRing = add(new THREE.TorusGeometry(0.15, 0.012, 6, 20), trimMat, orbGrp, 0, 0, 0); orbRing.rotation.x = Math.PI / 2.4;
+  orbGrp.visible = false;
+  const quiverMat = mat(0x6b4a2b, { roughness: 0.85 });
+  const quiverGrp = new THREE.Group(); torso.add(quiverGrp); quiverGrp.position.set(0.12, 0.5, -0.2); quiverGrp.rotation.z = -0.35;
+  add(new THREE.CylinderGeometry(0.06, 0.05, 0.5, 10), quiverMat, quiverGrp, 0, 0, 0);
+  for (let i = 0; i < 3; i++) add(new THREE.CylinderGeometry(0.008, 0.008, 0.18, 5), trimMat, quiverGrp, -0.025 + i * 0.025, 0.32, 0);
+  quiverGrp.visible = false;
+  const offDagMat = mat(0xcfd6dc, { roughness: 0.2, metalness: 0.95 });
+  const offDagGrp = new THREE.Group(); offDagGrp.rotation.x = Math.PI / 2; armL.hand.add(offDagGrp);
+  add(new THREE.CylinderGeometry(0.018, 0.018, 0.13, 8), leather, offDagGrp, 0, 0, 0);
+  add(new THREE.BoxGeometry(0.15, 0.03, 0.045), steel, offDagGrp, 0, 0.08, 0);
+  add(new THREE.BoxGeometry(0.04, 0.36, 0.012), offDagMat, offDagGrp, 0, 0.27, 0);
+  offDagGrp.visible = false;
 
   const makeLeg = (side) => {
     const pivot = new THREE.Group();
@@ -338,7 +355,7 @@ function createHumanoidV25(opts = {}) {
   shoulderR.visible = shoulderL.visible = o.equipVisible;
 
   const weaponMats = { sword: swordBladeMat, dagger: daggerBladeMat, staff: staffGemMat, bow: bowWoodMat };
-  const matRefs = { chest: chestMat, cloth, cape: capeMat, shield: shieldMat, helm: helmMat, shoulders: shoulderMat, weapons: weaponMats };
+  const matRefs = { chest: chestMat, cloth, cape: capeMat, shield: shieldMat, orb: orbMat, quiver: quiverMat, offdagger: offDagMat, helm: helmMat, shoulders: shoulderMat, weapons: weaponMats };
   const seenBase = new Set();
   const captureBase = (m) => { if (m && !seenBase.has(m)) { m.userData.__base = m.color.getHex(); seenBase.add(m); } };
   for (const v of Object.values(matRefs)) {
@@ -346,7 +363,7 @@ function createHumanoidV25(opts = {}) {
     else if (v && typeof v === 'object') for (const m of Object.values(v)) captureBase(m);
   }
 
-  const equipVisuals = { weapons, shield: shieldGrp, helm, shoulders: [shoulderR, shoulderL], chest: chestPlate, cape };
+  const equipVisuals = { weapons, shield: shieldGrp, offs: { shield: shieldGrp, orb: orbGrp, quiver: quiverGrp, offdagger: offDagGrp }, helm, shoulders: [shoulderR, shoulderL], chest: chestPlate, cape };
   root.scale.setScalar(o.scale);
   const lookScale = look ? shapeBody({ sizer, torso, hips, head, armR, armL, legR: legRr, legL: legLr, cape }, bodyFactors(look)) : 1;
 

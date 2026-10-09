@@ -49,6 +49,8 @@ import { setSafeMode, isSafeMode, updateVisualUniforms } from '../visual/Safe.js
 import { AudioManager } from '../audio/AudioManager.js';
 import { HUD } from '../ui/HUD.js';
 import { sellValueOf } from '../ui/MultiSell.js';
+import { isSatchelId, SATCHEL_MAX } from '../data/satchel.js';
+import { tryUpgrade } from '../combat/SkillRanks.js';
 import { POTION_INFO, DEFAULT_POTIONS, potionCooldown, potionServes } from '../data/potions.js';
 import { TouchControls } from '../ui/TouchControls.js';
 import { MOUNTS, MOUNT_BY_ID } from '../data/mounts.js';
@@ -843,6 +845,7 @@ export class Game {
     b.on('enemyEnrage', (e) => this.audio.play('enrage', { pos: e.pos }));
     b.on('enemyHurt', (e) => this.audio.play('enemyHurt', e.pos));
     b.on('enemyKilled', (e) => {
+      if (this.player.killHealPct && !this.player.dead) this.player.heal(this.player.maxHp * this.player.killHealPct, true); // V10.26 : objets de build
       if (e?.champion) { this.hud.notify(`★ Champion ${e.champion} vaincu !`, 'quest'); this._tut('champion'); }
       if (e?.pos) this.audio.play('kill', e.pos);
       if (!this.fx?.enabled || !e?.pos) return;
@@ -1259,12 +1262,14 @@ export class Game {
     this.mounts = Array.isArray(save?.mounts) ? save.mounts.filter((m) => MOUNT_BY_ID[m]) : [];
     this.mountSel = MOUNT_BY_ID[save?.mountSel] ? save.mountSel : '';
     this.inventory = new Inventory(this.bus, 30, save?.inventory);
+    this.inventory.satchel = this.player.satchel; // V10.26 : besace des matériaux (illimitée)
     this.player.cubePowers = save?.cube && typeof save.cube === 'object' ? { ...save.cube } : {};
     this.equipment = new Equipment(this.bus, this.player, save?.equipment);
     this.bank = new Inventory(this.bus, 120 + 30 * Math.min(LUNES.maxBankTabs, this._shop?.bankTabs || 0), save?.bank);
     this.player.setCosmetics(this._shopCos());
     this.bankPage = 0;
     this._initPotions();
+    this._initSatchel();
     this.rift = this.riftStatue ? new RiftSystem(this, save?.rift) : null;
     if (!save || !Array.isArray(save.inventory)) { // nouveau personnage (la création passe un objet sans inventaire)
       const cls = CLASSES[this.player.classId] || CLASSES.warrior;
@@ -1407,7 +1412,13 @@ export class Game {
     document.exitPointerLock?.();
     this.modalOpen = true;
     this.hud.showScreen('skills-screen');
-    const refresh = () => this.hud.renderSkills(this.player, onToggleBarSlot, onToggleSkill);
+    const refresh = () => this.hud.renderSkills(this.player, onToggleBarSlot, onToggleSkill, onUpgrade);
+    const onUpgrade = (skillId) => {
+      const r = tryUpgrade(this.player, skillId);
+      this.hud.notify(r.ok ? `⬆ ${r.msg}` : r.msg, r.ok ? 'quest' : 'boss');
+      if (r.ok) { this.audio.play('levelup'); this.bus.emit('hud'); }
+      refresh();
+    };
     const onToggleBarSlot = (index) => {
       this.player.setBarSlot(index, null);
       this.hud.buildSkillbar(this.player.skillBar);
@@ -1922,6 +1933,18 @@ export class Game {
     if (entries.length > 1 || n > 1) this.hud.notify(`${n} objet${n > 1 ? 's' : ''} vendu${n > 1 ? 's' : ''} : +${total.toLocaleString('fr-FR')} 🪙`, 'quest');
     this._updatePotionBadges();
     this._doSave();
+  }
+
+  // V10.26 — Besace des matériaux : les anciens matériaux/runes en sac ou en coffre y sont versés une fois.
+  _initSatchel() {
+    let moved = 0;
+    for (const inv of [this.inventory, this.bank]) {
+      inv.slots.forEach((sl, i) => {
+        if (!sl || sl.gen || !isSatchelId(sl.defId)) return;
+        this.inventory.satchel[sl.defId] = Math.min(SATCHEL_MAX, (this.inventory.satchel[sl.defId] || 0) + sl.qty); moved += sl.qty; inv.slots[i] = null;
+      });
+    }
+    if (moved) setTimeout(() => this.hud?.notify('🎒 Besace des matériaux : tes ingrédients et runes sont rangés à part, en quantité illimitée.', 'quest'), 3000);
   }
 
   // V10.22 — potions permanentes : on les trouve une fois, on les garde pour toujours et on les utilise à l'infini,

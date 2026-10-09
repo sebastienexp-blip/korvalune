@@ -1,5 +1,6 @@
 import { POTION_INFO } from '../data/potions.js';
 import { getItem, nextInstanceId } from './Item.js';
+import { isSatchelId, SATCHEL_MAX } from '../data/satchel.js';
 
 const ROWS = 5, COLS = 6;
 
@@ -45,6 +46,7 @@ export class Inventory {
     const def = getItem(defId);
     if (!def) return false;
     if (this.potionHook && POTION_INFO[defId]) { this.potionHook(defId, qty); return 0; } // V10.22 : les potions sont permanentes, elles ne vont plus dans le sac
+    if (this.satchel && isSatchelId(defId)) { this.satchel[defId] = Math.min(SATCHEL_MAX, (this.satchel[defId] || 0) + Math.max(0, Math.floor(qty))); this.bus.emit('inventoryChanged'); return 0; } // V10.26 : besace des matériaux (illimitée)
     let remaining = qty;
     if (def.stackable) {
       let idx;

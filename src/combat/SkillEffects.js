@@ -133,6 +133,29 @@ export class SkillEffects {
     }
   }
 
+  // V10.26 — « grandeur » : plus la compétence est de haut niveau (palier 0–5) et améliorée (rang 0–10), plus la mise en scène s'étoffe.
+  grandeur(skill, p, locked) {
+    const g = skill.grand, fx = this.fx;
+    if (!g || !fx || !fx.enabled || !(skill.damage || skill.heal)) return;
+    const power = g.tier + g.rank * 0.5; // 0 … 10
+    if (power < 1) return;
+    const col = skillColor(skill, p.classId);
+    try {
+      const atTarget = skill.fx && skill.fx.at === 'target';
+      const c = atTarget ? this.center(skill, p, locked) : { x: p.pos.x, y: p.pos.y, z: p.pos.z };
+      const R = Math.max(3, ((skill.fx && skill.fx.radius) || (skill.aoe ? (skill.range || 5) : 3.4)) * (0.9 + power * 0.06));
+      const later = (ms, fn) => setTimeout(() => { try { fn(); } catch (e) { /* ignoré */ } }, ms);
+      fx.ring(c.x, c.y, c.z, col, R, 0.55);
+      if (power >= 2) fx.rune(c.x, c.y, c.z, col, Math.min(R, 7), 0.9);
+      if (power >= 3) fx.pillar(c.x, c.y, c.z, col, 4 + power * 0.7, 0.9 + power * 0.06, 0.9);
+      if (power >= 4) later(120, () => fx.ring(c.x, c.y, c.z, col, R * 1.25, 0.6));
+      if (power >= 5) later(60, () => fx.flash(c.x, c.y + 1, c.z, col, 3.5 + power * 0.3, 0.35));
+      if (power >= 6) later(260, () => { fx.ring(c.x, c.y, c.z, 0xffffff, R * 1.5, 0.7); fx.pillar(c.x, c.y, c.z, 0xffffff, 7 + power * 0.5, 0.7, 0.6); });
+      if (power >= 8) { const n = Math.min(5, Math.floor(power) - 6); for (let i = 0; i < n; i++) later(160 + i * 110, () => { const a = (i / n) * Math.PI * 2; fx.pillar(c.x + Math.cos(a) * R * 0.6, c.y, c.z + Math.sin(a) * R * 0.6, col, 5 + i, 0.6, 0.7); }); }
+      if (power >= 7) { this.c.bus.emit('shake', Math.min(0.55, 0.12 + power * 0.04)); if (power >= 9) this.c.bus.emit('hitstop', 0.06); }
+    } catch (e) { /* ignoré */ }
+  }
+
   // visuels des compétences de zone / cône (sans projectile)
   visual(skill, p, targets, locked, projectile) {
     const f = skill.fx, fx = this.fx;

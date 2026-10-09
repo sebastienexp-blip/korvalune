@@ -2,6 +2,9 @@ import skillDefs from '../data/skills.json';
 import { DIFFICULTIES } from '../data/difficulty.js';
 import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../data/halloween.js';
 import { ITEMS, RARITY, resolveItem } from '../inventory/Item.js';
+import { SATCHEL_IDS } from '../data/satchel.js';
+import { activeBuildBonuses, describeMods, BUILDS_BY_CLASS } from '../data/builds.js';
+import { MAX_RANK, rankCost, rankLevelNeeded, upgradable, progMult, rankDmg } from '../combat/SkillRanks.js';
 import { rarityGlow } from '../data/rarities.js';
 import { PRIMARY_STAT } from '../combat/Classes.js';
 import { countSets, describeBonus } from '../data/sets.js';
@@ -134,7 +137,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.25 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.26 — Korvalune</div>
         </div>
       </div>
 
@@ -319,6 +322,7 @@ export class HUD {
             <div id="inv-sellbar"></div>
             <div id="inv-coins">🪙 <span id="inv-coins-val">0</span></div>
             <div id="inv-pet"></div>
+            <div id="inv-sat"></div>
             <div id="inv-cos"></div>
           </div>
         </div>
@@ -815,6 +819,16 @@ export class HUD {
     this.renderEquipMini('#inv-eq', equipment);
     this.renderPotionPanel(player);
     this.renderPetPanel();
+    this.renderSatchel(player);
+  }
+
+  // V10.26 — Besace des matériaux : ingrédients et runes, quantité illimitée, hors des cases de l'inventaire
+  renderSatchel(player) {
+    const el = this.q('#inv-sat'); if (!el || !player) return;
+    const sat = player.satchel || {};
+    const rows = SATCHEL_IDS.filter((id) => sat[id] > 0).map((id) => { const d = ITEMS[id]; return `<span class="sat-it" title="${d.name}">${d.icon || '▫️'}<b>${sat[id]}</b></span>`; }).join('');
+    el.innerHTML = `<details class="sat-box" ${this._satOpen ? 'open' : ''}><summary>🎒 Besace des matériaux <small>illimitée</small></summary><div class="sat-grid">${rows || '<i>Vide : les ingrédients et runes ramassés s’y rangent seuls.</i>'}</div></details>`;
+    const d = el.querySelector('details'); if (d) d.ontoggle = () => { this._satOpen = d.open; };
   }
 
   // V10.24 — réglage du compagnon directement dans l'inventaire (mêmes options que Options > Interface & jeu)
@@ -922,6 +936,7 @@ export class HUD {
     if (view.affixes && view.affixes.length) {
       affixEl.innerHTML = '<div class="is-section-title">Affixes</div>' + view.affixes.map((a) => `<div class="is-affix-line">+${a.kind === 'percent' ? Math.round(a.value * 1000) / 10 + '%' : a.value} ${a.label}</div>`).join('');
     } else affixEl.innerHTML = '';
+    if (view.bmods) affixEl.innerHTML += '<div class="is-section-title">Bonus de la voie</div>' + Object.entries(view.bmods).map(([k, v]) => `<div class="is-affix-line">${describeMods({ [k]: v })}</div>`).join('');
 
     // V10.19 : usure, emplacements / runes, litanie, enchantement
     const crEl = this.q('#is-craft');
@@ -960,6 +975,13 @@ export class HUD {
       const pcs = sd.pieces.map((n, i) => `<div class="set-piece${cs && cs.owned.has(i) ? ' on' : ''}">${cs && cs.owned.has(i) ? '✔' : '•'} ${n}</div>`).join('');
       const bon = [2, 4, 6].map((n) => `<div class="set-bonus${cnt >= n ? ' on' : ''}"><b>(${n}) pièces</b>${describeBonus(sd.bonuses[n]).map((l) => `<div>${l}</div>`).join('')}</div>`).join('');
       setEl.innerHTML = `<div class="is-section-title set-title">${sd.name} (${cnt}/6)</div>${pcs}${bon}`;
+    } else if (view.build) { // V10.26 : voie d'objets de build, bonus de lignée 2 / 4 / 5 pièces
+      const b = view.build;
+      const ab = equipment ? activeBuildBonuses(equipment.slots, resolveItem).find((x) => x.build.id === b.id) : null;
+      const cnt = ab ? ab.count : 0;
+      const row = (n, m) => `<div class="set-bonus${cnt >= n ? ' on' : ''}"><b>(${n}) pièces</b><div>${describeMods(m)}</div></div>`;
+      const pieces = BUILDS_BY_CLASS[b.classId].length ? '' : '';
+      setEl.innerHTML = `<div class="is-section-title set-title">Voie « ${b.name} » — ${b.wayLabel} (${cnt}/5)</div><div class="set-piece">${b.blurb}</div>${pieces}${row(2, b.b2)}${row(4, b.b4)}${row(5, b.b5)}`;
     } else setEl.innerHTML = '';
 
     const cmpEl = this.q('#is-compare');
@@ -1062,7 +1084,7 @@ export class HUD {
     }
   }
 
-  renderSkills(player, onToggleBarSlot, onToggleSkill) {
+  renderSkills(player, onToggleBarSlot, onToggleSkill, onUpgrade) {
     const barEl = this.q('#skills-bar-preview');
     barEl.innerHTML = '';
     player.skillBar.forEach((id, i) => {
@@ -1091,11 +1113,23 @@ export class HUD {
       if (s.aoe) meta.push('Zone');
       if (s.fx) meta.push(...skillFxTags(s.fx, num));
       const tag = unlocked ? (equipped ? 'Dans la barre' : 'Disponible') : `Niveau ${s.levelReq}`;
+      let rankHTML = '';
+      if (unlocked && upgradable(s)) {
+        const r = (player.skillRanks && player.skillRanks[s.id]) | 0;
+        const dmgNow = s.damage ? ` · Dégâts ×${num((s.damage * progMult(s.levelReq) * rankDmg(r)).toFixed(1))}` : '';
+        if (r >= MAX_RANK) rankHTML = `<span class="sk-rank max">★ Rang ${r}/${MAX_RANK} — maîtrisée${dmgNow}</span>`;
+        else {
+          const need = rankLevelNeeded(s.levelReq, r + 1), cost = rankCost(s.levelReq, r), lvlOk = player.level >= need, coinOk = player.coins >= cost;
+          rankHTML = `<span class="sk-rank">Rang ${r}/${MAX_RANK}${dmgNow}<span class="sk-up${lvlOk && coinOk ? '' : ' off'}" data-up="${s.id}">${lvlOk ? `⬆ ${cost} 🪙` : `Niv. ${need}`}</span></span>`;
+        }
+      }
       card.innerHTML = `
         <span class="sk-card-icon">${skillIconHTML(s)}</span>
-        <span class="sk-card-info"><b>${s.name}</b><small>${s.desc || ''}</small><span class="sk-meta">${meta.join(' · ')}</span></span>
+        <span class="sk-card-info"><b>${s.name}</b><small>${s.desc || ''}</small><span class="sk-meta">${meta.join(' · ')}</span>${rankHTML}</span>
         <span class="sk-card-tag">${tag}</span>
       `;
+      const up = card.querySelector('[data-up]');
+      if (up && onUpgrade) up.onclick = (ev) => { ev.stopPropagation(); onUpgrade(s.id); };
       if (unlocked) { card.onclick = () => onToggleSkill(s.id); card.title = equipped ? 'Retirer de la barre' : 'Ajouter à la barre'; }
       else card.disabled = true;
       pool.appendChild(card);

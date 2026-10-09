@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.26', title: 'Builds, objet secondaire, compétences améliorables',
+    items: [
+      '🧩 150 objets de build : 6 voies par classe (explosif, rempart, sangsue, érudit, vélocité, chasseur de titans) × 5 pièces. Réunis 2, 4 ou 5 pièces d’une même voie pour des bonus de lignée. Ils tombent sur les monstres à partir de la rareté « Rare ».',
+      '🛡️ Objet secondaire pour toutes les classes : bouclier (guerrier, paladin), orbe arcanique (mage), carquois (archer), dague de parade (assassin) — visibles sur le personnage.',
+      '⬆️ Améliore tes compétences (menu Compétences) : 10 rangs, +10 % de dégâts par rang, recharge et coût réduits, zones plus larges. Une compétence de haut niveau frappe aussi beaucoup plus fort.',
+      '✨ Les compétences deviennent de plus en plus spectaculaires avec leur niveau et leur rang : anneaux, runes, colonnes de lumière, secousses.',
+      '🎒 Nouveau : la Besace des matériaux. Ingrédients et runes s’y rangent seuls, en quantité illimitée, sans prendre de place dans l’inventaire. L’atelier s’y sert directement.'
+    ]
+  },
+  {
     version: '10.25', title: 'Inventaire : appui long, glisser-déposer, compagnon',
     items: [
       '👆 Appuie longuement sur un objet : la sélection multiple s’active avec cet objet déjà coché (inventaire et coffre).',

@@ -1125,3 +1125,19 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .pet-chip { padding: 8px 12px; min-height: 38px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(14, 20, 40, 0.75); color: #e8ecff; font-family: inherit; font-size: 13.5px; position: static; width: auto; height: auto; }
 .pet-chip.on { border-color: rgba(120, 220, 140, 0.9); background: rgba(40, 90, 60, 0.55); color: #eaffef; }
 .pet-chip.pet-main { font-size: 14.5px; }
+
+/* V10.26 — Besace des matériaux */
+#inv-sat { margin-top: 8px; }
+.sat-box { background: rgba(20,24,40,.6); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 6px 8px; }
+.sat-box summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+.sat-box summary small { opacity: .6; font-weight: 400; margin-left: 6px; }
+.sat-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; font-size: 12px; }
+.sat-grid i { opacity: .6; }
+.sat-it { background: rgba(255,255,255,.07); border-radius: 6px; padding: 2px 6px; white-space: nowrap; }
+.sat-it b { margin-left: 4px; }
+
+/* V10.26 — rangs de compétences */
+.sk-rank { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px; color: #ffd98a; }
+.sk-rank.max { color: #ffe9a6; font-weight: 700; }
+.sk-up { background: linear-gradient(#d9a441,#a8741c); color: #1b1305; border-radius: 6px; padding: 3px 8px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.sk-up.off { background: rgba(255,255,255,.12); color: #aab; }

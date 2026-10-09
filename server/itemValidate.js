@@ -8,6 +8,7 @@ import { RARITY_BY_TIER } from '../src/data/rarities.js';
 import { AFFIX_POOL } from '../src/data/affixPool.js';
 import { ITEM_EFFECTS } from '../src/data/itemEffectPool.js';
 import { SETS } from '../src/data/sets.js';
+import { BUILDS, BUILD_TIER, buildProc } from '../src/data/builds.js';
 import { SOCKET_CAP, RUNE_BY_ID, durMaxOf, MAX_ENCH, TMOG_COLORS } from '../src/data/crafting.js';
 
 const AFFIX_BY_KEY = Object.fromEntries(AFFIX_POOL.map((a) => [a.key, a]));
@@ -89,16 +90,19 @@ export function sanitizeGeneratedItem(gen) {
     if (c || v) extra.tmog = { c, v };
   }
 
+  // V10.26 : objet de build — voie et pièce seulement ; bonus et pouvoir sont reconstruits depuis builds.js
+  const build = typeof gen.buildId === 'string' && BUILDS[gen.buildId] && tier === BUILD_TIER ? { id: gen.buildId, piece: Math.round(clampNum(gen.buildPiece, 0, 4, 0)) } : null;
   return {
     ...extra,
     uid: str(gen.uid, 40) || ('gi_srv' + Math.random().toString(36).slice(2)),
-    category: ['weapon', 'armor', 'accessory'].includes(gen.category) ? gen.category : 'armor',
+    category: ['weapon', 'armor', 'accessory', 'offhand'].includes(gen.category) ? gen.category : 'armor',
     baseKey: str(gen.baseKey, 20),
     type, slot, visual: str(gen.visual, 20) || null, icon: str(gen.icon, 8) || '❔',
     name: str(gen.name, 60) || 'Objet',
     rarityTier: tier, itemLevel, levelReq,
-    stats, affixes, effects,
+    stats, affixes, effects: build ? (build.piece === 0 && buildProc(build.id) ? [buildProc(build.id)] : []) : effects,
     value: Math.round(clampNum(gen.value, 0, 5_000_000, 0)),
+    ...(build ? { buildId: build.id, buildPiece: build.piece } : {}),
     desc: str(gen.desc, 200),
     ...(typeof gen.setId === 'string' && SETS[gen.setId] ? { setId: gen.setId, setPiece: Math.round(clampNum(gen.setPiece, 0, 5, 0)) } : {}),
     stackable: false

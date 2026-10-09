@@ -33,6 +33,10 @@ import { passView, addEvents as passEvents, claim as passClaim, claimAll as pass
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
 import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
 import { cleanPotions } from './src/data/potions.js';
+import { cleanSatchel, SATCHEL_MAX } from './src/data/satchel.js';
+import { cleanRanks, setSkillTable } from './src/combat/SkillRanks.js';
+import { readFileSync } from 'node:fs';
+setSkillTable(Object.fromEntries(JSON.parse(readFileSync(new URL('./src/data/skills.json', import.meta.url), 'utf8')).map((s) => [s.id, s])));
 import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
@@ -279,6 +283,16 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   clean.mounts = [...new Set((Array.isArray(incoming.mounts) ? incoming.mounts : []).filter(isMountId))].slice(0, MAX_MOUNTS);
   clean.difficulty = Number.isInteger(incoming.difficulty) ? Math.max(0, Math.min(7, incoming.difficulty)) : (prev?.difficulty | 0); // V10.18
   clean.potions = cleanPotions(incoming.potions, prev?.potions); // V10.22 : potions permanentes
+  { // V10.26 : besace des matériaux — gain par minute plafonné (large : le démontage d'objets rend beaucoup)
+    const inc = cleanSatchel(incoming.satchel, prev?.satchel), old = cleanSatchel(prev?.satchel);
+    clean.satchel = {};
+    for (const [id, n] of Object.entries(inc)) { const cap = Math.min(SATCHEL_MAX, (old[id] || 0) + Math.ceil(3000 * elapsedMin) + 400); clean.satchel[id] = Math.min(n, cap); }
+  }
+  { // V10.26 : rangs de compétences — bornés par le niveau ; +3 rangs par compétence et par sauvegarde au plus
+    const inc = cleanRanks(incoming.skillRanks, clean.level), old = cleanRanks(prev?.skillRanks, 200);
+    clean.skillRanks = {};
+    for (const [id, r] of Object.entries(inc)) clean.skillRanks[id] = Math.min(r, (old[id] || 0) + 3);
+  }
   clean.mountSel = isMountId(incoming.mountSel) && clean.mounts.includes(incoming.mountSel) ? incoming.mountSel : '';
   clean.progress = incoming.progress && typeof incoming.progress === 'object' ? incoming.progress : {};
   // Compteurs d'objectifs (ex: 3/8 loups tués) : uniquement des entiers bornés.

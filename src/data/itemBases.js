@@ -37,6 +37,16 @@ export const ARMOR_BASES = {
   cloak: { name: 'Cape', icon: '🧣', slot: 'cape', base: 1, perLevel: 0.5, hpBase: 4, hpPerLevel: 1.0 }
 };
 
+// V10.26 — objets secondaires : un par famille de classe (bouclier, orbe, carquois, dague de la main gauche).
+// Chaque champ [base, parNiveau] donne une statistique ; `crit` est une fraction fixe.
+export const OFFHAND_BASES = {
+  shield: { name: 'Bouclier', icon: '🛡️', visual: 'shield', def: [2, 1.3], hp: [8, 2.0] },
+  orb: { name: 'Orbe arcanique', icon: '🔮', visual: 'orb', atk: [1, 0.9], int: [1, 0.12], mana: [10, 1.6] },
+  quiver: { name: 'Carquois', icon: '🏹', visual: 'quiver', atk: [1, 0.9], agi: [1, 0.12], crit: 0.012 },
+  offdagger: { name: 'Dague de parade', icon: '🗡️', visual: 'offdagger', atk: [1, 1.0], agi: [1, 0.08], crit: 0.014 }
+};
+export const OFFHAND_BY_CLASS = { warrior: ['shield'], paladin: ['shield'], mage: ['orb'], archer: ['quiver'], assassin: ['offdagger'] };
+
 export const ACCESSORY_BASES = {
   ring: { name: 'Anneau', icon: '💍', slot: 'ring' },
   amulet: { name: 'Amulette', icon: '📿', slot: 'necklace' },

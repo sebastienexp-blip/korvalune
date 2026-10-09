@@ -28,7 +28,7 @@ export function listGear(ctx, { eq = true, inv = true } = {}) {
   if (inv) ctx.inventory.slots.forEach((c, i) => { if (c?.gen) out.push({ ref: { where: 'inv', i }, gen: c.gen, view: resolveItem(c) }); });
   return out;
 }
-export const countItem = (inv, id) => inv.slots.reduce((n, s) => n + (s && !s.gen && s.defId === id ? s.qty : 0), 0);
+export const countItem = (inv, id) => ((inv.satchel && inv.satchel[id]) || 0) + inv.slots.reduce((n, s) => n + (s && !s.gen && s.defId === id ? s.qty : 0), 0);
 export const listRunes = (ctx) => RUNES.map((r) => ({ rune: r, qty: countItem(ctx.inventory, r.id) })).filter((x) => x.qty > 0);
 
 // ---------------------------------------------------------------- coûts
@@ -48,6 +48,7 @@ export function costText(cost) {
   return p.join(' · ') || 'Gratuit';
 }
 function takeMats(inv, id, n) {
+  if (inv.satchel && inv.satchel[id]) { const t = Math.min(inv.satchel[id], n); inv.satchel[id] -= t; n -= t; if (inv.satchel[id] <= 0) delete inv.satchel[id]; }
   for (let i = 0; i < inv.slots.length && n > 0; i++) {
     const s = inv.slots[i];
     if (!s || s.gen || s.defId !== id) continue;
@@ -56,6 +57,7 @@ function takeMats(inv, id, n) {
   }
 }
 const snapshot = (inv) => inv.slots.map((s) => (s ? { ...s } : null));
+const snapSat = (inv) => (inv.satchel ? { ...inv.satchel } : null);
 function refresh(ctx) {
   ctx.equipment.apply();
   ctx.inventory.bus.emit('inventoryChanged');
@@ -69,8 +71,8 @@ function refresh(ctx) {
 function run(ctx, op) {
   const cost = op.cost || { gold: 0, mats: {} };
   const miss = missing(ctx, cost); if (miss) return fail(miss);
-  const inv = ctx.inventory, snap = snapshot(inv), coins = ctx.player.coins;
-  const restore = () => { inv.slots = snap; ctx.player.coins = coins; refresh(ctx); };
+  const inv = ctx.inventory, snap = snapshot(inv), satSnap = snapSat(inv), coins = ctx.player.coins;
+  const restore = () => { inv.slots = snap; if (satSnap) { for (const k of Object.keys(inv.satchel)) delete inv.satchel[k]; Object.assign(inv.satchel, satSnap); } ctx.player.coins = coins; refresh(ctx); };
   ctx.player.coins -= cost.gold || 0;
   for (const [id, n] of Object.entries(cost.mats || {})) takeMats(inv, id, n);
   for (const r of op.remove || []) if (r.where === 'inv') inv.slots[r.i] = null;

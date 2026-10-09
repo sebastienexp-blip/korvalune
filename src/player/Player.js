@@ -1,4 +1,6 @@
 import { cleanPotions } from '../data/potions.js';
+import { cleanSatchel } from '../data/satchel.js';
+import { cleanRanks, effectiveSkill, setSkillTable } from '../combat/SkillRanks.js';
 import { playSkillCast, playSkillImpact } from '../audio/SkillSounds.js';
 import * as THREE from 'three';
 import { CONFIG } from '../core/config.js';
@@ -15,6 +17,7 @@ import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../co
 
 const KEY_TO_AXIS = { KeyW: 1, KeyS: -1 };
 
+setSkillTable(SKILLS);
 export class Player {
   constructor(scene, world, audio, particles, bus, save) {
     this.scene = scene; this.world = world; this.audio = audio; this.particles = particles; this.bus = bus;
@@ -48,6 +51,8 @@ export class Player {
     this.xp = save?.xp || 0;
     this.coins = save?.coins ?? 25;
     this.potions = cleanPotions(save?.potions); // V10.22 : potions permanentes {owned, heal, mana}
+    this.skillRanks = cleanRanks(save?.skillRanks, 200); // V10.26 : rang de chaque compétence
+    this.satchel = cleanSatchel(save?.satchel); // V10.26 : besace des matériaux
     this.soldTotal = Math.max(0, Math.floor(save?.soldTotal || 0)); // V10.21 : cumul des ventes (le serveur n'accepte que la hausse)
     this.stats = { str: 5, agi: 5, int: 5, vit: 5, spi: 5, luck: 5, ...(save?.stats || {}) };
     this.statPoints = save?.statPoints || 0;
@@ -153,7 +158,7 @@ export class Player {
     this.xpNeeded = Math.round(60 * Math.pow(this.level, 1.5) + 40);
 
     // Statistiques secondaires issues des affixes d'objets (voir affixPool.js)
-    this.cooldownMult = clamp(1 - (eq.atkSpeedPct || 0) - (rb.cdr || 0), 0.3, 1); // vitesse d'attaque : réduit les temps de recharge
+    this.cooldownMult = clamp(1 - (eq.atkSpeedPct || 0) - (eq.cdrPct || 0) - (rb.cdr || 0), 0.3, 1); // vitesse d'attaque : réduit les temps de recharge
     this.fireRes = clamp(eq.fireResPct || 0, 0, 0.8);
     this.iceRes = clamp(eq.iceResPct || 0, 0, 0.8);
     this.lightningRes = clamp(eq.lightningResPct || 0, 0, 0.8);
@@ -164,6 +169,12 @@ export class Player {
     this.xpBonus = clamp(eq.xpPct || 0, 0, 1);
     this.goldBonus = clamp(eq.goldPct || 0, 0, 2);
     this.staRegenBonus = clamp(eq.staRegenPct || 0, 0, 1.5);
+    // V10.26 : bonus des objets de build
+    this.skillDmgPct = clamp(eq.skillDmgPct || 0, 0, 3);
+    this.bossDmgPct = clamp(eq.bossDmgPct || 0, 0, 3);
+    this.lifestealPct = clamp(eq.lifestealPct || 0, 0, 0.3);
+    this.costRedPct = clamp(eq.costRedPct || 0, 0, 0.6);
+    this.killHealPct = clamp(eq.killHealPct || 0, 0, 0.2);
   }
 
   // Liste des effets spéciaux (sorts automatiques) actuellement fournis par
@@ -252,8 +263,12 @@ export class Player {
     if (visualType) tint(this.rig.matRefs.weapons[visualType], s.mainhand);
     try { setWeaponAura(this.rig, mainView?.rarityInfo?.id, visualType, this.cos?.aura); } catch (e) { console.warn('[V9.4] aura d\'arme indisponible', e); }
 
-    ev.shield.visible = !!s.offhand;
-    tint(this.rig.matRefs.shield, s.offhand);
+    { // V10.26 : l'objet secondaire change d'apparence selon sa famille (bouclier, orbe, carquois, dague)
+      const offView = s.offhand && resolveItem(s.offhand), kind = offView ? (offView.visual || 'shield') : null;
+      for (const [k, grp] of Object.entries(ev.offs || { shield: ev.shield })) grp.visible = k === kind;
+      if (kind && this.rig.matRefs[kind === 'shield' ? 'shield' : kind]) tint(this.rig.matRefs[kind], s.offhand);
+      this.rig._shieldHid = false;
+    }
 
     ev.helm.visible = !!s.head;
     if (this.rig.customHair) this.rig.customHair.visible = !(s.head && this.rig.hairBulky); // V10.12 : volume de cheveux sous le casque
@@ -405,8 +420,9 @@ export class Player {
       this.setMount(null);
     }
     if (this.dead) return false;
-    const s = SKILLS[id];
-    if (!s || !this.isSkillUnlocked(id)) return false;
+    const s0 = SKILLS[id];
+    if (!s0 || !this.isSkillUnlocked(id)) return false;
+    const s = effectiveSkill(s0, this); // V10.26 : rang + progression de niveau + objets de build
     if (this.busyUntil > performance.now() / 1000) { // V10.24 : tampon de saisie — la compétence pressée juste avant la fin de l'animation part dès que possible
       if (this.busyUntil - performance.now() / 1000 < 0.45 && (this.cooldowns[id] || 0) < 0.45) this._qSkill = { id, until: performance.now() / 1000 + 0.5 };
       return false;
@@ -615,7 +631,7 @@ export class Player {
   serialize() {
     return {
       classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, look: this.look, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
-      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, potions: this.potions, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
+      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, potions: this.potions, satchel: this.satchel, skillRanks: this.skillRanks, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
       skillBar: this.skillBar
     };
   }
