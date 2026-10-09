@@ -9,6 +9,7 @@ import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
 import { CATALOG, CATEGORIES, CATALOG_BY_ID, COSMETIC_SLOTS } from '../data/shopCatalog.js';
 import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
 import { MultiSell } from './MultiSell.js';
+import { ItemGestures } from './ItemGestures.js';
 import { POTION_INFO, potionCooldown, potionServes } from '../data/potions.js';
 import { skillIconHTML } from './SkillIcon.js';
 import { slotCategory, RUNE_BY_ID, fmtBonusMap } from '../data/crafting.js';
@@ -93,6 +94,8 @@ export class HUD {
     this.el = {};
     this.ms = new MultiSell(); // V10.21 : sélection multiple / vente groupée
     this.onSellMany = null;
+    this.onMoveItem = null; this.onTransferItem = null; this._gctx = null;
+    this.gest = new ItemGestures(this.ms, () => this._gctx); // V10.24 : appui long = sélection multiple, glisser = déplacer
     this.onPotionSelect = null;
     this._buildDom();
     this._bindEvents();
@@ -131,7 +134,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.24 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.25 — Korvalune</div>
         </div>
       </div>
 
@@ -315,6 +318,7 @@ export class HUD {
             <div id="inv-potions"></div>
             <div id="inv-sellbar"></div>
             <div id="inv-coins">🪙 <span id="inv-coins-val">0</span></div>
+            <div id="inv-pet"></div>
             <div id="inv-cos"></div>
           </div>
         </div>
@@ -788,9 +792,12 @@ export class HUD {
     const rerender = () => this.renderInventory(inventory, equipment, player, onAction);
     const grid = this.q('#inv-grid');
     grid.innerHTML = '';
+    this._gctx = { rerender, slotsOf: (sc) => (sc === 'inv' ? inventory.slots : null), move: (fs, fi, ts, ti) => this.onMoveItem && this.onMoveItem(fs, fi, ts, ti), equip: (i) => onAction('equip', i) };
+    this.gest.bind(grid);
     inventory.slots.forEach((slot, i) => {
       const cell = document.createElement('button');
       cell.className = 'inv-cell';
+      cell.dataset.scope = 'inv'; cell.dataset.i = i;
       if (slot) {
         const view = resolveItem(slot);
         cell.style.borderColor = view.rarityInfo.color;
@@ -807,6 +814,26 @@ export class HUD {
     this.q('#inv-coins-val').textContent = this._coins || 0;
     this.renderEquipMini('#inv-eq', equipment);
     this.renderPotionPanel(player);
+    this.renderPetPanel();
+  }
+
+  // V10.24 — réglage du compagnon directement dans l'inventaire (mêmes options que Options > Interface & jeu)
+  renderPetPanel() {
+    const el = this.q('#inv-pet'); if (!el) return;
+    const g = this.game, st = g.settings, sh = g._shop;
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const pet = sh && sh.eq && sh.eq.pet && CATALOG_BY_ID[sh.eq.pet];
+    const on = st.petLoot !== false;
+    const chip = (k, label) => `<button class="pet-chip${st[k] ? ' on' : ''}" data-pk="${k}">${label}</button>`;
+    const gear = Number(st.petLootGear), gOn = (v) => (v === 'off' ? !Number.isFinite(gear) : gear === v);
+    const gchip = (v, label) => `<button class="pet-chip${gOn(v) ? ' on' : ''}" data-pg="${v}">${label}</button>`;
+    el.innerHTML = `<div class="pot-head">🐾 Compagnon ramasseur <small>${pet ? esc(pet.name) : 'aucun compagnon équipé'}</small></div>
+      <div class="pet-row"><button class="pet-chip pet-main${on ? ' on' : ''}" data-pk="petLoot">${on ? '✔ Il ramasse mon butin' : 'Il ne ramasse rien'}</button></div>
+      ${on ? `<div class="pet-row"><span class="pet-lab">Il ramasse :</span>${chip('petLootCons', '🧪 Consommables')}${chip('petLootMat', '🪵 Matériaux')}${chip('petLootRune', '🔶 Runes')}</div>
+      <div class="pet-row"><span class="pet-lab">Armes et armures :</span>${gchip('off', 'Aucune')}${gchip(1, 'Communes')}${gchip(4, '≤ Magiques')}${gchip(8, '≤ Rares')}</div>` : ''}
+      ${pet ? '' : '<small class="eq-hint">Équipe un compagnon dans la garde-robe ci-dessous pour qu’il se mette au travail.</small>'}`;
+    el.querySelectorAll('[data-pk]').forEach((b) => { b.onclick = () => { const k = b.dataset.pk; st[k] = k === 'petLoot' ? !on : !st[k]; g.applySettings(k); this.renderPetPanel(); }; });
+    el.querySelectorAll('[data-pg]').forEach((b) => { b.onclick = () => { const v = b.dataset.pg; st.petLootGear = v === 'off' ? 'off' : Number(v); g.applySettings('petLootGear'); this.renderPetPanel(); }; });
   }
 
   // V10.22 : potions permanentes — choix de la potion associée à chaque bouton (vie / mana)
@@ -1315,12 +1342,15 @@ export class HUD {
   renderBank(bank, inventory, page, pageCount, onTransfer, equipment) {
     const PAGE_SIZE = 30;
     const rerender = () => this.renderBank(bank, inventory, page, pageCount, onTransfer, equipment);
+    this._gctx = { rerender, slotsOf: (sc) => (sc === 'bank' ? bank.slots : sc === 'inv' ? inventory.slots : null), move: (fs, fi, ts, ti) => this.onMoveItem && this.onMoveItem(fs, fi, ts, ti), transfer: (sc, i) => onTransfer(sc, i) };
     const drawGrid = (elId, slots, startIdx, onTap, scope) => {
       const grid = this.q(elId);
       grid.innerHTML = '';
+      this.gest.bind(grid);
       slots.forEach((slot, i) => {
         const cell = document.createElement('button');
         cell.className = 'inv-cell';
+        cell.dataset.scope = scope; cell.dataset.i = startIdx + i;
         if (slot) {
           const view = resolveItem(slot);
           cell.style.borderColor = view.rarityInfo.color;

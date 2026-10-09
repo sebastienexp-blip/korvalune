@@ -66,6 +66,7 @@ import { Inventory } from '../inventory/Inventory.js';
 import { Equipment } from '../inventory/Equipment.js';
 import { LootSystem } from '../inventory/LootSystem.js';
 import { getItem, resolveItem } from '../inventory/Item.js';
+import { moveBetween } from '../inventory/Inventory.js';
 import { NetworkManager } from '../network/NetworkManager.js';
 import { GroupWorld } from '../network/GroupWorld.js';
 import { applyOcclusionFade, updateOcclusion } from '../visual/OcclusionFade.js';
@@ -915,7 +916,7 @@ export class Game {
       if (this.player) this.player.setCosmetics(this._shopCos());
       this._renderLune();
       this._renderHalloween();
-      if (this.player && !this.hud.q('#inventory-screen').classList.contains('hidden')) this.hud.renderWardrobe();
+      if (this.player && !this.hud.q('#inventory-screen').classList.contains('hidden')) { this.hud.renderWardrobe(); this.hud.renderPetPanel(); }
     });
     b.on('net:settings', (msg) => { // réglages enregistrés sur le compte : ils priment sur ceux du navigateur ; sinon on envoie les nôtres
       if (!msg.s || typeof msg.s !== 'object') { this.net.saveSettings(this.settings); return; }
@@ -983,6 +984,13 @@ export class Game {
     this.bus.on('ui:close-halloween', () => this._closeModal());
     // V10.23 — pass de combat : état envoyé par le serveur, événements de jeu regroupés puis envoyés par lots
     this._passBuf = {}; this._pass = null; this._passMsg = null;
+    // V10.24 : glisser-déposer d'un objet vers une autre case (inventaire / coffre)
+    this.hud.onMoveItem = (fs, fi, ts, ti) => {
+      const inv = (sc) => (sc === 'bank' ? this.bank : this.inventory);
+      if (!inv(fs) || !inv(ts) || !moveBetween(inv(fs), fi, inv(ts), ti)) return;
+      this.audio.play('click');
+      if (!this.hud.q('#bank-screen').classList.contains('hidden')) this._bankRefresh?.();
+    };
     this.bus.on('ui:close-pass', () => this._closeModal());
     this.root.querySelector('#btn-pass').addEventListener('click', () => this._openPass());
     this.root.querySelector('#pass-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-ps]'); if (bt && !bt.disabled) this._passAct(bt.dataset.ps, bt.dataset.v, bt.dataset.track); });

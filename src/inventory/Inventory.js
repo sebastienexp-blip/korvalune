@@ -92,3 +92,19 @@ export class Inventory {
 
   serialize() { return this.slots.map((s) => (s ? (s.gen ? { gen: s.gen } : { defId: s.defId, qty: s.qty }) : null)); }
 }
+
+// V10.24 — déplacement d'une case à l'autre (glisser-déposer). a/b = deux Inventory (ou le même).
+// Case d'arrivée vide : on pose. Même objet empilable : on fusionne (jusqu'à la pile max). Sinon : on échange.
+export function moveBetween(a, i, b, j) {
+  const src = a.slots[i];
+  if (!src || j < 0 || j >= b.slots.length || (a === b && i === j)) return false;
+  const dst = b.slots[j];
+  if (!dst) { b.slots[j] = src; a.slots[i] = null; }
+  else if (src.defId && dst.defId === src.defId && getItem(src.defId)?.stackable) {
+    const max = getItem(src.defId).maxStack || 99, take = Math.min(src.qty, max - dst.qty);
+    if (take <= 0) { a.slots[i] = dst; b.slots[j] = src; } // pile pleine : on échange simplement
+    else { dst.qty += take; src.qty -= take; if (src.qty <= 0) a.slots[i] = null; }
+  } else { a.slots[i] = dst; b.slots[j] = src; }
+  a.bus?.emit('inventoryChanged');
+  return true;
+}

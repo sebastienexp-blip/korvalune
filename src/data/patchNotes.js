@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.25', title: 'Inventaire : appui long, glisser-déposer, compagnon',
+    items: [
+      '👆 Appuie longuement sur un objet : la sélection multiple s’active avec cet objet déjà coché (inventaire et coffre).',
+      '✋ Appuie longuement puis glisse un objet vers une autre case pour le déplacer ou l’échanger ; les piles identiques fusionnent. Glisse-le sur une pièce d’équipement pour l’équiper, ou de l’inventaire vers le coffre (et inversement) pour le transférer. À la souris, un simple glisser suffit.',
+      '🐾 Le compagnon se règle maintenant directement dans l’inventaire : interrupteur, consommables, matériaux, runes et rareté maximale des armes et armures.'
+    ]
+  },
+  {
     version: '10.24', title: 'Compagnons qui ramassent le butin, combat en mouvement',
     items: [
       '🐾 Ton compagnon équipé va maintenant chercher le butin tout seul et le met dans ton sac : consommables par défaut. Dans Options > Interface & jeu, tu choisis exactement ce qu’il ramasse (consommables, matériaux, runes, armes et armures jusqu’à une rareté) ou tu le désactives.',

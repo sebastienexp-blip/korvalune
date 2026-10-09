@@ -1099,6 +1099,11 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Vente groupée** (`src/ui/MultiSell.js`) : bouton « Sélection multiple » dans l'inventaire et le coffre ; section « Vendre vos objets » chez les marchands (toujours active). Sélection rapide de l'équipement par rareté, total en direct, confirmation en deux temps. `Game._sellEntries` vend valeur × quantité.
 - **Serveur** : le client envoie un cumul monotone `soldTotal` ; seule sa hausse relève le plafond de gains de la sauvegarde (les gros objets valent des centaines de milliers de pièces). Plafond de pièces porté à 99 999 999.
 
+## V10.25 — Inventaire : gestes et compagnon
+
+- `src/ui/ItemGestures.js` : appui long (≈ 0,4 s) = sélection multiple ; appui long + glisser (souris : glisser direct) = déplacer. Les cases portent `data-scope` / `data-i`. Le déplacement réel passe par `moveBetween` (`src/inventory/Inventory.js` : pose, fusion de piles ou échange) via `hud.onMoveItem`.
+- Réglage du compagnon dans l'inventaire : `HUD.renderPetPanel` (mêmes réglages `petLoot*` que les options).
+
 ## V10.24 — Compagnons ramasseurs, combat en mouvement
 
 - **Compagnon** : le familier équipé court chercher le butin proche (≈ 18 m) qui correspond aux options `petLoot*` (Options > Interface & jeu) : consommables (par défaut), matériaux, runes, équipement jusqu'à une rareté. Logique dans `Game._petLootTick` / `_petWants` ; la course est animée par `pet.fetch` dans `src/visual/Cosmetics.js`. Rien n'est ramassé si le sac est plein.
