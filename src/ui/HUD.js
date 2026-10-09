@@ -1,4 +1,5 @@
 import skillDefs from '../data/skills.json';
+import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../data/halloween.js';
 import { ITEMS, RARITY, resolveItem } from '../inventory/Item.js';
 import { rarityGlow } from '../data/rarities.js';
 import { PRIMARY_STAT } from '../combat/Classes.js';
@@ -52,6 +53,33 @@ const SIGIL = `<svg class="sigil" viewBox="-100 -100 200 200" aria-hidden="true"
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
 // Toute l'interface DOM (HUD, menus, textes flottants) — pas de dépendance à Three.js ici.
+// V10.16 — affiche d'Halloween de l'écran de démarrage (dates calculées depuis EVENT : une seule source de vérité)
+const HW_ART = `<svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="hwsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a0f33"/><stop offset="0.7" stop-color="#5a2410"/><stop offset="1" stop-color="#b8480e"/></linearGradient>
+    <radialGradient id="hwmoon"><stop offset="0" stop-color="#fff0c4"/><stop offset="1" stop-color="#ffb347"/></radialGradient>
+    <radialGradient id="hwglow"><stop offset="0" stop-color="#ffb347" stop-opacity="0.55"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="320" height="120" fill="url(#hwsky)"/>
+  <circle cx="238" cy="42" r="46" fill="url(#hwglow)"/><circle cx="238" cy="42" r="24" fill="url(#hwmoon)"/>
+  <g fill="#0b0716"><path d="M0 120V84l10-4 6 8 12-12 8 10 10-6 12 14 14-8 10 10 16-14 12 12 14-6 10 8 14-10 12 12 16-4 12 8 14-12 12 10 14-6 10 8 14-10 12 8 16-4 12 10 12-6V120z"/>
+  <path d="M150 90l4-16 4 16zM148 90h12v30h-12z"/><path d="M60 82h4v38h-4z"/><path d="M52 90l12-10 12 10z"/>
+  <path d="M262 28q8-10 18-4-6 2-8 8 8-2 12 4-10 0-16-2-6 2-6-6z"/><path d="M196 18q6-8 14-3-5 1-6 6 6-1 9 3-8 0-12-1-5 2-5-5z"/></g>
+  <g transform="translate(150 98)"><ellipse cx="0" cy="8" rx="30" ry="6" fill="#000" opacity="0.35"/>
+    <path d="M-28 -2c0-18 14-26 28-26s28 8 28 26-12 12-28 12S-28 16-28-2z" fill="#f5821f"/>
+    <path d="M-12-26c-4 6-6 22 0 34M0-28c-3 8-3 26 0 38M12-26c4 6 6 22 0 34" stroke="#c4600e" stroke-width="2" fill="none" opacity="0.7"/>
+    <rect x="-3" y="-34" width="6" height="9" rx="2" fill="#4a7a2a"/>
+    <path d="M-18-6l8-8 6 7zM18-6l-8-8-6 7z" fill="#2a0e00"/><path d="M-16 4l5 4 5-4 6 4 6-4 5 4 5-4v-1l-4-3-7 3-5-3-5 3-7-3z" fill="#2a0e00"/>
+    <circle cx="-11" cy="-8" r="6" fill="#ffd36a" opacity="0.35"/><circle cx="11" cy="-8" r="6" fill="#ffd36a" opacity="0.35"/></g>
+</svg>`;
+const hwDate = (t) => new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' }).replace(/^1 /, '1er ');
+const hwBanner = () => {
+  const now = Date.now();
+  if (now >= EVENT.shopEnd) return '';
+  const when = now < EVENT.start ? 'Bientôt' : hwEventActive(now) ? 'En cours' : 'Boutique de Jack ouverte jusqu’au ' + hwDate(EVENT.shopEnd - 864e5);
+  return `<div class="hw-banner">${HW_ART}<span class="hw-badge">${when}</span><div class="hw-banner-txt"><b>🎃 Événement Halloween</b><small>Du ${hwDate(EVENT.start)} au ${hwDate(EVENT.end - 864e5)} inclus</small></div></div>`;
+};
+
 export class HUD {
   constructor(root, bus, game) {
     this.root = root; this.bus = bus; this.game = game;
@@ -79,6 +107,7 @@ export class HUD {
         <div class="mm-left">
           <div class="title-logo"><span>Korvalune</span></div>
           <p class="mm-tag">Un monde ouvert à explorer, seul ou à plusieurs.</p>
+          ${hwBanner()}
         </div>
         <div class="mm-right">
           <div id="account-status">Mode invité</div>
@@ -92,7 +121,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.15 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.16 — Korvalune</div>
         </div>
       </div>
 

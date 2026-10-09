@@ -25,7 +25,9 @@ const MOODS = {
   town: { bpm: 80, root: 50, scale: 'lydian', prog: [0, 1, 5, 4, 0, 1, 2, 4], harp: 0.85, lead: 0.7, pad: 1, bright: 1 },
   day: { bpm: 72, root: 50, scale: 'dorian', prog: [0, 3, 0, 4, 0, 6, 3, 4], harp: 0.6, lead: 0.55, pad: 1, bright: 0.8 },
   night: { bpm: 58, root: 45, scale: 'aeolian', prog: [0, 5, 2, 6, 0, 3, 5, 6], harp: 0.35, lead: 0.4, pad: 0.9, bright: 0.5 },
-  combat: { bpm: 132, root: 38, scale: 'aeolian', prog: [0, 5, 6, 0, 0, 5, 3, 4], harp: 0, lead: 0, pad: 0.6, bright: 1 }
+  combat: { bpm: 132, root: 38, scale: 'aeolian', prog: [0, 5, 6, 0, 0, 5, 3, 4], harp: 0, lead: 0, pad: 0.6, bright: 1 },
+  // V10.16 — Halloween : lent, gammes sombres, boîte à musique et cloches
+  halloween: { bpm: 60, root: 45, scale: 'harmonic', prog: [0, 5, 3, 4, 0, 5, 1, 4], harp: 0.5, lead: 0.55, pad: 1, bright: 0.45, leadType: 'triangle' }
 };
 // Variantes : à chaque nouveau « morceau » (16 à 28 mesures) on tire au hasard une variante
 // différente de la précédente (tonalité, gamme, tempo, progression, timbre du lead).
@@ -51,6 +53,14 @@ const VARIANTS = {
     { bpm: 56, root: 47, scale: 'harmonic', prog: [0, 5, 3, 4, 0, 5, 1, 4], lead: 0.35 },
     { bpm: 60, root: 43, scale: 'dorian', prog: [0, 6, 3, 5, 0, 6, 4, 5], harp: 0.45, leadType: 'triangle' },
     { bpm: 54, root: 50, scale: 'aeolian', prog: [0, 3, 5, 2, 0, 3, 6, 4], harp: 0.25, lead: 0.5 }
+  ],
+  halloween: [
+    {},
+    { bpm: 54, root: 41, scale: 'phrygian', prog: [0, 1, 0, 6, 0, 3, 1, 0], harp: 0.35, lead: 0.45, leadType: 'sine' },
+    { bpm: 76, root: 50, scale: 'harmonic', prog: [0, 3, 0, 4, 0, 3, 5, 4], harp: 0.7, lead: 0.6, leadType: 'triangle' },
+    { bpm: 48, root: 38, scale: 'aeolian', prog: [0, 5, 2, 6, 0, 3, 5, 6], harp: 0.25, lead: 0.5, leadType: 'sine', pad: 1.2 },
+    { bpm: 66, root: 43, scale: 'phrygian', prog: [0, 6, 5, 6, 0, 1, 6, 5], harp: 0.55, lead: 0.4 },
+    { bpm: 84, root: 47, scale: 'harmonic', prog: [0, 5, 0, 5, 3, 4, 1, 4], harp: 0.8, lead: 0.7, leadType: 'triangle', bright: 0.7 }
   ],
   combat: [
     {},
@@ -554,7 +564,7 @@ export class AudioManager {
     set('rain', E.rain * 0.17, 1.2);
     set('rainLow', E.rain * 0.22, 1.2);
     set('water', E.town ? 0.05 * (E.fountain == null ? 1 : E.fountain) : 0, 1.2);
-    this._moodTarget = this._combat() ? 'combat' : E.night > 0.55 ? 'night' : E.town ? 'town' : 'day';
+    this._moodTarget = this._combat() ? 'combat' : E.hw ? 'halloween' : E.night > 0.55 ? 'night' : E.town ? 'town' : 'day';
   }
 
   _combat() { return performance.now() < this._combatUntil; }
@@ -719,6 +729,12 @@ export class AudioManager {
       // mélodie de flûte, une phrase toutes les ~2 mesures
       if (this._bar % 2 === 0 && Math.random() < M.lead) this._leadPhrase(base + beat * (Math.random() < 0.5 ? 0 : 1), beat, M, S);
       // nuit : quelques notes de cristal très espacées
+      if (this.mood === 'halloween') {
+        // grave de basse profonde, cloche lugubre, rare gémissement du vent
+        if (this._bar % 4 === 0) this.tone(mtof(ch[0] - 24), barDur * 2, { type: 'sine', vol: 0.07, bus: 'music', delay: base, attack: 0.6, lp: 220 });
+        if (Math.random() < 0.55) this.bell(mtof(ch[Math.floor(Math.random() * 3)] + 24 + (Math.random() < 0.3 ? 7 : 0)), 3.5, 0.022, { delay: base + beat * rnd(0.3, 3.6), bus: 'music', bright: 0.3 });
+        if (Math.random() < 0.12) this.noise(barDur * 0.9, { freq: rnd(500, 900), q: 5, vol: 0.02, bus: 'music', delay: base + beat * rnd(0, 2), attack: barDur * 0.4 });
+      }
       if (night && Math.random() < 0.5) this.bell(mtof(ch[2] + 24), 3, 0.018, { delay: base + beat * rnd(0.5, 3.5), bus: 'music', bright: 0.3 });
     }
 

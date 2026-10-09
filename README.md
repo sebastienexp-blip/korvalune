@@ -1055,3 +1055,8 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Les cosmétiques (Lunes et Halloween) ne sont pas des objets d'inventaire : ils sont liés au compte, ni vendables, ni échangeables.
 - Le serveur retire tout identifiant cosmétique des sauvegardes d'inventaire/banque et des offres d'échange (`noCosmetics` dans `server.js`).
 - Inventaire : section « 🎨 Cosmétiques », un toucher équipe, un second retire (message `shop:equip` existant).
+
+## V10.16 — Musiques d'Halloween et affiche de l'événement
+
+- Nouvelle ambiance `halloween` dans `AudioManager` (5 variantes + base, gammes harmonique/phrygienne, cloches, grave, vent) ; active pendant l'événement hors combat (`setEnvironment({ hw })`).
+- Affiche SVG + dates (calculées depuis `EVENT` dans `src/data/halloween.js`) sur le menu principal ; disparaît après la fin de la boutique.

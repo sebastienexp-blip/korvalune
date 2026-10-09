@@ -99,6 +99,7 @@ export class Game {
       try {
         this.audio.resume(); this.audio.setVolume(this.settings.volume / 100);
         this.audio.setMix({ music: this.settings.musicVol / 100, sfx: this.settings.sfxVol / 100, ui: this.settings.uiVol / 100, ambience: this.settings.ambVol / 100 });
+        this.audio.setEnvironment({ hw: eventActiveNow() });
         this.audio.startMusic();
       } catch (e) { /* ignore */ }
     };
@@ -2294,8 +2295,8 @@ export class Game {
       const w = this.weather, raining = w && (w.state === 'rain' || w.state === 'storm');
       const town = Math.abs(p.x) < 44 && Math.abs(p.z) < 44;
       a.setRoom(this.rift?.active || Math.hypot(p.x - DUNGEON_CENTER[0], p.z - DUNGEON_CENTER[1]) < 22 ? 'hall' : 'open');
-      if (this.rift?.active) a.setEnvironment({ night: 1, town: false, rain: 0, snow: false, fountain: 0 });
-      else a.setEnvironment({ night: this.dayNight.night, town, rain: raining ? w.intensity : 0, snow: !!w && w.state === 'snow' && w.intensity > 0.3, fountain: town ? Math.max(0, 1 - Math.hypot(p.x, p.z) / 38) : 0 });
+      if (this.rift?.active) a.setEnvironment({ night: 1, town: false, rain: 0, snow: false, fountain: 0, hw: false });
+      else a.setEnvironment({ hw: !!(this.hw?.on && eventActiveNow()), night: this.dayNight.night, town, rain: raining ? w.intensity : 0, snow: !!w && w.state === 'snow' && w.intensity > 0.3, fountain: town ? Math.max(0, 1 - Math.hypot(p.x, p.z) / 38) : 0 });
     }
   }
 

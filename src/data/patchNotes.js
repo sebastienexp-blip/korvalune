@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.16', title: 'Musiques d’Halloween et affiche de l’événement',
+    items: [
+      'Pendant l’événement, 6 ambiances musicales d’Halloween se succèdent au hasard : cloches lugubres, boîte à musique, graves profonds et vent qui gémit. Le combat garde sa musique.',
+      'L’écran de démarrage affiche une affiche d’Halloween avec les dates : du 9 octobre au 1er novembre inclus (boutique de Jack ouverte jusqu’au 4 novembre).'
+    ]
+  },
+  {
     version: '10.15', title: 'Garde-robe : cosmétiques liés au compte',
     items: [
       'Tous les cosmétiques (boutique des Lunes et Halloween) sont désormais des objets liés à ton compte : impossibles à vendre, à échanger ou à mettre en banque.',
