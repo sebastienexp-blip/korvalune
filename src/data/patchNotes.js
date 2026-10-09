@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.28', title: 'Zénith : progresser sans limite après le niveau 200',
+    items: [
+      '✨ Une fois niveau 200, ton expérience fait monter des niveaux de Zénith, sans limite. Chaque niveau te donne 1 point à investir.',
+      '🌌 L’arbre des Constellations (Personnage > Constellations) : Fureur, Rempart, Savoir et Fortune, chacune avec une racine, trois branches et une clé de voûte puissante au bout. Une branche s’ouvre dans l’ordre.',
+      '♾️ Au centre, le Rayonnement n’a pas de rang maximal : +0,5 % de PV, d’attaque et de défense par point. Il garde chaque point utile, même quand tout le reste est pris.',
+      '↺ Tu peux réinitialiser l’arbre contre des pièces d’or et refaire ton choix. Ton niveau de Zénith s’affiche sur ton badge de niveau (Z12…).'
+    ]
+  },
+  {
     version: '10.27', title: 'Empreintes de compétence sur les objets',
     items: [
       '✦ Les objets Légendaires modifient 1 compétence de ta classe, les Mythiques 2 et les Absolus 3. Chaque empreinte change la compétence : plus de dégâts, plus de portée, recharge réduite, coût réduit. Les empreintes Puissance, Portée, Célérité et Économie existent dès le Légendaire ; Cataclysme (dégâts + portée + recharge) arrive avec le Mythique.',

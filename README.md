@@ -1139,3 +1139,10 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 
 - `SkillRanks.js` : `SKILL_TEMPLATES` (puissance, portée, célérité, économie, cataclysme), `rollSkillBoosts` (Légendaire 1, Mythique 2, Absolu 3 compétences de la classe), `cleanSkillBoosts` (serveur). Un objet ne stocke que `gen.skills = [{id, t, q}]` ; les valeurs (dégâts, portée, recharge, coût) sont recalculées par `skillModValues` depuis le modèle, la qualité `q` et le niveau d'objet. `Equipment.apply` les additionne (plafonnées) dans `player.skillMods`, lu par `effectiveSkill`.
 - Atelier : la refonte retire au sort les empreintes (et reconstruit les objets de build), l'élévation de rareté n'est pas possible pour les objets de build.
+
+
+## V10.28 — Zénith et arbre des Constellations
+
+- `src/data/zenith.js` (partagé client/serveur, sans import JSON) : 65 nœuds (4 constellations × [racine + 3 branches de 5, la dernière étant une clé de voûte], plus le Rayonnement central de rang illimité). `cleanZenith` revalide niveau, rangs, prérequis et total ≤ niveau ; `zenithBonus` additionne les bonus (`PRIM` = attribut principal de la classe).
+- `Player` : après le niveau 200, `gainXp` fait monter `zenith.lvl` (`zenithXp`), `_mergedBonus` ajoute l'arbre aux bonus d'équipement. Nouveaux bonus `allPct` (PV/attaque/défense) et `skillRadPct` (portée des compétences).
+- Serveur : Zénith accepté seulement à partir du niveau 200, hausse bornée (`+2 + 3/min` par sauvegarde).

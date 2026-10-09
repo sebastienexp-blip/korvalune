@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #workshop-screen, #halloween-screen, #pass-screen, #difficulty-screen, #barber-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #workshop-screen, #halloween-screen, #pass-screen, #zenith-screen, #difficulty-screen, #barber-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -356,7 +356,7 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 @keyframes pulse-points { 0%, 100% { box-shadow: 0 0 0 2px rgba(226, 184, 102, 0.4); } 50% { box-shadow: 0 0 0 5px rgba(226, 184, 102, 0.15); } }
 
 /* ---------- Inventaire / objets ---------- */
-#inventory-screen, #character-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #lune-screen, #halloween-screen, #pass-screen, #difficulty-screen, #shop-screen { padding-top: calc(26px + env(safe-area-inset-top, 0px)); }
+#inventory-screen, #character-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #lune-screen, #halloween-screen, #pass-screen, #zenith-screen, #difficulty-screen, #shop-screen { padding-top: calc(26px + env(safe-area-inset-top, 0px)); }
 #inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; width: min(620px, 94vw); padding: 12px; border: 1px solid var(--panel-border); border-radius: 10px; background: rgba(5, 9, 20, 0.55); }
 .inv-cell { position: relative; aspect-ratio: 1 / 1; width: 100%; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.12); background: radial-gradient(circle at 50% 30%, rgba(60, 80, 140, 0.28), rgba(8, 12, 26, 0.7)); color: #fff; padding: 0; box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5); }
 .inv-cell:active { transform: scale(0.95); }
@@ -1141,3 +1141,42 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .sk-rank.max { color: #ffe9a6; font-weight: 700; }
 .sk-up { background: linear-gradient(#d9a441,#a8741c); color: #1b1305; border-radius: 6px; padding: 3px 8px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .sk-up.off { background: rgba(255,255,255,.12); color: #aab; }
+
+/* V10.28 — Zénith : arbre des Constellations */
+.zenith-screen { text-align: left; gap: 6px; }
+.zenith-screen > :not(button) { flex: none; width: min(980px, 100%); }
+.zenith-screen h2 { margin: 0 0 4px; }
+.zn-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.zn-lvl b { font-size: 1.35rem; color: #e6d5ff; display: block; }
+.zn-lvl small, .zn-pts small { opacity: .7; display: block; font-size: 12px; }
+.zn-pts { text-align: right; } .zn-pts b { font-size: 1.6rem; color: #9aa; } .zn-pts.has b { color: #ffd35e; }
+.zn-xp { height: 6px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+.zn-xp i { display: block; height: 100%; background: linear-gradient(90deg,#7a5cff,#d6b8ff); }
+.zn-bonus { font-size: 12px; opacity: .85; margin-bottom: 4px; line-height: 1.5; }
+.zn-scroll { overflow: auto; height: clamp(220px, calc(100vh - 360px), 640px); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: radial-gradient(circle at 50% 50%, #1b1640, #0a0a1c 70%); touch-action: pan-x pan-y; }
+.zn-scroll svg { display: block; }
+.zn-edge { stroke: rgba(255,255,255,.14); stroke-width: 3; }
+.zn-edge.on { stroke: var(--c, #ffe9a6); stroke-width: 4; opacity: .9; }
+.zn-node { cursor: pointer; }
+.zn-hit { fill: transparent; }
+.zn-disc { fill: #12122a; stroke: var(--c); stroke-width: 3; opacity: .45; }
+.zn-node.open .zn-disc { opacity: 1; stroke-width: 4; animation: znp 1.8s ease-in-out infinite; }
+.zn-node.on .zn-disc { fill: color-mix(in srgb, var(--c) 45%, #12122a); opacity: 1; }
+.zn-node.max .zn-disc { fill: var(--c); opacity: 1; }
+.zn-node.sel .zn-disc { stroke: #fff; stroke-width: 5; }
+.zn-tip { fill: var(--c); }
+.zn-t { fill: #fff; font-size: 11px; text-anchor: middle; font-weight: 700; pointer-events: none; }
+.zn-lab { font-size: 24px; font-weight: 700; opacity: .6; pointer-events: none; letter-spacing: 2px; }
+@keyframes znp { 50% { stroke-width: 6; } }
+.zn-card { border: 1px solid var(--c); border-radius: 10px; padding: 8px 10px; background: rgba(15,15,35,.85); font-size: 13px; }
+.zn-card small { opacity: .7; }
+.zn-mods { margin: 4px 0; color: #e8e8ff; }
+.zn-act { display: flex; gap: 8px; align-items: center; } .zn-act span { flex: 1; opacity: .8; }
+.zn-why { display: block; margin-top: 4px; color: #ffb38a; }
+@media (prefers-reduced-motion: reduce) { .zn-node.open .zn-disc { animation: none; } }
+@media (max-height: 620px) {
+  .zenith-screen h2, .zn-bonus, #zn-msg { display: none; }
+  .zn-scroll { height: calc(100vh - 215px); min-height: 160px; }
+  .zn-mods small { display: none; } .zn-card { padding: 5px 8px; }
+  .zn-lvl b { font-size: 1.1rem; } .zn-pts b { font-size: 1.3rem; }
+}

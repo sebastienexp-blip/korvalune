@@ -1,5 +1,6 @@
 import { cleanPotions } from '../data/potions.js';
 import { cleanSatchel } from '../data/satchel.js';
+import { cleanZenith, zenithBonus, zenithXp, MAX_LEVEL } from '../data/zenith.js';
 import { cleanRanks, effectiveSkill, setSkillTable } from '../combat/SkillRanks.js';
 import { playSkillCast, playSkillImpact } from '../audio/SkillSounds.js';
 import * as THREE from 'three';
@@ -51,6 +52,7 @@ export class Player {
     this.xp = save?.xp || 0;
     this.coins = save?.coins ?? 25;
     this.potions = cleanPotions(save?.potions); // V10.22 : potions permanentes {owned, heal, mana}
+    this.zenith = cleanZenith(save?.zenith); // V10.28 : Zénith { lvl, ranks } — niveaux illimités après le niveau 200
     this.skillRanks = cleanRanks(save?.skillRanks, 200); // V10.26 : rang de chaque compétence
     this.satchel = cleanSatchel(save?.satchel); // V10.26 : besace des matériaux
     this.soldTotal = Math.max(0, Math.floor(save?.soldTotal || 0)); // V10.21 : cumul des ventes (le serveur n'accepte que la hausse)
@@ -143,19 +145,19 @@ export class Player {
   }
 
   recomputeDerived() {
-    const s = this.stats, lvl = this.level, eq = this.equipBonus || {};
+    const s = this.stats, lvl = this.level, eq = this._mergedBonus();
     const rb = this.riftBonus || {};
-    this.maxHp = Math.round((this.baseHp + (s.vit + (eq.vit || 0)) * 12 + lvl * 8 + (eq.hp || 0)) * (1 + (rb.hpPct || 0)));
+    this.maxHp = Math.round((this.baseHp + (s.vit + (eq.vit || 0)) * 12 + lvl * 8 + (eq.hp || 0)) * (1 + (rb.hpPct || 0)) * (1 + (eq.allPct || 0)));
     this.maxMana = Math.round(this.baseMana + (s.int + (eq.int || 0)) * 10 + lvl * 4 + (eq.mana || 0));
     this.maxStamina = Math.round(this.baseStamina + (s.agi + (eq.agi || 0)) * 4);
     const prim = PRIMARY_STAT[this.classId] || 'str';
     const offStat = (k) => (s[k] + (eq[k] || 0)) * (k === prim ? 1.6 : 0.4);
-    this.atk = Math.round((6 + offStat('str') + offStat('int') + offStat('agi') + lvl * 1.1 + (eq.atk || 0)) * (1 + (rb.atkPct || 0)));
-    this.def = Math.round(2 + (s.vit + (eq.vit || 0)) * 0.8 + lvl * 0.6 + (eq.def || 0));
+    this.atk = Math.round((6 + offStat('str') + offStat('int') + offStat('agi') + lvl * 1.1 + (eq.atk || 0)) * (1 + (rb.atkPct || 0)) * (1 + (eq.allPct || 0)));
+    this.def = Math.round((2 + (s.vit + (eq.vit || 0)) * 0.8 + lvl * 0.6 + (eq.def || 0)) * (1 + (eq.allPct || 0)));
     this.critChance = clamp(0.04 + (eq.crit || 0), 0, 0.75); // V7.2 : plus de critique via les points de stats
     this.critMult = clamp(1.8 + (s.luck + (eq.luck || 0)) * 0.006 + (eq.critDmgPct || 0) + (rb.critDmg || 0), 1.5, 9);
     this.dodge = clamp((s.agi + (eq.agi || 0)) * 0.002, 0, 0.35);
-    this.xpNeeded = Math.round(60 * Math.pow(this.level, 1.5) + 40);
+    this.xpNeeded = this.level >= MAX_LEVEL ? zenithXp(this.zenith.lvl) : Math.round(60 * Math.pow(this.level, 1.5) + 40); // après le niveau 200 : l'XP fait monter le Zénith
 
     // Statistiques secondaires issues des affixes d'objets (voir affixPool.js)
     this.cooldownMult = clamp(1 - (eq.atkSpeedPct || 0) - (eq.cdrPct || 0) - (rb.cdr || 0), 0.3, 1); // vitesse d'attaque : réduit les temps de recharge
@@ -170,6 +172,7 @@ export class Player {
     this.goldBonus = clamp(eq.goldPct || 0, 0, 2);
     this.staRegenBonus = clamp(eq.staRegenPct || 0, 0, 1.5);
     // V10.26 : bonus des objets de build
+    this.skillRadPct = clamp(eq.skillRadPct || 0, 0, 2);
     this.skillDmgPct = clamp(eq.skillDmgPct || 0, 0, 3);
     this.bossDmgPct = clamp(eq.bossDmgPct || 0, 0, 3);
     this.lifestealPct = clamp(eq.lifestealPct || 0, 0, 0.3);
@@ -189,6 +192,16 @@ export class Player {
 
   // V3.7 : bonus permanents des cristaux de spire
   setRiftBonus(b) { this.riftBonus = b; this.recomputeDerived(); this.hp = Math.min(this.hp, this.maxHp); }
+
+  // équipement + arbre du Zénith (V10.28)
+  _mergedBonus() {
+    const eq = this.equipBonus || {};
+    if (!this._zb) this._zb = zenithBonus(this.zenith, PRIMARY_STAT[this.classId] || 'str');
+    const out = { ...eq };
+    for (const [k, v] of Object.entries(this._zb)) out[k] = (out[k] || 0) + v;
+    return out;
+  }
+  refreshZenith() { this._zb = null; this.recomputeDerived(); this.hp = Math.min(this.hp, this.maxHp); this.bus.emit('hud'); }
 
   setSkillMods(m) { this.skillMods = m || {}; } // V10.27 : empreintes de compétence de l'équipement {id: {dmg, rad, cd, cost}}
 
@@ -294,6 +307,14 @@ export class Player {
     this.bus.emit('floatText', { pos: this.pos.clone().add({ x: 0, y: 2.1, z: 0 }), text: `+${n} XP`, color: '#8fd0ff' });
     while (this.xp >= this.xpNeeded) {
       this.xp -= this.xpNeeded;
+      if (this.level >= MAX_LEVEL) { // V10.28 : niveau de Zénith (1 point par niveau, sans limite)
+        this.zenith.lvl++;
+        this.xpNeeded = zenithXp(this.zenith.lvl);
+        this.audio.play('levelup');
+        this.bus.emit('zenithUp', this.zenith.lvl);
+        this.bus.emit('particles', { pos: this.pos.clone(), color: 0xb58cff, count: 70, speed: 5, life: 1.2, up: 3 });
+        continue;
+      }
       this.level++;
       this.statPoints += 5;
       this.recomputeDerived();
@@ -633,7 +654,7 @@ export class Player {
   serialize() {
     return {
       classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, look: this.look, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
-      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, potions: this.potions, satchel: this.satchel, skillRanks: this.skillRanks, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
+      level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, potions: this.potions, satchel: this.satchel, skillRanks: this.skillRanks, zenith: this.zenith, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
       skillBar: this.skillBar
     };
   }

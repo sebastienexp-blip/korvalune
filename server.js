@@ -34,6 +34,7 @@ import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as 
 import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
 import { cleanPotions } from './src/data/potions.js';
 import { cleanSatchel, SATCHEL_MAX } from './src/data/satchel.js';
+import { cleanZenith } from './src/data/zenith.js';
 import { cleanRanks, setSkillTable } from './src/combat/SkillRanks.js';
 import { readFileSync } from 'node:fs';
 setSkillTable(Object.fromEntries(JSON.parse(readFileSync(new URL('./src/data/skills.json', import.meta.url), 'utf8')).map((s) => [s.id, s])));
@@ -292,6 +293,10 @@ function sanitizeSave(prev, incoming, elapsedMs) {
     const inc = cleanRanks(incoming.skillRanks, clean.level), old = cleanRanks(prev?.skillRanks, 200);
     clean.skillRanks = {};
     for (const [id, r] of Object.entries(inc)) clean.skillRanks[id] = Math.min(r, (old[id] || 0) + 3);
+  }
+  { // V10.28 : Zénith — seulement à partir du niveau 200 ; hausse du niveau bornée par sauvegarde et par minute
+    const pz = cleanZenith(prev?.zenith);
+    clean.zenith = clean.level >= 200 ? cleanZenith(incoming.zenith, pz.lvl + 2 + Math.ceil(3 * elapsedMin)) : { lvl: 0, ranks: {} };
   }
   clean.mountSel = isMountId(incoming.mountSel) && clean.mounts.includes(incoming.mountSel) ? incoming.mountSel : '';
   clean.progress = incoming.progress && typeof incoming.progress === 'object' ? incoming.progress : {};

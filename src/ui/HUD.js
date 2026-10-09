@@ -3,6 +3,7 @@ import { DIFFICULTIES } from '../data/difficulty.js';
 import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../data/halloween.js';
 import { ITEMS, RARITY, resolveItem } from '../inventory/Item.js';
 import { SATCHEL_IDS } from '../data/satchel.js';
+import { NODES, NODE_BY_ID, CONSTELLATION_INFO, CORE_ID, MAX_LEVEL, spentOf, canInvest, zenithBonus, describeZenith, respecCost } from '../data/zenith.js';
 import { activeBuildBonuses, describeMods, BUILDS_BY_CLASS } from '../data/builds.js';
 import { describeSkillMod, SKILL_TEMPLATES, MAX_RANK, rankCost, rankLevelNeeded, upgradable, progMult, rankDmg } from '../combat/SkillRanks.js';
 import { rarityGlow } from '../data/rarities.js';
@@ -137,7 +138,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.27 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.28 — Korvalune</div>
         </div>
       </div>
 
@@ -335,6 +336,7 @@ export class HUD {
           <div id="equip-list"></div>
           <div id="stat-list"></div>
         </div>
+        <button data-act="open-zenith">✨ Constellations (Zénith)</button>
         <button data-act="close-char">Fermer</button>
       </div>
 
@@ -418,6 +420,14 @@ export class HUD {
         <div id="pass-missions"></div>
         <div id="pass-track"></div>
         <button data-act="close-pass">Fermer</button>
+      </div>
+
+      <div id="zenith-screen" class="hidden panel-screen zenith-screen">
+        <div id="zn-head"></div>
+        <div id="zn-msg" class="menu-hint"></div>
+        <div id="zn-info"></div>
+        <div id="zn-map"></div>
+        <button data-act="close-zenith">Fermer</button>
       </div>
 
       <div id="difficulty-screen" class="hidden panel-screen diff-screen">
@@ -584,7 +594,7 @@ export class HUD {
     }
     this._curScreen = id;
     if (prev !== id) this.ms.reset();
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'workshop-screen', 'halloween-screen', 'pass-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'workshop-screen', 'halloween-screen', 'pass-screen', 'zenith-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -656,12 +666,12 @@ export class HUD {
   }
 
   updatePlayer(p) {
-    const key = `${p.name}|${p.level}|${Math.ceil(p.hp)}|${p.maxHp}|${Math.ceil(p.mana)}|${p.maxMana}|${Math.round(p.stamina)}|${Math.round(p.xp)}|${p.coins}|${p.statPoints > 0}`;
+    const key = `${p.name}|${p.level}|${Math.ceil(p.hp)}|${p.maxHp}|${Math.ceil(p.mana)}|${p.maxMana}|${Math.round(p.stamina)}|${Math.round(p.xp)}|${p.coins}|${p.statPoints > 0}|${p.zenith ? p.zenith.lvl : 0}`;
     this._coins = p.coins;
     if (key === this._plKey) return;
     this._plKey = key;
     this.q('#pl-name').textContent = p.name;
-    this.q('#lvl-badge').textContent = p.level;
+    this.q('#lvl-badge').textContent = p.level >= MAX_LEVEL && p.zenith && p.zenith.lvl > 0 ? 'Z' + p.zenith.lvl : p.level;
     this._coins = p.coins;
     this._bar('bar-hp', p.hp, p.maxHp);
     this._bar('bar-mana', p.mana, p.maxMana);
@@ -1056,7 +1066,7 @@ export class HUD {
     st.innerHTML = `
       <div class="stat-block">
         <div class="stat-title">Combat</div>
-        <div class="stat-row"><span>Niveau</span><b>${player.level}</b></div>
+        <div class="stat-row"><span>Niveau</span><b>${player.level}${player.zenith && player.zenith.lvl ? ` · Zénith ${player.zenith.lvl}` : ''}</b></div>
         <div class="stat-row"><span>PV max</span><b>${player.maxHp}</b></div>
         <div class="stat-row"><span>Mana max</span><b>${player.maxMana}</b></div>
         <div class="stat-row"><span>Attaque</span><b>${player.atk}</b></div>
@@ -1083,6 +1093,43 @@ export class HUD {
     for (const btn of st.querySelectorAll('.stat-plus')) {
       btn.onclick = () => onSpend(btn.dataset.stat);
     }
+  }
+
+  // V10.28 — Zénith : arbre des Constellations. sel = nœud sélectionné, msg = dernier message.
+  renderZenith(player, sel, msg) {
+    const z = player.zenith, prim = player.classId ? ({ warrior: 'str', paladin: 'str', mage: 'int', archer: 'agi', assassin: 'agi' }[player.classId] || 'str') : 'str';
+    const spent = spentOf(z.ranks), free = z.lvl - spent, max = player.level >= MAX_LEVEL;
+    const pct = Math.min(100, (player.xp / Math.max(1, player.xpNeeded)) * 100);
+    const bon = describeZenith(zenithBonus(z, prim), prim);
+    this.q('#zn-head').innerHTML = `<h2>✨ Constellations</h2>
+      <div class="zn-top"><div class="zn-lvl"><b>Zénith ${z.lvl}</b><small>${max ? 'illimité — chaque niveau donne 1 point' : `débloqué au niveau ${MAX_LEVEL} (tu es niveau ${player.level})`}</small></div>
+      <div class="zn-pts ${free > 0 ? 'has' : ''}"><b>${free}</b><small>point${free > 1 ? 's' : ''} à investir</small></div></div>
+      <div class="zn-xp"><i style="width:${max ? pct : 0}%"></i></div>
+      <div class="zn-bonus">${bon || 'Aucun bonus pour l’instant : investis tes premiers points.'}</div>
+      <button class="soc-btn" data-zn="respec"${spent ? '' : ' disabled'}>↺ Réinitialiser l’arbre (${respecCost(z.lvl)} 🪙)</button>`;
+    this.q('#zn-msg').textContent = msg || 'Touche une étoile pour la sélectionner, puis investis un point. Chaque branche s’ouvre dans l’ordre.';
+    const stateOf = (n) => ((z.ranks[n.id] || 0) >= n.max ? 'max' : (z.ranks[n.id] || 0) > 0 ? 'on' : canInvest({ lvl: 9e9, ranks: z.ranks }, n.id).ok ? 'open' : 'lock');
+    let edges = '', dots = '';
+    for (const n of NODES) {
+      const pre = n.pre ? NODE_BY_ID[n.pre] : (n.c ? NODE_BY_ID[CORE_ID] : null);
+      if (pre) edges += `<line x1="${pre.x}" y1="${pre.y}" x2="${n.x}" y2="${n.y}" class="zn-edge${(z.ranks[n.id] || 0) > 0 ? ' on' : ''}" ${n.c ? `style="--c:${CONSTELLATION_INFO[n.c].color}"` : ''}/>`;
+    }
+    for (const n of NODES) {
+      const r = n.kind === 'c' ? 30 : n.kind === 'k' ? 24 : n.kind === 'm' ? 20 : 15, rk = z.ranks[n.id] || 0, col = n.c ? CONSTELLATION_INFO[n.c].color : '#ffe9a6';
+      dots += `<g class="zn-node ${stateOf(n)}${sel === n.id ? ' sel' : ''}" data-zn="pick" data-v="${n.id}" style="--c:${col}"><circle cx="${n.x}" cy="${n.y}" r="${r + 10}" class="zn-hit"/><circle cx="${n.x}" cy="${n.y}" r="${r}" class="zn-disc"/>${n.kind === 'k' ? `<path d="M${n.x} ${n.y - r - 7}L${n.x + 5} ${n.y - r}H${n.x - 5}Z" class="zn-tip"/>` : ''}<text x="${n.x}" y="${n.y + 4}" class="zn-t">${n.kind === 'c' ? rk : n.max > 1 ? rk + '/' + n.max : (rk ? '✓' : '')}</text></g>`;
+    }
+    const LAB = { fureur: [500, 34, 'middle'], rempart: [975, 490, 'end'], savoir: [500, 980, 'middle'], fortune: [25, 490, 'start'] };
+    const labels = Object.entries(CONSTELLATION_INFO).map(([id, c]) => `<text x="${LAB[id][0]}" y="${LAB[id][1]}" class="zn-lab" text-anchor="${LAB[id][2]}" style="fill:${c.color}">${c.name}</text>`).join('');
+    this.q('#zn-map').innerHTML = `<div class="zn-scroll"><svg viewBox="0 0 1000 1000" width="1000" height="1000">${edges}${labels}${dots}</svg></div>`;
+    const n = NODE_BY_ID[sel];
+    const info = this.q('#zn-info');
+    if (!n) { info.innerHTML = ''; return; }
+    const rk = z.ranks[n.id] || 0, can = canInvest(z, n.id);
+    const inf = n.max === Infinity;
+    info.innerHTML = `<div class="zn-card" style="--c:${n.c ? CONSTELLATION_INFO[n.c].color : '#ffe9a6'}"><b>${n.name}</b> <small>${n.c ? CONSTELLATION_INFO[n.c].name + (n.arm ? ' · ' + n.arm : '') : 'Centre — rangs illimités'}${n.kind === 'k' ? ' · Clé de voûte' : ''}</small>
+      <div class="zn-mods">${n.kind === 'k' || inf || n.max === 1 ? '' : 'Par rang : '}${describeZenith(n.mods, prim)}${rk && n.max > 1 ? `<br><small>Actuellement (×${rk}) : ${describeZenith(Object.fromEntries(Object.entries(n.mods).map(([k, v]) => [k, v * rk])), prim)}</small>` : ''}</div>
+      <div class="zn-act"><span>Rang ${rk}${inf ? '' : '/' + n.max}</span><button class="soc-btn" data-zn="inv" data-v="${n.id}"${can.ok ? '' : ' disabled'}>+1 point</button>${inf || n.max > 2 ? `<button class="soc-btn" data-zn="inv5" data-v="${n.id}"${can.ok ? '' : ' disabled'}>+5</button>` : ''}</div>
+      ${can.ok ? '' : `<small class="zn-why">${can.msg}</small>`}</div>`;
   }
 
   renderSkills(player, onToggleBarSlot, onToggleSkill, onUpgrade) {

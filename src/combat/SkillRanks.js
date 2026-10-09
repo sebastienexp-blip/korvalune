@@ -104,7 +104,7 @@ export function effectiveSkill(s, player) {
   if (s.cooldown) out.cooldown = s.cooldown * (1 - 0.015 * rank) * Math.max(0.4, 1 - (m.cd || 0));
   const cm = (1 - 0.02 * rank) * (1 - (player.costRedPct || 0)) * Math.max(0.3, 1 - (m.cost || 0));
   if (s.cost) { out.cost = {}; for (const [k, v] of Object.entries(s.cost)) out.cost[k] = k === 'hp' ? v : Math.max(1, Math.round(v * cm)); }
-  const rs = (1 + 0.03 * rank) * (1 + (m.rad || 0));
+  const rs = (1 + 0.03 * rank) * (1 + (m.rad || 0)) * (1 + (player.skillRadPct || 0));
   if (s.fx) {
     const f = { ...s.fx };
     if (f.radius) f.radius = f.radius * rs;
@@ -113,7 +113,7 @@ export function effectiveSkill(s, player) {
     if (f.waves) f.waves = { ...f.waves, r: f.waves.r * rs };
     out.fx = f;
   }
-  if (s.range && (s.aoe || m.rad)) out.range = s.range * rs; // portée des zones (et des tirs si l'empreinte l'étend)
+  if (s.range && (s.aoe || m.rad || player.skillRadPct)) out.range = s.range * rs; // portée des zones (et des tirs si l'empreinte l'étend)
   return out;
 }
 

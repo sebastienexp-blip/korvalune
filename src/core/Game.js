@@ -51,6 +51,7 @@ import { HUD } from '../ui/HUD.js';
 import { sellValueOf } from '../ui/MultiSell.js';
 import { isSatchelId, SATCHEL_MAX } from '../data/satchel.js';
 import { tryUpgrade } from '../combat/SkillRanks.js';
+import { CORE_ID, NODE_BY_ID, canInvest, respecCost } from '../data/zenith.js';
 import { POTION_INFO, DEFAULT_POTIONS, potionCooldown, potionServes } from '../data/potions.js';
 import { TouchControls } from '../ui/TouchControls.js';
 import { MOUNTS, MOUNT_BY_ID } from '../data/mounts.js';
@@ -995,6 +996,11 @@ export class Game {
       if (!this.hud.q('#bank-screen').classList.contains('hidden')) this._bankRefresh?.();
     };
     this.bus.on('ui:close-pass', () => this._closeModal());
+    // V10.28 — Zénith : arbre des Constellations
+    this.bus.on('ui:open-zenith', () => this._openZenith());
+    this.bus.on('ui:close-zenith', () => this._closeModal());
+    this.root.querySelector('#zenith-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-zn]'); if (bt && !bt.disabled) this._znAct(bt.dataset.zn, bt.dataset.v); });
+    this.bus.on('zenithUp', (lvl) => { this.hud.notify(`✨ Zénith ${lvl} ! Un point à investir dans les Constellations.`, 'quest'); this.hud.levelupBanner(); this._znRender(); });
     this.root.querySelector('#btn-pass').addEventListener('click', () => this._openPass());
     this.root.querySelector('#pass-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-ps]'); if (bt && !bt.disabled) this._passAct(bt.dataset.ps, bt.dataset.v, bt.dataset.track); });
     this.bus.on('net:pass', (msg) => {
@@ -1570,6 +1576,38 @@ export class Game {
     let n = 0; for (let t = 1; t <= st.tier; t++) { if (!st.free.includes(t)) n++; if (st.premium && !st.prem.includes(t)) n++; }
     if (!n) for (const m of [...st.daily, ...st.weekly]) if (!m.claimed && m.progress >= m.goal) n++;
     dot.classList.toggle('hidden', !n);
+  }
+
+  _openZenith() {
+    if (!this.player || this.dialogueOpen) return;
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    this._znSel = this._znSel || CORE_ID; this._znMsg = null;
+    this.hud.showScreen('zenith-screen');
+    this._znRender(true);
+  }
+  _znRender(center) {
+    const scr = this.hud.q('#zenith-screen'); if (scr.classList.contains('hidden')) return;
+    this.hud.renderZenith(this.player, this._znSel, this._znMsg);
+    if (center) { const sc = scr.querySelector('.zn-scroll'); if (sc) { sc.scrollLeft = 500 - sc.clientWidth / 2; sc.scrollTop = 500 - sc.clientHeight / 2; } }
+  }
+  _znAct(act, v) {
+    const p = this.player, keep = this.hud.q('#zenith-screen .zn-scroll');
+    const sl = keep ? [keep.scrollLeft, keep.scrollTop] : null;
+    this.audio.play('click');
+    if (act === 'pick') this._znSel = v;
+    else if (act === 'inv' || act === 'inv5') {
+      let done = 0;
+      for (let i = 0; i < (act === 'inv5' ? 5 : 1); i++) { if (!canInvest(p.zenith, v).ok) break; p.zenith.ranks[v] = (p.zenith.ranks[v] || 0) + 1; done++; }
+      this._znMsg = done ? `${NODE_BY_ID[v].name} : +${done}` : canInvest(p.zenith, v).msg;
+      if (done) p.refreshZenith();
+    } else if (act === 'respec') {
+      const cost = respecCost(p.zenith.lvl);
+      if (p.coins < cost) this._znMsg = `Il te manque ${cost - p.coins} pièces.`;
+      else { p.coins -= cost; p.zenith.ranks = {}; p.refreshZenith(); this._znMsg = 'Arbre réinitialisé : tous tes points sont à reprendre.'; }
+    }
+    this._znRender();
+    const nk = this.hud.q('#zenith-screen .zn-scroll'); if (nk && sl) { nk.scrollLeft = sl[0]; nk.scrollTop = sl[1]; }
   }
 
   _openPass() {
