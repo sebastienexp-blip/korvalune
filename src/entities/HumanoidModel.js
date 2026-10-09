@@ -582,6 +582,7 @@ export function animateHumanoid(rig, s, dt) {
     lR = -0.65; lL = 0.25; kR = 0.5; kL = 1.0; aR = -1.1; aL = -1.0; eR = -0.5; eL = -0.5; zR = -0.35; zL = 0.35; twist = 0;
   }
 
+  const baseLegs = { lR, lL, kR, kL }; // V10.24 : jambes de marche / course, conservées pendant une attaque en mouvement
   let fall = 0;
   if (s.dead) {
     // 1) les genoux lâchent, 2) la chute
@@ -680,6 +681,11 @@ export function animateHumanoid(rig, s, dt) {
       headX = -0.28 * open; hipDrop = -0.05 * open; lean = -0.1 * open; lR = lL = 0.05; kR = kL = 0.1;
     } else {
       rig.attackPhase = null;
+    }
+    if (acting && s.action !== 'interact') { // en mouvement : les jambes continuent de courir, seul le haut du corps frappe
+      const mk = clamp((s.speed - 0.6) / 2.5, 0, 1) * 0.9;
+      lR = lerp(lR, baseLegs.lR, mk); lL = lerp(lL, baseLegs.lL, mk); kR = lerp(kR, baseLegs.kR, mk); kL = lerp(kL, baseLegs.kL, mk);
+      hipZ *= 1 - mk * 0.7;
     }
     const h = rig.hurtT;
     lean -= 0.5 * h; headX += 0.35 * h; aR -= 0.5 * h; aL += 0.5 * h; kR += 0.25 * h; kL += 0.25 * h; hipDrop += 0.05 * h;

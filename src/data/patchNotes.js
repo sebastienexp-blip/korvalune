@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.24', title: 'Compagnons qui ramassent le butin, combat en mouvement',
+    items: [
+      '🐾 Ton compagnon équipé va maintenant chercher le butin tout seul et le met dans ton sac : consommables par défaut. Dans Options > Interface & jeu, tu choisis exactement ce qu’il ramasse (consommables, matériaux, runes, armes et armures jusqu’à une rareté) ou tu le désactives.',
+      '⚔️ L’attaque de base et toutes les compétences se lancent en marchant comme en sprintant. Les jambes continuent de courir pendant le coup (plus de glissade).',
+      '📱 Sur tactile, les boutons de compétence réagissent même quand l’autre pouce tient le joystick. Maintenir le bouton d’attaque répète la frappe.',
+      '⏱️ Une compétence pressée juste avant la fin de l’animation en cours part automatiquement dès que possible.'
+    ]
+  },
+  {
     version: '10.23', title: 'Pass de combat : gratuit et premium',
     items: [
       '🏅 Nouveau pass de combat (bouton 🏅 en jeu) : 50 paliers par saison, une voie gratuite et une voie premium. Tu gagnes de l’XP de pass en jouant : monstres, champions, boss, coffres, quêtes, atelier et spires.',

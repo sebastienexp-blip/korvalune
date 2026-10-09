@@ -10,6 +10,8 @@ export const DEFAULTS = {
   volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, mute: false,
   // souris / clavier
   lookSens: 100, invertY: false, invertWheel: false, zoomSpeed: 100, rotateBtn: 'right', cameraMode: 'iso', camRotate: 'auto', autoLoot: 'off', cameraLock: true,
+  // V10.24 : compagnon qui ramasse le butin
+  petLoot: true, petLootCons: true, petLootMat: false, petLootRune: false, petLootGear: 'off',
   // interface / jeu
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
@@ -79,6 +81,13 @@ const TABS = [
     { t: 'check', k: 'notifInfo', label: 'Notifications d’information (butin, équipement…)' },
     { t: 'check', k: 'autoTarget', label: 'Ciblage automatique des ennemis' },
     { t: 'select', k: 'autosave', label: 'Sauvegarde automatique', opts: [[30, 'Toutes les 30 s'], [60, 'Toutes les minutes'], [180, 'Toutes les 3 minutes'], [0, 'Désactivée (manuelle)']] },
+    { t: 'section', label: 'Compagnon : ramassage du butin' },
+    { t: 'check', k: 'petLoot', label: 'Mon compagnon ramasse le butin (il faut en équiper un depuis la boutique ou l’inventaire)' },
+    { t: 'check', k: 'petLootCons', label: 'Consommables : potions, parchemins, nourriture' },
+    { t: 'check', k: 'petLootMat', label: 'Matériaux d’artisanat' },
+    { t: 'check', k: 'petLootRune', label: 'Runes' },
+    { t: 'select', k: 'petLootGear', label: 'Armes et armures jusqu’à la rareté…', opts: [['off', 'Aucune (je ramasse moi-même)'], [1, 'Commune'], [4, 'Magique'], [8, 'Rare']] },
+    { t: 'note', text: 'Le compagnon court chercher les objets proches (environ 18 m) qui correspondent à ces choix, et les met directement dans ton sac. Rien n’est ramassé si le sac est plein.' },
     { t: 'custom', id: 'tutorial' },
     { t: 'custom', id: 'resetall' }
   ] }

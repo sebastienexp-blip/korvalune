@@ -2779,21 +2779,22 @@ export class Game {
     this._doSave();
   }
 
-  _pickupLoot(drop) {
+  _pickupLoot(drop, byPet = false) {
     const idx = this.lootDrops.indexOf(drop);
     if (idx === -1) return;
+    const full = (m) => { if (!byPet) this.hud.notify(m, 'boss'); };
     const view = resolveItem(drop.item);
     // inventaire plein : on laisse l'objet au sol (rien n'est perdu)
     if (drop.item.gen) {
-      if (this.inventory.firstEmpty() === -1) { this.hud.notify('Inventaire plein !', 'boss'); return; }
+      if (this.inventory.firstEmpty() === -1) { full('Inventaire plein !'); return; }
       this.inventory.addGenerated(drop.item.gen);
     } else {
       const left = this.inventory.add(drop.item.defId, drop.item.qty);
       if (left === false || left > 0) {
         const kept = left === false ? drop.item.qty : left;
-        if (kept >= drop.item.qty) { this.hud.notify('Inventaire plein !', 'boss'); return; }
+        if (kept >= drop.item.qty) { full('Inventaire plein !'); return; }
         drop.item.qty = kept; // une partie seulement a pu être ramassée
-        this.hud.notify('Inventaire presque plein : une partie reste au sol.', 'boss');
+        full('Inventaire presque plein : une partie reste au sol.');
         this.audio.play('pickup');
         return;
       }
@@ -2801,10 +2802,50 @@ export class Game {
     this.lootDrops.splice(idx, 1);
     drop.dispose(this.scene);
     const big = view.rarityInfo.tier >= 13;
-    this.hud.notify(`Objet ramassé : ${view.icon} ${view.name}${drop.item.qty > 1 ? ' x' + drop.item.qty : ''}`, big ? 'quest' : 'info');
+    this.hud.notify(`${byPet ? '🐾 Ton compagnon rapporte' : 'Objet ramassé'} : ${view.icon} ${view.name}${drop.item.qty > 1 ? ' x' + drop.item.qty : ''}`, big ? 'quest' : 'info');
     this.audio.play('pickup');
     this.particles.emit(drop.pos.x, drop.pos.y + 0.4, drop.pos.z, { count: 16, color: parseInt(view.rarityInfo.color.slice(1), 16), speed: 2.2, life: 0.5, up: 2 });
     this._tut('loot');
+  }
+
+  // ---- V10.24 : le compagnon équipé va chercher le butin choisi dans les options ----
+  _petWants(drop) {
+    const st = this.settings;
+    const v = resolveItem(drop.item);
+    if (v.type === 'consumable') return st.petLootCons !== false;
+    if (v.type === 'material') return !!st.petLootMat;
+    if (v.type === 'rune') return !!st.petLootRune;
+    if (v.type === 'weapon' || v.type === 'armor') { const max = Number(st.petLootGear); return Number.isFinite(max) && v.rarityInfo.tier <= max; }
+    return false;
+  }
+
+  _petLootTick(dt) {
+    const pet = this.player?.rig?.cosFx?.pet;
+    const idle = !pet || this.settings.petLoot === false || this.player.dead || this.dialogueOpen || this.modalOpen || this.paused;
+    if (idle) { if (pet?.fetch) pet.fetch = null; this._petJob = null; return; }
+    const now = performance.now();
+    const job = this._petJob;
+    if (job) {
+      job.age = (job.age || 0) + dt; // temps de jeu (et non d'horloge) : un appareil lent ne fait pas abandonner la course
+      const stale = !this.lootDrops.includes(job.drop) || job.age > 10 || job.drop.pos.distanceTo(this.player.pos) > 30;
+      if (stale) { pet.fetch = null; this._petJob = null; return; }
+      if (!pet.fetch) pet.fetch = { x: job.drop.pos.x, z: job.drop.pos.z, y: job.drop.pos.y - 0.3 };
+      if (pet.fetch.arrived) {
+        this._pickupLoot(job.drop, true);
+        if (this.lootDrops.includes(job.drop)) job.drop._petSkip = now + 15000; // sac plein : on réessaie plus tard
+        pet.fetch = null; this._petJob = null; this._petT = now + 350;
+      }
+      return;
+    }
+    if (now < (this._petT || 0)) return;
+    this._petT = now + 400;
+    let best = null, bd = 18 * 18;
+    for (const d of this.lootDrops) {
+      if (d._petSkip && d._petSkip > now) continue;
+      const dd = d.pos.distanceToSquared(this.player.pos);
+      if (dd < bd && this._petWants(d)) { bd = dd; best = d; }
+    }
+    if (best) { this._petJob = { drop: best, t0: now }; pet.fetch = { x: best.pos.x, z: best.pos.z, y: best.pos.y - 0.3 }; }
   }
 
   _openChest() {
@@ -2984,6 +3025,7 @@ export class Game {
         if (this.lootDrops.length < n0) break; // un objet par passage
       }
     }
+    try { this._petLootTick(dt); } catch (e) { /* le compagnon est facultatif */ }
     this._autoSaveAcc += dt;
     const asv = this.settings.autosave ?? 60;
     if (asv > 0 && this._autoSaveAcc > asv) { this._autoSaveAcc = 0; this._doSave(); }

@@ -118,7 +118,16 @@ export class TouchControls {
       tap(btnId, () => { on = !on; this.input.virtual[on ? 'add' : 'delete'](action); root.querySelector(btnId).classList.toggle('held', on); });
     };
     tap('#t-jump', () => this.input.trigger('roll'));
-    tap('#t-attack', () => this.bus.emit('skillPressed', 'strike'));
+    // V10.24 : attaque de base maintenue = répétée (le délai de recharge règle le rythme) ; marche et sprint n'interrompent rien
+    {
+      const el = root.querySelector('#t-attack'); let rep = null, tid = null;
+      const stop = () => { clearInterval(rep); rep = null; tid = null; el.classList.remove('held'); };
+      if (el) {
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); if (this.editing) return; this.input.buzz(); this.bus.emit('skillPressed', 'strike'); tid = e.changedTouches[0].identifier; el.classList.add('held'); clearInterval(rep); rep = setInterval(() => this.bus.emit('skillPressed', 'strike'), 110); }, { passive: false });
+        const end = (e) => { for (const t of e.changedTouches) if (t.identifier === tid) stop(); };
+        window.addEventListener('touchend', end); window.addEventListener('touchcancel', end);
+      }
+    }
     tap('#t-interact', () => this.bus.emit('interact'));
     toggle('#t-run', 'run');
     toggle('#t-crouch', 'crouch');

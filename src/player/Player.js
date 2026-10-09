@@ -404,9 +404,13 @@ export class Player {
       if (this.flying) { this.bus.emit('notify', { text: 'Pose-toi (bouton 🐎) pour combattre.', kind: 'info' }); return false; }
       this.setMount(null);
     }
-    if (this.dead || this.busyUntil > performance.now() / 1000) return false;
+    if (this.dead) return false;
     const s = SKILLS[id];
     if (!s || !this.isSkillUnlocked(id)) return false;
+    if (this.busyUntil > performance.now() / 1000) { // V10.24 : tampon de saisie — la compétence pressée juste avant la fin de l'animation part dès que possible
+      if (this.busyUntil - performance.now() / 1000 < 0.45 && (this.cooldowns[id] || 0) < 0.45) this._qSkill = { id, until: performance.now() / 1000 + 0.5 };
+      return false;
+    }
     const cd = this.cooldowns[id] || 0;
     if (cd > 0) return false;
     // arme attitrée : les compétences de classe exigent une arme de la famille de la classe
@@ -479,6 +483,7 @@ export class Player {
     if (this.hpRegen > 0 && this.hp > 0) this.hp = Math.min(this.maxHp, this.hp + dt * this.hpRegen);
     for (const k in this.cooldowns) this.cooldowns[k] = Math.max(0, this.cooldowns[k] - dt);
     this._tickBuffs(dt);
+    if (this._qSkill) { const now = performance.now() / 1000; if (now > this._qSkill.until) this._qSkill = null; else if (this.busyUntil <= now) { const q = this._qSkill; this._qSkill = null; this.tryUseSkill(q.id); } }
 
     const mv = input.moveVector();
     this.crouch = input.down('crouch');

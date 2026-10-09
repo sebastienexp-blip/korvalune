@@ -433,12 +433,15 @@ function updatePet(p, rig, dt, t) {
   const yaw = rig.root.rotation.y || 0;
   // place voulue : à droite et un peu derrière le joueur
   const sx = Math.sin(yaw), cz = Math.cos(yaw);
-  const tx = _pv.x + cz * 0.95 - sx * 0.8, tz = _pv.z - sx * 0.95 - cz * 0.8, ty = _pv.y;
+  let tx = _pv.x + cz * 0.95 - sx * 0.8, tz = _pv.z - sx * 0.95 - cz * 0.8, ty = _pv.y;
+  if (p.fetch) { tx = p.fetch.x; tz = p.fetch.z; if (Number.isFinite(p.fetch.y)) ty = p.fetch.y; } // V10.24 : va chercher un objet au sol
   if (!p.init || Math.hypot(tx - p.pos.x, tz - p.pos.z) > 9) { p.pos.set(tx, ty, tz); p.init = true; g.visible = rig.root.visible; }
   const dx = tx - p.pos.x, dz = tz - p.pos.z, d = Math.hypot(dx, dz);
-  const k = 1 - Math.exp(-dt * (d > 3 ? 7 : 3.2));
+  const k = 1 - Math.exp(-dt * (p.fetch ? 10 : d > 3 ? 7 : 3.2));
   const px = p.pos.x, pz = p.pos.z;
-  p.pos.x += dx * k; p.pos.z += dz * k; p.pos.y += (ty - p.pos.y) * (1 - Math.exp(-dt * 8));
+  let mx = dx * k, mz = dz * k;
+  if (p.fetch) { const L = Math.hypot(mx, mz), cap = 11 * dt; if (L > cap) { mx *= cap / L; mz *= cap / L; } if (d < 0.9) p.fetch.arrived = true; }
+  p.pos.x += mx; p.pos.z += mz; p.pos.y += (ty - p.pos.y) * (1 - Math.exp(-dt * 8));
   const spd = Math.hypot(p.pos.x - px, p.pos.z - pz) / Math.max(dt, 1e-3);
   p.speed += (spd - p.speed) * Math.min(1, dt * 8);
   const moving = p.speed > 0.35;

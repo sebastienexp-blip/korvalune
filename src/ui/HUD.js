@@ -131,7 +131,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.23 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.24 — Korvalune</div>
         </div>
       </div>
 
@@ -606,7 +606,8 @@ export class HUD {
         const s = byId[id];
         b.dataset.skill = id;
         b.innerHTML = `<span class="sk-icon">${skillIconHTML(s)}</span><span class="sk-key">${keyLabel}</span><div class="sk-cd"></div>`;
-        b.addEventListener('click', () => this.bus.emit('skillPressed', id));
+        // V10.24 : « pointerdown » et non « click » : un second doigt posé pendant que le joystick est tenu ne produit pas toujours de clic
+        b.addEventListener('pointerdown', (e) => { e.preventDefault(); this.bus.emit('skillPressed', id); });
       } else {
         b.className += ' skill-slot-empty';
         b.innerHTML = `<span class="sk-key">${keyLabel}</span>`;
