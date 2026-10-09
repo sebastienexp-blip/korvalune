@@ -1,6 +1,7 @@
 import { rollLootItem, generateItem, rollItemLevel } from './ItemGenerator.js';
 import { getDifficulty } from '../data/difficulty.js';
 import { rollRarityTier } from '../data/rarities.js';
+import { RUNES } from '../data/crafting.js';
 
 // Tirage de loot. Les ennemis normaux et les boss passent tous les deux par
 // le générateur procédural à 25 raretés (ItemGenerator.js) — seule la
@@ -14,6 +15,21 @@ const GOBLIN_TIER_SHIFT = 12;     // lutin trésor : rare à attraper, donc trè
 const CONSUMABLE_CHANCE = 0.35;
 const CONSUMABLES = ['potion_heal_small', 'potion_mana'];
 
+// V10.19 — runes (rang selon le niveau) et matériaux d'artisanat
+function runeFor(level) {
+  const t = Math.max(1, Math.min(RUNES.length, 1 + Math.floor((level || 1) / 15) + (Math.random() < 0.35 ? 1 : 0) - (Math.random() < 0.3 ? 1 : 0)));
+  return { defId: RUNES[t - 1].id, qty: 1 };
+}
+function matsFor(level, rich = 0) {
+  const out = [];
+  const r = Math.random(), k = 1 + rich;
+  if (r < 0.7) out.push({ defId: 'mat_ferraille', qty: Math.round((1 + Math.random() * 3) * k) });
+  if (Math.random() < 0.35 + 0.1 * rich) out.push({ defId: 'mat_poussiere', qty: Math.round((1 + Math.random() * 2) * k) });
+  if (level >= 15 && Math.random() < 0.12 * k) out.push({ defId: 'mat_essence', qty: Math.round(1 + Math.random() * k) });
+  if (level >= 40 && Math.random() < 0.05 * k) out.push({ defId: 'mat_cristal', qty: 1 });
+  return out;
+}
+
 export const LootSystem = {
   // Butin d'un ennemi normal : potion probable + chance d'objet généré
   // proche de son niveau réel (pas celui, générique, de son espèce).
@@ -25,13 +41,15 @@ export const LootSystem = {
     const ch = (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE) * D.drop;
     const n = Math.floor(ch) + (Math.random() < ch - Math.floor(ch) ? 1 : 0);
     for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: enemy.level || 1, tierShift: 0 }) });
+    if (Math.random() < 0.03 * D.drop) drops.push(runeFor(enemy.level)); // V10.19
+    if (Math.random() < 0.22 * Math.min(2, D.drop)) drops.push(...matsFor(enemy.level).slice(0, 2));
     return drops;
   },
 
   // Butin d'un boss "normal" (ex: chef bandit du donjon) : objet généré garanti,
   // avec une courbe de rareté bien plus généreuse.
   rollForBoss(level = 10) {
-    return [{ gen: rollLootItem({ sourceLevel: level, tierShift: BOSS_TIER_SHIFT, levelSpread: [2, 8] }) }];
+    return [{ gen: rollLootItem({ sourceLevel: level, tierShift: BOSS_TIER_SHIFT, levelSpread: [2, 8] }) }, runeFor(level), ...matsFor(level, 2)];
   },
 
   // Butin d'un boss majeur (ex: Le Gardien des Ruines) : un objet garanti
@@ -39,6 +57,8 @@ export const LootSystem = {
   // non négligeable, de toucher directement Mythique / Absolu.
   rollForMajorBoss(level = 14) {
     const drops = [{ gen: rollLootItem({ sourceLevel: level, tierShift: MAJOR_BOSS_TIER_SHIFT, levelSpread: [4, 12] }) }];
+    drops.push(runeFor(level + 10), runeFor(level), ...matsFor(level, 3));
+    if (Math.random() < 0.3) drops.push({ defId: 'mat_ame', qty: 1 });
     if (Math.random() < 0.03) {
       drops.push({ gen: generateItem({ category: Math.random() < 0.5 ? 'weapon' : 'armor', itemLevel: rollItemLevel(level + 8), rarityTier: rollRarityTier({ minTier: 19, maxTier: 25 }) }) });
     }
@@ -49,6 +69,8 @@ export const LootSystem = {
   rollForChest(level = 20) {
     const drops = [{ gen: rollLootItem({ sourceLevel: level, tierShift: 3, levelSpread: [0, 5] }) }];
     if (Math.random() < 0.5) drops.push({ defId: 'potion_heal_big', qty: 2 });
+    if (Math.random() < 0.4) drops.push(runeFor(level));
+    drops.push(...matsFor(level, 1));
     return drops;
   },
 
@@ -61,6 +83,7 @@ export const LootSystem = {
     for (let i = 0; i < count; i++) {
       drops.push({ gen: rollLootItem({ sourceLevel: level, tierShift: GOBLIN_TIER_SHIFT, levelSpread: [0, 6] }) });
     }
+    drops.push(runeFor(level + 5), runeFor(level), ...matsFor(level, 3));
     return drops;
   }
 };

@@ -3,6 +3,18 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.19', title: 'Forge, Monolithe et mystique',
+    items: [
+      '🔨 Forgeronne Helga (à l’ouest de la ville) : répare ton équipement, creuse des emplacements, sertit des runes et démantèle les objets en matériaux.',
+      '🔧 Usure : l’équipement s’use quand tu es touché ou que tu combats, et perd 10 % de durabilité à chaque mort. À 0, il est brisé et ne donne plus rien.',
+      '🔶 14 runes (rang 1 à 14) à sertir : le bonus change selon la pièce (arme, armure, bijou). Dans le bon ordre, elles réveillent une litanie : 10 assemblages à découvrir. Les runes tombent sur les monstres et dans les coffres.',
+      '🗿 Monolithe des Métamorphoses (avenue centrale) : refonte (retire au sort toutes les propriétés), élévation de rareté, transformation de pièce de panoplie, suppression du niveau requis, pouvoirs liés (garde l’effet d’un objet légendaire), fusion de runes, gravure de runes et distillation de matériaux.',
+      '🔮 Mystique Vaelis (à l’est du puits) : remplace une propriété d’un objet par une autre (tu vois le résultat avant de choisir) et change la couleur de ton équipement, ainsi que la forme des armes de mêlée.',
+      '🎃 Halloween : les monstres de l’événement apparaissent maintenant partout sur la carte (hors ville), en plus grand nombre.',
+      '📜 Deux nouvelles quêtes de découverte : « Un métal qui chante » (niveau 8) et « Le cristal qui répond » (niveau 20).'
+    ]
+  },
+  {
     version: '10.18', title: 'Difficulté, équilibrage et traversée des eaux',
     items: [
       '⚔️ Difficulté façon Diablo : Normal, Difficile, Expert, Maître et 4 niveaux de Tourment. Plus c’est dur, plus les monstres sont solides, mais plus l’or, l’expérience et les objets rares abondent. Se règle en ville (menu pause) et se sauvegarde avec le personnage.',

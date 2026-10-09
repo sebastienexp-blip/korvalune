@@ -172,3 +172,12 @@ export function rollLootItem({ sourceLevel = 1, tierShift = 0, minTier = 1, maxT
   if (rarityTier >= 13 && lootClass && Math.random() < SET_DROP_CHANCE) { const si = rollSetItem(sourceLevel, itemLevel); if (si) return si; }
   return generateItem({ category, itemLevel, rarityTier });
 }
+
+// V10.19 — Mystique : tire UN nouvel affixe (différent de ceux déjà présents) pour un objet de ce niveau et de cette rareté.
+export function rollReplacementAffix(excludeKeys, itemLevel, rarityTier) {
+  const rarity = getRarity(rarityTier);
+  const bad = (lootClass && IRRELEVANT_STATS[lootClass]) || [];
+  const pool = AFFIX_POOL.filter((a) => !excludeKeys.includes(a.key) && !bad.includes(a.key));
+  const a = pickRandom(pool.length ? pool : AFFIX_POOL.filter((x) => !excludeKeys.includes(x.key)));
+  return { key: a.key, kind: a.kind, label: a.label, value: rollAffixValue(a, itemLevel, rarity) };
+}

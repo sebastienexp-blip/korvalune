@@ -1061,6 +1061,15 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Nouvelle ambiance `halloween` dans `AudioManager` (5 variantes + base, gammes harmonique/phrygienne, cloches, grave, vent) ; active pendant l'événement hors combat (`setEnvironment({ hw })`).
 - Affiche SVG + dates (calculées depuis `EVENT` dans `src/data/halloween.js`) sur le menu principal ; disparaît après la fin de la boutique.
 
+## V10.19 — Forge, Monolithe des Métamorphoses, mystique
+
+- **Données** (`src/data/crafting.js`, partagées client/serveur) : 5 matériaux, 14 runes (bonus arme/armure/bijou), 10 litanies, plafonds d'emplacements par pièce, durabilité par rareté, tous les coûts.
+- **Logique** (`src/crafting/Crafting.js`) : fonctions pures sur `{player, inventory, equipment, bus}`, **transactionnelles** (inventaire plein → tout est annulé). Réparation, emplacements, sertissage, démantèlement, enchantement (tirage puis choix), apparence (teinte/forme), refonte, élévation, panoplie, libération de niveau, pouvoirs liés (`player.cubePowers`, sauvegardés dans `cube`), fusion/gravure de runes, distillation, usure en jeu (`wearGear`).
+- **Objets générés** : champs optionnels `sockets`, `gems`, `dur`, `ench`, `free`, `tmog` (validés et bornés par `server/itemValidate.js`; pouvoirs liés par `sanitizeCubePowers`). Un objet brisé (`dur` = 0) n'apporte plus de bonus (`Equipment.apply`).
+- **PNJ** : forgeronne Helga (`workshop: 'forge'`), Monolithe (`model: 'monolith'`, `src/world/Monolith.js`), mystique Vaelis. Interface : `src/ui/Workshop.js`.
+- **Butin** : runes (rang selon le niveau) et matériaux sur monstres, boss, coffres et lutin trésor.
+- **Halloween** : les monstres d'événement apparaissent autour du joueur partout hors ville (plus de limite de 90 m autour de la ville).
+
 ## V10.18 — Difficulté, équilibrage, eau et lignes de vue
 
 - **Difficulté** (`src/data/difficulty.js`, partagé client/serveur) : 8 paliers (Normal → Tourment IV) avec multiplicateurs de PV/dégâts des monstres et d'or/XP/chance de drop/rareté du butin. Changement en ville uniquement ; enregistré dans la sauvegarde (`difficulty`, validé 0..7 par `sanitizeSave`).

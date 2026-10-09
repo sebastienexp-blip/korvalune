@@ -144,7 +144,7 @@ export class Halloween {
     this.state = null;          // dernier état envoyé par le serveur (bonbons, défis…)
     this.t = 0;
     this.enemies = new Set();
-    this.hordeT = 90;           // première horde 1 min 30 après la connexion
+    this.hordeT = 60;           // première horde 1 min 30 après la connexion
     this.kingT = 180;           // premier Roi Citrouille après 3 min
     this.king = null;
     this.spawnT = 4;
@@ -357,24 +357,25 @@ export class Halloween {
       for (const e of [...this.enemies]) { this._fx(e.pos); this._despawn(e); }
       return;
     }
-    const maxN = g.settings?.quality === 'verylow' || g.settings?.quality === 'low' ? 3 : 5;
+    // V10.19 : les monstres d'événement apparaissent PARTOUT sur la carte (hors ville), plus seulement autour de la ville
+    const maxN = g.settings?.quality === 'verylow' || g.settings?.quality === 'low' ? 4 : 8;
     this.spawnT -= dt; this.hordeT -= dt; this.kingT -= dt;
     const alive = [...this.enemies].filter((e) => e.alive && !e.def.boss).length;
     if (this.spawnT <= 0) {
-      this.spawnT = 6 + Math.random() * 4;
-      if (alive < maxN && Math.hypot(pp.x, pp.z) < 90) {
+      this.spawnT = 3.5 + Math.random() * 2.5;
+      if (alive < maxN) {
         const kinds = ['hw_skeleton', 'hw_skeleton', 'hw_pumpkin', 'hw_ghost', 'hw_werewolf', 'hw_witch'];
         this._spawn(kinds[Math.floor(Math.random() * kinds.length)], pp, 16, 28);
       }
     }
-    if (this.hordeT <= 0 && Math.hypot(pp.x, pp.z) < 90) {
-      this.hordeT = 360;
+    if (this.hordeT <= 0) {
+      this.hordeT = 300;
       g.hud.notify('🎃 Une horde de morts-vivants sort de terre autour de toi ! (la ville reste à l’abri)', 'quest');
       g.audio.play('quest');
       const kinds = ['hw_skeleton', 'hw_skeleton', 'hw_pumpkin', 'hw_pumpkin', 'hw_ghost', 'hw_werewolf', 'hw_witch'];
       for (let i = 0; i < 7; i++) this._spawn(kinds[i], pp, 14, 24);
     }
-    if (this.kingT <= 0 && !this.king && Math.hypot(pp.x, pp.z) < 90) {
+    if (this.kingT <= 0 && !this.king) {
       this.kingT = 720;
       this.king = this._spawn('hw_pumpkin_king', pp, 22, 32, 2);
       if (this.king) { g.hud.notify('👑 Le Roi Citrouille est apparu ! Il laisse 30 bonbons à qui le vainc.', 'quest'); g.audio.play('quest'); }

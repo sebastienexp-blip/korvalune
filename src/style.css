@@ -39,7 +39,7 @@ input, select { font-family: var(--font); -webkit-user-select: text; user-select
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--aether); outline-offset: 2px; }
 
 /* ---------- Écrans plein cadre ---------- */
-#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #halloween-screen, #difficulty-screen, #barber-screen, #lune-screen, #rift-screen, #rift-result {
+#loading-screen, #main-menu, #credits, #char-create, #pause-menu, #settings-menu, #death-screen, #worldmap-screen, #inventory-screen, #character-screen, #shop-screen, #account-screen, #patch-screen, #bank-screen, #skills-screen, #quests-screen, #ach-screen, #social-screen, #dm-screen, #trade-screen, #stable-screen, #workshop-screen, #halloween-screen, #difficulty-screen, #barber-screen, #lune-screen, #rift-screen, #rift-result {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
   text-align: center; z-index: 30; color: var(--parch);
   padding: calc(18px + env(safe-area-inset-top, 0px)) 22px calc(18px + env(safe-area-inset-bottom, 0px));
@@ -952,3 +952,62 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 #quest-panel::-webkit-scrollbar-thumb { background: rgba(226, 184, 102, 0.5); border-radius: 4px; }
 #quest-panel .qp-title { position: sticky; top: -8px; background: rgba(10, 15, 30, 0.92); padding-top: 2px; margin-top: -2px; z-index: 1; }
 @media (max-height: 430px) { #quest-panel { max-height: min(38vh, 120px); } }
+
+/* ---------- V10.19 : ateliers (forge, Monolithe, mystique) ---------- */
+#workshop-screen { overflow-y: auto; -webkit-overflow-scrolling: touch; align-items: stretch; max-width: 760px; margin: 0 auto; padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+#workshop-screen h2 { margin: 0; text-align: center; }
+.ws-blurb, .ws-hint { margin: 0; font-size: 13px; opacity: .8; text-align: left; line-height: 1.35; }
+.ws-hint b { color: #ffd98a; }
+.ws-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; padding: 6px 10px; background: rgba(255,255,255,.06); border-radius: 10px; font-size: 15px; }
+.ws-mat { display: inline-flex; gap: 4px; align-items: center; }
+.ws-tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.ws-tab { padding: 8px 12px; border-radius: 10px; border: 1px solid #4a5a8a; background: #1a2347; color: inherit; font-size: 14px; }
+.ws-tab.on { background: #3b4e94; border-color: #ffd98a; }
+.ws-msg { padding: 8px 12px; border-radius: 10px; font-size: 14px; text-align: left; }
+.ws-msg.ok { background: rgba(80,200,120,.18); border: 1px solid #4fbf7a; }
+.ws-msg.ko { background: rgba(240,90,90,.16); border: 1px solid #e06060; }
+.ws-body { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.ws-list { display: flex; flex-direction: column; gap: 6px; }
+.ws-item { display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 8px 10px; border-radius: 10px; border: 2px solid #555; background: rgba(255,255,255,.05); color: inherit; width: 100%; }
+.ws-item.on { background: rgba(255,217,138,.15); }
+.ws-item.broken { opacity: .75; }
+.ws-ic { font-size: 26px; line-height: 1; }
+.ws-nm { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.ws-nm small { opacity: .75; }
+.ws-eq { color: #9fd8ff; }
+.ws-line { display: block; margin-top: 4px; font-size: 13px; }
+.ws-empty { opacity: .6; font-style: italic; margin: 6px 0; }
+.ws-panel { padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid #4a5a8a; display: flex; flex-direction: column; gap: 8px; }
+.ws-panel h3 { margin: 0; }
+.ws-act { padding: 8px 12px; border-radius: 10px; border: 1px solid #ffd98a; background: #3b2f12; color: #ffe9b8; font-size: 14px; line-height: 1.25; margin: 2px 4px 2px 0; }
+.ws-act[data-miss="1"] { border-color: #6a6a6a; background: #2a2a2e; color: #aaa; }
+.ws-act.small { padding: 3px 8px; font-size: 12px; }
+.ws-cost { font-size: 12px; opacity: .95; color: #bfe8c0; }
+.ws-cost.no { color: #ff9b9b; }
+.ws-bulk { display: flex; flex-wrap: wrap; gap: 4px; }
+.ws-socks, .ws-runes, .ws-chips, .ws-sws, .ws-rlist { display: flex; flex-wrap: wrap; gap: 8px; }
+.ws-sock { min-width: 84px; padding: 8px; border-radius: 12px; border: 2px dashed #777; background: rgba(0,0,0,.25); color: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ws-sock.full { border-style: solid; }
+.ws-sock span { font-size: 22px; }
+.ws-sock small, .ws-rune small { font-size: 11px; opacity: .8; }
+.ws-rune { padding: 6px 10px; border-radius: 10px; border: 2px solid #888; background: rgba(0,0,0,.25); color: inherit; display: flex; flex-direction: column; text-align: left; }
+.ws-sub { font-size: 13px; opacity: .85; margin-top: 4px; }
+.ws-lit { padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: 13px; }
+.ws-lit.on { background: rgba(255,217,138,.18); border: 1px solid #ffd98a; }
+.ws-pows { display: flex; flex-direction: column; gap: 4px; }
+.ws-pow .pow { color: #ffd98a; font-weight: bold; }
+.ws-rrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 10px; border: 2px solid #888; border-radius: 10px; width: 100%; }
+.ws-rlist { flex-direction: column; }
+.ws-chip { padding: 6px 10px; border-radius: 16px; border: 1px solid #4a5a8a; background: #1a2347; color: inherit; font-size: 13px; }
+.ws-chip.on { background: #3b4e94; border-color: #ffd98a; }
+.ws-sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #777; color: #fff; font-size: 16px; background: #222; }
+.ws-sw.on { border-color: #ffd98a; box-shadow: 0 0 0 2px #ffd98a; }
+.ws-cmp { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px; background: rgba(0,0,0,.25); border-radius: 10px; }
+.ws-cmp .neu { color: #8fe8a0; }
+.ws-cmp .arrow { font-size: 22px; }
+.ws-close { margin-top: 6px; align-self: center; }
+
+.is-dur { font-size: 13px; margin: 4px 0; opacity: .85; }
+.is-dur.low { color: #ffb347; opacity: 1; }
+.is-dur.broken { color: #ff7b7b; opacity: 1; font-weight: bold; }
+.eq-cell.broken { opacity: .6; border-color: #e44 !important; }

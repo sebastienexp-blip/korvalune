@@ -393,5 +393,79 @@
       ]
     },
     "halloween": true
+  },
+  "smith": {
+    "id": "smith",
+    "name": "Forgeronne Helga",
+    "title": "Maîtresse de forge",
+    "look": {
+      "cloth": 4861730,
+      "armor": 5593702,
+      "cape": 0,
+      "hair": 11887901,
+      "skin": 12946020,
+      "shape": {
+        "sex": "femme",
+        "height": 172,
+        "weight": 72,
+        "muscle": 70,
+        "face": "carre",
+        "eyes": "normaux",
+        "nose": "droit",
+        "hair": "chignon"
+      }
+    },
+    "dialogues": {
+      "intro": [
+        "Du fer qui chante sous le marteau, voilà mon métier. Répare, perce, sertis : je m'occupe de tout."
+      ]
+    },
+    "workshop": "forge"
+  },
+  "monolith": {
+    "id": "monolith",
+    "name": "Monolithe des Métamorphoses",
+    "title": "Artefact d’alchimie",
+    "look": {
+      "cloth": 3355460,
+      "armor": 3355460,
+      "cape": 0,
+      "hair": 2236962
+    },
+    "model": "monolith",
+    "dialogues": {
+      "intro": [
+        "Le cristal du Monolithe pulse doucement. Il attend une offrande."
+      ]
+    },
+    "workshop": "monolith"
+  },
+  "mystic": {
+    "id": "mystic",
+    "name": "Mystique Vaelis",
+    "title": "Tisseuse d’enchantements",
+    "look": {
+      "cloth": 4926059,
+      "armor": 8015784,
+      "cape": 2955847,
+      "hair": 15261951,
+      "skin": 14727578,
+      "shape": {
+        "sex": "femme",
+        "height": 168,
+        "weight": 45,
+        "muscle": 18,
+        "face": "long",
+        "eyes": "amande",
+        "nose": "fin",
+        "hair": "tresse"
+      }
+    },
+    "dialogues": {
+      "intro": [
+        "Les propriétés d'un objet ne sont que des fils. Je peux en tirer un, et en tisser un autre à sa place."
+      ]
+    },
+    "workshop": "mystic"
   }
 }

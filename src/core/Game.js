@@ -27,6 +27,9 @@ import { tryTriggerEquipEffects } from '../combat/ItemEffects.js';
 import { computeEnemyStats } from '../data/enemyScaling.js';
 import { rollLootItem, setLootClass, setLootLevel } from '../inventory/ItemGenerator.js';
 import { DISCOVERY_QUESTS } from '../data/discoveryQuests.js';
+import { wearGear } from '../crafting/Crafting.js';
+import { Workshop } from '../ui/Workshop.js';
+import { buildForgeDecor } from '../world/Monolith.js';
 import { setDifficultyId, getDifficulty, DIFFICULTIES, clampDifficulty } from '../data/difficulty.js';
 
 import { makeLabel } from '../ui/Label.js';
@@ -79,7 +82,7 @@ const DUNGEON_CHIEF_LEVEL = 24;
 const MAX_ACTIVE_SECONDARY_QUESTS = 6;
 const GUARDIAN_BOSS_LEVEL = 28;
 
-const MAP_ICON_NPCS = new Set(['weaponsmith', 'armorsmith', 'apothecary', 'stablemaster', 'barber', 'jack']);
+const MAP_ICON_NPCS = new Set(['weaponsmith', 'armorsmith', 'apothecary', 'stablemaster', 'barber', 'jack', 'smith', 'monolith', 'mystic']);
 
 export class Game {
   constructor(root) {
@@ -364,6 +367,18 @@ export class Game {
         this.scene.add(m.group);
         this._stableDisplay.push(m);
       }
+    }
+
+    // V10.19 — forgeronne (avec sa forge), Monolithe des Métamorphoses (statue) et mystique
+    {
+      const place = (def, x, z, yaw) => {
+        const n = new NPC(this.scene, def, new THREE.Vector3(x, this.world.heightAt(x, z), z), yaw);
+        n.id = def.id; this.npcs.push(n); return n;
+      };
+      place(npcsData.smith, -14, -2, Math.PI / 2);
+      place(npcsData.monolith, 0, -9, 0);
+      place(npcsData.mystic, 10, 5, -Math.PI / 2);
+      try { this._forgeDecor = buildForgeDecor(this.scene, this.world, -18, -2, 0); } catch (e) { console.warn('[V10.19] décor de forge ignoré', e); }
     }
 
     // V10.12 — barbier : la barbière devant la maison de la rue sud-ouest (enseigne + poteau rayé)
@@ -801,6 +816,10 @@ export class Game {
       if (msg) msg.textContent = rf ? (this.rift.run?.mode.timed ? 'Vous réapparaissez dans la spire — le chronomètre continue !' : 'Vous réapparaissez au dernier point de contrôle de la spire.') : 'Votre équipement est intact. Le portail de Korvalune vous attend.';
       this.hud.showScreen('death-screen');
     }, 900));
+    // V10.19 : usure de l'équipement (mort : −10 % ; coups reçus / donnés : lente)
+    b.on('playerHurt', () => { try { wearGear(this._craftCtx(), 'hit'); } catch (e) { /* usure facultative */ } });
+    b.on('playerSkillHit', () => { try { wearGear(this._craftCtx(), 'attack'); } catch (e) { /* usure facultative */ } });
+    b.on('playerDeath', () => { try { wearGear(this._craftCtx(), 'death'); this.hud.notify('Tu perds 10 % de durabilité sur tout ton équipement.', 'warn'); } catch (e) { /* usure facultative */ } });
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
     b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
     b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || '' }));
@@ -948,6 +967,7 @@ export class Game {
     this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
     this.root.querySelector('#inv-cos').addEventListener('click', (e) => { const b = e.target.closest('[data-cos]'); if (!b) return; this.audio.play('equip'); this._equipCos(b.dataset.slot, b.dataset.on === '1' ? null : b.dataset.cos); });
     this.bus.on('ui:close-stable', () => this._closeModal());
+    this.bus.on('ui:close-workshop', () => { this._closeModal(); try { this._doSave(); } catch { /* ignoré */ } });
     // V10.13 — Halloween : boutique de Jack, états envoyés par le serveur, récompenses de combat
     this.bus.on('ui:close-halloween', () => this._closeModal());
     this.root.querySelector('#halloween-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-hw]'); if (bt && !bt.disabled) this._halloweenAct(bt.dataset.hw, bt.dataset.v); });
@@ -1048,11 +1068,15 @@ export class Game {
     this.root.addEventListener('click', (e) => { if (e.target.id === 'game-canvas' && this.player && !this.dialogueOpen && !this.modalOpen) this._tryClickTarget(e); });
   }
 
+  /** V10.19 : contexte passé aux fonctions d'artisanat (forgeron, Monolithe, mystique). */
+  _craftCtx() { return { player: this.player, inventory: this.inventory, equipment: this.equipment, bus: this.bus }; }
+
   _doSave() {
     if (!this.player) return;
     const data = {
       ...this.player.serialize(),
       difficulty: getDifficulty().id,
+      cube: this.player.cubePowers || {}, // V10.19 : pouvoirs liés au Monolithe
       ...this.quests.serialize(),
       inventory: this.inventory.serialize(),
       equipment: this.equipment.serialize(),
@@ -1202,6 +1226,7 @@ export class Game {
     this.mounts = Array.isArray(save?.mounts) ? save.mounts.filter((m) => MOUNT_BY_ID[m]) : [];
     this.mountSel = MOUNT_BY_ID[save?.mountSel] ? save.mountSel : '';
     this.inventory = new Inventory(this.bus, 30, save?.inventory);
+    this.player.cubePowers = save?.cube && typeof save.cube === 'object' ? { ...save.cube } : {};
     this.equipment = new Equipment(this.bus, this.player, save?.equipment);
     this.bank = new Inventory(this.bus, 120 + 30 * Math.min(LUNES.maxBankTabs, this._shop?.bankTabs || 0), save?.bank);
     this.player.setCosmetics(this._shopCos());
@@ -1484,6 +1509,15 @@ export class Game {
     else if (act === 'buy') this.net.eventBuy(v);
     else if (act === 'equip') { const it = HALLOWEEN_ITEMS.find((x) => x.id === v); if (it) this._equipCos(it.cat, it.id); }
     else if (act === 'unequip') this.net.shopEquip(v, null);
+  }
+
+  _openWorkshop(npc) {
+    this._tut(npc.def.workshop);
+    document.exitPointerLock?.();
+    this.modalOpen = true;
+    if (!this._workshop) this._workshop = new Workshop(this);
+    this.hud.showScreen('workshop-screen');
+    this._workshop.open(npc.def.workshop, npc.def.dialogues?.intro?.[0]);
   }
 
   _openStable(npc) {
@@ -2179,7 +2213,7 @@ export class Game {
   // V10.14 — petites images de la mini-carte et de la grande carte
   _mapIcons() {
     const out = [], pl = this.player.pos;
-    const NPC_ICON = { weaponsmith: '⚔️', armorsmith: '🛡️', apothecary: '🧪', stablemaster: '🐎', barber: '✂️', jack: '🎃' };
+    const NPC_ICON = { weaponsmith: '⚔️', armorsmith: '🛡️', apothecary: '🧪', stablemaster: '🐎', barber: '✂️', jack: '🎃', smith: '🔨', monolith: '🗿', mystic: '🔮' };
     for (const n of this.npcs) { const ch = NPC_ICON[n.id || n.def?.id]; if (ch) out.push({ x: n.pos.x, z: n.pos.z, ch, edge: ch === '🎃' }); }
     const bp = this.world.town?.bankPos; if (bp) out.push({ x: bp.x, z: bp.z, ch: '🏦' });
     out.push({ x: STATUE_POS[0], z: STATUE_POS[1], ch: '🗿', color: '#5ee6d0' });
@@ -2554,7 +2588,7 @@ export class Game {
     }
     for (const n of this.npcs) {
       if (n.pos.distanceTo(this.player.pos) < 3.2) {
-        return n.def.halloween ? this._openHalloween(n) : n.def.stable ? this._openStable(n) : n.def.barber ? this._openBarber(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
+        return n.def.workshop ? this._openWorkshop(n) : n.def.halloween ? this._openHalloween(n) : n.def.stable ? this._openStable(n) : n.def.barber ? this._openBarber(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
       }
     }
     const wc = this.worldChests?.nearest(this.player.pos, 2.8);
@@ -2759,6 +2793,7 @@ export class Game {
     for (const n of this.npcs) n.update(dt, this._camQuat);
     for (const m of this._stableDisplay || []) updateMount(m, dt, 0, false);
     this._barberDecor?.update(dt);
+    this._forgeDecor?.update(dt);
     this.hw?.update(dt, this._camQuat);
     if (this.player.mount && this.rift?.active) { this.player.setMount(null); this.hud.notify('Les montures ne sont pas autorisées dans les spires.', 'info'); }
     if (this._mntOn !== !!this.player.mount) { this._mntOn = !!this.player.mount; this._syncMountBtn(); }

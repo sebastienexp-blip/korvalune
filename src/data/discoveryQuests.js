@@ -34,6 +34,22 @@ export const DISCOVERY_QUESTS = [
       ev('hard', 'Vainquez 20 monstres en difficulté Difficile ou plus', 'diffkill', { need: 20 })
     ],
     reward: reward(15, 1.2) },
+  { id: 'decouv_forge', name: 'Un métal qui chante', level: 8, discovery: true, startLevel: 8,
+    steps: [
+      ev('forge', 'Rendez visite à Helga, la forgeronne (à l’ouest de la ville)', 'forge'),
+      ev('salvage', 'Démantelez un équipement dont vous ne voulez plus pour obtenir des matériaux', 'salvage'),
+      ev('socket', 'Faites creuser un emplacement dans une de vos pièces d’équipement', 'socket'),
+      ev('rune', 'Sertissez une rune (elles tombent sur les monstres et dans les coffres)', 'rune')
+    ],
+    reward: reward(10, 1) },
+  { id: 'decouv_monolithe', name: 'Le cristal qui répond', level: 20, discovery: true, startLevel: 20,
+    steps: [
+      ev('mono', 'Approchez-vous du Monolithe des Métamorphoses, sur l’avenue centrale', 'monolith'),
+      ev('cube', 'Utilisez-le : refonte, élévation, fusion de runes ou distillation de matériaux', 'cube'),
+      ev('myst', 'Rendez visite à Vaelis, la mystique (à l’est du puits)', 'mystic'),
+      ev('ench', 'Faites enchanter une propriété d’un de vos objets', 'enchant')
+    ],
+    reward: reward(22, 1.2) },
   { id: 'decouv_halloween', name: 'La nuit des citrouilles', level: 1, discovery: true, startLevel: 1, eventOnly: 'halloween',
     steps: [
       ev('jack', 'Parlez à Jack Tête-de-Citrouille, près du puits', 'halloween'),

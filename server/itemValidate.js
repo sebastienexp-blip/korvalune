@@ -8,6 +8,7 @@ import { RARITY_BY_TIER } from '../src/data/rarities.js';
 import { AFFIX_POOL } from '../src/data/affixPool.js';
 import { ITEM_EFFECTS } from '../src/data/itemEffectPool.js';
 import { SETS } from '../src/data/sets.js';
+import { SOCKET_CAP, RUNE_BY_ID, durMaxOf, MAX_ENCH, TMOG_COLORS } from '../src/data/crafting.js';
 
 const AFFIX_BY_KEY = Object.fromEntries(AFFIX_POOL.map((a) => [a.key, a]));
 const EFFECT_BY_ID = Object.fromEntries(ITEM_EFFECTS.map((e) => [e.id, e]));
@@ -72,7 +73,24 @@ export function sanitizeGeneratedItem(gen) {
       }).filter(Boolean)
     : [];
 
+  // V10.19 : emplacements, runes, usure, enchantement, apparence — toujours bornés
+  const cap = SOCKET_CAP[slot] || 0;
+  const sockets = Math.round(clampNum(gen.sockets, 0, cap, 0));
+  const gems = sockets && Array.isArray(gen.gems) ? Array.from({ length: sockets }, (_, i) => (typeof gen.gems[i] === 'string' && RUNE_BY_ID[gen.gems[i]] ? gen.gems[i] : null)) : [];
+  const durMax = durMaxOf({ rarityTier: tier });
+  const extra = {};
+  if (sockets) { extra.sockets = sockets; extra.gems = gems; }
+  if (gen.dur !== undefined && gen.dur !== null) { const d = Math.round(clampNum(gen.dur, 0, durMax, durMax)); if (d < durMax) extra.dur = d; }
+  if (gen.ench) extra.ench = Math.round(clampNum(gen.ench, 0, MAX_ENCH, 0));
+  if (gen.free === true) extra.free = true;
+  if (gen.tmog && typeof gen.tmog === 'object') {
+    const c = TMOG_COLORS.some((x) => x.id && x.id === gen.tmog.c) ? gen.tmog.c : null;
+    const v = (gen.tmog.v === 'sword' || gen.tmog.v === 'dagger') && slot === 'mainhand' ? gen.tmog.v : null;
+    if (c || v) extra.tmog = { c, v };
+  }
+
   return {
+    ...extra,
     uid: str(gen.uid, 40) || ('gi_srv' + Math.random().toString(36).slice(2)),
     category: ['weapon', 'armor', 'accessory'].includes(gen.category) ? gen.category : 'armor',
     baseKey: str(gen.baseKey, 20),
@@ -96,4 +114,24 @@ export function sanitizeItemSlots(arr, maxLen, sanitizeDefId) {
     if (typeof s.defId === 'string') return { defId: sanitizeDefId(s.defId, 40), qty: Math.max(1, Math.min(99, Math.floor(Number(s.qty) || 1))) };
     return null;
   });
+}
+
+// V10.19 : pouvoirs liés au Monolithe (un par catégorie). Chaque pouvoir est reconstruit à partir de sa définition, jamais cru sur parole.
+export function sanitizeCubePowers(obj) {
+  const out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  for (const cat of ['weapon', 'armor', 'jewel']) {
+    const e = obj[cat];
+    const def = e && typeof e === 'object' && EFFECT_BY_ID[e.id];
+    if (!def) { out[cat] = null; continue; }
+    out[cat] = {
+      id: def.id, name: def.name, triggerOn: def.triggerOn, dmgType: def.dmgType || null,
+      power: def.power || 0, healPct: def.healPct || 0, aoe: !!def.aoe, range: clampNum(e.range, 1, 12, def.range || 4),
+      cooldown: clampNum(e.cooldown, 1, 60, def.cooldown), chance: clampNum(e.chance, 0, 0.5, def.chance[0]),
+      ...(def.staminaPct ? { staminaPct: def.staminaPct } : {}), ...(def.manaPct ? { manaPct: def.manaPct } : {}),
+      ...(def.slowSec ? { slowSec: def.slowSec, slowF: def.slowF } : {}), ...(def.stunSec ? { stunSec: def.stunSec } : {}),
+      ...(def.dotSec ? { dotSec: def.dotSec, dotPower: def.dotPower } : {}), ...(def.wardSec ? { wardSec: def.wardSec } : {})
+    };
+  }
+  return out;
 }

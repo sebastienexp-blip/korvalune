@@ -27,7 +27,7 @@ import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/secur
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
-import { sanitizeGeneratedItem, sanitizeItemSlots } from './server/itemValidate.js';
+import { sanitizeGeneratedItem, sanitizeItemSlots, sanitizeCubePowers } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
 import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
@@ -291,6 +291,8 @@ function sanitizeSave(prev, incoming, elapsedMs) {
       else if (typeof item.defId === 'string') clean.equipment[sanitize(slot, 20)] = { defId: sanitize(item.defId, 40) };
     }
   }
+
+  clean.cube = incoming.cube === undefined ? (prev?.cube || {}) : sanitizeCubePowers(incoming.cube); // V10.19
 
   clean.skillBar = Array.isArray(incoming.skillBar)
     ? incoming.skillBar.slice(0, 10).map((id) => (typeof id === 'string' ? sanitize(id, 40) : null))

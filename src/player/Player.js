@@ -237,7 +237,7 @@ export class Player {
     const tint = (mat, slotItem) => {
       if (!mat) return;
       const view = slotItem && resolveItem(slotItem);
-      mat.color.set((view && view.rarityInfo?.color) || mat.userData.__base);
+      mat.color.set((view && (view.tint || view.rarityInfo?.color)) || mat.userData.__base);
     };
     this._equipRef = equipment;
     const s = equipment.slots;

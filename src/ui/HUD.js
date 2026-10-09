@@ -8,6 +8,7 @@ import { countSets, describeBonus } from '../data/sets.js';
 import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
 import { CATALOG, CATEGORIES, CATALOG_BY_ID, COSMETIC_SLOTS } from '../data/shopCatalog.js';
 import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
+import { slotCategory, RUNE_BY_ID, fmtBonusMap } from '../data/crafting.js';
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
 // Résumé lisible des effets d'une compétence (écran Compétences)
@@ -122,7 +123,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.18 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.19 — Korvalune</div>
         </div>
       </div>
 
@@ -394,6 +395,8 @@ export class HUD {
         <button data-act="close-difficulty">Retour</button>
       </div>
 
+      <div id="workshop-screen" class="hidden panel-screen"></div>
+
       <div id="stable-screen" class="hidden panel-screen">
         <h2>Écurie de Korvalune</h2>
         <div id="stable-head"></div>
@@ -477,6 +480,7 @@ export class HUD {
           <div id="is-levels"></div>
           <div id="is-stats"></div>
           <div id="is-affixes"></div>
+          <div id="is-craft"></div>
           <div id="is-effects"></div>
           <div id="is-set"></div>
           <div id="is-compare"></div>
@@ -546,7 +550,7 @@ export class HUD {
       else if (prev === 'game-ui' && id !== 'loading-screen') au.play('open');
     }
     this._curScreen = id;
-    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'halloween-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
+    for (const s of ['loading-screen', 'main-menu', 'char-select', 'char-create', 'credits', 'game-ui', 'pause-menu', 'settings-menu', 'death-screen', 'worldmap-screen', 'inventory-screen', 'character-screen', 'shop-screen', 'account-screen', 'patch-screen', 'bank-screen', 'skills-screen', 'quests-screen', 'ach-screen', 'social-screen', 'dm-screen', 'trade-screen', 'stable-screen', 'workshop-screen', 'halloween-screen', 'difficulty-screen', 'barber-screen', 'lune-screen', 'rift-screen', 'rift-result']) {
       this.q('#' + s).classList.toggle('hidden', s !== id);
     }
   }
@@ -788,8 +792,9 @@ export class HUD {
         const view = resolveItem(item);
         cell.style.borderColor = view.rarityInfo.color;
         cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
-        cell.title = `${SLOT_LABELS[s]} : ${view.name}`;
-        cell.innerHTML = `<span class="inv-icon">${view.icon}</span><span class="eq-tag">${SLOT_LABELS[s]}</span>`;
+        cell.title = `${SLOT_LABELS[s]} : ${view.name}${view.broken ? ' (brisé)' : ''}`;
+        cell.innerHTML = `<span class="inv-icon">${view.icon}</span><span class="eq-tag">${view.broken ? '💥 ' : view.isGenerated && view.dur / view.durMax <= 0.25 ? '⚠ ' : ''}${SLOT_LABELS[s]}</span>`;
+        if (view.broken) cell.classList.add('broken');
         cell.onclick = () => this.onUnequip && this.onUnequip(s);
       } else {
         cell.classList.add('eq-empty');
@@ -842,6 +847,26 @@ export class HUD {
     if (view.affixes && view.affixes.length) {
       affixEl.innerHTML = '<div class="is-section-title">Affixes</div>' + view.affixes.map((a) => `<div class="is-affix-line">+${a.kind === 'percent' ? Math.round(a.value * 1000) / 10 + '%' : a.value} ${a.label}</div>`).join('');
     } else affixEl.innerHTML = '';
+
+    // V10.19 : usure, emplacements / runes, litanie, enchantement
+    const crEl = this.q('#is-craft');
+    if (view.isGenerated) {
+      const cat = slotCategory(view.slot);
+      const parts = [];
+      const low = view.dur / view.durMax <= 0.25;
+      parts.push(`<div class="is-dur${view.broken ? ' broken' : low ? ' low' : ''}">${view.broken ? '💥 Brisé — ne donne plus rien (à réparer chez le forgeron)' : `🔧 Durabilité : ${view.dur} / ${view.durMax}`}</div>`);
+      if (view.sockets) {
+        parts.push('<div class="is-section-title">Emplacements</div>' + view.gems.slice(0, view.sockets).map((id) => {
+          const r = id && RUNE_BY_ID[id];
+          return r ? `<div class="is-affix-line" style="color:${r.color}">🔶 ${r.name} — ${fmtBonusMap(r.bonus[cat])}</div>` : '<div class="is-affix-line" style="opacity:.6">⭕ Emplacement vide</div>';
+        }).join(''));
+        if (view.litany) parts.push(`<div class="is-affix-line" style="color:#ffd98a">✨ Litanie « ${view.litany.name} » — ${fmtBonusMap(view.litany.bonus)}</div>`);
+      }
+      if (view.ench) parts.push(`<div class="is-affix-line" style="opacity:.75">🔮 Enchanté ${view.ench} fois</div>`);
+      if (view.gen.tmog) parts.push('<div class="is-affix-line" style="opacity:.75">🎨 Apparence modifiée</div>');
+      if (view.gen.free) parts.push('<div class="is-affix-line" style="opacity:.75">🔓 Niveau requis supprimé</div>');
+      crEl.innerHTML = parts.join('');
+    } else crEl.innerHTML = '';
 
     const fxEl = this.q('#is-effects');
     if (view.effects && view.effects.length) {

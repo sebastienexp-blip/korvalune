@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { createHumanoid, animateHumanoid } from './HumanoidModel.js';
 import { makeLabel } from '../ui/Label.js';
+import { buildMonolith } from '../world/Monolith.js';
 
 export class NPC {
   constructor(scene, def, pos, yaw = 0) {
     this.def = def;
     this.pos = pos.clone();
-    this.rig = createHumanoid({ cloth: def.look.cloth, armor: def.look.armor, cape: def.look.cape, hair: def.look.hair, shield: true, role: 'npc:' + (def.id || def.name), ...(def.look.skin != null ? { skin: def.look.skin } : {}), ...(def.look.shape ? { look: def.look.shape, shield: false } : {}) });
+    this.rig = def.model === 'monolith' ? buildMonolith() : createHumanoid({ cloth: def.look.cloth, armor: def.look.armor, cape: def.look.cape, hair: def.look.hair, shield: true, role: 'npc:' + (def.id || def.name), ...(def.look.skin != null ? { skin: def.look.skin } : {}), ...(def.look.shape ? { look: def.look.shape, shield: false } : {}) });
     this.rig.root.position.copy(this.pos);
     this.rig.root.rotation.y = yaw;
     scene.add(this.rig.root);
@@ -19,8 +20,8 @@ export class NPC {
 
   update(dt, camQuat) {
     this.t += dt;
-    animateHumanoid(this.rig, { speed: 0, grounded: true, action: null }, dt);
-    this.rig.head.rotation.y = Math.sin(this.t * 0.6) * 0.25;
+    if (this.rig.isProp) this.rig.update(dt);
+    else { animateHumanoid(this.rig, { speed: 0, grounded: true, action: null }, dt); this.rig.head.rotation.y = Math.sin(this.t * 0.6) * 0.25; }
     if (camQuat) this.label.quaternion.copy(camQuat);
   }
 }

@@ -66,10 +66,14 @@ export class Equipment {
       if (!item) continue;
       const view = resolveItem(item);
       if (!view) continue;
+      if (view.broken) continue; // V10.19 : un équipement brisé n'apporte plus rien (à réparer chez le forgeron)
       for (const [k, v] of Object.entries(view.stats || {})) if (k in bonus) bonus[k] += v;
       for (const aff of view.affixes || []) if (aff.key in bonus) bonus[aff.key] += aff.value;
+      if (view.socketBonus) for (const [k, v] of Object.entries(view.socketBonus)) if (k in bonus) bonus[k] += v;
       for (const eff of view.effects || []) effects.push({ ...eff, sourceSlot: s });
     }
+    // V10.19 : pouvoirs extraits au Monolithe (un par catégorie : arme / armure / bijou)
+    for (const eff of Object.values(this.player.cubePowers || {})) if (eff) effects.push({ ...eff, sourceSlot: 'cube' });
     const sb = activeSetBonuses(this.slots);
     for (const b of sb.bonus) for (const [k, v] of Object.entries(b)) if (k in bonus) bonus[k] += v;
     for (const e of sb.effects) effects.push(e);
