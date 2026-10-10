@@ -2,7 +2,9 @@
 // Tout ce qui est « règle du jeu » est ici : modes, échelle de difficulté 1-200,
 // cristaux, obélisques, totems, affixes d'élites, économie de clés / poussière d’éther.
 
-export const RIFT_MAX_LEVEL = 200;
+export const RIFT_MAX_LEVEL = 999; // V10.29 : jusqu'au niveau 999
+// V10.29 : plus la spire est difficile, plus les raretés élevées sont fréquentes (décalage de la courbe de rareté). Progression qui ralentit : ~+3 à 50, +5 à 100, +7 à 200, +10 à 999.
+export function riftLootShift(level) { const L = Math.max(0, level || 0); return Math.round((8 * (1 - Math.exp(-L / 150)) + 2.5 * Math.log10(1 + L / 100)) * 10) / 10; }
 export const ZENITH_TIME = 15 * 60;       // Zénith : 15 minutes
 export const FERVOR_MAX = 5;
 

@@ -11,7 +11,10 @@ export const DEFAULTS = {
   // souris / clavier
   lookSens: 100, invertY: false, invertWheel: false, zoomSpeed: 100, rotateBtn: 'right', cameraMode: 'iso', camRotate: 'auto', autoLoot: 'off', cameraLock: true,
   // V10.24 : compagnon qui ramasse le butin
-  petLoot: true, petLootCons: true, petLootMat: false, petLootRune: false, petLootGear: 'off',
+  petLoot: true, petLootCons: true, petConsMin: 1, petLootMat: false, petLootRune: false,
+  // V10.29 : équipement du compagnon — rareté minimale / maximale et types ; notifications de ramassage
+  petGearMin: 'off', petGearMax: 'all', petLootWeapon: true, petLootArmor: true, petLootJewel: true,
+  lootNotif: 'all', lootNotifMats: true,
   // interface / jeu
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
@@ -79,14 +82,21 @@ const TABS = [
     { t: 'check', k: 'showMinimap', label: 'Afficher la mini-carte' },
     { t: 'check', k: 'showHints', label: 'Afficher les indications « E — … »' },
     { t: 'check', k: 'notifInfo', label: 'Notifications d’information (butin, équipement…)' },
+    { t: 'select', k: 'lootNotif', label: 'Notifications de ramassage d’objets', opts: [['all', 'Tous les objets'], [4, 'Magiques et mieux'], [8, 'Rares et mieux'], [13, 'Légendaires et mieux'], ['none', 'Aucune']] },
+    { t: 'check', k: 'lootNotifMats', label: 'Notifications pour matériaux, runes et potions ramassés' },
     { t: 'check', k: 'autoTarget', label: 'Ciblage automatique des ennemis' },
     { t: 'select', k: 'autosave', label: 'Sauvegarde automatique', opts: [[30, 'Toutes les 30 s'], [60, 'Toutes les minutes'], [180, 'Toutes les 3 minutes'], [0, 'Désactivée (manuelle)']] },
     { t: 'section', label: 'Compagnon : ramassage du butin' },
     { t: 'check', k: 'petLoot', label: 'Mon compagnon ramasse le butin (il faut en équiper un depuis la boutique ou l’inventaire)' },
     { t: 'check', k: 'petLootCons', label: 'Consommables : potions, parchemins, nourriture' },
+    { t: 'select', k: 'petConsMin', label: 'Consommables : rareté minimale', opts: [[1, 'Toutes'], [4, 'Magique ou mieux'], [8, 'Rare ou mieux'], [13, 'Légendaire ou mieux']] },
     { t: 'check', k: 'petLootMat', label: 'Matériaux d’artisanat' },
     { t: 'check', k: 'petLootRune', label: 'Runes' },
-    { t: 'select', k: 'petLootGear', label: 'Armes et armures jusqu’à la rareté…', opts: [['off', 'Aucune (je ramasse moi-même)'], [1, 'Commune'], [4, 'Magique'], [8, 'Rare']] },
+    { t: 'select', k: 'petGearMin', label: 'Équipement : rareté minimale', opts: [['off', 'Aucun (je ramasse moi-même)'], [1, 'Toutes les raretés'], [4, 'Magique ou mieux'], [8, 'Rare ou mieux'], [13, 'Légendaire ou mieux'], [19, 'Mythique ou mieux'], [25, 'Absolu seulement']] },
+    { t: 'select', k: 'petGearMax', label: 'Équipement : rareté maximale', opts: [['all', 'Pas de maximum'], [4, 'Jusqu’à Magique'], [8, 'Jusqu’à Rare'], [13, 'Jusqu’à Légendaire'], [19, 'Jusqu’à Mythique']] },
+    { t: 'check', k: 'petLootWeapon', label: 'Équipement : armes (et objets secondaires)' },
+    { t: 'check', k: 'petLootArmor', label: 'Équipement : armures' },
+    { t: 'check', k: 'petLootJewel', label: 'Équipement : bijoux (anneaux, colliers)' },
     { t: 'note', text: 'Le compagnon court chercher les objets proches (environ 18 m) qui correspondent à ces choix, et les met directement dans ton sac. Rien n’est ramassé si le sac est plein.' },
     { t: 'custom', id: 'tutorial' },
     { t: 'custom', id: 'resetall' }

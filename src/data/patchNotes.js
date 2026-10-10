@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.29', title: 'Failles jusqu’au niveau 999, classement et butin réglable',
+    items: [
+      '🌀 Les Spires d’Éther montent jusqu’au niveau 999. Plus le niveau est haut, plus les objets rares, légendaires, mythiques et absolus sont fréquents.',
+      '🏅 Nouvel onglet « Classement » dans les failles : les niveaux les plus hauts atteints par les joueurs, en Ascension et en Zénith.',
+      '🗺️ Recréer un personnage remet bien ses quêtes à zéro. Un ancien journal ne se mélange plus au nouveau.',
+      '🔔 Notifications de ramassage : choisis la rareté minimale affichée, ou masque celles des matériaux, runes et consommables (Options ou Inventaire).',
+      '🐾 Compagnon : rareté minimale et maximale de l’équipement, types (armes, armures, bijoux) et rareté minimale des consommables. Par exemple, rien en dessous de Rare.'
+    ]
+  },
+  {
     version: '10.28', title: 'Zénith : progresser sans limite après le niveau 200',
     items: [
       '✨ Une fois niveau 200, ton expérience fait monter des niveaux de Zénith, sans limite. Chaque niveau te donne 1 point à investir.',

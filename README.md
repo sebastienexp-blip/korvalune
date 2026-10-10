@@ -1146,3 +1146,11 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `src/data/zenith.js` (partagé client/serveur, sans import JSON) : 65 nœuds (4 constellations × [racine + 3 branches de 5, la dernière étant une clé de voûte], plus le Rayonnement central de rang illimité). `cleanZenith` revalide niveau, rangs, prérequis et total ≤ niveau ; `zenithBonus` additionne les bonus (`PRIM` = attribut principal de la classe).
 - `Player` : après le niveau 200, `gainXp` fait monter `zenith.lvl` (`zenithXp`), `_mergedBonus` ajoute l'arbre aux bonus d'équipement. Nouveaux bonus `allPct` (PV/attaque/défense) et `skillRadPct` (portée des compétences).
 - Serveur : Zénith accepté seulement à partir du niveau 200, hausse bornée (`+2 + 3/min` par sauvegarde).
+
+## V10.29 — Failles 999, classement, butin réglable
+
+- **Quêtes** : `QuestManager.dispose()` désabonne le journal précédent ; un nouveau personnage repart d'un journal vierge (le `RiftSystem` fait de même).
+- **Failles** : niveau maximal 999 (`RIFT_MAX_LEVEL`). `riftLootShift(niveau)` décale les tirages de rareté (≈ +3 au niveau 50, +7 au 200, +10,5 au 999) pour les coffres, le butin des ennemis et les récompenses finales.
+- **Classement** : `server/riftBoard.js` (top 50 Ascension et Zénith, cache 20 s), message `rift:board`, onglet « Classement » dans `RiftUI`. Le serveur borne la hausse d'un record à +25 par sauvegarde.
+- **Notifications** : `lootNotif` (tous / Magique+ / Rare+ / Légendaire+ / aucun) et `lootNotifMats` (matériaux, runes, consommables).
+- **Compagnon** : `petGearMin`, `petGearMax`, `petLootWeapon/Armor/Jewel`, `petConsMin`. Les anciens réglages `petLootGear` sont migrés par `_migrateSettings`.

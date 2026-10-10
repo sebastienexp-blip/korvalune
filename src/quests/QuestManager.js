@@ -22,15 +22,21 @@ export class QuestManager {
     this.completed = new Set(save?.completed || []);
     this.progress = new Map(Object.entries(save?.progress || {}));
     this.savedCounts = save?.counts || {};
-    bus.on('enemyKilled', (e) => this._onEvent('kill', e.def.id));
-    bus.on('bossKilled', (bossId) => this._onEvent('killBoss', bossId));
-    bus.on('talk', (npcId) => this._onEvent('talk', npcId));
-    bus.on('tut', (name) => this._onEvent('event', name)); // V4.0 : étapes de tutoriel (ouvrir l'inventaire, équiper…)
-    // V4.0 : une nouvelle partie commence par la chaîne de tutoriel ; « Le commencement » suit à la fin.
-    bus.on('questCompleted', (def) => { if (def.next) this.start(def.next); });
+    // V10.29 : les abonnements sont gardés pour pouvoir être retirés (dispose) quand on lance une autre partie —
+    // sinon l'ancien journal restait branché et ses quêtes d'un personnage précédent continuaient de s'afficher.
+    this._offs = [
+      bus.on('enemyKilled', (e) => this._onEvent('kill', e.def.id)),
+      bus.on('bossKilled', (bossId) => this._onEvent('killBoss', bossId)),
+      bus.on('talk', (npcId) => this._onEvent('talk', npcId)),
+      bus.on('tut', (name) => this._onEvent('event', name)), // V4.0 : étapes de tutoriel (ouvrir l'inventaire, équiper…)
+      // V4.0 : une nouvelle partie commence par la chaîne de tutoriel ; « Le commencement » suit à la fin.
+      bus.on('questCompleted', (def) => { if (def.next) this.start(def.next); })
+    ];
     if (!this.completed.size && !this.progress.size) this.start('tuto_1');
     else if (save?.active) for (const id of save.active) this.start(id, true);
   }
+
+  dispose() { for (const off of this._offs || []) off(); this._offs = []; this.active.clear(); }
 
   start(id, silent = false) {
     if (this.completed.has(id) || this.active.has(id)) return;

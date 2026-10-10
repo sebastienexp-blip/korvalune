@@ -1,7 +1,7 @@
-import { MODES, GEMS, GEM_IDS, GAMBLE, riftMults, themeFor, dangerLabel, gemEffect, gemUpgradeChance, fmtTime, ZENITH_TIME, RIFT_MAX_LEVEL } from '../rift/RiftData.js';
+import { MODES, GEMS, GEM_IDS, GAMBLE, riftMults, themeFor, dangerLabel, gemEffect, gemUpgradeChance, fmtTime, ZENITH_TIME, RIFT_MAX_LEVEL, riftLootShift } from '../rift/RiftData.js';
 import { getRarity } from '../data/rarities.js';
 
-const PRESETS = [1, 10, 25, 50, 75, 100, 125, 150, 175, 200];
+const PRESETS = [1, 10, 25, 50, 100, 150, 200, 300, 500, 750, 999];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // Interface des spires : écran de la statue (4 onglets), HUD de spire et écran de fin.
@@ -32,7 +32,7 @@ export class RiftUI {
 
   render() {
     const m = this.rift.getModel(), d = m.data;
-    const tabs = [['rift', '🌀 Spires'], ['gems', '💎 Cristaux'], ['shop', '✨ Éther & sceaux'], ['rec', '🏆 Records']];
+    const tabs = [['rift', '🌀 Spires'], ['gems', '💎 Cristaux'], ['shop', '✨ Éther & sceaux'], ['rec', '🏆 Records'], ['board', '🏅 Classement']];
     this.screen.innerHTML = `
       <h2>Statue de la Spire</h2>
       <div class="rf-res">
@@ -50,6 +50,7 @@ export class RiftUI {
     if (this.tab === 'gems') return this._gemsHtml(m);
     if (this.tab === 'shop') return this._shopHtml(m);
     if (this.tab === 'rec') return this._recHtml(m);
+    if (this.tab === 'board') return this._boardHtml();
     return this._riftHtml(m);
   }
 
@@ -70,9 +71,9 @@ export class RiftUI {
       <div class="rf-modes">${modeBtns}</div>
       <p class="rf-desc">${esc(mode.desc)}</p>
       <div class="rf-level">
-        <button data-rf="lv:-10">−10</button><button data-rf="lv:-1">−1</button>
+        <button data-rf="lv:-100">−100</button><button data-rf="lv:-10">−10</button><button data-rf="lv:-1">−1</button>
         <div class="rf-lvnum"><small>Niveau de difficulté</small><b id="rf-lv">${this.level}</b><small>de 1 à ${RIFT_MAX_LEVEL}</small></div>
-        <button data-rf="lv:1">+1</button><button data-rf="lv:10">+10</button>
+        <button data-rf="lv:1">+1</button><button data-rf="lv:10">+10</button><button data-rf="lv:100">+100</button>
       </div>
       <input id="rf-range" type="range" min="1" max="${RIFT_MAX_LEVEL}" value="${this.level}" aria-label="Niveau de la spire" />
       <div class="rf-presets">${PRESETS.map((n) => `<button data-rf="set:${n}">${n}</button>`).join('')}<button data-rf="set:me" class="me">Mon niveau (${m.playerLevel})</button></div>
@@ -94,6 +95,7 @@ export class RiftUI {
       ['Dégâts des monstres', `×${mult.dmg.toFixed(2)}`],
       ['Temps', mode.timed ? fmtTime(ZENITH_TIME) : 'Illimité'],
       ['Récompenses', mode.rewards ? `XP ×${mult.xp}, butin ×${mult.loot}` : 'Aucune'],
+      ['Raretés élevées', mode.rewards ? `plus fréquentes (+${riftLootShift(this.level).toFixed(1)} paliers)` : '—'],
       ['Coût', mode.key ? `1 ${esc(mode.keyName.toLowerCase())} (vous : ${m.data[mode.key]})` : 'Gratuit']
     ];
     this.q('#rf-info').innerHTML = rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('');
@@ -141,6 +143,19 @@ export class RiftUI {
       <p class="rf-desc">Les sceaux tombent aussi sur les élites et les boss, et l’Ascension récompense chaque victoire d’un sceau (et parfois d’un sceau du zénith).</p>`;
   }
 
+  // V10.29 — classement : meilleurs niveaux de spire atteints par les joueurs
+  setBoard(msg) { this.board = msg; if (this.tab === 'board' && !this.screen.classList.contains('hidden')) this.render(); }
+  _boardHtml() {
+    const mode = this.boardMode || 'asc', b = this.board, d = this.rift.getModel().data;
+    const CI = { warrior: '⚔️', paladin: '🛡️', mage: '🔮', archer: '🏹', assassin: '🗡️' };
+    const tabs = `<div class="rf-modes"><button class="rf-mode${mode === 'asc' ? ' on' : ''}" data-rf="boardmode:asc"><b>🌀 Ascension</b></button><button class="rf-mode${mode === 'zen' ? ' on' : ''}" data-rf="boardmode:zen"><b>🔱 Zénith</b></button></div>`;
+    if (!b) return `${tabs}<p class="rf-desc">Chargement du classement… (il faut être connecté à ton compte)</p>`;
+    const rows = (mode === 'asc' ? b.asc : b.zen) || [];
+    const me = mode === 'asc' ? d.bestAscent : d.bestZenith.level;
+    const list = rows.length ? rows.map((r, i) => `<div class="rf-hist ${i < 3 ? 'ok' : ''}"><span>${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</span><span>${CI[r.cls] || ''} ${esc(r.name)}</span><span>Niv. ${mode === 'asc' ? r.asc : r.zl}</span><span>${mode === 'asc' ? 'perso ' + r.lvl : fmtTime(r.zt)}</span></div>`).join('') : '<p class="rf-desc">Personne n’a encore de record.</p>';
+    return `${tabs}<p class="rf-desc">Ton record : <b>${me ? 'niveau ' + me : '—'}</b> (sur 999). Le classement se met à jour toutes les 20 secondes.</p><div class="rf-histlist">${list}</div>`;
+  }
+
   _recHtml(m) {
     const d = m.data;
     const hist = d.history.length
@@ -163,7 +178,8 @@ export class RiftUI {
     const [cmd, arg] = el.dataset.rf.split(':');
     const r = this.rift, g = r.g;
     switch (cmd) {
-      case 'tab': this.tab = arg; this.render(); break;
+      case 'tab': this.tab = arg; if (arg === 'board') { this.board = null; this.rift.g.net.riftBoard(); } this.render(); break;
+      case 'boardmode': this.boardMode = arg; this.render(); break;
       case 'mode': this.mode = arg; this.render(); break;
       case 'lv': this.level = Math.max(1, Math.min(RIFT_MAX_LEVEL, this.level + (+arg))); this._refreshLevel(); break;
       case 'set': this.level = arg === 'me' ? Math.max(1, Math.min(RIFT_MAX_LEVEL, g.player.level)) : +arg; this._refreshLevel(); break;

@@ -35,6 +35,7 @@ import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
 import { cleanPotions } from './src/data/potions.js';
 import { cleanSatchel, SATCHEL_MAX } from './src/data/satchel.js';
 import { cleanZenith } from './src/data/zenith.js';
+import { riftBoard } from './server/riftBoard.js';
 import { cleanRanks, setSkillTable } from './src/combat/SkillRanks.js';
 import { readFileSync } from 'node:fs';
 setSkillTable(Object.fromEntries(JSON.parse(readFileSync(new URL('./src/data/skills.json', import.meta.url), 'utf8')).map((s) => [s.id, s])));
@@ -352,11 +353,11 @@ function sanitizeSave(prev, incoming, elapsedMs) {
         zkeys: num(r.zkeys, 0, Math.min(9999, (pr.zkeys ?? 1) + 200), pr.zkeys ?? 1),
         shards: num(r.shards, 0, Math.min(999999, (pr.shards ?? 0) + 5000), pr.shards ?? 0),
         gems: {},
-        pending: num(r.pending, 0, 3, 0), pendingLevel: num(r.pendingLevel, 0, 200, 0),
-        open: r.open && ['ascent', 'zenith', 'trial'].includes(r.open.modeId) ? { modeId: r.open.modeId, level: num(r.open.level, 1, 200, 1) } : null,
-        bestAscent: num(r.bestAscent, 0, 200, 0),
-        bestZenith: { level: num(r.bestZenith?.level, 0, 200, 0), time: num(r.bestZenith?.time, 0, 99999, 0) },
-        history: Array.isArray(r.history) ? r.history.slice(0, 10).map((h) => ({ mode: ['ascent', 'zenith', 'trial'].includes(h?.mode) ? h.mode : 'ascent', level: num(h?.level, 1, 200, 1), time: num(h?.time, 0, 99999, 0), ok: !!h?.ok })) : []
+        pending: num(r.pending, 0, 3, 0), pendingLevel: num(r.pendingLevel, 0, 999, 0),
+        open: r.open && ['ascent', 'zenith', 'trial'].includes(r.open.modeId) ? { modeId: r.open.modeId, level: num(r.open.level, 1, 999, 1) } : null,
+        bestAscent: num(r.bestAscent, 0, Math.min(999, Math.max(25, (pr.bestAscent ?? 0) + 25)), 0), // V10.29 : hausse du record bornée par sauvegarde (classement)
+        bestZenith: { level: num(r.bestZenith?.level, 0, Math.min(999, Math.max(25, (pr.bestZenith?.level ?? 0) + 25)), 0), time: num(r.bestZenith?.time, 0, 99999, 0) },
+        history: Array.isArray(r.history) ? r.history.slice(0, 10).map((h) => ({ mode: ['ascent', 'zenith', 'trial'].includes(h?.mode) ? h.mode : 'ascent', level: num(h?.level, 1, 999, 1), time: num(h?.time, 0, 99999, 0), ok: !!h?.ok })) : []
       };
       for (const id of ['power', 'vigor', 'haste', 'fury', 'ease']) clean.rift.gems[id] = num(r.gems?.[id], 1, Math.min(250, (pr.gems?.[id] ?? 1) + 12), pr.gems?.[id] ?? 1);
     } else if (pr && Object.keys(pr).length) clean.rift = pr;
@@ -644,6 +645,8 @@ wss.on('connection', (ws, req) => {
       if (msg.t === 'event:buy') { const r = evBuy(acc, msg.id); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `Acheté : ${r.item.name}` : r.error); push(); send(ws, shopView(acc)); return; }
       return;
     }
+
+    if (msg.t === 'rift:board') { if (passLimiter.allow()) send(ws, { t: 'rift:board', ...riftBoard(accounts) }); return; } // V10.29
 
     // --- Pass de combat (V10.23) ---
     if (msg.t.startsWith('pass:')) {

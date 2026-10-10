@@ -14,7 +14,7 @@ import { ARENA, cellCenter, cellAt, cellKey, generateLayout, buildRiftWorld } fr
 import {
   MODES, GEMS, GEM_IDS, OBELISKS, TOTEMS, AFFIXES, AFFIX_IDS, GUARDIAN_NAMES, ZENITH_TIME, FERVOR_MAX,
   RIFT_THEMES, riftMults, themeFor, normalizeRiftSave, gemBonuses, gemUpgradeChance, gemStepsForTime,
-  KEY_PRICE, CRAFT_ZKEY_COST, GAMBLE, RIFT_MAX_LEVEL
+  KEY_PRICE, CRAFT_ZKEY_COST, GAMBLE, RIFT_MAX_LEVEL, riftLootShift
 } from './RiftData.js';
 import { RiftUI } from '../ui/RiftUI.js';
 
@@ -54,13 +54,18 @@ export class RiftSystem {
       game.riftStatue?.setPortalOpen(true, `${m.name} — Niv. ${this.pending.level}`);
     }
 
-    game.bus.on('enemyKilled', (e) => this._onEnemyKilled(e));
-    game.bus.on('bossKilled', (id) => { if (id === 'spire_warden') this._onGuardianDead(); });
+    this._offs = [ // V10.29 : retirés par dispose() quand une autre partie démarre (sinon les kills comptaient en double)
+      game.bus.on('enemyKilled', (e) => this._onEnemyKilled(e)),
+      game.bus.on('bossKilled', (id) => { if (id === 'spire_warden') this._onGuardianDead(); }),
+      game.bus.on('net:riftBoard', (msg) => this.ui.setBoard(msg)) // V10.29 : classement
+    ];
   }
 
   get statue() { return this.g.riftStatue; }
 
   serialize() { return this.data; }
+
+  dispose() { for (const off of this._offs || []) off(); this._offs = []; }
 
   applyGems() { this.g.player.setRiftBonus(gemBonuses(this.data.gems)); }
 
@@ -467,7 +472,7 @@ export class RiftSystem {
       if (run.mode.rewards) {
         const coins = Math.round(100 + L * 45);
         p.addCoins(coins);
-        const drops = [{ gen: rollLootItem({ sourceLevel: L, tierShift: 5, levelSpread: [0, 4] }) }, { gen: rollLootItem({ sourceLevel: L, tierShift: 5, levelSpread: [0, 4] }) }];
+        const drops = [{ gen: rollLootItem({ sourceLevel: L, tierShift: 5 + riftLootShift(L), levelSpread: [0, 4] }) }, { gen: rollLootItem({ sourceLevel: L, tierShift: 5 + riftLootShift(L), levelSpread: [0, 4] }) }];
         this._dropItems(drops, o.pos);
         g.hud.notify(`${def.icon} ${def.name} : +${coins} 🪙 et du butin !`, 'quest');
       } else g.hud.notify(`${def.icon} ${def.name} : sans effet en entraînement.`, 'info');
@@ -513,7 +518,7 @@ export class RiftSystem {
       if (run.mode.rewards) {
         const drops = [];
         const n = 3 + (L >= 60 ? 1 : 0);
-        for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: L, tierShift: 6 * run.mults.loot, levelSpread: [0, 5] }) });
+        for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: L, tierShift: 6 * run.mults.loot + riftLootShift(L), levelSpread: [0, 5] }) });
         this._dropItems(drops, c.obj.pos);
         g.player.addCoins(Math.round(80 + L * 30));
         if (Math.random() < 0.25) { this.data.keys++; g.hud.notify('🗝 Une sceau de spire était cachée dans le coffre !', 'quest'); }
@@ -696,7 +701,7 @@ export class RiftSystem {
     const out = drops.slice();
     if (source.rift) {
       const extra = source.rift.role === 'normal' ? 0.1 : source.rift.role === 'leader' ? 1 : 0.5;
-      if (Math.random() < extra * run.mults.loot) out.push({ gen: rollLootItem({ sourceLevel: run.level, tierShift: source.rift.role === 'normal' ? 1 : 4, levelSpread: [0, 4] }) });
+      if (Math.random() < extra * run.mults.loot) out.push({ gen: rollLootItem({ sourceLevel: run.level, tierShift: (source.rift.role === 'normal' ? 1 : 4) + riftLootShift(run.level), levelSpread: [0, 4] }) });
     }
     return out;
   }
@@ -751,8 +756,8 @@ export class RiftSystem {
       p.gainXp(rewards.xp); p.addCoins(rewards.coins);
       const drops = [];
       const n = 3 + (L >= 50 ? 1 : 0) + (gr ? 2 : 0);
-      for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: L, tierShift: gr ? 13 : 10, levelSpread: [2, 8] }) });
-      if (gr || Math.random() < 0.3) drops.push({ gen: generateItem({ category: Math.random() < 0.5 ? 'weapon' : 'armor', itemLevel: L + 6, rarityTier: rollRarityTier({ minTier: gr ? 19 : 13, maxTier: 25 }) }) });
+      for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: L, tierShift: (gr ? 13 : 10) + riftLootShift(L), levelSpread: [2, 8] }) });
+      if (gr || Math.random() < 0.3) drops.push({ gen: generateItem({ category: Math.random() < 0.5 ? 'weapon' : 'armor', itemLevel: L + 6, rarityTier: rollRarityTier({ shift: riftLootShift(L), minTier: gr ? 19 : 13, maxTier: 25 }) }) });
       rewards.items = drops.length;
       this._dropItems(drops, run.guardian ? run.guardian.pos : p.pos);
       if (mode.id === 'ascent') this.data.bestAscent = Math.max(this.data.bestAscent, L);

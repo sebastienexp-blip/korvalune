@@ -108,6 +108,7 @@ export class NetworkManager {
       case 'settings': this.bus.emit('net:settings', msg); break;
       case 'event': this.bus.emit('net:event', msg); break;
       case 'event:msg': this.bus.emit('net:eventMsg', msg); break;
+      case 'rift:board': this.bus.emit('net:riftBoard', msg); break;
       case 'event:top': this.bus.emit('net:eventTop', msg); break;
       case 'pass': this.bus.emit('net:pass', msg); break;
       case 'pass:msg': this.bus.emit('net:passMsg', msg); break;
@@ -174,6 +175,7 @@ export class NetworkManager {
   shopBuy(id) { this._send({ t: 'shop:buy', id }); }
   shopEquip(slot, id) { this._send({ t: 'shop:equip', slot, id: id || null }); }
   eventGet() { this._send({ t: 'event:get' }); }
+  riftBoard() { this._send({ t: 'rift:board' }); }
   eventTop() { this._send({ t: 'event:top' }); }
   eventCollect(id) { this._send({ t: 'event:collect', id }); }
   eventKill(kind) { this._send({ t: 'event:kill', kind }); }

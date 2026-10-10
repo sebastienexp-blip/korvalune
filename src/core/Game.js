@@ -100,6 +100,7 @@ export class Game {
     // V3.5 : sur téléphone/tablette, qualité « Moyenne » par défaut + résolution adaptative + plein écran au lancement
     const saved = SaveManager.loadSettings();
     this.settings = { ...DEFAULTS, quality: coarse ? 'medium' : 'high', autoFullscreen: coarse, cameraLock: true, cameraMode: 'iso', visualV25: true, adaptive: true, ...saved };
+    this._migrateSettings(this.settings, saved);
     this.settings.touch = { ...TOUCH_DEFAULTS, ...(saved.touch || {}), layout: { ...((saved.touch && saved.touch.layout) || {}) }, layoutP: { ...((saved.touch && saved.touch.layoutP) || {}) } };
     this.settings.keys = normalizeKeys(saved.keys);
     if (!CONFIG.quality[this.settings.quality]) this.settings.quality = coarse ? 'medium' : 'high';
@@ -861,7 +862,7 @@ export class Game {
     b.on('particles', (d) => this.particles.emit(d.pos.x, d.pos.y, d.pos.z, d));
     b.on('shake', (amt) => { this._shake = Math.max(this._shake || 0, amt * (this.settings.shake ?? 100) / 100); });
     b.on('questStarted', (q) => this.hud.notify(`Nouvelle quête : ${q.name}`, 'quest'));
-    b.on('questUpdated', (qm) => this.hud.renderQuests(qm));
+    b.on('questUpdated', (qm) => { if (qm === this.quests) this.hud.renderQuests(qm); });
     b.on('questCompleted', (q) => { b.emit('passEvent', 'quest'); setTimeout(() => this._startDiscoveryQuests(), 1500);
       this.hud.notify(`Quête terminée : ${q.name} (+${q.reward.xp} XP, +${q.reward.coins} 🪙)`, 'quest');
       this.audio.play('quest');
@@ -929,6 +930,7 @@ export class Game {
       m.touch = { ...TOUCH_DEFAULTS, ...(msg.s.touch || {}), layout: { ...((msg.s.touch && msg.s.touch.layout) || {}) } };
       m.keys = normalizeKeys(msg.s.keys);
       if (!CONFIG.quality[m.quality]) m.quality = coarse ? 'medium' : 'high';
+      this._migrateSettings(m, msg.s);
       this.settings = m;
       SaveManager.saveSettings(m);
       try {
@@ -1263,6 +1265,7 @@ export class Game {
     } catch (e) { /* ignoré */ }
     netShare.localPlayer = this.player;
     this._secondaryQuests = this._secondaryQuests || generateSecondaryQuests();
+    if (this.quests) this.quests.dispose(); // V10.29 : le journal du personnage précédent est débranché
     this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...DISCOVERY_QUESTS, ...this._secondaryQuests]);
     setTimeout(() => this._startDiscoveryQuests(), 4000);
     this.mounts = Array.isArray(save?.mounts) ? save.mounts.filter((m) => MOUNT_BY_ID[m]) : [];
@@ -1276,6 +1279,7 @@ export class Game {
     this.bankPage = 0;
     this._initPotions();
     this._initSatchel();
+    if (this.rift && this.rift.dispose) this.rift.dispose();
     this.rift = this.riftStatue ? new RiftSystem(this, save?.rift) : null;
     if (!save || !Array.isArray(save.inventory)) { // nouveau personnage (la création passe un objet sans inventaire)
       const cls = CLASSES[this.player.classId] || CLASSES.warrior;
@@ -2871,20 +2875,46 @@ export class Game {
     this.lootDrops.splice(idx, 1);
     drop.dispose(this.scene);
     const big = view.rarityInfo.tier >= 13;
-    this.hud.notify(`${byPet ? '🐾 Ton compagnon rapporte' : 'Objet ramassé'} : ${view.icon} ${view.name}${drop.item.qty > 1 ? ' x' + drop.item.qty : ''}`, big ? 'quest' : 'info');
+    if (this._lootNotifOk(view)) this.hud.notify(`${byPet ? '🐾 Ton compagnon rapporte' : 'Objet ramassé'} : ${view.icon} ${view.name}${drop.item.qty > 1 ? ' x' + drop.item.qty : ''}`, big ? 'quest' : 'info');
     this.audio.play('pickup');
     this.particles.emit(drop.pos.x, drop.pos.y + 0.4, drop.pos.z, { count: 16, color: parseInt(view.rarityInfo.color.slice(1), 16), speed: 2.2, life: 0.5, up: 2 });
     this._tut('loot');
+  }
+
+  // V10.29 : l'ancien réglage « armes et armures jusqu'à la rareté X » devient minimum « toutes » + maximum X
+  _migrateSettings(s, saved) {
+    if (saved && saved.petGearMin === undefined && saved.petLootGear !== undefined) {
+      const g = Number(saved.petLootGear);
+      if (Number.isFinite(g)) { s.petGearMin = 1; s.petGearMax = g; }
+    }
+  }
+
+  // V10.29 : notifications de ramassage réglables (rareté minimale, ou aucune ; matériaux / runes / potions à part)
+  _lootNotifOk(view) {
+    const st = this.settings, mode = st.lootNotif ?? 'all';
+    if (mode === 'none') return false;
+    if ((view.type === 'material' || view.type === 'rune' || view.type === 'consumable') && st.lootNotifMats === false) return false;
+    const min = Number(mode);
+    return !(Number.isFinite(min) && view.rarityInfo.tier < min);
   }
 
   // ---- V10.24 : le compagnon équipé va chercher le butin choisi dans les options ----
   _petWants(drop) {
     const st = this.settings;
     const v = resolveItem(drop.item);
-    if (v.type === 'consumable') return st.petLootCons !== false;
+    const tier = v.rarityInfo.tier;
+    if (v.type === 'consumable') return st.petLootCons !== false && tier >= (Number(st.petConsMin) || 1);
     if (v.type === 'material') return !!st.petLootMat;
     if (v.type === 'rune') return !!st.petLootRune;
-    if (v.type === 'weapon' || v.type === 'armor') { const max = Number(st.petLootGear); return Number.isFinite(max) && v.rarityInfo.tier <= max; }
+    if (v.type === 'weapon' || v.type === 'armor') {
+      // V10.29 : rareté minimale ET maximale, et types d'équipement choisis
+      const min = Number(st.petGearMin);
+      if (!Number.isFinite(min) || tier < min) return false;
+      if (st.petGearMax !== 'all' && Number.isFinite(Number(st.petGearMax)) && tier > Number(st.petGearMax)) return false;
+      const jewel = v.slot === 'ring' || v.slot === 'necklace';
+      if (jewel) return st.petLootJewel !== false;
+      return v.type === 'weapon' || v.slot === 'offhand' ? st.petLootWeapon !== false : st.petLootArmor !== false;
+    }
     return false;
   }
 

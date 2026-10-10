@@ -138,7 +138,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.28 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.29 — Korvalune</div>
         </div>
       </div>
 
@@ -849,15 +849,22 @@ export class HUD {
     const pet = sh && sh.eq && sh.eq.pet && CATALOG_BY_ID[sh.eq.pet];
     const on = st.petLoot !== false;
     const chip = (k, label) => `<button class="pet-chip${st[k] ? ' on' : ''}" data-pk="${k}">${label}</button>`;
-    const gear = Number(st.petLootGear), gOn = (v) => (v === 'off' ? !Number.isFinite(gear) : gear === v);
-    const gchip = (v, label) => `<button class="pet-chip${gOn(v) ? ' on' : ''}" data-pg="${v}">${label}</button>`;
+    const vchip = (k, v, label) => `<button class="pet-chip${String(st[k]) === String(v) ? ' on' : ''}" data-pv="${k}|${v}">${label}</button>`;
+    const tierChips = (k, withOff) => (withOff ? vchip(k, 'off', 'Aucun') : '') + vchip(k, 1, 'Tout') + vchip(k, 4, 'Magique') + vchip(k, 8, 'Rare') + vchip(k, 13, 'Légendaire') + vchip(k, 19, 'Mythique') + vchip(k, 25, 'Absolu');
+    const maxChips = vchip('petGearMax', 'all', 'Sans limite') + vchip('petGearMax', 19, '≤ Mythique') + vchip('petGearMax', 13, '≤ Légendaire') + vchip('petGearMax', 8, '≤ Rare') + vchip('petGearMax', 4, '≤ Magique');
     el.innerHTML = `<div class="pot-head">🐾 Compagnon ramasseur <small>${pet ? esc(pet.name) : 'aucun compagnon équipé'}</small></div>
       <div class="pet-row"><button class="pet-chip pet-main${on ? ' on' : ''}" data-pk="petLoot">${on ? '✔ Il ramasse mon butin' : 'Il ne ramasse rien'}</button></div>
       ${on ? `<div class="pet-row"><span class="pet-lab">Il ramasse :</span>${chip('petLootCons', '🧪 Consommables')}${chip('petLootMat', '🪵 Matériaux')}${chip('petLootRune', '🔶 Runes')}</div>
-      <div class="pet-row"><span class="pet-lab">Armes et armures :</span>${gchip('off', 'Aucune')}${gchip(1, 'Communes')}${gchip(4, '≤ Magiques')}${gchip(8, '≤ Rares')}</div>` : ''}
+      <div class="pet-row"><span class="pet-lab">Équipement dès :</span>${tierChips('petGearMin', true)}</div>
+      <div class="pet-row"><span class="pet-lab">Équipement jusqu’à :</span>${maxChips}</div>
+      <div class="pet-row"><span class="pet-lab">Types :</span>${chip('petLootWeapon', '⚔️ Armes')}${chip('petLootArmor', '🛡️ Armures')}${chip('petLootJewel', '💍 Bijoux')}</div>
+      <div class="pet-row"><span class="pet-lab">Consommables dès :</span>${tierChips('petConsMin', false)}</div>` : ''}
+      <div class="pot-head" style="margin-top:8px">🔔 Notifications de ramassage</div>
+      <div class="pet-row"><span class="pet-lab">Objets :</span>${vchip('lootNotif', 'all', 'Tous')}${vchip('lootNotif', 4, 'Magique+')}${vchip('lootNotif', 8, 'Rare+')}${vchip('lootNotif', 13, 'Légendaire+')}${vchip('lootNotif', 'none', 'Aucun')}</div>
+      <div class="pet-row">${chip('lootNotifMats', '🪵 Matériaux, runes, consommables')}</div>
       ${pet ? '' : '<small class="eq-hint">Équipe un compagnon dans la garde-robe ci-dessous pour qu’il se mette au travail.</small>'}`;
     el.querySelectorAll('[data-pk]').forEach((b) => { b.onclick = () => { const k = b.dataset.pk; st[k] = k === 'petLoot' ? !on : !st[k]; g.applySettings(k); this.renderPetPanel(); }; });
-    el.querySelectorAll('[data-pg]').forEach((b) => { b.onclick = () => { const v = b.dataset.pg; st.petLootGear = v === 'off' ? 'off' : Number(v); g.applySettings('petLootGear'); this.renderPetPanel(); }; });
+    el.querySelectorAll('[data-pv]').forEach((b) => { b.onclick = () => { const [k, v] = b.dataset.pv.split('|'); st[k] = (v === 'off' || v === 'all' || v === 'none') ? v : Number(v); g.applySettings(k); this.renderPetPanel(); }; });
   }
 
   // V10.22 : potions permanentes — choix de la potion associée à chaque bouton (vie / mana)
