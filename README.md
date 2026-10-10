@@ -1158,3 +1158,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Attributs** : `Player.respecStats()` rend les points dépensés (coût `300 + 50 × niveau`), double clic de confirmation.
 - **Notifications** : `notifAll`, `notifLevel`, `notifXp`, `lootLabels`, `lootLabelMats` (noms du butin au sol, `_applyLootLabel`).
 - **Compagnon** : `petGearMin`, `petGearMax`, `petLootWeapon/Armor/Jewel`, `petConsMin`. Les anciens réglages `petLootGear` sont migrés par `_migrateSettings`.
+
+## V10.30 — Équilibrage des classes et mise en scène
+
+- `CLASS_POWER` (`combat/Classes.js`) : multiplicateur d'attaque par classe (mage 1, guerrier 1,4, paladin 1,65, archer 1,35, assassin 1,2), calibré sur les dégâts par seconde des compétences (cible unique et groupe).
+- Ressources : `Player.recomputeDerived` ajoute à la réserve de chaque classe non mage un bonus lié à son attribut principal et à son niveau ; régénération d'endurance 18/s (guerrier, assassin), mana en plus pour paladin et archer.
+- `SkillEffects.signature()` : mise en scène propre à chaque classe, proportionnelle au niveau de la compétence (visuel seul).

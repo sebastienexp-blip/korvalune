@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.30', title: 'Classes rééquilibrées et compétences plus spectaculaires',
+    items: [
+      '⚖️ Le mage dominait : le guerrier, le paladin, l’archer et l’assassin infligent maintenant nettement plus de dégâts pour rattraper son niveau (guerrier +40 %, paladin +65 %, archer +35 %, assassin +20 %).',
+      '🔋 Ta ressource grandit avec ton niveau et ton attribut principal : plus d’endurance pour le guerrier et l’assassin, plus de mana pour le paladin et l’archer, avec une meilleure récupération.',
+      '💥 Chaque classe a sa propre mise en scène, de plus en plus ample avec le niveau de la compétence : fissures, débris et arcs géants pour le guerrier ; colonnes et rayons de lumière pour le paladin ; volée de flèches tombant du ciel pour l’archer ; rafale de lames d’ombre pour l’assassin.'
+    ]
+  },
+  {
     version: '10.29', title: 'Failles jusqu’au niveau 999, classement et butin réglable',
     items: [
       '🌀 Les Spires d’Éther montent jusqu’au niveau 999. Plus le niveau est haut, plus les objets rares, légendaires, mythiques et absolus sont fréquents.',

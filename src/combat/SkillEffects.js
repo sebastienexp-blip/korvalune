@@ -156,6 +156,67 @@ export class SkillEffects {
     } catch (e) { /* ignoré */ }
   }
 
+  // V10.30 — « signature » de classe : les compétences non magiques gagnent une vraie mise en scène, de plus en plus ample
+  // avec le niveau de la compétence (guerrier : fissures et débris ; paladin : colonnes de lumière ; archer : volée du ciel ;
+  // assassin : lames d'ombre en rafale). Visuel seul : les dégâts viennent des données de la compétence.
+  signature(skill, p, targets, locked) {
+    const fx = this.fx, cls = p.classId;
+    if (!fx || !fx.enabled || cls === 'mage' || !(skill.damage || skill.heal)) return;
+    const lv = skill.levelReq || 1;
+    const pow = 1 + (lv >= 20) + (lv >= 50) + (lv >= 90) + (lv >= 130) + (lv >= 170) + (skill.anim === 'attack2' ? 1 : 0); // 1 … 7
+    if (pow < 2 && !(skill.cooldown >= 8)) return;
+    const col = skillColor(skill, cls), low = fx.scale < 1, k = low ? 0.5 : 1;
+    const atTarget = (skill.fx && skill.fx.at === 'target') || (skill.range > 6 && !skill.aoe) || cls === 'archer';
+    const t0 = (targets && targets[0]) || locked;
+    const c = atTarget ? this.center(skill, p, locked) : (skill.aoe || !t0 ? { x: p.pos.x, y: p.pos.y, z: p.pos.z } : { x: t0.pos.x, y: t0.pos.y, z: t0.pos.z });
+    const R = Math.max(3, ((skill.fx && (skill.fx.radius || (skill.fx.waves && skill.fx.waves.r))) || (skill.aoe ? (skill.range || 5) : 3.5)) * (0.85 + pow * 0.05));
+    const later = (ms, fn) => setTimeout(() => { try { fx.enabled && fn(); } catch (e) { /* ignoré */ } }, ms);
+    const part = (x, y, z, o) => { try { this.c.particles.emit(x, y, z, { ...o, count: Math.max(2, Math.round(o.count * k)) }); } catch (e) { /* ignoré */ } };
+    const gy = (x, z) => this._gy(p, x, z);
+    try {
+      if (cls === 'warrior') {
+        const sx = Math.sin(p.yaw), sz = Math.cos(p.yaw);
+        fx.slash(p.pos.x, p.pos.y + 1.15, p.pos.z, p.yaw, col, { big: true, tilt: 0.1, wide: true, size: 1 + pow * 0.12 });
+        if (pow >= 3) later(110, () => fx.slash(p.pos.x, p.pos.y + 1.0, p.pos.z, p.yaw + 1.4, 0xffe2b0, { big: true, tilt: 0.3, wide: true, flip: true, size: 1 + pow * 0.1 }));
+        if (pow >= 5) later(220, () => fx.slash(p.pos.x, p.pos.y + 1.2, p.pos.z, p.yaw - 1.2, col, { big: true, tilt: 0.5, wide: true, size: 1.2 + pow * 0.1 }));
+        for (let i = 0; i < Math.min(3, Math.ceil(pow / 2)); i++) later(i * 120, () => fx.ring(c.x, gy(c.x, c.z), c.z, i ? 0xc9a56a : col, R * (0.6 + i * 0.35), 0.5));
+        part(c.x, gy(c.x, c.z) + 0.4, c.z, { count: 10 * pow, color: 0xb59a78, speed: 6 + pow, life: 0.9, up: 4, spread: 1 });
+        part(c.x, gy(c.x, c.z) + 0.4, c.z, { count: 6 * pow, color: col, speed: 4, life: 0.6, up: 3 });
+        if (pow >= 4) { fx.pillar(c.x + sx * 1.5, gy(c.x, c.z), c.z + sz * 1.5, 0xd9c08a, 3 + pow, 1.1, 0.7); fx.rune(c.x, gy(c.x, c.z), c.z, col, Math.min(R, 7), 0.8); }
+        this.c.bus.emit('shake', Math.min(0.5, 0.1 + pow * 0.05));
+        if (pow >= 5) this.c.bus.emit('hitstop', 0.05);
+      } else if (cls === 'paladin') {
+        const y = gy(c.x, c.z);
+        fx.rune(c.x, y, c.z, 0xfff0a0, Math.min(R, 7), 0.9);
+        fx.pillar(c.x, y, c.z, 0xfff6c8, 5 + pow * 1.2, 1.0 + pow * 0.1, 0.9);
+        if (pow >= 3) fx.beam(new THREE.Vector3(c.x, y + 26, c.z), new THREE.Vector3(c.x, y + 0.5, c.z), 0xfff6c8, 0.9 + pow * 0.12, 0.45);
+        const n = Math.min(6, pow);
+        for (let i = 0; i < n && pow >= 3; i++) later(90 + i * 90, () => { const a = (i / n) * Math.PI * 2 + 0.4, x = c.x + Math.cos(a) * R * 0.6, z = c.z + Math.sin(a) * R * 0.6; fx.pillar(x, gy(x, z), z, 0xffe9a0, 4 + pow * 0.6, 0.7, 0.6); fx.flash(x, gy(x, z) + 0.8, z, 0xffffff, 2, 0.25); });
+        later(160, () => fx.ring(c.x, y, c.z, 0xffffff, R * 1.3, 0.6));
+        part(c.x, y + 0.3, c.z, { count: 14 * pow, color: 0xffe9a0, speed: 3, life: 1.3, gravity: -2, up: 4, spread: 1.2 });
+        this.c.bus.emit('shake', Math.min(0.3, 0.06 + pow * 0.03));
+      } else if (cls === 'archer') {
+        const pool = fx.arrows, n = Math.round((3 + pow * 2) * k);
+        for (let i = 0; i < n; i++) {
+          const a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * R, x = c.x + Math.cos(a) * d, z = c.z + Math.sin(a) * d, y = gy(x, z), at = 0.05 + (i / n) * 0.55;
+          if (pool && pool.enabled) pool.shoot(new THREE.Vector3(x - 5 + Math.random() * 2, y + 20 + Math.random() * 5, z - 3 + Math.random() * 2), new THREE.Vector3(x, y + 0.3, z), { dur: 0.36, delay: at, color: col, big: true, linger: 0.15, streak: 3.2 });
+          later((at + 0.36) * 1000, () => { fx.flash(x, y + 0.4, z, col, 1.4, 0.2); if (i % 3 === 0) fx.ring(x, y, z, col, 1.6 + pow * 0.2, 0.4); });
+        }
+        fx.ring(c.x, gy(c.x, c.z), c.z, col, R, 0.6);
+        if (pow >= 4) fx.rune(c.x, gy(c.x, c.z), c.z, col, Math.min(R, 6), 0.9);
+        if (pow >= 5) later(500, () => { fx.pillar(c.x, gy(c.x, c.z), c.z, col, 9, 1.6, 0.7); this.c.bus.emit('shake', 0.2); });
+      } else if (cls === 'assassin') {
+        const y = gy(c.x, c.z) + 1.0, n = Math.min(10, 2 + pow * 1) * (low ? 0.6 : 1) | 0;
+        for (let i = 0; i < n; i++) later(i * 55, () => { const a = Math.random() * Math.PI * 2, d = Math.random() * Math.min(R, 4) * 0.8; fx.slash(c.x + Math.cos(a) * d, y + Math.random() * 0.5, c.z + Math.sin(a) * d, a, i % 2 ? 0xd9c8ff : col, { big: pow >= 4, tilt: Math.random() * 1.2 - 0.6, size: 0.9 + pow * 0.1, flip: i % 2 === 0 }); });
+        fx.flash(c.x, y, c.z, 0xffffff, 2.2 + pow * 0.3, 0.2);
+        later(60, () => fx.ring(c.x, y - 1.0, c.z, 0x7a4fd6, R * 0.9, 0.5));
+        part(c.x, y, c.z, { count: 9 * pow, color: 0x6a4fae, speed: 5, life: 0.8, up: 2, spread: 1 });
+        if (pow >= 4) later(n * 55, () => { fx.beam(new THREE.Vector3(c.x - 2, y + 2, c.z - 2), new THREE.Vector3(c.x + 2, y - 1, c.z + 2), 0xffffff, 0.35, 0.2); fx.beam(new THREE.Vector3(c.x + 2, y + 2, c.z - 2), new THREE.Vector3(c.x - 2, y - 1, c.z + 2), col, 0.35, 0.2); this.c.bus.emit('shake', 0.18); });
+        if (pow >= 6) this.c.bus.emit('hitstop', 0.05);
+      }
+    } catch (e) { /* mise en scène facultative */ }
+  }
+
   // visuels des compétences de zone / cône (sans projectile)
   visual(skill, p, targets, locked, projectile) {
     const f = skill.fx, fx = this.fx;

@@ -77,6 +77,7 @@ export class CombatSystem {
     const flight = skill.heal || !skill.damage ? null : (kind === 'arrow' ? this._shootArrows(skill, p, targets, lockedTarget) : kind === 'bolt' ? this._shootBolts(skill, p, targets, lockedTarget) : null);
     this._castFx(skill, p, targets, !!flight);
     if (skill.fx) { this.sfx.onCast(skill, p, targets, lockedTarget); this.sfx.visual(skill, p, targets, lockedTarget, !!flight); }
+    this.sfx.signature(skill, p, targets, lockedTarget); // V10.30 : signature visuelle de la classe
     this.sfx.grandeur(skill, p, lockedTarget); // V10.26 : mise en scène qui grandit avec le niveau et le rang
     if (skill.heal) {
       p.heal(p.maxHp * skill.heal);

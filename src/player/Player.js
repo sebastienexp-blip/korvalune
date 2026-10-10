@@ -12,7 +12,7 @@ import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
 import { createMount, updateMount, disposeMount } from '../visual/MountModel.js';
 import { MOUNT_BY_ID } from '../data/mounts.js';
 import { normalizeLook } from '../data/looks.js';
-import { CLASSES, PRIMARY_STAT, SKILLS, getClassSkillPool } from '../combat/Classes.js';
+import { CLASSES, PRIMARY_STAT, CLASS_POWER, SKILLS, getClassSkillPool } from '../combat/Classes.js';
 import { getItem, RARITY, resolveItem } from '../inventory/Item.js';
 import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../combat/WeaponRules.js';
 
@@ -148,11 +148,14 @@ export class Player {
     const s = this.stats, lvl = this.level, eq = this._mergedBonus();
     const rb = this.riftBonus || {};
     this.maxHp = Math.round((this.baseHp + (s.vit + (eq.vit || 0)) * 12 + lvl * 8 + (eq.hp || 0)) * (1 + (rb.hpPct || 0)) * (1 + (eq.allPct || 0)));
-    this.maxMana = Math.round(this.baseMana + (s.int + (eq.int || 0)) * 10 + lvl * 4 + (eq.mana || 0));
-    this.maxStamina = Math.round(this.baseStamina + (s.agi + (eq.agi || 0)) * 4);
     const prim = PRIMARY_STAT[this.classId] || 'str';
+    // V10.30 : la ressource de chaque classe grandit avec son attribut principal (seul le mage en profitait avant)
+    const primV = s[prim] + (eq[prim] || 0), isMana = this.classId === 'mage' || this.classId === 'paladin' || this.classId === 'archer';
+    const resBonus = this.classId === 'mage' ? 0 : primV * 0.6 + lvl * 2.5;
+    this.maxMana = Math.round(this.baseMana + (s.int + (eq.int || 0)) * 10 + lvl * 4 + (eq.mana || 0) + (isMana ? resBonus * 2 : 0));
+    this.maxStamina = Math.round(this.baseStamina + (s.agi + (eq.agi || 0)) * 4 + (isMana ? 0 : resBonus * 1.5));
     const offStat = (k) => (s[k] + (eq[k] || 0)) * (k === prim ? 1.6 : 0.4);
-    this.atk = Math.round((6 + offStat('str') + offStat('int') + offStat('agi') + lvl * 1.1 + (eq.atk || 0)) * (1 + (rb.atkPct || 0)) * (1 + (eq.allPct || 0)));
+    this.atk = Math.round((6 + offStat('str') + offStat('int') + offStat('agi') + lvl * 1.1 + (eq.atk || 0)) * (1 + (rb.atkPct || 0)) * (1 + (eq.allPct || 0)) * (CLASS_POWER[this.classId] || 1));
     this.def = Math.round((2 + (s.vit + (eq.vit || 0)) * 0.8 + lvl * 0.6 + (eq.def || 0)) * (1 + (eq.allPct || 0)));
     this.critChance = clamp(0.04 + (eq.crit || 0), 0, 0.75); // V7.2 : plus de critique via les points de stats
     this.critMult = clamp(1.8 + (s.luck + (eq.luck || 0)) * 0.006 + (eq.critDmgPct || 0) + (rb.critDmg || 0), 1.5, 9);
@@ -532,8 +535,8 @@ export class Player {
       this._rollDust -= dt;
       if (this.dash) this.bus.emit('particles', { pos: this.pos.clone().add({ x: 0, y: 0.1, z: 0 }), color: 0xb8a888, count: 3, speed: 1.2, life: 0.45 });
     }
-    this.stamina = Math.min(this.maxStamina, this.stamina + dt * 12 * (1 + (this.staRegenBonus || 0)));
-    this.mana = Math.min(this.maxMana, this.mana + dt * (3 + this.stats.spi * 0.3) + dt * this.manaRegen + (this.classId === 'archer' ? dt * 3.5 : 0));
+    this.stamina = Math.min(this.maxStamina, this.stamina + dt * (this.classId === 'warrior' || this.classId === 'assassin' ? 18 : 12) * (1 + (this.staRegenBonus || 0)));
+    this.mana = Math.min(this.maxMana, this.mana + dt * (3 + this.stats.spi * 0.3) + dt * this.manaRegen + (this.classId === 'archer' ? dt * 3.5 : 0) + (this.classId === 'paladin' ? dt * 4 : 0) + (this.classId === 'archer' ? dt * 2 : 0));
     if (this.freeCost) { this.mana = this.maxMana; this.stamina = this.maxStamina; }
     if (this.hpRegen > 0 && this.hp > 0) this.hp = Math.min(this.maxHp, this.hp + dt * this.hpRegen);
     for (const k in this.cooldowns) this.cooldowns[k] = Math.max(0, this.cooldowns[k] - dt);
