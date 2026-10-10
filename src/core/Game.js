@@ -325,9 +325,21 @@ export class Game {
 
     this.hud.setLoading(1, 'Prêt.');
     await new Promise((r) => setTimeout(r, 250));
+    await this._playIntro(); // V10.32 : cinématique de lancement, avant l'écran principal
     this.hud.showScreen('main-menu');
     this.hud.initAccountScreen((mode, username, password) => this._handleAccountSubmit(mode, username, password));
     this._refreshContinueButton();
+  }
+
+  // V10.32 — cinématique de lancement (désactivable dans les options ; ignorée avec ?nointro, par un navigateur automatisé ou si l'utilisateur réduit les animations)
+  async _playIntro() {
+    try {
+      if (this.settings.introCinematic === false) return;
+      if (/[?&]nointro\b/.test(location.search) || navigator.webdriver) return;
+      if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const { IntroCinematic } = await import('../ui/IntroCinematic.js');
+      await new IntroCinematic(this).play();
+    } catch (e) { console.warn('[intro] cinématique ignorée', e); }
   }
 
   _refreshContinueButton() {

@@ -14,7 +14,7 @@ export const DEFAULTS = {
   petLoot: true, petLootCons: true, petConsMin: 1, petLootMat: false, petLootRune: false,
   // V10.29 : équipement du compagnon — rareté minimale / maximale et types ; notifications de ramassage
   petGearMin: 'off', petGearMax: 'all', petLootWeapon: true, petLootArmor: true, petLootJewel: true,
-  lootNotif: 'all', lootNotifMats: true, notifAll: true, notifLevel: true, notifXp: true, lootLabels: 'all', lootLabelMats: true,
+  lootNotif: 'all', lootNotifMats: true, introCinematic: true, notifAll: true, notifLevel: true, notifXp: true, lootLabels: 'all', lootLabelMats: true,
   // interface / jeu
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
@@ -78,6 +78,7 @@ const TABS = [
     { t: 'custom', id: 'touchlayout' }
   ] },
   { id: 'ui', label: '🧭 Interface & jeu', items: [
+    { t: 'check', k: 'introCinematic', label: 'Cinématique d’introduction au lancement du jeu' },
     { t: 'check', k: 'showQuests', label: 'Afficher le journal de quêtes' },
     { t: 'check', k: 'showMinimap', label: 'Afficher la mini-carte' },
     { t: 'check', k: 'showHints', label: 'Afficher les indications « E — … »' },

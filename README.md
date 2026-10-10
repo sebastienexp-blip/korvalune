@@ -1170,3 +1170,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Toutes les compétences coûtent du **mana** (`skills.json` : les coûts d'endurance sont convertis). L'endurance reste pour la roulade et la course. `Player.recomputeDerived` : bonus de mana lié à l'attribut principal et au niveau pour les classes non mages, régénération de mana accrue.
 - 14 nouvelles compétences (guerrier, assassin, paladin, archer : tirs/jets à distance et zones) et conversion de nombreuses compétences mono-cible en zone ou en ligne perforante (`fx.at`, `fx.pierce` + `fx.arc`).
 - `CLASS_POWER` recalibré : mage 1, guerrier 1,2, paladin 1,4, archer 1, assassin 1,05.
+
+## V10.32 — Cinématique de lancement
+
+- `src/ui/IntroCinematic.js` : film 3D en temps réel (Three.js, son propre canvas libéré à la fin) joué par `Game._playIntro()` entre le chargement et l'écran principal. Caméra sur courbe Catmull-Rom, aurores (shader), deux lunes, relief éclairé, citadelle flottante, Cœur d'Éther, failles, éclairs ; musique et bruitages synthétisés avec le contexte audio du jeu ; sous-titres.
+- Texte de narration : constante `SUBS` en tête du fichier ; durée `DURATION` ; trajectoire `CAM_POS` / `CAM_LOOK`.
+- Désactivation : option `introCinematic`, paramètre d'URL `?nointro`, navigateur automatisé ou « réduire les animations ».

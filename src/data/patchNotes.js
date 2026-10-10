@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.32', title: 'Cinématique d’introduction',
+    items: [
+      '🎬 Une cinématique de 54 secondes se lance avant l’écran principal : deux lunes, aurores, citadelle flottante, Cœur d’Éther qui se fracture et failles qui s’ouvrent sur le ciel.',
+      '🔊 Musique et sons créés dans le jeu, narration sous-titrée. Touche l’écran pour la lancer (le son démarre à ce moment).',
+      '⏭️ Bouton « Passer » à tout moment (ou Échap / Entrée). Tu peux la désactiver dans Options > Interface : « Cinématique d’introduction au lancement du jeu ».'
+    ]
+  },
+  {
     version: '10.31', title: 'Toutes les classes au mana, attaques à distance et de zone',
     items: [
       '🔷 Toutes les classes lancent leurs compétences avec du mana. L’endurance ne sert plus qu’à la roulade et à la course. Ton mana grandit avec ton niveau et ton attribut principal.',
