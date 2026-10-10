@@ -837,7 +837,7 @@ export class Game {
     b.on('playerSkillHit', () => { try { wearGear(this._craftCtx(), 'attack'); } catch (e) { /* usure facultative */ } });
     b.on('playerDeath', () => { try { wearGear(this._craftCtx(), 'death'); this.hud.notify('Tu perds 10 % de durabilité sur tout ton équipement.', 'warn'); } catch (e) { /* usure facultative */ } });
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
-    b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
+    b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length && this.settings.notifLevel !== false) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } if (this.settings.notifLevel !== false) this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
     b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || '' }));
     b.on('enemyShoot', (d) => { this.enemyProj.spawn(d); this.audio.play(d.enemy?.def?.species === 'mage' ? 'cast' : 'bow', d.from); });
     b.on('hazard', (d) => { if (!this.hazards) this.hazards = new GroundHazards(this.scene, this.world, this.bus); this.hazards.spawn(d); });
@@ -858,7 +858,7 @@ export class Game {
         this.fx.soul(e.pos, e.def?.boss || e.isBoss ? 0xffe27a : 0xcfe8ff, e.def?.boss || e.isBoss ? 6 : 3);
       } catch (err) { /* effet ignoré */ }
     });
-    b.on('floatText', (data) => this.settings.floatText !== false && this.hud.floatText((p) => this._worldToScreen(p), data));
+    b.on('floatText', (data) => this.settings.floatText !== false && !(this.settings.notifXp === false && /^\+\d+ XP$/.test(data.text || '')) && this.hud.floatText((p) => this._worldToScreen(p), data));
     b.on('particles', (d) => this.particles.emit(d.pos.x, d.pos.y, d.pos.z, d));
     b.on('shake', (amt) => { this._shake = Math.max(this._shake || 0, amt * (this.settings.shake ?? 100) / 100); });
     b.on('questStarted', (q) => this.hud.notify(`Nouvelle quête : ${q.name}`, 'quest'));
@@ -1002,7 +1002,7 @@ export class Game {
     this.bus.on('ui:open-zenith', () => this._openZenith());
     this.bus.on('ui:close-zenith', () => this._closeModal());
     this.root.querySelector('#zenith-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-zn]'); if (bt && !bt.disabled) this._znAct(bt.dataset.zn, bt.dataset.v); });
-    this.bus.on('zenithUp', (lvl) => { this.hud.notify(`✨ Zénith ${lvl} ! Un point à investir dans les Constellations.`, 'quest'); this.hud.levelupBanner(); this._znRender(); });
+    this.bus.on('zenithUp', (lvl) => { if (this.settings.notifLevel !== false) { this.hud.notify(`✨ Zénith ${lvl} ! Un point à investir dans les Constellations.`, 'quest'); this.hud.levelupBanner(); } this._znRender(); });
     this.root.querySelector('#btn-pass').addEventListener('click', () => this._openPass());
     this.root.querySelector('#pass-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-ps]'); if (bt && !bt.disabled) this._passAct(bt.dataset.ps, bt.dataset.v, bt.dataset.track); });
     this.bus.on('net:pass', (msg) => {
@@ -2160,6 +2160,7 @@ export class Game {
         }
       } catch (e) { /* annonce facultative */ }
     }
+    this._applyLootLabel(ld);
     this.lootDrops.push(ld);
     return ld;
   }
@@ -2520,6 +2521,7 @@ export class Game {
     if (this.world && this._q) this.world.setGrassVisible(this._v25 && s.quality !== 'verylow' && s.grass !== false);
     if (this.camera && this.cameraRig && (key === 'fovAdj' || !this._v25)) { this.camera.fov = (this.cameraRig.fov + (s.fovAdj || 0)) * (this._fovMul || 1); this.camera.updateProjectionMatrix(); }
     const vg = this.root.querySelector('#v25-vignette'); if (vg) vg.style.display = s.vignette === false ? 'none' : '';
+    if (this.lootDrops && (key === 'lootLabels' || key === 'lootLabelMats')) for (const d of this.lootDrops) this._applyLootLabel(d);
     this.root.classList.toggle('hide-quests', s.showQuests === false);
     this.root.classList.toggle('hide-minimap', s.showMinimap === false);
     this.root.classList.toggle('hide-hints', s.showHints === false);
@@ -2906,6 +2908,17 @@ export class Game {
     const min = Number(mode);
     return !(Number.isFinite(min) && view.rarityInfo.tier < min);
   }
+
+  // V10.29 : noms affichés au-dessus du butin au sol (rareté minimale, matériaux/runes/potions à part)
+  _lootLabelOk(item) {
+    const st = this.settings, mode = st.lootLabels ?? 'all';
+    if (mode === 'none') return false;
+    let v; try { v = resolveItem(item); } catch (e) { return true; }
+    if ((v.type === 'material' || v.type === 'rune' || v.type === 'consumable') && st.lootLabelMats === false) return false;
+    const min = Number(mode);
+    return !(Number.isFinite(min) && v.rarityInfo.tier < min);
+  }
+  _applyLootLabel(ld) { if (ld && ld.label) ld.label.visible = this._lootLabelOk(ld.item); }
 
   // ---- V10.24 : le compagnon équipé va chercher le butin choisi dans les options ----
   _petWants(drop) {

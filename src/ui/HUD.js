@@ -715,7 +715,9 @@ export class HUD {
   }
 
   notify(text, kind = 'info') {
-    if (kind === 'info' && this.game?.settings?.notifInfo === false) return;
+    const ns = this.game?.settings;
+    if (ns && ns.notifAll === false) return; // V10.29 : interrupteur général
+    if (kind === 'info' && ns && ns.notifInfo === false) return;
     const n = document.createElement('div');
     n.className = `notif notif-${kind}`;
     n.textContent = text;

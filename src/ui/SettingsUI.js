@@ -14,7 +14,7 @@ export const DEFAULTS = {
   petLoot: true, petLootCons: true, petConsMin: 1, petLootMat: false, petLootRune: false,
   // V10.29 : équipement du compagnon — rareté minimale / maximale et types ; notifications de ramassage
   petGearMin: 'off', petGearMax: 'all', petLootWeapon: true, petLootArmor: true, petLootJewel: true,
-  lootNotif: 'all', lootNotifMats: true,
+  lootNotif: 'all', lootNotifMats: true, notifAll: true, notifLevel: true, notifXp: true, lootLabels: 'all', lootLabelMats: true,
   // interface / jeu
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
@@ -81,6 +81,11 @@ const TABS = [
     { t: 'check', k: 'showQuests', label: 'Afficher le journal de quêtes' },
     { t: 'check', k: 'showMinimap', label: 'Afficher la mini-carte' },
     { t: 'check', k: 'showHints', label: 'Afficher les indications « E — … »' },
+    { t: 'check', k: 'notifAll', label: 'Afficher les notifications à l’écran (décoche pour toutes les retirer)' },
+    { t: 'check', k: 'notifLevel', label: 'Annonce de niveau, de Zénith et de nouvelle compétence' },
+    { t: 'check', k: 'notifXp', label: 'Textes « +XP » flottants' },
+    { t: 'select', k: 'lootLabels', label: 'Noms affichés au-dessus du butin au sol', opts: [['all', 'Tous les objets'], [4, 'Magiques et mieux'], [8, 'Rares et mieux'], [13, 'Légendaires et mieux'], ['none', 'Aucun']] },
+    { t: 'check', k: 'lootLabelMats', label: 'Noms des matériaux, runes et potions au sol' },
     { t: 'check', k: 'notifInfo', label: 'Notifications d’information (butin, équipement…)' },
     { t: 'select', k: 'lootNotif', label: 'Notifications de ramassage d’objets', opts: [['all', 'Tous les objets'], [4, 'Magiques et mieux'], [8, 'Rares et mieux'], [13, 'Légendaires et mieux'], ['none', 'Aucune']] },
     { t: 'check', k: 'lootNotifMats', label: 'Notifications pour matériaux, runes et potions ramassés' },

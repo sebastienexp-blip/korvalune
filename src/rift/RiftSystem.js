@@ -801,7 +801,7 @@ export class RiftSystem {
       const dp = new THREE.Vector3(pos.x + Math.cos(a) * r, 0, pos.z + Math.sin(a) * r);
       dp.y = g.world.heightAt(dp.x, dp.z);
       if (g.lootDrops.length >= 60) g.lootDrops.shift().dispose(g.scene);
-      g.lootDrops.push(new LootDrop(g.scene, dp, d, g.settings.quality));
+      { const ld = new LootDrop(g.scene, dp, d, g.settings.quality); if (g._applyLootLabel) g._applyLootLabel(ld); g.lootDrops.push(ld); }
     });
     if (drops.length) g.audio.play('loot', pos);
   }
