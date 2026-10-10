@@ -258,7 +258,7 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   clean.level = Math.max(prevLevel, Math.min(wantLevel, prevLevel + 10, 200)); // jamais de retour en arrière, +10 niveaux max par sauvegarde
 
   clean.xp = Number.isFinite(incoming.xp) ? Math.max(0, Math.floor(incoming.xp)) : 0;
-  clean.statPoints = Number.isFinite(incoming.statPoints) ? Math.max(0, Math.min(500, Math.floor(incoming.statPoints))) : (prev?.statPoints ?? 0);
+  clean.statPoints = Number.isFinite(incoming.statPoints) ? Math.max(0, Math.min(1100, Math.floor(incoming.statPoints))) : (prev?.statPoints ?? 0);
 
   const prevCoins = prev?.coins ?? 0;
   const wantCoins = Number.isFinite(incoming.coins) ? Math.floor(incoming.coins) : prevCoins;

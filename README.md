@@ -1106,6 +1106,7 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 
 ## V10.24 — Compagnons ramasseurs, combat en mouvement
 
+- **Attributs** : `Player.respecStats()` rend les points dépensés (coût `300 + 50 × niveau`), double clic de confirmation.
 - **Compagnon** : le familier équipé court chercher le butin proche (≈ 18 m) qui correspond aux options `petLoot*` (Options > Interface & jeu) : consommables (par défaut), matériaux, runes, équipement jusqu'à une rareté. Logique dans `Game._petLootTick` / `_petWants` ; la course est animée par `pet.fetch` dans `src/visual/Cosmetics.js`. Rien n'est ramassé si le sac est plein.
 - **Combat en mouvement** : tampon de saisie des compétences (`Player._qSkill`), jambes qui continuent de courir pendant une attaque (`HumanoidModel`), boutons de compétence en `pointerdown` (fiable avec un second doigt), attaque tactile répétée tant qu'elle est maintenue.
 
@@ -1153,4 +1154,5 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Failles** : niveau maximal 999 (`RIFT_MAX_LEVEL`). `riftLootShift(niveau)` décale les tirages de rareté (≈ +3 au niveau 50, +7 au 200, +10,5 au 999) pour les coffres, le butin des ennemis et les récompenses finales.
 - **Classement** : `server/riftBoard.js` (top 50 Ascension et Zénith, cache 20 s), message `rift:board`, onglet « Classement » dans `RiftUI`. Le serveur borne la hausse d'un record à +25 par sauvegarde.
 - **Notifications** : `lootNotif` (tous / Magique+ / Rare+ / Légendaire+ / aucun) et `lootNotifMats` (matériaux, runes, consommables).
+- **Attributs** : `Player.respecStats()` rend les points dépensés (coût `300 + 50 × niveau`), double clic de confirmation.
 - **Compagnon** : `petGearMin`, `petGearMax`, `petLootWeapon/Armor/Jewel`, `petConsMin`. Les anciens réglages `petLootGear` sont migrés par `_migrateSettings`.

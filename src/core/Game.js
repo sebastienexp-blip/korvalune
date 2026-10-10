@@ -1404,7 +1404,7 @@ export class Game {
     document.exitPointerLock?.();
     this.modalOpen = true;
     this.hud.showScreen('character-screen');
-    const refresh = () => this.hud.renderCharacter(this.player, this.equipment, onUnequip, onSpend);
+    const refresh = () => this.hud.renderCharacter(this.player, this.equipment, onUnequip, onSpend, onRespec);
     const onUnequip = (slotName) => {
       this.equipment.unequip(slotName, this.inventory);
       this.player.refreshGearVisuals(this.equipment);
@@ -1413,6 +1413,15 @@ export class Game {
     };
     const onSpend = (statKey) => {
       if (this.player.spendStatPoint(statKey)) { this.audio.play('click'); refresh(); }
+    };
+    let armed = false; // double clic : le premier arme, le second confirme
+    const onRespec = () => {
+      const m = this.hud.q('#stat-msg');
+      if (!armed) { armed = true; if (m) m.textContent = `Appuie encore pour confirmer (${this.player.statRespecCost()} pièces).`; setTimeout(() => { armed = false; }, 4000); return; }
+      armed = false;
+      const r = this.player.respecStats();
+      this.audio.play('click'); refresh();
+      const m2 = this.hud.q('#stat-msg'); if (m2) m2.textContent = r.msg;
     };
     refresh();
   }

@@ -340,6 +340,22 @@ export class Player {
     return true;
   }
 
+  // V10.29 : réinitialisation des attributs — tous les points dépensés (au-dessus de 5) sont rendus
+  statsSpent() { return Object.values(this.stats).reduce((a, v) => a + Math.max(0, (Number(v) || 5) - 5), 0); }
+  statRespecCost() { return Math.round(300 + 50 * this.level); }
+  respecStats() {
+    const n = this.statsSpent(), cost = this.statRespecCost();
+    if (!n) return { ok: false, msg: 'Aucun point à reprendre.' };
+    if (this.coins < cost) return { ok: false, msg: `Il te manque ${cost - this.coins} pièces.` };
+    this.coins -= cost;
+    for (const k of Object.keys(this.stats)) this.stats[k] = 5;
+    this.statPoints += n;
+    this.recomputeDerived();
+    this.hp = Math.min(this.hp, this.maxHp); this.mana = Math.min(this.mana, this.maxMana);
+    this.bus.emit('hud');
+    return { ok: true, msg: `${n} points rendus pour ${cost} pièces.` };
+  }
+
   takeDamage(dmg, opts = {}) {
     if (this.dead || this.invuln > 0) return 0;
     if (!opts.guaranteed && Math.random() < this.dodge) {

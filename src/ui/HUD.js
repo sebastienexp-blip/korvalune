@@ -1035,7 +1035,7 @@ export class HUD {
     addBtn('Annuler', () => {});
   }
 
-  renderCharacter(player, equipment, onUnequip, onSpend) {
+  renderCharacter(player, equipment, onUnequip, onSpend, onRespec) {
     const list = this.q('#equip-list');
     list.innerHTML = '';
     for (const s of SLOTS) {
@@ -1095,8 +1095,11 @@ export class HUD {
         ${statRow('vit', 'Endurance')}
         ${statRow('spi', 'Esprit')}
         ${statRow('luck', 'Chance')}
+        ${player.statsSpent() ? `<button class="soc-btn stat-respec" data-act="stat-respec">↺ Réinitialiser les attributs (${player.statRespecCost()} 🪙)</button>` : ''}
+        <div id="stat-msg" class="eq-hint"></div>
       </div>
     `;
+    const rb = st.querySelector('.stat-respec'); if (rb && onRespec) rb.onclick = () => onRespec();
     for (const btn of st.querySelectorAll('.stat-plus')) {
       btn.onclick = () => onSpend(btn.dataset.stat);
     }

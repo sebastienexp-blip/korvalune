@@ -9,6 +9,7 @@ export const PATCH_NOTES = [
       '🏅 Nouvel onglet « Classement » dans les failles : les niveaux les plus hauts atteints par les joueurs, en Ascension et en Zénith.',
       '🗺️ Recréer un personnage remet bien ses quêtes à zéro. Un ancien journal ne se mélange plus au nouveau.',
       '🔔 Notifications de ramassage : choisis la rareté minimale affichée, ou masque celles des matériaux, runes et consommables (Options ou Inventaire).',
+      '↺ Tu peux réinitialiser tes attributs (Personnage > bouton sous les attributs) : tous les points dépensés te sont rendus contre des pièces. L’arbre des Constellations se réinitialise déjà depuis son écran.',
       '🐾 Compagnon : rareté minimale et maximale de l’équipement, types (armes, armures, bijoux) et rareté minimale des consommables. Par exemple, rien en dessous de Rare.'
     ]
   },
