@@ -3,9 +3,19 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.31', title: 'Toutes les classes au mana, attaques à distance et de zone',
+    items: [
+      '🔷 Toutes les classes lancent leurs compétences avec du mana. L’endurance ne sert plus qu’à la roulade et à la course. Ton mana grandit avec ton niveau et ton attribut principal.',
+      '🏹 L’archer a beaucoup moins de tirs sur une seule cible : flèches empoisonnées, enflammées, glaciales, entravantes, marques et tir rapide frappent maintenant une zone. Nouveaux : Flèche à fragmentation, Brasier de flèches, Orage de flèches.',
+      '⚔️ Le guerrier gagne des attaques à distance et de groupe : hache lancée qui traverse la ligne, Pluie de javelots, Faille tectonique, Marteau tonnerre, Barrage de rochers. Furie, Brise-armure et Bourreau frappent plusieurs ennemis.',
+      '🗡️ L’assassin : dague lancée qui traverse, Éventail de lames, Pluie d’ombres, Tempête de dagues. Le paladin : Onde radieuse, Grêle sacrée, Chute du soleil ; Marteau béni, Châtiment, Jugement et Rayon de soleil touchent plusieurs ennemis.',
+      '⚖️ Les bonus de dégâts de classe sont ajustés en conséquence (guerrier +20 %, paladin +40 %, assassin +5 %, archer inchangé).'
+    ]
+  },
+  {
     version: '10.30', title: 'Classes rééquilibrées et compétences plus spectaculaires',
     items: [
-      '⚖️ Le mage dominait : le guerrier, le paladin, l’archer et l’assassin infligent maintenant nettement plus de dégâts pour rattraper son niveau (guerrier +40 %, paladin +65 %, archer +35 %, assassin +20 %).',
+      '⚖️ Le mage dominait : le guerrier, le paladin, l’archer et l’assassin infligent maintenant nettement plus de dégâts pour rattraper son niveau (valeurs ajustées dans la V10.31).',
       '🔋 Ta ressource grandit avec ton niveau et ton attribut principal : plus d’endurance pour le guerrier et l’assassin, plus de mana pour le paladin et l’archer, avec une meilleure récupération.',
       '💥 Chaque classe a sa propre mise en scène, de plus en plus ample avec le niveau de la compétence : fissures, débris et arcs géants pour le guerrier ; colonnes et rayons de lumière pour le paladin ; volée de flèches tombant du ciel pour l’archer ; rafale de lames d’ombre pour l’assassin.'
     ]

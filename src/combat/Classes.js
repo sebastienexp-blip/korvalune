@@ -29,7 +29,7 @@ export const RACES = {
 // V7.3 : attribut principal de chaque classe — c'est lui qui augmente ses dégâts (les autres comptent 4× moins)
 export const PRIMARY_STAT = { warrior: 'str', paladin: 'str', mage: 'int', archer: 'agi', assassin: 'agi' };
 
-// V10.30 : équilibrage des classes. Mesure sur les compétences (dégâts par seconde, cible unique et de groupe) :
-// le mage dépasse nettement les autres, qui doivent en plus s'exposer au corps-à-corps ou dépenser une ressource
-// qui ne grandit pas avec leur attribut principal. Ce multiplicateur d'attaque rapproche chaque classe du mage.
-export const CLASS_POWER = { mage: 1, warrior: 1.4, paladin: 1.65, archer: 1.35, assassin: 1.2 };
+// V10.30 : équilibrage des classes. Toutes les classes consomment du mana ; les corps-à-corps ont des attaques à distance et de zone.
+// Estimation des dégâts par seconde des compétences (cible unique et groupe) : ce multiplicateur d'attaque comble l'écart restant
+// avec le mage (le guerrier et le paladin s'exposent au corps-à-corps).
+export const CLASS_POWER = { mage: 1, warrior: 1.2, paladin: 1.4, archer: 1, assassin: 1.05 };

@@ -1164,3 +1164,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `CLASS_POWER` (`combat/Classes.js`) : multiplicateur d'attaque par classe (mage 1, guerrier 1,4, paladin 1,65, archer 1,35, assassin 1,2), calibré sur les dégâts par seconde des compétences (cible unique et groupe).
 - Ressources : `Player.recomputeDerived` ajoute à la réserve de chaque classe non mage un bonus lié à son attribut principal et à son niveau ; régénération d'endurance 18/s (guerrier, assassin), mana en plus pour paladin et archer.
 - `SkillEffects.signature()` : mise en scène propre à chaque classe, proportionnelle au niveau de la compétence (visuel seul).
+
+## V10.31 — Mana pour tous, attaques à distance et de zone
+
+- Toutes les compétences coûtent du **mana** (`skills.json` : les coûts d'endurance sont convertis). L'endurance reste pour la roulade et la course. `Player.recomputeDerived` : bonus de mana lié à l'attribut principal et au niveau pour les classes non mages, régénération de mana accrue.
+- 14 nouvelles compétences (guerrier, assassin, paladin, archer : tirs/jets à distance et zones) et conversion de nombreuses compétences mono-cible en zone ou en ligne perforante (`fx.at`, `fx.pierce` + `fx.arc`).
+- `CLASS_POWER` recalibré : mage 1, guerrier 1,2, paladin 1,4, archer 1, assassin 1,05.

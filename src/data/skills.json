@@ -22,7 +22,7 @@
     "cooldown": 4,
     "duration": 0.7,
     "cost": {
-      "stamina": 25
+      "mana": 25
     },
     "range": 3.6,
     "damage": 2.3,
@@ -38,7 +38,7 @@
     "cooldown": 6,
     "duration": 0.5,
     "cost": {
-      "stamina": 20
+      "mana": 20
     },
     "range": 2.6,
     "damage": 1.4,
@@ -57,7 +57,7 @@
     "cooldown": 8,
     "duration": 0.6,
     "cost": {
-      "stamina": 35
+      "mana": 35
     },
     "range": 4.6,
     "damage": 1.5,
@@ -74,7 +74,7 @@
     "cooldown": 18,
     "duration": 0.6,
     "cost": {
-      "stamina": 30
+      "mana": 30
     },
     "heal": 0.15,
     "anim": "interact",
@@ -89,12 +89,14 @@
     "cooldown": 14,
     "duration": 0.8,
     "cost": {
-      "stamina": 45
+      "mana": 45
     },
-    "range": 3.8,
-    "damage": 3.2,
+    "range": 4.6,
+    "damage": 2.6,
     "anim": "attack2",
-    "desc": "Une frappe dévastatrice née de la rage."
+    "desc": "Une furie qui frappe tous les ennemis autour de toi.",
+    "fx": {},
+    "aoe": true
   },
   {
     "id": "holy_strike",
@@ -153,10 +155,11 @@
     "cost": {
       "mana": 30
     },
-    "range": 3.8,
-    "damage": 2.6,
+    "range": 4.4,
+    "damage": 2.2,
     "anim": "attack2",
-    "desc": "Frappe les ennemis impies."
+    "desc": "Le jugement frappe tous les ennemis autour de toi.",
+    "aoe": true
   },
   {
     "id": "sanctuary",
@@ -349,7 +352,7 @@
     "cooldown": 2,
     "duration": 0.4,
     "cost": {
-      "stamina": 14
+      "mana": 14
     },
     "range": 2.8,
     "damage": 1.9,
@@ -365,7 +368,7 @@
     "cooldown": 5,
     "duration": 0.5,
     "cost": {
-      "stamina": 22
+      "mana": 22
     },
     "range": 2.6,
     "damage": 2.0,
@@ -388,7 +391,7 @@
     "cooldown": 16,
     "duration": 0.5,
     "cost": {
-      "stamina": 25
+      "mana": 25
     },
     "heal": 0.18,
     "anim": "interact",
@@ -403,12 +406,13 @@
     "cooldown": 12,
     "duration": 0.6,
     "cost": {
-      "stamina": 38
+      "mana": 38
     },
     "range": 2.8,
     "damage": 3.0,
     "anim": "attack2",
-    "desc": "Un coup fatal porté avec précision."
+    "desc": "Un coup fatal porté avec précision.",
+    "aoe": false
   },
   {
     "id": "death_mark",
@@ -419,7 +423,7 @@
     "cooldown": 14,
     "duration": 0.6,
     "cost": {
-      "stamina": 42
+      "mana": 42
     },
     "range": 2.8,
     "damage": 3.5,
@@ -441,7 +445,7 @@
     "cooldown": 20,
     "duration": 0.6,
     "cost": {
-      "stamina": 25
+      "mana": 25
     },
     "heal": 0.22,
     "anim": "interact",
@@ -456,7 +460,7 @@
     "cooldown": 11,
     "duration": 0.7,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "range": 4.8,
     "damage": 1.9,
@@ -482,7 +486,7 @@
     "cooldown": 13,
     "duration": 0.7,
     "cost": {
-      "stamina": 48
+      "mana": 48
     },
     "range": 4.5,
     "damage": 3.6,
@@ -507,7 +511,7 @@
     "cooldown": 12,
     "duration": 0.75,
     "cost": {
-      "stamina": 52
+      "mana": 52
     },
     "range": 5.0,
     "damage": 2.6,
@@ -532,7 +536,7 @@
     "cooldown": 11,
     "duration": 0.8,
     "cost": {
-      "stamina": 58
+      "mana": 58
     },
     "range": 5.5,
     "damage": 4.4,
@@ -557,7 +561,7 @@
     "cooldown": 13,
     "duration": 0.85,
     "cost": {
-      "stamina": 65
+      "mana": 65
     },
     "range": 5.4,
     "damage": 3.4,
@@ -841,13 +845,14 @@
     "range": 17,
     "damage": 2.8,
     "anim": "attack",
-    "desc": "Un tir qui ne pardonne pas.",
+    "desc": "Marque la zone : tous les ennemis touchés subissent plus de dégâts.",
     "fx": {
-      "single": true,
       "vuln": [
         0.3,
         8
-      ]
+      ],
+      "at": "target",
+      "radius": 4.0
     }
   },
   {
@@ -905,7 +910,11 @@
     "range": 21,
     "damage": 4.2,
     "anim": "attack",
-    "desc": "Un seul tir, une seule issue."
+    "desc": "Un seul tir, une seule issue.",
+    "fx": {
+      "at": "target",
+      "radius": 3.5
+    }
   },
   {
     "id": "skyfall_volley",
@@ -942,7 +951,7 @@
     "cooldown": 9,
     "duration": 0.5,
     "cost": {
-      "stamina": 30
+      "mana": 30
     },
     "range": 3.0,
     "damage": 2.4,
@@ -958,7 +967,7 @@
     "cooldown": 10,
     "duration": 0.6,
     "cost": {
-      "stamina": 36
+      "mana": 36
     },
     "range": 3.4,
     "damage": 1.9,
@@ -988,7 +997,7 @@
     "cooldown": 18,
     "duration": 0.55,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "heal": 0.26,
     "anim": "interact",
@@ -1003,7 +1012,7 @@
     "cooldown": 11,
     "duration": 0.65,
     "cost": {
-      "stamina": 48
+      "mana": 48
     },
     "range": 3.2,
     "damage": 2.4,
@@ -1028,7 +1037,7 @@
     "cooldown": 13,
     "duration": 0.6,
     "cost": {
-      "stamina": 54
+      "mana": 54
     },
     "range": 3.2,
     "damage": 4.6,
@@ -1048,7 +1057,7 @@
     "cooldown": 14,
     "duration": 0.7,
     "cost": {
-      "stamina": 62
+      "mana": 62
     },
     "range": 3.4,
     "damage": 3.6,
@@ -1081,12 +1090,12 @@
     "cooldown": 9,
     "duration": 0.5,
     "cost": {
-      "stamina": 20
+      "mana": 20
     },
     "range": 9,
     "damage": 1.5,
     "anim": "attack2",
-    "desc": "Fonce sur la cible et l'étourdit.",
+    "desc": "Tu fonces sur la cible, la renverses et l’onde de l’impact blesse les ennemis autour.",
     "color": 14674165,
     "fx": {
       "dash": {
@@ -1094,7 +1103,13 @@
         "d": 8
       },
       "stun": 1.0,
-      "single": true
+      "single": true,
+      "waves": {
+        "n": 1,
+        "gap": 0.1,
+        "r": 4.5,
+        "mult": 0.9
+      }
     }
   },
   {
@@ -1106,7 +1121,7 @@
     "cooldown": 7,
     "duration": 0.5,
     "cost": {
-      "stamina": 18
+      "mana": 18
     },
     "range": 3.4,
     "damage": 1.2,
@@ -1131,7 +1146,7 @@
     "cooldown": 22,
     "duration": 0.5,
     "cost": {
-      "stamina": 20
+      "mana": 20
     },
     "anim": "interact",
     "desc": "Réduit fortement les dégâts subis pendant un moment.",
@@ -1152,7 +1167,7 @@
     "cooldown": 12,
     "duration": 0.6,
     "cost": {
-      "stamina": 30
+      "mana": 30
     },
     "range": 4.6,
     "damage": 1.8,
@@ -1180,7 +1195,7 @@
     "cooldown": 8,
     "duration": 0.45,
     "cost": {
-      "stamina": 16
+      "mana": 16
     },
     "range": 3.4,
     "damage": 1.4,
@@ -1204,15 +1219,16 @@
     "cooldown": 9,
     "duration": 0.55,
     "cost": {
-      "stamina": 24
+      "mana": 24
     },
     "range": 12,
     "damage": 2.0,
     "anim": "attack",
-    "desc": "Lance une hache sur un ennemi éloigné.",
+    "desc": "Une hache tournoyante traverse la ligne d’ennemis devant toi.",
     "color": 14674165,
     "fx": {
-      "single": true
+      "pierce": 6,
+      "arc": 0.5
     }
   },
   {
@@ -1224,7 +1240,7 @@
     "cooldown": 10,
     "duration": 0.5,
     "cost": {
-      "stamina": 26
+      "mana": 26
     },
     "range": 3.6,
     "damage": 1.8,
@@ -1245,7 +1261,7 @@
     "cooldown": 28,
     "duration": 0.5,
     "cost": {
-      "stamina": 30
+      "mana": 30
     },
     "anim": "interact",
     "desc": "Érige un bouclier d'énergie qui absorbe les dégâts.",
@@ -1266,7 +1282,7 @@
     "cooldown": 11,
     "duration": 0.6,
     "cost": {
-      "stamina": 34
+      "mana": 34
     },
     "range": 7,
     "damage": 2.0,
@@ -1287,19 +1303,19 @@
     "cooldown": 12,
     "duration": 0.6,
     "cost": {
-      "stamina": 32
+      "mana": 32
     },
     "range": 3.8,
     "damage": 2.2,
     "anim": "attack2",
-    "desc": "Fend l'armure : la cible subit plus de dégâts.",
+    "desc": "Brise l’armure de tous les ennemis devant toi.",
     "color": 14674165,
     "fx": {
       "vuln": [
         0.3,
         8
       ],
-      "single": true
+      "arc": 1.6
     }
   },
   {
@@ -1311,7 +1327,7 @@
     "cooldown": 20,
     "duration": 0.6,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "range": 7,
     "damage": 0.8,
@@ -1337,8 +1353,8 @@
     "color": 9169002,
     "fx": {
       "restore": {
-        "stamina": 0.7,
-        "hp": 0.12
+        "hp": 0.12,
+        "mana": 0.7
       }
     }
   },
@@ -1351,19 +1367,20 @@
     "cooldown": 14,
     "duration": 0.7,
     "cost": {
-      "stamina": 42
+      "mana": 42
     },
     "range": 3.8,
     "damage": 2.6,
     "anim": "attack2",
-    "desc": "Dégâts énormes contre les ennemis sous 30 % de PV.",
+    "desc": "Un coup d’exécuteur qui traverse jusqu’à trois ennemis ; bien plus fort sur les blessés.",
     "color": 13773354,
     "fx": {
       "execute": [
         0.3,
         1.2
       ],
-      "single": true
+      "pierce": 3,
+      "arc": 0.7
     }
   },
   {
@@ -1375,7 +1392,7 @@
     "cooldown": 16,
     "duration": 0.9,
     "cost": {
-      "stamina": 50
+      "mana": 50
     },
     "range": 4.8,
     "damage": 1.0,
@@ -1402,7 +1419,7 @@
     "cooldown": 32,
     "duration": 0.5,
     "cost": {
-      "stamina": 36
+      "mana": 36
     },
     "anim": "interact",
     "desc": "Bouclier et résistance accrue, au prix de la vitesse.",
@@ -1428,7 +1445,7 @@
     "cooldown": 20,
     "duration": 0.7,
     "cost": {
-      "stamina": 55
+      "mana": 55
     },
     "range": 6.2,
     "damage": 3.2,
@@ -1459,7 +1476,7 @@
     "cooldown": 40,
     "duration": 0.5,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "anim": "interact",
     "desc": "Dégâts et vitesse de déplacement accrus.",
@@ -1481,7 +1498,7 @@
     "cooldown": 60,
     "duration": 0.5,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "anim": "interact",
     "desc": "Recharges accélérées, critiques plus fréquents, régénération.",
@@ -1504,7 +1521,7 @@
     "cooldown": 24,
     "duration": 1.0,
     "cost": {
-      "stamina": 70
+      "mana": 70
     },
     "range": 7.5,
     "damage": 2.2,
@@ -1543,11 +1560,12 @@
     "range": 9,
     "damage": 1.5,
     "anim": "attack",
-    "desc": "Lance un marteau sacré qui étourdit brièvement.",
+    "desc": "Un marteau béni lancé qui explose sur la cible et ceux qui l’entourent.",
     "color": 16769658,
     "fx": {
       "stun": 0.8,
-      "single": true
+      "at": "target",
+      "radius": 3
     }
   },
   {
@@ -1608,7 +1626,7 @@
     "range": 3.6,
     "damage": 1.8,
     "anim": "attack",
-    "desc": "Frappe de feu sacré qui continue de brûler.",
+    "desc": "Un châtiment qui brûle la cible et les ennemis proches.",
     "color": 16742954,
     "fx": {
       "dot": [
@@ -1616,7 +1634,8 @@
         4,
         "burn"
       ],
-      "single": true
+      "at": "target",
+      "radius": 2.8
     }
   },
   {
@@ -1725,15 +1744,16 @@
     "range": 14,
     "damage": 2.4,
     "anim": "attack",
-    "desc": "Un rayon brûlant sur un ennemi éloigné.",
+    "desc": "Un rayon de soleil qui traverse tous les ennemis en ligne.",
     "color": 16769658,
     "fx": {
-      "single": true,
       "dot": [
         0.3,
         4,
         "burn"
-      ]
+      ],
+      "pierce": 8,
+      "arc": 0.45
     }
   },
   {
@@ -2462,7 +2482,7 @@
     "range": 18,
     "damage": 1.6,
     "anim": "attack",
-    "desc": "Tir tendu avec une forte chance de critique.",
+    "desc": "Un tir précis à forte chance de critique, sur une cible.",
     "color": 9169002,
     "fx": {
       "single": true,
@@ -2483,15 +2503,16 @@
     "range": 16,
     "damage": 1.0,
     "anim": "attack",
-    "desc": "Empoisonne la cible pendant six secondes.",
+    "desc": "Une flèche qui libère un nuage empoisonné sur la cible et ceux qui l’entourent.",
     "color": 8257370,
     "fx": {
-      "single": true,
       "dot": [
         0.5,
         6,
         "poison"
-      ]
+      ],
+      "at": "target",
+      "radius": 2.8
     }
   },
   {
@@ -2533,14 +2554,15 @@
     "range": 16,
     "damage": 1.3,
     "anim": "attack",
-    "desc": "Ralentit fortement la cible.",
+    "desc": "Une flèche qui ralentit tous les ennemis de la zone.",
     "color": 9169002,
     "fx": {
-      "single": true,
       "slow": [
         0.35,
         4
-      ]
+      ],
+      "at": "target",
+      "radius": 3.2
     }
   },
   {
@@ -2600,11 +2622,12 @@
     "range": 15,
     "damage": 0.9,
     "anim": "attack",
-    "desc": "Trois flèches en rafale.",
+    "desc": "Trois tirs rapides qui arrosent la zone ciblée.",
     "color": 9169002,
     "fx": {
-      "single": true,
-      "hits": 3
+      "hits": 3,
+      "at": "target",
+      "radius": 3.2
     }
   },
   {
@@ -2621,15 +2644,16 @@
     "range": 16,
     "damage": 1.6,
     "anim": "attack",
-    "desc": "Enflamme la cible.",
+    "desc": "Une flèche qui enflamme la zone d’impact.",
     "color": 16742954,
     "fx": {
-      "single": true,
       "dot": [
         0.55,
         5,
         "burn"
-      ]
+      ],
+      "at": "target",
+      "radius": 3.2
     }
   },
   {
@@ -2669,15 +2693,16 @@
     "range": 17,
     "damage": 2.0,
     "anim": "attack",
-    "desc": "Gèle brièvement et ralentit la cible.",
+    "desc": "Une flèche qui givre toute la zone d’impact et étourdit brièvement.",
     "color": 8378623,
     "fx": {
-      "single": true,
       "slow": [
         0.4,
         5
       ],
-      "stun": 0.8
+      "stun": 0.8,
+      "at": "target",
+      "radius": 3.6
     }
   },
   {
@@ -2840,14 +2865,15 @@
     "range": 18,
     "damage": 2.0,
     "anim": "attack",
-    "desc": "La cible subit 50 % de dégâts en plus pendant 8 s.",
+    "desc": "Une marque puissante qui expose tous les ennemis de la zone.",
     "color": 11562239,
     "fx": {
-      "single": true,
       "vuln": [
         0.5,
         8
-      ]
+      ],
+      "at": "target",
+      "radius": 4.5
     }
   },
   {
@@ -2917,7 +2943,7 @@
     "cooldown": 1.0,
     "duration": 0.35,
     "cost": {
-      "stamina": 8
+      "mana": 8
     },
     "range": 2.8,
     "damage": 1.3,
@@ -2937,15 +2963,16 @@
     "cooldown": 4,
     "duration": 0.45,
     "cost": {
-      "stamina": 14
+      "mana": 14
     },
     "range": 11,
     "damage": 1.5,
     "anim": "attack",
-    "desc": "Lance une dague sur une cible éloignée.",
+    "desc": "Une dague lancée qui traverse jusqu’à quatre ennemis alignés.",
     "color": 14674165,
     "fx": {
-      "single": true
+      "pierce": 4,
+      "arc": 0.5
     }
   },
   {
@@ -2957,19 +2984,24 @@
     "cooldown": 10,
     "duration": 0.5,
     "cost": {
-      "stamina": 22
+      "mana": 22
     },
     "range": 9,
     "damage": 1.6,
     "anim": "attack2",
-    "desc": "Bondit sur la cible et frappe.",
+    "desc": "Tu bondis sur la cible ; l’impact blesse aussi les ennemis autour.",
     "color": 11562239,
     "fx": {
       "dash": {
         "to": "target",
         "d": 8
       },
-      "single": true
+      "waves": {
+        "n": 1,
+        "gap": 0.1,
+        "r": 4,
+        "mult": 0.8
+      }
     }
   },
   {
@@ -2981,20 +3013,20 @@
     "cooldown": 7,
     "duration": 0.45,
     "cost": {
-      "stamina": 18
+      "mana": 18
     },
     "range": 2.8,
     "damage": 1.0,
     "anim": "attack",
-    "desc": "Une blessure qui saigne longtemps.",
+    "desc": "Une entaille en arc qui fait saigner tous les ennemis devant toi.",
     "color": 13773354,
     "fx": {
-      "single": true,
       "dot": [
         0.7,
         6,
         "bleed"
-      ]
+      ],
+      "arc": 1.4
     }
   },
   {
@@ -3006,7 +3038,7 @@
     "cooldown": 18,
     "duration": 0.5,
     "cost": {
-      "stamina": 24
+      "mana": 24
     },
     "anim": "interact",
     "desc": "Nuage qui ralentit les ennemis et protège l'assassin.",
@@ -3033,7 +3065,7 @@
     "cooldown": 12,
     "duration": 0.5,
     "cost": {
-      "stamina": 26
+      "mana": 26
     },
     "range": 2.8,
     "damage": 1.4,
@@ -3054,7 +3086,7 @@
     "cooldown": 6,
     "duration": 0.6,
     "cost": {
-      "stamina": 20
+      "mana": 20
     },
     "range": 2.8,
     "damage": 1.3,
@@ -3075,7 +3107,7 @@
     "cooldown": 10,
     "duration": 0.6,
     "cost": {
-      "stamina": 32
+      "mana": 32
     },
     "range": 2.8,
     "damage": 2.2,
@@ -3099,7 +3131,7 @@
     "cooldown": 12,
     "duration": 0.8,
     "cost": {
-      "stamina": 38
+      "mana": 38
     },
     "range": 4.2,
     "damage": 0.7,
@@ -3120,7 +3152,7 @@
     "cooldown": 11,
     "duration": 0.5,
     "cost": {
-      "stamina": 28
+      "mana": 28
     },
     "range": 3,
     "damage": 2.0,
@@ -3141,7 +3173,7 @@
     "cooldown": 30,
     "duration": 0.4,
     "cost": {
-      "stamina": 30
+      "mana": 30
     },
     "anim": "interact",
     "desc": "Disparaît : invulnérable 1,5 s, recule et accélère.",
@@ -3167,7 +3199,7 @@
     "cooldown": 12,
     "duration": 0.5,
     "cost": {
-      "stamina": 30
+      "mana": 30
     },
     "range": 2.8,
     "damage": 1.2,
@@ -3196,7 +3228,7 @@
     "cooldown": 14,
     "duration": 0.6,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "range": 2.8,
     "damage": 3.4,
@@ -3217,7 +3249,7 @@
     "cooldown": 16,
     "duration": 1.0,
     "cost": {
-      "stamina": 46
+      "mana": 46
     },
     "range": 5,
     "damage": 0.9,
@@ -3244,7 +3276,7 @@
     "cooldown": 34,
     "duration": 0.5,
     "cost": {
-      "stamina": 34
+      "mana": 34
     },
     "anim": "interact",
     "desc": "Vitesse, critiques et résistance accrus.",
@@ -3267,7 +3299,7 @@
     "cooldown": 15,
     "duration": 1.0,
     "cost": {
-      "stamina": 48
+      "mana": 48
     },
     "range": 3.2,
     "damage": 0.8,
@@ -3288,7 +3320,7 @@
     "cooldown": 26,
     "duration": 0.7,
     "cost": {
-      "stamina": 50
+      "mana": 50
     },
     "range": 10,
     "anim": "attack",
@@ -3314,7 +3346,7 @@
     "cooldown": 60,
     "duration": 0.5,
     "cost": {
-      "stamina": 40
+      "mana": 40
     },
     "anim": "interact",
     "desc": "Dégâts, critiques et recharges décuplés.",
@@ -3337,7 +3369,7 @@
     "cooldown": 28,
     "duration": 0.8,
     "cost": {
-      "stamina": 66
+      "mana": 66
     },
     "range": 3.2,
     "damage": 5.0,
@@ -3368,7 +3400,7 @@
     "cooldown": 12,
     "duration": 0.7,
     "cost": {
-      "stamina": 42
+      "mana": 42
     },
     "range": 8,
     "damage": 1.2,
@@ -3395,7 +3427,7 @@
     "cooldown": 16,
     "duration": 0.7,
     "cost": {
-      "stamina": 48
+      "mana": 48
     },
     "range": 5,
     "damage": 1.0,
@@ -3428,7 +3460,7 @@
     "cooldown": 20,
     "duration": 0.7,
     "cost": {
-      "stamina": 58
+      "mana": 58
     },
     "range": 8,
     "damage": 3.0,
@@ -3459,7 +3491,7 @@
     "cooldown": 34,
     "duration": 0.7,
     "cost": {
-      "stamina": 45
+      "mana": 45
     },
     "range": 9,
     "damage": 0.8,
@@ -3491,7 +3523,7 @@
     "cooldown": 24,
     "duration": 0.7,
     "cost": {
-      "stamina": 52
+      "mana": 52
     },
     "range": 10,
     "damage": 1.5,
@@ -3524,7 +3556,7 @@
     "cooldown": 32,
     "duration": 0.7,
     "cost": {
-      "stamina": 70
+      "mana": 70
     },
     "range": 9,
     "damage": 3.0,
@@ -4111,7 +4143,7 @@
     "cooldown": 13,
     "duration": 0.7,
     "cost": {
-      "stamina": 44
+      "mana": 44
     },
     "range": 7,
     "damage": 1.2,
@@ -4137,7 +4169,7 @@
     "cooldown": 18,
     "duration": 0.7,
     "cost": {
-      "stamina": 46
+      "mana": 46
     },
     "range": 5,
     "damage": 1.0,
@@ -4165,7 +4197,7 @@
     "cooldown": 20,
     "duration": 0.7,
     "cost": {
-      "stamina": 54
+      "mana": 54
     },
     "range": 6,
     "damage": 1.0,
@@ -4193,7 +4225,7 @@
     "cooldown": 22,
     "duration": 0.7,
     "cost": {
-      "stamina": 58
+      "mana": 58
     },
     "range": 7,
     "damage": 3.0,
@@ -4227,7 +4259,7 @@
     "cooldown": 28,
     "duration": 0.7,
     "cost": {
-      "stamina": 62
+      "mana": 62
     },
     "range": 7,
     "damage": 1.2,
@@ -4264,7 +4296,7 @@
     "cooldown": 45,
     "duration": 0.7,
     "cost": {
-      "stamina": 72
+      "mana": 72
     },
     "range": 9,
     "damage": 2.0,
@@ -4294,5 +4326,392 @@
       }
     },
     "aoe": true
+  },
+  {
+    "id": "javelin_volley",
+    "name": "Pluie de javelots",
+    "icon": "🔱",
+    "classId": "warrior",
+    "levelReq": 22,
+    "cooldown": 10,
+    "duration": 0.7,
+    "cost": {
+      "mana": 34
+    },
+    "range": 13,
+    "damage": 1.3,
+    "anim": "attack2",
+    "desc": "Tu lances une volée de javelots qui retombent sur une zone lointaine.",
+    "color": 14270602,
+    "fx": {
+      "at": "target",
+      "radius": 4,
+      "rain": {
+        "n": 6,
+        "r": 4,
+        "t": 1.0,
+        "mult": 0.9,
+        "rad": 2.4
+      }
+    }
+  },
+  {
+    "id": "fissure",
+    "name": "Faille tectonique",
+    "icon": "🪨",
+    "classId": "warrior",
+    "levelReq": 42,
+    "cooldown": 9,
+    "duration": 0.7,
+    "cost": {
+      "mana": 38
+    },
+    "range": 14,
+    "damage": 2.4,
+    "anim": "attack2",
+    "desc": "Le sol se fend en ligne droite devant toi et blesse tout ce qu’il traverse.",
+    "color": 13215082,
+    "fx": {
+      "pierce": 8,
+      "arc": 0.45,
+      "knock": 2,
+      "waves": {
+        "n": 2,
+        "gap": 0.25,
+        "r": 5,
+        "mult": 0.5
+      }
+    }
+  },
+  {
+    "id": "thunder_hammer",
+    "name": "Marteau tonnerre",
+    "icon": "⚡",
+    "classId": "warrior",
+    "levelReq": 85,
+    "cooldown": 14,
+    "duration": 0.7,
+    "cost": {
+      "mana": 50
+    },
+    "range": 14,
+    "damage": 2.4,
+    "anim": "attack2",
+    "desc": "Tu lances ton marteau : la foudre frappe la zone d’impact en plusieurs ondes.",
+    "color": 10146047,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "stun": 0.8,
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 5.5,
+        "mult": 0.9,
+        "at": "target"
+      }
+    }
+  },
+  {
+    "id": "boulder_barrage",
+    "name": "Barrage de rochers",
+    "icon": "🌋",
+    "classId": "warrior",
+    "levelReq": 120,
+    "cooldown": 18,
+    "duration": 0.7,
+    "cost": {
+      "mana": 60
+    },
+    "range": 16,
+    "damage": 2.0,
+    "anim": "attack2",
+    "desc": "Tu arraches des rochers au sol et les projettes sur une vaste zone lointaine.",
+    "color": 14721120,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "knock": 2,
+      "rain": {
+        "n": 9,
+        "r": 6.5,
+        "t": 2.2,
+        "mult": 1.15,
+        "rad": 2.8
+      }
+    }
+  },
+  {
+    "id": "knife_fan",
+    "name": "Éventail de lames",
+    "icon": "🪭",
+    "classId": "assassin",
+    "levelReq": 12,
+    "cooldown": 7,
+    "duration": 0.7,
+    "cost": {
+      "mana": 24
+    },
+    "range": 11,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Tu lances un éventail de lames qui balaie un large cône devant toi.",
+    "color": 14272767,
+    "fx": {
+      "arc": 1.7,
+      "slow": [
+        0.7,
+        2
+      ]
+    }
+  },
+  {
+    "id": "shadow_rain",
+    "name": "Pluie d’ombres",
+    "icon": "🌑",
+    "classId": "assassin",
+    "levelReq": 55,
+    "cooldown": 13,
+    "duration": 0.7,
+    "cost": {
+      "mana": 40
+    },
+    "range": 12,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Des lames d’ombre tombent du ciel sur une zone lointaine.",
+    "color": 9067775,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "rain": {
+        "n": 7,
+        "r": 5,
+        "t": 1.4,
+        "mult": 0.9,
+        "rad": 2.4
+      },
+      "dot": [
+        0.3,
+        4,
+        "poison"
+      ]
+    }
+  },
+  {
+    "id": "dagger_storm",
+    "name": "Tempête de dagues",
+    "icon": "🌪️",
+    "classId": "assassin",
+    "levelReq": 90,
+    "cooldown": 15,
+    "duration": 0.7,
+    "cost": {
+      "mana": 52
+    },
+    "range": 13,
+    "damage": 1.4,
+    "anim": "attack2",
+    "desc": "Une tempête de dagues s’abat sur la zone visée en plusieurs ondes.",
+    "color": 13084927,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 6,
+        "mult": 0.8,
+        "at": "target"
+      },
+      "rain": {
+        "n": 6,
+        "r": 6,
+        "t": 1.6,
+        "mult": 0.8,
+        "rad": 2.2
+      }
+    }
+  },
+  {
+    "id": "radiant_wave",
+    "name": "Onde radieuse",
+    "icon": "🌅",
+    "classId": "paladin",
+    "levelReq": 12,
+    "cooldown": 8,
+    "duration": 0.7,
+    "cost": {
+      "mana": 26
+    },
+    "range": 11,
+    "damage": 1.3,
+    "anim": "attack2",
+    "desc": "Une onde de lumière balaie un large cône devant toi.",
+    "color": 16773280,
+    "fx": {
+      "arc": 1.9,
+      "knock": 1.5
+    }
+  },
+  {
+    "id": "sacred_hail",
+    "name": "Grêle sacrée",
+    "icon": "🌟",
+    "classId": "paladin",
+    "levelReq": 35,
+    "cooldown": 12,
+    "duration": 0.7,
+    "cost": {
+      "mana": 40
+    },
+    "range": 12,
+    "damage": 1.0,
+    "anim": "attack2",
+    "desc": "Des éclats de lumière pleuvent sur une zone lointaine.",
+    "color": 16771488,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "rain": {
+        "n": 6,
+        "r": 5,
+        "t": 1.2,
+        "mult": 0.9,
+        "rad": 2.4
+      }
+    }
+  },
+  {
+    "id": "sunfall",
+    "name": "Chute du soleil",
+    "icon": "☀️",
+    "classId": "paladin",
+    "levelReq": 85,
+    "cooldown": 16,
+    "duration": 0.7,
+    "cost": {
+      "mana": 56
+    },
+    "range": 14,
+    "damage": 2.2,
+    "anim": "attack2",
+    "desc": "Un éclat de soleil s’écrase à distance : colonnes de lumière et ondes sacrées.",
+    "color": 16774856,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "stun": 1.0,
+      "waves": {
+        "n": 3,
+        "gap": 0.3,
+        "r": 6,
+        "mult": 0.8,
+        "at": "target"
+      },
+      "rain": {
+        "n": 5,
+        "r": 5,
+        "t": 1.4,
+        "mult": 1.0,
+        "rad": 2.6
+      }
+    }
+  },
+  {
+    "id": "cluster_arrow",
+    "name": "Flèche à fragmentation",
+    "icon": "🎇",
+    "classId": "archer",
+    "levelReq": 22,
+    "cooldown": 10,
+    "duration": 0.7,
+    "cost": {
+      "mana": 34
+    },
+    "range": 17,
+    "damage": 1.6,
+    "anim": "attack2",
+    "desc": "La flèche éclate en fragments qui retombent autour de la cible.",
+    "color": 16756810,
+    "fx": {
+      "at": "target",
+      "radius": 4,
+      "rain": {
+        "n": 5,
+        "r": 4,
+        "t": 0.9,
+        "mult": 0.8,
+        "rad": 2.2
+      }
+    }
+  },
+  {
+    "id": "wildfire",
+    "name": "Brasier de flèches",
+    "icon": "🔥",
+    "classId": "archer",
+    "levelReq": 38,
+    "cooldown": 16,
+    "duration": 0.7,
+    "cost": {
+      "mana": 40
+    },
+    "range": 16,
+    "damage": 1.2,
+    "anim": "attack2",
+    "desc": "Une volée enflamme le sol : la zone brûle plusieurs secondes.",
+    "color": 16742970,
+    "fx": {
+      "at": "target",
+      "radius": 5,
+      "zone": {
+        "r": 5,
+        "t": 6,
+        "dps": 1.3,
+        "at": "target"
+      },
+      "dot": [
+        0.4,
+        4,
+        "burn"
+      ]
+    }
+  },
+  {
+    "id": "thunder_rain",
+    "name": "Orage de flèches",
+    "icon": "⛈️",
+    "classId": "archer",
+    "levelReq": 75,
+    "cooldown": 15,
+    "duration": 0.7,
+    "cost": {
+      "mana": 48
+    },
+    "range": 16,
+    "damage": 1.4,
+    "anim": "attack2",
+    "desc": "Des flèches chargées de foudre s’abattent en rafales sur la zone.",
+    "color": 10146047,
+    "fx": {
+      "at": "target",
+      "radius": 6,
+      "stun": 0.6,
+      "waves": {
+        "n": 2,
+        "gap": 0.35,
+        "r": 6,
+        "mult": 0.8,
+        "at": "target"
+      },
+      "rain": {
+        "n": 8,
+        "r": 6,
+        "t": 1.6,
+        "mult": 0.9,
+        "rad": 2.4
+      }
+    }
   }
 ]
