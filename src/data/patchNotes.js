@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.35', title: 'Souris façon Diablo (PC)',
+    items: [
+      '🖱️ Clic gauche : se déplacer (maintiens pour suivre le curseur). Sur un monstre : tu le poursuis et tu l’attaques. Sur un PNJ, du butin, un portail ou un coffre : tu y vas et tu interagis. Maj + clic gauche : attaquer sur place.',
+      '🖱️ Clic droit (maintenu) : lance la compétence de ton choix vers le curseur (par défaut l’emplacement 2 ; réglable dans Options). Sur un PNJ ou un objet : y aller et interagir.',
+      '⌨️ Tous les raccourcis clavier restent actifs ; bouger au clavier annule le déplacement à la souris. Pour pivoter la caméra : clic molette + glisser.',
+      '⚙️ Actif avec les caméras aériennes (par défaut) ; désactivable dans Options > Commandes.'
+    ]
+  },
+  {
     version: '10.34', title: 'Multijoueur : portail de ville, menu des joueurs, XP de groupe',
     items: [
       '🌀 Portail de ville (touche T ou bouton 🌀) : ouvre un portail violet sur le terrain (10 min). Il mène à Korvalune ; le portail violet de la ville te ramène exactement là où tu étais (touche E). Ton groupe peut l’utiliser aussi.',

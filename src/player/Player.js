@@ -545,7 +545,7 @@ export class Player {
 
     const mv = input.moveVector();
     this.crouch = input.down('crouch');
-    this.running = input.down('run') && !this.crouch;
+    this.running = (input.down('run') || !!input.clickMv) && !this.crouch; // V10.35 : le déplacement à la souris court sans coûter d'endurance
     const busy = this.busyUntil > performance.now() / 1000;
     // V10.19 : on peut se déplacer (marche ou course) pendant qu'une compétence est lancée ; seule la roulade immobilise.
     // Pendant le lancer, le personnage garde sa direction de visée et se déplace en « strafe » vers où pointe le joystick.
@@ -559,9 +559,9 @@ export class Player {
         this.yaw = ((this.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
       }
       this._moveAng = casting ? worldAngle : this.yaw;
-      const base = this.mount ? CONFIG.player.run * 0.8 * this.mount.speed : (this.crouch ? CONFIG.player.crouch : this.running && this.stamina > 1 ? CONFIG.player.run : CONFIG.player.walk);
+      const base = this.mount ? CONFIG.player.run * 0.8 * this.mount.speed : (this.crouch ? CONFIG.player.crouch : this.running && (this.stamina > 1 || input.clickMv) ? CONFIG.player.run : CONFIG.player.walk);
       const spd = base * (this.swimming ? 0.7 : 1) * (this.speedMult || 1) * (this.sbSpeed || 1) * (1 + (this.moveSpeedBonus || 0));
-      if (this.running && this.stamina > 1 && !this.crouch && !this.mount) this.stamina = Math.max(0, this.stamina - dt * 16);
+      if (this.running && this.stamina > 1 && !this.crouch && !this.mount && !input.clickMv && input.down('run')) this.stamina = Math.max(0, this.stamina - dt * 16);
       this.speed = damp(this.speed, spd, 10, dt);
     } else {
       this.speed = damp(this.speed, 0, 10, dt);

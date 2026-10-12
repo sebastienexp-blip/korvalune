@@ -12,6 +12,7 @@ import { WORLD_TIERS, tierById, tierAt } from '../world/WorldTiers.js';
 import { REGIONS, regionAt, isLand } from '../world/Continent.js';
 import { buildPortal, updatePortal } from '../world/Portals.js';
 import { TownPortal } from '../world/TownPortal.js';
+import { ClickControl } from './ClickControl.js';
 import { mulberry32, clamp } from '../core/math.js';
 import { Weather } from '../effects/Weather.js';
 import { Player } from '../player/Player.js';
@@ -156,6 +157,7 @@ export class Game {
     const lowFx = document.createElement('div'); lowFx.id = 'lowhp-fx'; this.root.appendChild(lowFx);
     this.camera = new THREE.PerspectiveCamera(CONFIG.camera.fov, innerWidth / innerHeight, 0.1, CONFIG.camera.far);
     this.input = new InputManager(canvas);
+    this.click = new ClickControl(this); // V10.35
     this.input.setKeys(this.settings.keys);
     window.addEventListener('resize', () => this._resize());
     this._resize();
@@ -3226,6 +3228,7 @@ export class Game {
     const wheel = this.input.consumeWheel();
     this._lowHpFx(dt);
     this._tickPotionCd();
+    this.click?.update(dt, blocked);
     if (!blocked) this.player.update(dt, this.input, this.cameraRig.yaw);
     else this.player.update(0, { moveVector: () => ({ x: 0, y: 0 }), held: () => false, down: () => false, action: () => false, actions: new Set() }, this.cameraRig.yaw);
 

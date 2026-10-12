@@ -8,6 +8,8 @@ export class InputManager {
     this.keys = new Set();
     this.mouse = { dx: 0, dy: 0, down: false, right: false, middle: false, wheel: 0 };
     this.opts = { lookSens: 1, invertY: false, invertWheel: false, zoomSpeed: 1, rotateBtn: 'right', touchLook: 1, pinch: 1, vibrate: true, deadzone: 0.08 };
+    this.clickMv = null;      // V10.35 : vecteur de déplacement imposé par le clic gauche (ClickControl)
+    this.onMouse = null;
     this.virtual = new Set(); // actions maintenues par des boutons tactiles (sprint, accroupi…)
     this.keyCodes = {}; this.codeAction = {};
     this.listening = false;   // vrai pendant qu'une touche est en cours de réassignation (menu Paramètres)
@@ -45,11 +47,12 @@ export class InputManager {
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
     window.addEventListener('blur', () => { this.keys.clear(); this.mouse.down = this.mouse.right = this.mouse.middle = false; });
 
-    this.dom.addEventListener('mousedown', (e) => { if (e.button === 0) this.mouse.down = true; if (e.button === 2) this.mouse.right = true; if (e.button === 1) { this.mouse.middle = true; e.preventDefault(); } });
-    window.addEventListener('mouseup', (e) => { if (e.button === 0) this.mouse.down = false; if (e.button === 2) this.mouse.right = false; if (e.button === 1) this.mouse.middle = false; });
+    window.addEventListener('mousemove', (e) => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; });
+    this.dom.addEventListener('mousedown', (e) => { this.onMouse?.(e.button, true, e); if (e.button === 0) this.mouse.down = true; if (e.button === 2) this.mouse.right = true; if (e.button === 1) { this.mouse.middle = true; e.preventDefault(); } });
+    window.addEventListener('mouseup', (e) => { this.onMouse?.(e.button, false, e); if (e.button === 0) this.mouse.down = false; if (e.button === 2) this.mouse.right = false; if (e.button === 1) this.mouse.middle = false; });
     this.dom.addEventListener('contextmenu', (e) => e.preventDefault());
     this.dom.addEventListener('mousemove', (e) => {
-      if (document.pointerLockElement === this.dom || (this.opts.rotateBtn === 'middle' ? this.mouse.middle : this.mouse.right)) {
+      if (document.pointerLockElement === this.dom || ((this.opts.diablo || this.opts.rotateBtn === 'middle') ? this.mouse.middle : this.mouse.right)) {
         this.mouse.dx += e.movementX || 0;
         this.mouse.dy += e.movementY || 0;
       }
@@ -135,6 +138,7 @@ export class InputManager {
       const a = Math.atan2(dy, dx);
       x = -Math.cos(a) * r; y = -Math.sin(a) * r;
     }
+    if (!x && !y && this.clickMv) return this.clickMv; // V10.35 : déplacement à la souris (clic gauche)
     const len = Math.hypot(x, y);
     return len > 1 ? { x: x / len, y: y / len } : { x, y };
   }

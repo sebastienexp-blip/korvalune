@@ -1190,3 +1190,8 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `src/world/TownPortal.js` : portail de ville violet (touche T), retour exact, partagé avec le groupe (relais serveur `gr:tp`).
 - Menu joueur (`Game._openPlayerMenu`) : clic sur un avatar ou un nom (Amis / Groupe) ; ajout d'ami par avatar (`friend:add` avec `id`).
 - Téléportation vers un membre du groupe (recharge 20 s) ; XP de groupe +10 % par coéquipier à moins de 100 m (`share.xpMult`).
+
+## V10.35 — Souris façon Diablo
+
+- `src/core/ClickControl.js` : clic gauche (déplacer / attaquer / interagir, Maj = sur place), clic droit (compétence liée, réglage `rmbSkill`), option `pcMouse`. Caméras aériennes uniquement, PC uniquement.
+- La rotation de caméra passe au clic molette quand ce mode est actif.
