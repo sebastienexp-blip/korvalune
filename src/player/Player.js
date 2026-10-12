@@ -556,7 +556,7 @@ export class Player {
     if (this._qSkill) { const now = performance.now() / 1000; if (now > this._qSkill.until) this._qSkill = null; else if (this.busyUntil <= now) { const q = this._qSkill; this._qSkill = null; this.tryUseSkill(q.id); } }
 
     const mv = input.moveVector();
-    this.crouch = input.down('crouch');
+    this.crouch = false; // V10.38 : l'accroupissement a été retiré
     this.running = (input.down('run') || !!input.clickMv) && !this.crouch; // V10.35 : le déplacement à la souris court sans coûter d'endurance
     const busy = this.busyUntil > performance.now() / 1000;
     // V10.19 : on peut se déplacer (marche ou course) pendant qu'une compétence est lancée ; seule la roulade immobilise.

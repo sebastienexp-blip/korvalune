@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.38', title: 'Nouvelles images de compétences (mobile)',
+    items: [
+      '🎨 Chaque compétence a maintenant sa propre illustration réaliste (acier, or, flammes, glace, foudre, ombre…), posée dans le cadre d’origine : forme, ornements et couleur inchangés. Deux compétences n’ont jamais la même image.',
+      '🖥️ Sur PC, les icônes restent celles d’avant.',
+      '🧹 Le bouton et la touche « s’accroupir » sont supprimés.'
+    ]
+  },
+  {
     version: '10.37', title: 'Failles en cartes extérieures',
     items: [
       '🗺️ Les failles ne sont plus des donjons : chaque faille est une carte extérieure générée au hasard, d’un seul tenant, sans portes ni couloirs. Forêt, ruines, caverne, cimetière ou fournaise, avec une lisière naturelle (arbres, rochers) qui borde la zone.',

@@ -491,8 +491,8 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 #touch-controls { position: absolute; inset: 0; pointer-events: none; z-index: 12; }
 #touch-joystick { position: absolute; left: calc(18px + env(safe-area-inset-left, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(226, 184, 102, 0.35); pointer-events: auto; }
 #touch-stick { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: rgba(243, 213, 143, 0.4); transition: transform 0.05s linear; }
-#touch-actions { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: 56px 56px; grid-template-areas: "run jump" "crouch interact" "attack attack"; gap: 8px; pointer-events: auto; align-items: end; }
-#t-run { grid-area: run; } #t-jump { grid-area: jump; } #t-crouch { grid-area: crouch; } #t-interact { grid-area: interact; } #t-attack { grid-area: attack; }
+#touch-actions { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: 56px 56px; grid-template-areas: "run jump" ". interact" "attack attack"; gap: 8px; pointer-events: auto; align-items: end; }
+#t-run { grid-area: run; } #t-jump { grid-area: jump; } #t-interact { grid-area: interact; } #t-attack { grid-area: attack; }
 .tbtn { border-radius: 50%; border: 2px solid rgba(226, 184, 102, 0.4); background: rgba(14, 20, 40, 0.6); color: #fff; font-size: 20px; }
 .tbtn:active { background: rgba(226, 184, 102, 0.3); }
 .tbtn.round { width: 56px; height: 56px; }
@@ -1202,13 +1202,12 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .ic-s { display: none; }
 #btn-menu { display: none; }
 .touch-on #side-buttons #btn-menu.tbtn.small { display: flex; }
-.sk-ico .sk-glyph { display: none; }
+.sk-ico .sk-art { display: none; }
 .touch-on .ic-e { display: none; }
 .touch-on .ic-s { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 .touch-on .ic-s .ico { width: 56%; height: 56%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
 .touch-on .sk-ico .sk-emo { display: none; }
-.touch-on .sk-ico .sk-glyph { display: block; }
-.sk-ico svg.sk-glyph { position: relative; inset: auto; width: 54%; height: 54%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65)); z-index: 1; }
+.touch-on .sk-ico .sk-art { display: inline; }
 .touch-on {
   --glass: rgba(8, 12, 26, 0.56);
   --glass-edge: rgba(255, 255, 255, 0.16);
@@ -1314,8 +1313,7 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .touch-on #touch-actions #t-attack .ic-s .ico { width: 54%; height: 54%; }
 .touch-on #touch-actions #t-attack .ic-s svg path:first-child { fill: rgba(255, 255, 255, 0.35); }
 .touch-on #touch-actions .tbtn .ic-s .ico { width: 54%; height: 54%; }
-.touch-on #touch-actions #t-run, .touch-on #touch-actions #t-crouch { --sz: 38; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: calc(100vw - 66px - var(--sz) * var(--tb, 1) * 1px - env(safe-area-inset-left, 0px)); }
-.touch-on #touch-actions #t-crouch { right: calc(100vw - 112px - var(--sz) * var(--tb, 1) * 1px - env(safe-area-inset-left, 0px)); }
+.touch-on #touch-actions #t-run { --sz: 38; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: calc(100vw - 66px - var(--sz) * var(--tb, 1) * 1px - env(safe-area-inset-left, 0px)); }
 .touch-on #touch-actions .tsk { border-radius: 50%; background: rgba(8, 12, 26, 0.7); }
 .touch-on #touch-actions .tsk .sk-icon { display: block; width: 100%; height: 100%; font-size: inherit; }
 .touch-on #touch-actions .tsk .sk-ico { width: 100%; height: 100%; font-size: inherit; display: flex; }
@@ -1328,7 +1326,6 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .lefthand.touch-on #touch-actions .tbtn { right: auto; left: calc(var(--cx, 60) * 1px - var(--sz) * var(--tb, 1) * 0.5px + env(safe-area-inset-left, 0px)); }
 .lefthand.touch-on #touch-actions { right: auto; left: 0; }
 .lefthand.touch-on #touch-actions #t-run { right: auto; left: calc(100vw - 66px - var(--sz) * var(--tb, 1) * 1px - env(safe-area-inset-right, 0px)); }
-.lefthand.touch-on #touch-actions #t-crouch { right: auto; left: calc(100vw - 112px - var(--sz) * var(--tb, 1) * 1px - env(safe-area-inset-right, 0px)); }
 
 /* --- potions --- */
 .touch-on #potion-quick { left: auto; transform: none; flex-direction: row-reverse; gap: 12px; right: calc(64px - 20px + env(safe-area-inset-right, 0px)); bottom: calc(30px - 20px + env(safe-area-inset-bottom, 0px)); }

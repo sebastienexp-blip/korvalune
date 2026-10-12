@@ -1208,3 +1208,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `src/rift/RiftLayout.js` : la génération reste une grille de zones de 32 m, mais tout voisin est relié (plus de portes/murs) ; la lisière de la carte est faite d'arbres, rochers, stèles ou obsidienne avec colliders ; tous les styles passent par `buildStyled`.
 - `src/rift/RiftSystem.js` : `_spawnGuardian` place le Gardien à ~10 m du joueur (position libre, dans la carte) ; la mini-carte ne trace que le contour.
 - Déterminisme de groupe conservé (graine inchangée).
+
+## V10.38 — Illustrations de compétences
+
+- `src/ui/SkillArt.js` : image par compétence = objet principal (≈35 dessins ombrés) + élément en fond (feu, glace, foudre, ombre…) + variante tirée de l'identifiant ; vérifié unique pour les 194 compétences. Affichée sur mobile (`.touch-on`) dans le cadre de `SkillIcon.js` ; PC inchangé.
+- Identifiants SVG rendus uniques à chaque affichage (un `<svg>` masqué cassait les dégradés partagés).
+- Accroupissement supprimé (bouton, raccourci, logique joueur).

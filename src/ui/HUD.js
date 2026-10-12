@@ -144,7 +144,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.37 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.38 — Korvalune</div>
         </div>
       </div>
 
@@ -313,7 +313,6 @@ export class HUD {
           <div id="touch-actions">
             <button id="t-jump" class="tbtn round" title="Roulade">🌀</button>
             <button id="t-run" class="tbtn round">⚡</button>
-            <button id="t-crouch" class="tbtn round">⬇</button>
             <button id="t-interact" class="tbtn round">✋</button>
             <button id="t-attack" class="tbtn big">⚔</button>
             ${[0, 1, 2, 3, 4, 5, 6].map((i) => `<button id="t-sk${i}" class="tbtn tsk hidden" aria-label="Compétence ${i + 1}"></button>`).join('')}
@@ -630,7 +629,7 @@ export class HUD {
       ['#btn-inv', 'bag', 'Inventaire'], ['#btn-char', 'char', 'Personnage'], ['#btn-skills', 'skills', 'Compétences'], ['#btn-quests', 'quests', 'Quêtes'],
       ['#btn-ach', 'trophy', 'Succès'], ['#btn-social', 'people', 'Social'], ['#btn-tp', 'portal', 'Portail'], ['#btn-mount', 'horse', 'Monture'],
       ['#btn-pass', 'medal', 'Pass'], ['#btn-lune', 'moon', 'Boutique', '.bl-ico'], ['#btn-chat', 'chat', 'Discussion'], ['#btn-menu', 'menu', 'Menu'],
-      ['#btn-pause', 'pause', 'Pause'], ['#t-attack', 'sword'], ['#t-jump', 'roll'], ['#t-run', 'bolt'], ['#t-crouch', 'down'], ['#t-interact', 'hand'], ['#t-lock', 'lock'],
+      ['#btn-pause', 'pause', 'Pause'], ['#t-attack', 'sword'], ['#t-jump', 'roll'], ['#t-run', 'bolt'], ['#t-interact', 'hand'], ['#t-lock', 'lock'],
       ['#pq-heal', 'flaskHeal', null, '.pq-ic'], ['#pq-mana', 'flaskMana', null, '.pq-ic'], ['#map-expand', 'map'], ['#map-mode', 'compass']
     ];
     for (const [sel, icon, label, inner] of MAP) {

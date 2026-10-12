@@ -2,11 +2,11 @@
 // le joystick virtuel. V4.2 : taille / opacité / main gauche réglables et disposition personnalisable
 // (mode « modifier la disposition » : on fait glisser chaque bouton où l'on veut).
 const ELS = {
-  joy: '#touch-joystick', run: '#t-run', roll: '#t-jump', crouch: '#t-crouch', interact: '#t-interact',
+  joy: '#touch-joystick', run: '#t-run', roll: '#t-jump', interact: '#t-interact',
   attack: '#t-attack', lock: '#t-lock', heal: '#pq-heal', mana: '#pq-mana',
   sk0: '#t-sk0', sk1: '#t-sk1', sk2: '#t-sk2', sk3: '#t-sk3', sk4: '#t-sk4', sk5: '#t-sk5', sk6: '#t-sk6'
 };
-export const TOUCH_LABELS = { joy: 'Joystick', run: 'Sprint', roll: 'Roulade', crouch: 'Accroupi', interact: 'Interagir', attack: 'Attaque', lock: 'Caméra', heal: 'Potion de vie', mana: 'Potion de mana', sk0: 'Compétence 1', sk1: 'Compétence 2', sk2: 'Compétence 3', sk3: 'Compétence 4', sk4: 'Compétence 5', sk5: 'Compétence 6', sk6: 'Compétence 7' };
+export const TOUCH_LABELS = { joy: 'Joystick', run: 'Sprint', roll: 'Roulade', interact: 'Interagir', attack: 'Attaque', lock: 'Caméra', heal: 'Potion de vie', mana: 'Potion de mana', sk0: 'Compétence 1', sk1: 'Compétence 2', sk2: 'Compétence 3', sk3: 'Compétence 4', sk4: 'Compétence 5', sk5: 'Compétence 6', sk6: 'Compétence 7' };
 
 export class TouchControls {
   constructor(root, input, bus) {
@@ -159,7 +159,6 @@ export class TouchControls {
     root.addEventListener('touchskills', (e) => this.layoutCluster(e.detail.n));
     tap('#t-interact', () => this.bus.emit('interact'));
     toggle('#t-run', 'run');
-    toggle('#t-crouch', 'crouch');
     tap('#t-lock', () => this.bus.emit('toggleCameraLock'));
   }
 

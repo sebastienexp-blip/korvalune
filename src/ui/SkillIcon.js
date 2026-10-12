@@ -1,7 +1,7 @@
 // V10.22 — Icônes de compétences uniques : chaque compétence a son propre pictogramme (emoji distinct) posé sur un cadre
 // généré à partir de son identifiant (forme, ornements, teinte). Deux compétences n'ont jamais la même image.
 import { skillColor } from '../visual/Fx.js';
-import { skillGlyph } from './Icons.js';
+import { skillArt } from './SkillArt.js';
 
 function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 const hex = (n) => '#' + (n & 0xffffff).toString(16).padStart(6, '0');
@@ -29,28 +29,32 @@ const ORN = [
 ];
 
 const cache = new Map();
+let uid = 0; // identifiants SVG uniques par affichage (les dégradés d'un <svg> masqué ne se résolvent pas)
 export function skillIconHTML(skill, classId) {
   if (!skill) return '';
   const key = skill.id;
   let html = cache.get(key);
-  if (html) return html;
+  if (html) return html.replaceAll('§', String(++uid));
   const col = typeof skill.color === 'number' ? skill.color : skillColor(skill, skill.classId || classId);
   const h = hash(skill.id);
   const shape = SHAPES[h % SHAPES.length], orn = ORN[(h >>> 3) % ORN.length], orn2 = ORN[(h >>> 7) % ORN.length];
   const lv = skill.levelReq || 1;
   const tier = lv >= 150 ? 3 : lv >= 80 ? 2 : lv >= 30 ? 1 : 0;
   const c = hex(col), cd = shade(col, 0.35), cm = shade(col, 0.7), cl = shade(col, 1.25);
-  const gid = 'g' + h.toString(36);
-  const rot = (h >>> 11) % 4 === 0 ? 0 : 0;
+  const gid = 'g' + h.toString(36) + '_§';
+  const rot = 0;
+  const cid = 'c' + gid;
+  const A = skillArt(skill, classId, gid, c, cid);
   const svg = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">`
-    + `<defs><radialGradient id="${gid}" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${cm}" stop-opacity=".95"/><stop offset=".6" stop-color="${cd}"/><stop offset="1" stop-color="#05070f"/></radialGradient></defs>`
+    + `<defs>${A.defs}<clipPath id="${cid}">${shape(22.5)}</clipPath><radialGradient id="${gid}" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${cm}" stop-opacity=".95"/><stop offset=".6" stop-color="${cd}"/><stop offset="1" stop-color="#05070f"/></radialGradient></defs>`
     + `<g fill="none" stroke="${c}" stroke-width="1.4" opacity=".55" transform="rotate(${rot} 32 32)">${tier >= 1 ? orn2(c) : ''}</g>`
     + `<g fill="url(#${gid})" stroke="${cl}" stroke-width="${2.2 + tier * 0.5}" stroke-linejoin="round">${shape(24)}</g>`
+    + A.art
     + `<g fill="none" stroke="${c}" stroke-width="1" opacity=".6" stroke-linejoin="round">${shape(20)}</g>`
     + (tier >= 1 ? orn(c) : '')
     + (tier >= 3 ? `<g fill="none" stroke="${cl}" stroke-width="1" opacity=".8">${shape(28.5)}</g>` : '')
     + `</svg>`;
-  html = `<span class="sk-ico" style="--ic:${c}">${svg}<span class="sk-emo">${skill.icon}</span>${skillGlyph(skill, classId)}</span>`;
+  html = `<span class="sk-ico" style="--ic:${c}">${svg}<span class="sk-emo">${skill.icon}</span></span>`;
   cache.set(key, html);
-  return html;
+  return html.replaceAll('§', String(++uid));
 }

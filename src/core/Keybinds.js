@@ -7,7 +7,6 @@ export const ACTIONS = [
   { id: 'right', label: 'Aller à droite', group: 'Déplacement', def: ['KeyD', 'ArrowRight'] },
   { id: 'roll', label: 'Roulade', group: 'Déplacement', def: ['Space', null] },
   { id: 'run', label: 'Sprint (maintenir)', group: 'Déplacement', def: ['ShiftLeft', 'ShiftRight'] },
-  { id: 'crouch', label: 'S’accroupir (maintenir)', group: 'Déplacement', def: ['KeyC', null] },
   { id: 'interact', label: 'Interagir / ramasser', group: 'Actions', def: ['KeyE', null] },
   { id: 'mount', label: 'Monter / descendre de monture', group: 'Actions', def: ['KeyH', null] },
   { id: 'townPortal', label: 'Portail de ville', group: 'Actions', def: ['KeyT', null] },
