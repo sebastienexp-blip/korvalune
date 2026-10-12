@@ -27,5 +27,5 @@ function modelsIndex() {
 export default defineConfig({
   plugins: [modelsIndex()],
   server: { host: true, port: 5173 },
-  build: { target: 'es2022' }
+  build: { target: 'es2022', rollupOptions: { input: { main: path.resolve('index.html'), modeltest: path.resolve('modeltest.html') } } }
 });

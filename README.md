@@ -1248,3 +1248,12 @@ Voir `public/audio/CREDITS.md` et `public/audio/registry.json` (fichier par fich
 
 ### Lacunes connues (aucun faux fichier ajouté)
 - battement de cœur (silencieux), sabots/galop du cheval, cri de griffon (approximé par corbeau grave + grand félin), thèmes de victoire/défaite dédiés (de courtes fanfares sont utilisées).
+
+## V10.41 (prototype) — Premiers vrais modèles 3D (GLB)
+
+Premier modèle : **le Veilleur de Corvalune** (`public/models_proto/corvalune_veilleur.glb`) — humanoïde en armure noire « corbeau & lune »,
+27 os, 8 animations, ~43 000 triangles, 4 Mo. Fabriqué par script (`tools/models/`, voir son README).
+**Zone de test** : `modeltest.html` (en local `npm run dev` puis `/modeltest.html`) — le personnage s'y déplace avec les vrais chemins de code du jeu
+(`ModelLibrary.tryCreateGlbRig` / `animateGlbRig`) : ZQSD/flèches, Maj = courir, Espace = attaque, E = attaque 2, H = coup reçu, X = mort, joystick et boutons sur mobile.
+Rien n'est encore branché dans le jeu principal (le dossier `models_proto/` n'est pas lu par le chargeur de modèles). Pour l'activer plus tard :
+copier le `.glb` dans `public/models/` et ajouter `{ "player:warrior": "corvalune_veilleur.glb" }` dans `public/models/mapping.json`.

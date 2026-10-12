@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>Aperçu GLB</title>
+<style>html,body{margin:0;background:#15131c;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/three/three.module.js","three/addons/":"/addons/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const q = new URLSearchParams(location.search);
+const W = +q.get('w') || 900, H = +q.get('h') || 1000;
+const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+r.setSize(W, H); r.setPixelRatio(1); r.shadowMap.enabled = true; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05;
+document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x262431);
+scene.fog = new THREE.Fog(0x262431, 8, 20);
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 50);
+// éclairage : clair de lune + contre-jour chaud + environnement
+const pm = new THREE.PMREMGenerator(r);
+const env = new THREE.Scene(); env.background = new THREE.Color(0x30304a);
+const l1 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 8), new THREE.MeshBasicMaterial({ color: 0xcfd8ff })); l1.position.set(-4, 5, 4); l1.scale.setScalar(2); env.add(l1);
+const l2 = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 8), new THREE.MeshBasicMaterial({ color: 0xff9a60 })); l2.position.set(5, 1, -4); l2.scale.setScalar(1.5); env.add(l2);
+scene.environment = pm.fromScene(env, 0.04).texture; scene.environmentIntensity = 1.0;
+const key = new THREE.DirectionalLight(0xbfc9ff, 3.2); key.position.set(-3, 5, 4); key.castShadow = true; scene.add(key);
+const rim = new THREE.DirectionalLight(0xff9a60, 2.4); rim.position.set(4, 2, -3); scene.add(rim);
+scene.add(new THREE.HemisphereLight(0x8a8ab8, 0x3a3028, 0.9));
+const ground = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshStandardMaterial({ color: 0x1b1a22, roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const gltf = await new GLTFLoader().loadAsync(q.get('f'));
+const root = gltf.scene; scene.add(root);
+root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+const mixer = new THREE.AnimationMixer(root);
+const clip = q.get('clip'); const t = +q.get('t') || 0;
+if (clip) { const c = gltf.animations.find(a => a.name === clip); if (c) { const a = mixer.clipAction(c); a.play(); mixer.setTime(t); } }
+const yaw = (+q.get('yaw') || 0) * Math.PI / 180, dist = +q.get('d') || 5.2, ty = +q.get('ty') || 0.9, fov = +q.get('fov');
+if (fov) { cam.fov = fov; cam.updateProjectionMatrix(); }
+cam.position.set(Math.sin(yaw) * dist, ty + (+q.get('dy') || 0.15), Math.cos(yaw) * dist); cam.lookAt(+q.get('tx') || 0, ty, 0);
+root.updateMatrixWorld(true);
+r.render(scene, cam);
+window.__info = { anims: gltf.animations.map(a => [a.name, a.duration.toFixed(2)]), done: true };
+</script>
