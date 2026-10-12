@@ -36,6 +36,7 @@ import { cleanPotions } from './src/data/potions.js';
 import { cleanSatchel, SATCHEL_MAX } from './src/data/satchel.js';
 import { cleanZenith } from './src/data/zenith.js';
 import { riftBoard } from './server/riftBoard.js';
+import { MAX_DIFFICULTY } from './src/data/difficulty.js';
 import { cleanRanks, setSkillTable } from './src/combat/SkillRanks.js';
 import { readFileSync } from 'node:fs';
 setSkillTable(Object.fromEntries(JSON.parse(readFileSync(new URL('./src/data/skills.json', import.meta.url), 'utf8')).map((s) => [s.id, s])));
@@ -283,7 +284,7 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   clean.completed = Array.isArray(incoming.completed) ? incoming.completed.slice(0, 400).map((s) => sanitize(s, 60)) : [];
   // V10.10 : montures de l'écurie (identifiants du catalogue uniquement)
   clean.mounts = [...new Set((Array.isArray(incoming.mounts) ? incoming.mounts : []).filter(isMountId))].slice(0, MAX_MOUNTS);
-  clean.difficulty = Number.isInteger(incoming.difficulty) ? Math.max(0, Math.min(7, incoming.difficulty)) : (prev?.difficulty | 0); // V10.18
+  clean.difficulty = Number.isInteger(incoming.difficulty) ? Math.max(0, Math.min(MAX_DIFFICULTY, incoming.difficulty)) : (prev?.difficulty | 0); // V10.18
   clean.potions = cleanPotions(incoming.potions, prev?.potions); // V10.22 : potions permanentes
   { // V10.26 : besace des matériaux — gain par minute plafonné (large : le démontage d'objets rend beaucoup)
     const inc = cleanSatchel(incoming.satchel, prev?.satchel), old = cleanSatchel(prev?.satchel);

@@ -1290,5 +1290,110 @@
     "maxStack": 99,
     "value": 5943,
     "desc": "Rune de rang 14. Sertie dans une arme : +3.5 % Chance de critique, +15 Dégâts. Dans une armure : +4 % Réduction des dégâts, +20 Défense. Dans un bijou : +10 % Dégâts critiques, +6 Chance. À sertir chez le forgeron ; 3 runes identiques se fusionnent en une rune supérieure au Monolithe."
+  },
+  {
+    "id": "orb_common",
+    "name": "Orbe d’apprenti",
+    "icon": "🔮",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "int": 2,
+      "atk": 2
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": "Une sphère de cristal qui chante doucement.",
+    "visual": "orb"
+  },
+  {
+    "id": "orb_uncommon",
+    "name": "Orbe de clarté",
+    "icon": "🔮",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "peu_commun",
+    "levelReq": 4,
+    "stats": {
+      "int": 4,
+      "atk": 4,
+      "mana": 20
+    },
+    "value": 26,
+    "stackable": false,
+    "desc": "Elle focalise ta magie.",
+    "visual": "orb"
+  },
+  {
+    "id": "quiver_common",
+    "name": "Carquois de chasseur",
+    "icon": "🏹",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "agi": 2,
+      "atk": 2
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": "Cuir souple, flèches à portée de main.",
+    "visual": "quiver"
+  },
+  {
+    "id": "quiver_uncommon",
+    "name": "Carquois renforcé",
+    "icon": "🏹",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "peu_commun",
+    "levelReq": 4,
+    "stats": {
+      "agi": 4,
+      "atk": 4,
+      "crit": 0.01
+    },
+    "value": 26,
+    "stackable": false,
+    "desc": "Plumes d’oie et garde en laiton.",
+    "visual": "quiver"
+  },
+  {
+    "id": "offdagger_common",
+    "name": "Dague de parade",
+    "icon": "🗡️",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "commun",
+    "levelReq": 1,
+    "stats": {
+      "agi": 2,
+      "atk": 2
+    },
+    "value": 10,
+    "stackable": false,
+    "desc": "Pour parer, puis frapper.",
+    "visual": "offdagger"
+  },
+  {
+    "id": "offdagger_uncommon",
+    "name": "Dague de gaucher",
+    "icon": "🗡️",
+    "type": "armor",
+    "slot": "offhand",
+    "rarity": "peu_commun",
+    "levelReq": 4,
+    "stats": {
+      "agi": 4,
+      "atk": 4,
+      "crit": 0.01
+    },
+    "value": 26,
+    "stackable": false,
+    "desc": "Fine et vive.",
+    "visual": "offdagger"
   }
 ]

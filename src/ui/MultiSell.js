@@ -103,6 +103,20 @@ export class MultiSell {
       q.appendChild(b);
     }
     const bAll = document.createElement('button'); bAll.className = 'ms-btn'; bAll.textContent = 'Tout'; bAll.onclick = () => { this.selectAll(scopes); rerender(); }; q.appendChild(bAll);
+    // V10.33 : « Tout vendre » = tout l'inventaire d'un coup, avec confirmation immédiate
+    const invScope = scopes.find((s) => s.scope === 'inv');
+    if (invScope) {
+      const bEvery = document.createElement('button'); bEvery.className = 'ms-btn ms-all'; bEvery.textContent = 'Tout vendre';
+      bEvery.onclick = () => {
+        this.clearSel();
+        this.selectAll([invScope]);
+        this.confirmUntil = Date.now() + 6000;
+        rerender();
+        clearTimeout(this._ct);
+        this._ct = setTimeout(() => { if (this.confirmUntil && this.confirmUntil <= Date.now() + 50) { this.confirmUntil = 0; try { rerender(); } catch { /* écran fermé */ } } }, 6100);
+      };
+      q.appendChild(bEvery);
+    }
     const bNone = document.createElement('button'); bNone.className = 'ms-btn'; bNone.textContent = 'Aucun'; bNone.onclick = () => { this.clearSel(); rerender(); }; q.appendChild(bNone);
 
     const confirming = this.confirmUntil > Date.now();

@@ -1176,3 +1176,11 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `src/ui/IntroCinematic.js` : film 3D en temps réel (Three.js, son propre canvas libéré à la fin) joué par `Game._playIntro()` entre le chargement et l'écran principal. Caméra sur courbe Catmull-Rom, aurores (shader), deux lunes, relief éclairé, citadelle flottante, Cœur d'Éther, failles, éclairs ; musique et bruitages synthétisés avec le contexte audio du jeu ; sous-titres.
 - Texte de narration : constante `SUBS` en tête du fichier ; durée `DURATION` ; trajectoire `CAM_POS` / `CAM_LOOK`.
 - Désactivation : option `introCinematic`, paramètre d'URL `?nointro`, navigateur automatisé ou « réduire les animations ».
+
+## V10.33 — Difficulté libre, carte zoomable, GPS de quête
+
+- Difficulté sans verrou + 10 paliers (Calamité I–V, Apocalypse I–V), plafonds de butin adaptés.
+- Mains secondaires (carquois, orbes, dagues) vendues et lootées pour toutes les classes.
+- Griffon : survol de la muraille. « Tout vendre » avec confirmation.
+- Carte du monde zoomable (boutons, molette, pincement, déplacement) ; objectifs de quête marqués.
+- GPS au sol (`src/world/GroundGPS.js`), option `groundGps`.

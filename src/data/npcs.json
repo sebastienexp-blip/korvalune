@@ -66,6 +66,30 @@
         "price": 34
       },
       {
+        "itemId": "orb_common",
+        "price": 12
+      },
+      {
+        "itemId": "orb_uncommon",
+        "price": 34
+      },
+      {
+        "itemId": "quiver_common",
+        "price": 12
+      },
+      {
+        "itemId": "quiver_uncommon",
+        "price": 34
+      },
+      {
+        "itemId": "offdagger_common",
+        "price": 12
+      },
+      {
+        "itemId": "offdagger_uncommon",
+        "price": 34
+      },
+      {
         "itemId": "staff_common",
         "price": 15
       },

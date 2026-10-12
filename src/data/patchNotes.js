@@ -3,6 +3,17 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.33', title: 'Difficulté libre, carte zoomable, GPS de quête',
+    items: [
+      '🔓 La difficulté n’est plus verrouillée : tu choisis le niveau quand tu veux (le niveau conseillé reste indiqué). 10 nouveaux paliers : Calamité I–V et Apocalypse I–V.',
+      '🏹 Carquois, orbes et dagues secondaires en vente chez l’armurière et dans le butin : chaque classe a maintenant sa main secondaire.',
+      '🦅 Le griffon passe par-dessus la muraille de la ville.',
+      '💰 « Tout vendre » : vend tout l’inventaire d’un coup, avec confirmation.',
+      '🗺️ Carte du monde : zoom + / −, molette, pincement, déplacement au doigt, bouton « me centrer ». Les objectifs de quête y sont marqués ❗.',
+      '🧭 GPS au sol : des chevrons dorés guident vers l’objectif de quête le plus proche (désactivable dans Options).'
+    ]
+  },
+  {
     version: '10.32', title: 'Cinématique d’introduction',
     items: [
       '🎬 Une cinématique de 54 secondes se lance avant l’écran principal : deux lunes, aurores, citadelle flottante, Cœur d’Éther qui se fracture et failles qui s’ouvrent sur le ciel.',

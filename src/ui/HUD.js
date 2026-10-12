@@ -138,7 +138,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.32 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.33 — Korvalune</div>
         </div>
       </div>
 
@@ -535,7 +535,7 @@ export class HUD {
 
       <div id="worldmap-screen" class="hidden panel-screen">
         <h2>Carte du monde</h2>
-        <div id="worldmap-canvas-wrap"><canvas id="worldmap-canvas" width="640" height="640"></canvas></div>
+        <div id="worldmap-canvas-wrap"><canvas id="worldmap-canvas" width="640" height="640"></canvas><div id="wm-zoom"><button id="wm-zin" aria-label="Zoom avant">+</button><button id="wm-zout" aria-label="Zoom arrière">−</button><button id="wm-zme" aria-label="Centrer sur moi">◎</button></div></div>
         <div id="worldmap-legend"><span>⚔️ Armes</span><span>🛡️ Armures</span><span>🧪 Potions</span><span>🐎 Écurie</span><span>✂️ Barbier</span><span>🏦 Banque</span><span>🗿 Spires</span><span>🎃 Événement</span><span>🍬 Bonbons</span><span>📦 Coffre</span><span>💀 Boss</span><span>👺 Gobelin</span><span>👑 Roi Citrouille</span><span>◆ PNJ de quêtes</span><span>❗ Quête</span><span>🟢 Groupe</span><span>🔵 Joueurs</span></div>
         <button data-act="close-map">Fermer</button>
       </div>
@@ -1240,13 +1240,13 @@ export class HUD {
 
   // V10.18 — choix de la difficulté. d : { cur, level, canChange, why }
   renderDifficulty(d) {
-    this.q('#diff-hint').textContent = d.canChange ? 'Plus la difficulté est haute, plus les monstres sont forts… et plus l’or, l’expérience et les objets rares abondent. Ton choix est enregistré avec ton personnage.' : d.why;
+    this.q('#diff-hint').textContent = d.canChange ? 'Plus la difficulté est haute, plus les monstres sont forts… et plus l’or, l’expérience et les objets rares abondent. Change-la quand tu veux : ton choix est enregistré avec ton personnage.' : d.why;
     this.q('#diff-list').innerHTML = DIFFICULTIES.map((x) => {
-      const locked = d.level < x.lvl, on = d.cur === x.id;
+      const locked = false, advised = d.level < x.lvl, on = d.cur === x.id;
       const pc = (v) => (v >= 1 ? `×${v}` : '');
       return `<div class="soc-row lune-item diff-row${on ? ' soc-on' : ''}"><div class="soc-name"><b style="color:${x.color}">${x.name}${on ? ' <em>(actuelle)</em>' : ''}</b>` +
-        `<small>Monstres : PV ${pc(x.hp)} · dégâts ${pc(x.dmg)} — Récompenses : XP ${pc(x.xp)} · or ${pc(x.gold)} · chance d’objet ${pc(x.drop)}${x.shift ? ` · raretés +${x.shift}` : ''}</small></div>` +
-        `<div class="lune-btns"><button class="soc-btn${on ? '' : ' lune-go'}" data-diff="${x.id}"${on || locked || !d.canChange ? ' disabled' : ''}>${on ? 'Choisie' : locked ? `🔒 Niveau ${x.lvl}` : 'Choisir'}</button></div></div>`;
+        `<small>Monstres : PV ${pc(x.hp)} · dégâts ${pc(x.dmg)} — Récompenses : XP ${pc(x.xp)} · or ${pc(x.gold)} · chance d’objet ${pc(x.drop)}${x.shift ? ` · raretés +${x.shift}` : ''}${advised ? ` · conseillé dès le niveau ${x.lvl}` : ''}</small></div>` +
+        `<div class="lune-btns"><button class="soc-btn${on ? '' : ' lune-go'}" data-diff="${x.id}"${on || locked || !d.canChange ? ' disabled' : ''}>${on ? 'Choisie' : 'Choisir'}</button></div></div>`;
     }).join('');
   }
 

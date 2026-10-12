@@ -1,3 +1,4 @@
+import { GroundGPS } from '../world/GroundGPS.js';
 import * as THREE from 'three';
 import { CONFIG } from './config.js';
 import { EventBus } from './EventBus.js';
@@ -1924,13 +1925,13 @@ export class Game {
   }
 
   _diffState() {
-    const p = this.player, inTown = !!p && Math.abs(p.pos.x) < 44 && Math.abs(p.pos.z) < 44 && !this.rift?.active;
-    return { cur: getDifficulty().id, level: p ? p.level : 1, canChange: inTown, why: 'La difficulté se change en ville (Korvalune) : retourne-y d’abord (menu pause → téléportation).' };
+    const p = this.player; // V10.33 : plus aucun verrou — on change de difficulté quand on veut, où l'on veut
+    return { cur: getDifficulty().id, level: p ? p.level : 1, canChange: true, why: '' };
   }
   _renderDifficulty() { this.hud.renderDifficulty(this._diffState()); }
   _setDifficulty(n) {
     const st = this._diffState(), d = DIFFICULTIES[clampDifficulty(n)];
-    if (!st.canChange || st.level < d.lvl) return;
+    if (!st.canChange) return;
     setDifficultyId(d.id);
     if (d.id >= 1) this._tut('difficulty');
     this.audio.play('click');
@@ -2690,12 +2691,48 @@ export class Game {
     this._tut('map');
     if (this.rift?.active) { this.hud.notify('La carte du monde est indisponible dans une spire.', 'info'); return; }
     this.hud.showScreen('worldmap-screen');
+    // V10.33 : zoom / dézoom (boutons, molette, pincement) + déplacement au doigt/souris
+    const wm = this._wm || (this._wm = { zoom: 1, cx: 0, cz: 0, bound: false });
+    wm.zoom = 1; wm.cx = 0; wm.cz = 0;
+    const c = this.root.querySelector('#worldmap-canvas');
+    if (!wm.bound) {
+      wm.bound = true;
+      const redraw = () => this._drawWorldMap();
+      const setZoom = (z) => { wm.zoom = Math.max(1, Math.min(8, z)); if (wm.zoom === 1) { wm.cx = 0; wm.cz = 0; } redraw(); };
+      this.root.querySelector('#wm-zin')?.addEventListener('click', () => setZoom(wm.zoom * 1.6));
+      this.root.querySelector('#wm-zout')?.addEventListener('click', () => setZoom(wm.zoom / 1.6));
+      this.root.querySelector('#wm-zme')?.addEventListener('click', () => { if (this.player) { wm.cx = this.player.pos.x; wm.cz = this.player.pos.z; if (wm.zoom < 2.5) wm.zoom = 2.5; redraw(); } });
+      c.addEventListener('wheel', (e) => { e.preventDefault(); setZoom(wm.zoom * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
+      const pts = new Map(); let lastD = 0;
+      const clampC = () => { const half = CONFIG.world.size / 2, vis = CONFIG.world.size / wm.zoom / 2; wm.cx = Math.max(-half + vis, Math.min(half - vis, wm.cx)); wm.cz = Math.max(-half + vis, Math.min(half - vis, wm.cz)); };
+      c.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { c.setPointerCapture(e.pointerId); } catch { /* ok */ } lastD = 0; });
+      c.addEventListener('pointermove', (e) => {
+        const prev = pts.get(e.pointerId); if (!prev) return;
+        const cur = { x: e.clientX, y: e.clientY };
+        if (pts.size === 2) {
+          pts.set(e.pointerId, cur);
+          const [a, b] = [...pts.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (lastD) setZoom(wm.zoom * (d / lastD)); lastD = d; return;
+        }
+        pts.set(e.pointerId, cur);
+        if (wm.zoom <= 1) return;
+        const r = c.getBoundingClientRect(), k = CONFIG.world.size / wm.zoom / r.width;
+        wm.cx -= (cur.x - prev.x) * k; wm.cz -= (cur.y - prev.y) * k; clampC(); redraw();
+      });
+      const up = (e) => { pts.delete(e.pointerId); lastD = 0; };
+      c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+    }
+    this._drawWorldMap();
+  }
+
+  _drawWorldMap() {
     const c = this.root.querySelector('#worldmap-canvas'), g = c.getContext('2d');
-    const W = c.width, size = CONFIG.world.size;
-    const toX = (wx) => (wx / size + 0.5) * W, toY = (wz) => (wz / size + 0.5) * c.height;
+    const wm = this._wm || { zoom: 1, cx: 0, cz: 0 };
+    const W = c.width, size = CONFIG.world.size, Z = wm.zoom;
+    const toX = (wx) => ((wx - wm.cx) / size * Z + 0.5) * W, toY = (wz) => ((wz - wm.cz) / size * Z + 0.5) * c.height;
     g.clearRect(0, 0, W, c.height);
     g.imageSmoothingEnabled = true;
-    g.drawImage(this.world.mapCanvas, 0, 0, W, c.height);
+    g.drawImage(this.world.mapCanvas, toX(-size / 2), toY(-size / 2), W * Z, c.height * Z);
     // voile sombre sur les bords
     const vg = g.createRadialGradient(W / 2, W / 2, W * 0.35, W / 2, W / 2, W * 0.75);
     vg.addColorStop(0, 'rgba(6,10,20,0)'); vg.addColorStop(1, 'rgba(6,10,20,0.22)');
@@ -2727,7 +2764,7 @@ export class Game {
       if (known) { g.fillStyle = 'rgba(255,248,220,0.95)'; g.strokeStyle = 'rgba(6,10,20,0.9)'; g.lineWidth = 3; g.strokeText(p.name, x, y + 12); g.fillText(p.name, x, y + 12); }
     }
     // ville
-    const tx = toX(0), ty = toY(0), tr = (CONFIG.world.townRadius / size) * W;
+    const tx = toX(0), ty = toY(0), tr = (CONFIG.world.townRadius / size) * W * Z;
     g.strokeStyle = '#e2b866'; g.lineWidth = 2.5;
     g.beginPath(); g.arc(tx, ty, Math.max(tr, 8), 0, Math.PI * 2); g.stroke();
     g.fillStyle = 'rgba(8,12,24,0.75)'; g.font = 'bold 13px sans-serif';
@@ -2748,6 +2785,7 @@ export class Game {
     // V10.14 : coffres, boss, gobelin, événement
     g.font = '15px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     const wmIcon = (wx, wz, ch, ring) => { const x = toX(wx), y = toY(wz); g.fillStyle = 'rgba(8,12,24,0.8)'; g.strokeStyle = ring || 'rgba(226,184,102,0.8)'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 10, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.fillText(ch, x, y + 1); };
+    for (const q of this._questSpots()) wmIcon(q.x, q.z, '❗', '#ffd45a');
     for (const c of this.worldChests?.list || []) if (!c.open) wmIcon(c.x, c.z, '📦');
     for (const b of this.bosses || []) if (b.alive) wmIcon(b.pos.x, b.pos.z, '💀', '#ff6a5a');
     if (this.lootSprite?.alive) wmIcon(this.lootSprite.pos.x, this.lootSprite.pos.z, '👺', '#ffd45a');
@@ -3218,6 +3256,10 @@ export class Game {
     this._mmExtra.zone = this._zoneNameAt(this.player.pos.x, this.player.pos.z);
     if (inRift) { this.rift.mmExtra.zone = this.rift.zoneName; this.rift.mmExtra.players = this._mapPlayers(); this.hud.drawMinimap(this.player, this.rift.mmWorld, this.enemies, [], [], this.rift.mmExtra); }
     else { this._mmExtra.players = this._mapPlayers(); this._mmExtra.icons = this._mapIcons(); this.hud.drawMinimap(this.player, this._mmWorld, this.enemies, this.npcs.filter((n) => !MAP_ICON_NPCS.has(n.id || n.def?.id)), this._questSpots(), this._mmExtra); }
+
+    // V10.33 : GPS au sol vers l'objectif de quête le plus proche
+    if (!this._gps) this._gps = new GroundGPS(this.scene, this.world);
+    this._gps.update(dt, this.player, inRift ? null : this._questSpots(), this.settings.groundGps !== false && !inRift);
 
     // vue aérienne : la caméra est loin du joueur → on repousse le brouillard d'autant (rendu uniquement)
     const fog = this.scene.fog, fogOff = this.cameraRig.isIso ? Math.max(0, this.cameraRig.dist - 6) : 0;

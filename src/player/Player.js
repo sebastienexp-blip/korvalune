@@ -616,7 +616,9 @@ export class Player {
     if (this.swimming) groundY = this.world.waterLevel - 0.3;
     if (this.flying) { // V10.10 : vol du griffon — altitude de croisière au-dessus du terrain (ou de l'eau), atterrissage en douceur
       const gy = Math.max(groundY, this.world.waterLevel);
-      this.pos.y = damp(this.pos.y, this.landing ? groundY : gy + 4.8, this.landing ? 2.4 : 2.8, dt);
+      // V10.33 : au-dessus de la ville, le griffon prend assez d'altitude pour passer par-dessus la muraille (5 m) et ses tours (13 m)
+      const edge = Math.max(Math.abs(this.pos.x), Math.abs(this.pos.z)), lift = this.pos.x < 1500 ? 9.5 * (1 - Math.min(1, Math.max(0, (edge - 36) / 14))) : 0;
+      this.pos.y = damp(this.pos.y, this.landing ? groundY : gy + 4.8 + lift, this.landing ? 2.4 : 2.8, dt);
       this.vel.y = 0; this.grounded = false; fallV = 0;
       if (this.landing && this.pos.y - groundY < 0.4) {
         if (this.world.isWalkable(this.pos.x, this.pos.z, CONFIG.player.radius)) { this.pos.y = groundY; this.grounded = true; this.setMount(null); this.audio.play('land'); }
