@@ -1183,3 +1183,6 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
   .zn-mods small { display: none; } .zn-card { padding: 5px 8px; }
   .zn-lvl b { font-size: 1.1rem; } .zn-pts b { font-size: 1.3rem; }
 }
+
+.soc-click { cursor: pointer; }
+.soc-click:hover b { text-decoration: underline; }

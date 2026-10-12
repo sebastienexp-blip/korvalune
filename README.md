@@ -1184,3 +1184,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Griffon : survol de la muraille. « Tout vendre » avec confirmation.
 - Carte du monde zoomable (boutons, molette, pincement, déplacement) ; objectifs de quête marqués.
 - GPS au sol (`src/world/GroundGPS.js`), option `groundGps`.
+
+## V10.34 — Multijoueur
+
+- `src/world/TownPortal.js` : portail de ville violet (touche T), retour exact, partagé avec le groupe (relais serveur `gr:tp`).
+- Menu joueur (`Game._openPlayerMenu`) : clic sur un avatar ou un nom (Amis / Groupe) ; ajout d'ami par avatar (`friend:add` avec `id`).
+- Téléportation vers un membre du groupe (recharge 20 s) ; XP de groupe +10 % par coéquipier à moins de 100 m (`share.xpMult`).

@@ -138,7 +138,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.33 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.34 — Korvalune</div>
         </div>
       </div>
 
@@ -268,6 +268,7 @@ export class HUD {
           <button id="btn-quests" class="tbtn small">📜</button>
           <button id="btn-ach" class="tbtn small">🏆</button>
           <button id="btn-social" class="tbtn small">👥</button>
+          <button id="btn-tp" class="tbtn small" aria-label="Portail de ville" title="Portail de ville (T)">🌀</button>
           <button id="btn-mount" class="tbtn small hidden" aria-label="Monter ou descendre de monture" title="Monture (H)">🐎</button>
           <button id="btn-pass" class="tbtn small" aria-label="Pass de combat" title="Pass de combat">🏅<i class="pass-dot hidden"></i></button>
           <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes" title="Boutique des Lunes"><span class="bl-ico">🌙</span><span class="bl-txt">Boutique</span></button>
@@ -1371,12 +1372,12 @@ export class HUD {
     if (!d.group.length) g.innerHTML = '<p class="menu-hint">Tu n\'es dans aucun groupe. Invite un ami ou un joueur ci-dessous (jusqu\'à 5 joueurs) : vous combattez les mêmes monstres et les mêmes boss, chacun garde son butin et son XP.</p>';
     else {
       const iLead = d.leaderId === d.meId;
-      g.innerHTML = d.group.map((m) => `<div class="soc-row"><div class="soc-name"><b>${m.id === d.leaderId ? '👑 ' : ''}${esc(m.name)}</b><small>Nv.${m.level} · ${esc(m.classId || '')}${m.id === d.meId ? ' · toi' : ''}${m.inst ? ' · en spire' : ''}</small></div>${iLead && m.id !== d.meId ? `<button class="soc-btn" data-sa="kick" data-v="${esc(m.id)}">Exclure</button>` : ''}</div>`).join('')
+      g.innerHTML = d.group.map((m) => `<div class="soc-row"><div class="soc-name soc-click" data-sa="pmenu" data-v="${esc(m.name)}" data-id="${esc(m.id)}"><b>${m.id === d.leaderId ? '👑 ' : ''}${esc(m.name)}</b><small>Nv.${m.level} · ${esc(m.classId || '')}${m.id === d.meId ? ' · toi' : ''}${m.inst ? ' · en spire' : ''}</small></div>${iLead && m.id !== d.meId ? `<button class="soc-btn" data-sa="kick" data-v="${esc(m.id)}">Exclure</button>` : ''}</div>`).join('')
         + '<div class="soc-row"><button class="soc-btn" data-sa="leave">Quitter le groupe</button></div>';
     }
     this.q('#social-requests').innerHTML = d.requests.length ? '<h4>Demandes reçues</h4>' + d.requests.map((n) => `<div class="soc-row"><div class="soc-name"><b>${esc(n)}</b><small>veut devenir ton ami</small></div><button class="soc-btn" data-sa="accept" data-v="${esc(n)}">Accepter</button><button class="soc-btn" data-sa="decline" data-v="${esc(n)}">Refuser</button></div>`).join('') : '';
-    this.q('#social-friends').innerHTML = d.friends.length ? d.friends.map((f) => `<div class="soc-row${f.online ? ' soc-on' : ''}"><div class="soc-name"><b>${f.online ? '🟢' : '⚫'} ${esc(f.name)}</b><small>${f.online ? (f.char ? esc(f.char) + ' · Nv.' + f.level : 'en ligne') : 'hors ligne'}</small></div><button class="soc-btn dm-btn" data-sa="dm" data-v="${esc(f.name)}">✉️ Message${f.unread ? ` <span class="dm-badge">${f.unread}</span>` : ''}</button>${f.online ? `<button class="soc-btn" data-sa="invite" data-v="${esc(f.name)}">Inviter</button>` : ''}${f.online && f.char ? `<button class="soc-btn" data-sa="trade" data-v="${esc(f.char)}">🔁 Échanger</button>` : ''}<button class="soc-btn" data-sa="remove" data-v="${esc(f.name)}">Retirer</button></div>`).join('') : '<p class="menu-hint">Aucun ami pour l\'instant. Écris le nom de compte de ton ami ci-dessus puis « Ajouter » : il recevra ta demande.</p>';
-    this.q('#social-players').innerHTML = d.players.length ? d.players.map((p) => `<div class="soc-row"><div class="soc-name"><b>${esc(p.name)}</b><small>Nv.${p.level}</small></div><button class="soc-btn" data-sa="invite-id" data-v="${esc(p.id)}">Inviter</button><button class="soc-btn" data-sa="trade-id" data-v="${esc(p.id)}">🔁 Échanger</button></div>`).join('') : '<p class="menu-hint">Personne d\'autre en vue.</p>';
+    this.q('#social-friends').innerHTML = d.friends.length ? d.friends.map((f) => `<div class="soc-row${f.online ? ' soc-on' : ''}"><div class="soc-name soc-click" data-sa="pmenu" data-fr="1" data-v="${esc(f.name)}" data-char="${esc(f.char || '')}"><b>${f.online ? '🟢' : '⚫'} ${esc(f.name)}</b><small>${f.online ? (f.char ? esc(f.char) + ' · Nv.' + f.level : 'en ligne') : 'hors ligne'}</small></div><button class="soc-btn dm-btn" data-sa="dm" data-v="${esc(f.name)}">✉️ Message${f.unread ? ` <span class="dm-badge">${f.unread}</span>` : ''}</button>${f.online ? `<button class="soc-btn" data-sa="invite" data-v="${esc(f.name)}">Inviter</button>` : ''}${f.online && f.char ? `<button class="soc-btn" data-sa="trade" data-v="${esc(f.char)}">🔁 Échanger</button>` : ''}<button class="soc-btn" data-sa="remove" data-v="${esc(f.name)}">Retirer</button></div>`).join('') : '<p class="menu-hint">Aucun ami pour l\'instant. Écris le nom de compte de ton ami ci-dessus puis « Ajouter » : il recevra ta demande.</p>';
+    this.q('#social-players').innerHTML = d.players.length ? d.players.map((p) => `<div class="soc-row"><div class="soc-name soc-click" data-sa="pmenu" data-v="${esc(p.name)}" data-id="${esc(p.id)}"><b>${esc(p.name)}</b><small>Nv.${p.level}</small></div><button class="soc-btn" data-sa="invite-id" data-v="${esc(p.id)}">Inviter</button><button class="soc-btn" data-sa="trade-id" data-v="${esc(p.id)}">🔁 Échanger</button></div>`).join('') : '<p class="menu-hint">Personne d\'autre en vue.</p>';
   }
 
   hideInvite() { const el = this.q('#invite-pop'); clearTimeout(this._invT); if (el) { el.classList.add('hidden'); el.innerHTML = ''; } }

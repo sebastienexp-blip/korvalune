@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.34', title: 'Multijoueur : portail de ville, menu des joueurs, XP de groupe',
+    items: [
+      '🌀 Portail de ville (touche T ou bouton 🌀) : ouvre un portail violet sur le terrain (10 min). Il mène à Korvalune ; le portail violet de la ville te ramène exactement là où tu étais (touche E). Ton groupe peut l’utiliser aussi.',
+      '👆 Touche l’avatar d’un joueur dans le jeu (ou son nom dans la liste Amis / Groupe) : inviter, ajouter en ami, message privé, échanger, et pour un membre du groupe : se téléporter à côté de lui (ou rejoindre sa faille).',
+      '⭐ XP de groupe : chaque coéquipier à moins de 100 m te rapporte +10 % d’XP sur les monstres du groupe (jusqu’à +40 %). Trop loin = pas de bonus ni de récompense.',
+      '🌀 Quand un membre entre dans une faille, tout le groupe reçoit l’invitation pour la rejoindre (et le bouton « Rejoindre » reste dans l’écran Social).'
+    ]
+  },
+  {
     version: '10.33', title: 'Difficulté libre, carte zoomable, GPS de quête',
     items: [
       '🔓 La difficulté n’est plus verrouillée : tu choisis le niveau quand tu veux (le niveau conseillé reste indiqué). 10 nouveaux paliers : Calamité I–V et Apocalypse I–V.',

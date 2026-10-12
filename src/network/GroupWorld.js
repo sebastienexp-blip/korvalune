@@ -24,6 +24,8 @@ export class GroupWorld {
     this._map = new Map(); this._mapT = 0;
     share.sendDmg = (key, dmg, crit) => this.net.sendGr('dmg', 'host', { k: key, d: Math.round(Math.min(dmg, MAX_DMG)), c: crit ? 1 : 0 });
     share.sendStatus = (key, kind, a, b, c) => this.net.sendGr('st', 'host', { k: key, n: kind, a, b, c });
+    // V10.34 : XP partagée — +10 % par coéquipier présent à moins de `share.range` m (anti-triche : rien si trop loin)
+    share.xpMult = () => { let n = 0; const me = this.g.player; if (!me) return 1; for (const t of this.targets.values()) if (!t.dead && this._inRoom(t) && Math.hypot(t.pos.x - me.pos.x, t.pos.z - me.pos.z) <= share.range) n++; return 1 + 0.1 * Math.min(4, n); };
     share.onKill = (e) => { if (this.role === 'host' && this.members.length > 1) this.net.sendGr('ekill', 'group', { k: e.netKey }); };
     const bus = game.bus;
     bus.on('enemyShoot', (d) => {
@@ -207,6 +209,7 @@ export class GroupWorld {
         g.player.takeDamage(d.d);
         break;
       }
+      case 'tp': { g.tp?.onGroupPortal(msg.from, d); break; }
       case 'rift': {
         g.onGroupRift?.(msg.from, d);
         break;

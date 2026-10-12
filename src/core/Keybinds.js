@@ -10,6 +10,7 @@ export const ACTIONS = [
   { id: 'crouch', label: 'S’accroupir (maintenir)', group: 'Déplacement', def: ['KeyC', null] },
   { id: 'interact', label: 'Interagir / ramasser', group: 'Actions', def: ['KeyE', null] },
   { id: 'mount', label: 'Monter / descendre de monture', group: 'Actions', def: ['KeyH', null] },
+  { id: 'townPortal', label: 'Portail de ville', group: 'Actions', def: ['KeyT', null] },
   { id: 'potionHeal', label: 'Potion de vie', group: 'Actions', def: ['KeyV', null] },
   { id: 'potionMana', label: 'Potion de mana', group: 'Actions', def: ['KeyB', null] },
   ...Array.from({ length: 10 }, (_, i) => ({ id: 'skill' + (i + 1), label: 'Compétence ' + (i + 1), group: 'Compétences', def: ['Digit' + ((i + 1) % 10), 'Numpad' + ((i + 1) % 10)] })),

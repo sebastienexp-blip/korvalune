@@ -164,6 +164,7 @@ export class NetworkManager {
   friendMsg(to, text) { this._send({ t: 'friend:msg', to, text }); }
   friendHistory(name) { this._send({ t: 'friend:history', with: name }); }
   friendList() { this._send({ t: 'friend:list' }); }
+  friendAddById(id) { this._send({ t: 'friend:add', id }); }
   friendAdd(name) { this._send({ t: 'friend:add', to: name }); }
   friendAccept(name) { this._send({ t: 'friend:accept', from: name }); }
   friendDecline(name) { this._send({ t: 'friend:decline', from: name }); }

@@ -6,9 +6,10 @@ import * as THREE from 'three';
 export const share = {
   role: 'solo',
   localPlayer: null,      // le joueur de CET appareil (récompenses, portée)
-  range: 90,              // distance max pour être récompensé d'une mort
+  range: 100,              // distance max pour être récompensé d'une mort
   sendDmg: null,          // (netKey, dmg, crit) => void   (invité → hôte)
   sendStatus: null,       // (netKey, kind, a, b) => void
+  xpMult: null,           // () => nombre ≥ 1 : bonus d'XP de groupe (membres à moins de `range`)
   onKill: null,           // (entité) => void              (hôte → groupe)
   onBossDie: null
 };

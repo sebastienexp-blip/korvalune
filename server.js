@@ -541,6 +541,11 @@ wss.on('connection', (ws, req) => {
       const sys = (text) => send(ws, { t: 'system', text });
       if (msg.t === 'friend:list') { send(ws, friendsState(me)); return; }
       if (msg.t === 'friend:add') {
+        if (typeof msg.id === 'string' && !msg.to) { // V10.34 : ajout depuis l'avatar d'un joueur
+          const tp = players.get(msg.id);
+          if (!tp?.account) { sys('Ce joueur n\u2019est pas connecté à un compte : impossible de l\u2019ajouter.'); return; }
+          msg.to = tp.account;
+        }
         const fk = resolveAccount(sanitizeUsername(msg.to));
         if (!fk) { sys(`Aucun compte nommé « ${sanitize(msg.to, 24)} ».`); return; }
         if (fk === me) { sys('Tu ne peux pas t\'ajouter toi-même.'); return; }
@@ -883,7 +888,7 @@ wss.on('connection', (ws, req) => {
       const HOST_ONLY = new Set(['snap', 'ekill', 'evt']);
       const GUEST_ONLY = new Set(['dmg', 'st']);
       const k = String(msg.k || '').slice(0, 8);
-      if (!HOST_ONLY.has(k) && !GUEST_ONLY.has(k) && k !== 'hit' && k !== 'rift') return;
+      if (!HOST_ONLY.has(k) && !GUEST_ONLY.has(k) && k !== 'hit' && k !== 'rift' && k !== 'tp') return;
       let body; try { body = JSON.stringify(msg.d ?? {}); } catch { return; }
       if (body.length > 12000) return;
       const room = player.inst | 0;
@@ -892,7 +897,7 @@ wss.on('connection', (ws, req) => {
       if (GUEST_ONLY.has(k) && player.id === host) return;
       const out = `{"t":"gr","k":${JSON.stringify(k)},"from":${JSON.stringify(player.id)},"d":${body}}`;
       const sendRaw = (p) => { if (p && p.ws.readyState === p.ws.OPEN) p.ws.send(out); };
-      if (k === 'rift') { // annonce « j'entre dans une spire » : à tout le groupe, quelle que soit la salle
+      if (k === 'rift' || k === 'tp') { // annonce « j'entre dans une spire » : à tout le groupe, quelle que soit la salle
         for (const id of members) if (id !== player.id) sendRaw(players.get(id));
       } else if (msg.to === 'group') { for (const id of members) { const p = players.get(id); if (id !== player.id && p && (p.inst | 0) === room) sendRaw(p); } }
       else if (msg.to === 'host') { if (host && host !== player.id) sendRaw(players.get(host)); }

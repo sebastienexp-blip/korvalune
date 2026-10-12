@@ -117,7 +117,7 @@ export class Enemy {
     const near = share.role === 'solo' || !this.netKey || !!this.rift || !lp?.pos || lp.pos.distanceTo(this.pos) < share.range; // en spire : butin et progression partagés pour tout le groupe
     if (near) {
       this.bus.emit('enemyKilled', this);
-      if (this.xp > 0) lp.gainXp(this.xp);
+      if (this.xp > 0) lp.gainXp(Math.round(this.xp * (share.role !== 'solo' && this.netKey && share.xpMult ? share.xpMult() : 1))); // V10.34 : bonus de groupe
       const coins = Math.round(this.coins[0] + this.rand() * (this.coins[1] - this.coins[0]));
       lp.addCoins(Math.round(coins * (1 + (lp.goldBonus || 0))));
       this.bus.emit('loot', this);

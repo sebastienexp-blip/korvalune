@@ -11,6 +11,7 @@ import { buildDungeon } from '../world/DungeonRuins.js';
 import { WORLD_TIERS, tierById, tierAt } from '../world/WorldTiers.js';
 import { REGIONS, regionAt, isLand } from '../world/Continent.js';
 import { buildPortal, updatePortal } from '../world/Portals.js';
+import { TownPortal } from '../world/TownPortal.js';
 import { mulberry32, clamp } from '../core/math.js';
 import { Weather } from '../effects/Weather.js';
 import { Player } from '../player/Player.js';
@@ -322,6 +323,7 @@ export class Game {
 
     this.hud.setLoading(0.95, 'Ouverture des portails…');
     this._buildPortals();
+    this.tp = new TownPortal(this); this.tp.build(); // V10.34
     try { this.riftStatue = buildRiftStatue(this.world); } catch (e) { console.warn('[V3.7] statue de la spire indisponible', e); }
 
     this.hud.setLoading(1, 'Prêt.');
@@ -995,6 +997,7 @@ export class Game {
     this.root.querySelector('#btn-social').addEventListener('click', () => this._openSocial());
     this.root.querySelector('#btn-lune').addEventListener('click', () => this._openLune());
     this.root.querySelector('#btn-mount').addEventListener('click', () => this._toggleMount());
+    this.root.querySelector('#btn-tp')?.addEventListener('click', () => this.tp?.cast());
     this.root.querySelector('#stable-screen').addEventListener('click', (e) => { const bt = e.target.closest('[data-st]'); if (bt && !bt.disabled) this._stableAct(bt.dataset.st, bt.dataset.v); });
     this.root.querySelector('#inv-cos').addEventListener('click', (e) => { const b = e.target.closest('[data-cos]'); if (!b) return; this.audio.play('equip'); this._equipCos(b.dataset.slot, b.dataset.on === '1' ? null : b.dataset.cos); });
     this.bus.on('ui:close-stable', () => this._closeModal());
@@ -1072,6 +1075,7 @@ export class Game {
           case 'remove': this.net.friendRemove(v); break;
           case 'dm': this._dmOpen = v; this._dmMsgs = []; this.hud.showScreen('dm-screen'); this.hud.renderDm({ name: v, msgs: [] }); this.net.friendHistory(v); break;
           case 'kick': this.net.kickFromGroup(v); break;
+          case 'pmenu': { let id = btn.dataset.id || ''; if (!id && btn.dataset.char) { for (const r of this.remotePlayers.values()) if (r.name === btn.dataset.char) id = r.id; } const rp = id ? this.remotePlayers.get(id) : null; const gm = id ? (this.group || []).find((m) => m.id === id) : null; this._openPlayerMenu({ id: id || rp?.id, name: btn.dataset.char || v, level: rp?.level || gm?.level, classId: rp?.classId || gm?.classId, friendName: btn.dataset.fr === '1' ? v : '' }); break; }
           case 'leave': this.net.leaveGroup(); break;
           case 'join-rift': this._closeModal(); this._joinGroupRift(); break;
           default: break;
@@ -1116,13 +1120,14 @@ export class Game {
       else if (act === 'skills') this.modalOpen ? this._closeModal() : this._openSkills();
       else if (act === 'interact') this._tryInteract();
       else if (act === 'mount' && !e.repeat) this._toggleMount();
+      else if (act === 'townPortal' && !e.repeat && !this.modalOpen) this.tp?.cast();
       else if (act === 'potionHeal') this._quickPotion('heal');
       else if (act === 'potionMana') this._quickPotion('mana');
       else if (act === 'chat' && !e.repeat && !this.paused && !this.modalOpen) { e.preventDefault(); document.exitPointerLock?.(); this.hud.toggleChat(); }
       else if (act === 'camReset') this.bus.emit('toggleCameraLock');
       else if (act.startsWith('skill')) this._useSkill(this.player.skillBar[+act.slice(5) - 1]);
     });
-    this.root.addEventListener('click', (e) => { if (e.target.id === 'game-canvas' && this.player && !this.dialogueOpen && !this.modalOpen) this._tryClickTarget(e); });
+    this.root.addEventListener('click', (e) => { if (e.target.id === 'game-canvas' && this.player && !this.dialogueOpen && !this.modalOpen) (this._tryClickPlayer(e) || this._tryClickTarget(e)); });
   }
 
   /** V10.19 : contexte passé aux fonctions d'artisanat (forgeron, Monolithe, mystique). */
@@ -1487,7 +1492,8 @@ export class Game {
 
   _joinGroupRift() {
     const r = this._groupRift;
-    if (!r || !this.rift || this.rift.active || !this.player || this.player.dead) return;
+    if (!r) { this.hud.notify('Aucune faille de groupe annoncée pour le moment.', 'info'); return; }
+    if (!this.rift || this.rift.active || !this.player || this.player.dead) return;
     if (this.rift.pending) { this.hud.notify('Referme d\'abord ta propre faille ouverte (statue), puis rejoins ton groupe.', 'info'); return; }
     this.rift._viaGroup = true;
     this.rift.pending = { modeId: r.modeId, level: r.level, seed: r.seed, keyUsed: false };
@@ -2808,6 +2814,89 @@ export class Game {
     return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight };
   }
 
+  // ---------- V10.34 : menu d'un joueur (clic sur son avatar, liste d'amis, groupe) ----------
+  // info : { id?, name, level?, classId?, friendName? (nom de compte si ami) }
+  _openPlayerMenu(info) {
+    this._closePlayerMenu();
+    const inGroupIds = new Set((this.group || []).map((m) => m.id));
+    const rp = info.id ? this.remotePlayers.get(info.id) : null;
+    const member = info.id && inGroupIds.has(info.id) && info.id !== this.net.id;
+    const iLead = this.gw.leaderId === this.net.id;
+    const isFriend = !!info.friendName || (this._friends?.friends || []).some((f) => f.char && f.char === info.name);
+    const fname = info.friendName || (this._friends?.friends || []).find((f) => f.char === info.name)?.name;
+    const el = document.createElement('div');
+    el.id = 'pmenu';
+    el.style.cssText = 'position:fixed;inset:0;z-index:95;background:rgba(5,8,20,.55);display:flex;align-items:center;justify-content:center;padding:10px;';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#12182c;border:1px solid #3a4a7a;border-radius:12px;max-width:320px;width:100%;padding:12px;color:#fff;font-family:inherit;';
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const cls = CLASSES[info.classId]?.name || '';
+    box.innerHTML = `<div style="font-size:17px;font-weight:bold">${esc(info.name)}</div><div style="opacity:.7;font-size:12px;margin-bottom:8px">${info.level ? 'Nv.' + info.level : ''}${cls ? ' · ' + esc(cls) : ''}${member ? ' · dans ton groupe' : ''}${isFriend ? ' · ami' : ''}</div>`;
+    const add = (label, fn, disabled = false) => {
+      const b = document.createElement('button');
+      b.textContent = label; b.disabled = disabled;
+      b.style.cssText = 'display:block;width:100%;margin:4px 0;padding:10px;border-radius:8px;border:1px solid #3a4a7a;background:rgba(255,255,255,.06);color:#fff;font-size:15px;text-align:left;cursor:pointer;' + (disabled ? 'opacity:.4;' : '');
+      b.addEventListener('click', () => { this._closePlayerMenu(); fn(); });
+      box.appendChild(b);
+    };
+    if (info.id && !member) add('👥 Inviter dans le groupe', () => this.net.inviteToGroup('', info.id));
+    else if (!info.id && info.name && !member) add('👥 Inviter dans le groupe', () => this.net.inviteToGroup(info.name));
+    if (member) {
+      add('🌀 Se téléporter à côté de lui', () => this._tpToMember(info.id));
+      if (iLead) add('🚪 Exclure du groupe', () => this.net.kickFromGroup(info.id));
+    }
+    if (isFriend && fname) add('✉️ Message privé', () => { this._dmOpen = fname; this._dmMsgs = []; this.modalOpen = true; document.exitPointerLock?.(); this.hud.showScreen('dm-screen'); this.hud.renderDm({ name: fname, msgs: [] }); this.net.friendHistory(fname); });
+    else if (info.name) add('💬 Chuchoter', () => { document.exitPointerLock?.(); this.hud.toggleChat?.(); const i = this.root.querySelector('#chat-input'); if (i) { i.value = `/whisper ${info.name} `; i.focus(); } });
+    if (!isFriend && info.id) add('➕ Ajouter en ami', () => this.net.friendAddById(info.id));
+    if (info.name) add('🔁 Échanger', () => (info.id ? this.net.tradeInvite('', info.id) : this.net.tradeInvite(info.name)));
+    if (isFriend && fname) add('✖ Retirer des amis', () => this.net.friendRemove(fname));
+    const c = document.createElement('button'); c.textContent = 'Fermer';
+    c.style.cssText = 'width:100%;margin-top:6px;padding:9px;border-radius:8px;border:1px solid #555;background:#222;color:#fff;font-size:14px;cursor:pointer;';
+    c.addEventListener('click', () => this._closePlayerMenu());
+    box.appendChild(c); el.appendChild(box);
+    el.addEventListener('click', (e) => { if (e.target === el) this._closePlayerMenu(); });
+    document.body.appendChild(el);
+    this._pmenu = el;
+  }
+
+  _closePlayerMenu() { this._pmenu?.remove(); this._pmenu = null; }
+
+  // Se téléporter à côté d'un membre du groupe (ou rejoindre sa faille s'il y est)
+  _tpToMember(id) {
+    const p = this.player;
+    if (!p || p.dead) return;
+    const m = (this.group || []).find((x) => x.id === id);
+    if (!m) { this.hud.notify('Ce joueur n\u2019est plus dans ton groupe.', 'info'); return; }
+    if ((m.inst | 0) !== 0) { this._joinGroupRift(); return; }
+    if (this.rift?.active) { this.hud.notify('Quitte d\u2019abord ta faille pour rejoindre ton coéquipier.', 'info'); return; }
+    if (Date.now() < (this._memberTpCd || 0)) { this.hud.notify(`Téléportation en recharge (${Math.ceil((this._memberTpCd - Date.now()) / 1000)} s).`, 'info'); return; }
+    const rp = this.remotePlayers.get(id), t = this.gw.targets.get(id);
+    const pos = rp?.pos || t?.pos || (m.pos && { x: m.pos[0], z: m.pos[2] });
+    if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.z)) { this.hud.notify('Position du joueur inconnue.', 'info'); return; }
+    this._memberTpCd = Date.now() + 20000;
+    const a = Math.random() * Math.PI * 2;
+    const x = pos.x + Math.cos(a) * 2.2, z = pos.z + Math.sin(a) * 2.2, y = this.world.heightAt(x, z);
+    p.pos.set(x, y, z); p.vel.set(0, 0, 0);
+    this.particles.emit(x, y + 1, z, { count: 60, color: 0xa24dff, speed: 5, life: 1, up: 2.5 });
+    this.audio.play('portal');
+    this.hud.notify(`Tu rejoins ${m.name}.`, 'quest');
+  }
+
+  _tryClickPlayer(e) {
+    if (!this.remotePlayers.size) return false;
+    this._pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    this._raycaster.setFromCamera(this._pointer, this.camera);
+    let best = null, bd = Infinity;
+    for (const rp of this.remotePlayers.values()) {
+      if ((rp.inst | 0) !== (this.gw.room | 0)) continue;
+      const d = this._raycaster.ray.distanceToPoint(rp.pos.clone().add({ x: 0, y: 1, z: 0 }));
+      if (d < 1.1 && d < bd) { bd = d; best = rp; }
+    }
+    if (!best) return false;
+    this._openPlayerMenu({ id: best.id, name: best.name, level: best.level, classId: best.classId });
+    return true;
+  }
+
   _tryClickTarget(e) {
     this._pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
     this._raycaster.setFromCamera(this._pointer, this.camera);
@@ -2871,6 +2960,7 @@ export class Game {
     if (this.world.town?.bankPos && this.player.pos.distanceTo(this.world.town.bankPos) < 3.2) {
       return this._openBank();
     }
+    if (this.tp?.tryInteract()) return;
     for (const portal of this.portals || []) {
       if (this.player.pos.distanceTo(portal.pos) < 3.2) return this._usePortal(portal);
     }
@@ -3180,6 +3270,7 @@ export class Game {
     for (const rp of this.remotePlayers.values()) rp.update(dt, this._camQuat);
     for (const ld of this.lootDrops) ld.update(dt, this._camQuat);
     for (const portal of this.portals || []) updatePortal(portal, dt);
+    this.tp?.update(dt);
 
     const animState = this.player.dead ? 'dead' : this.player.action || (this.player.speed > 0.3 ? (this.player.running ? 'run' : 'walk') : 'idle');
     this.net.tickMove(dt, this.player.pos, this.player.yaw, animState, this.player.hp, this.player.maxHp, this.player.level, this.gw.room, this.player.mount?.id || '');
