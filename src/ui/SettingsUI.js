@@ -7,7 +7,7 @@ export const DEFAULTS = {
   quality: null, renderScale: 100, fpsCap: 0, viewDist: 100, grass: true, particleScale: 100, exposure: 100, fovAdj: 0,
   shake: 100, floatText: true, showFps: false, vignette: true, shadows: true, visualV25: true, realLook: true, adaptive: true,
   // son
-  volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, mute: false,
+  volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, mute: false, footsteps: true,
   // souris / clavier
   lookSens: 100, invertY: false, invertWheel: false, zoomSpeed: 100, rotateBtn: 'right', cameraMode: 'iso', camRotate: 'auto', autoLoot: 'off', cameraLock: true,
   // V10.24 : compagnon qui ramasse le butin
@@ -45,6 +45,7 @@ const TABS = [
   ] },
   { id: 'snd', label: '🔊 Son', items: [
     { t: 'check', k: 'mute', label: 'Couper tout le son' },
+    { t: 'check', k: 'footsteps', label: 'Bruits de pas' },
     { t: 'range', k: 'volume', label: 'Volume général', min: 0, max: 100, step: 1, fmt: pct },
     { t: 'range', k: 'musicVol', label: 'Musique', min: 0, max: 100, step: 1, fmt: pct },
     { t: 'range', k: 'sfxVol', label: 'Effets (combat, pas, butin)', min: 0, max: 100, step: 1, fmt: pct, test: 'hit' },

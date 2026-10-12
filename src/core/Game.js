@@ -100,6 +100,7 @@ export class Game {
     this.root = root;
     this.bus = new EventBus();
     this.audio = new AudioManager();
+    this.audio.setSpeciesResolver((id) => (enemiesData.enemies || enemiesData)[id]?.species); // V10.40 : voix des créatures par espèce
     const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
     // V3.5 : sur téléphone/tablette, qualité « Moyenne » par défaut + résolution adaptative + plein écran au lancement
     const saved = SaveManager.loadSettings();
@@ -878,12 +879,12 @@ export class Game {
     b.on('hazardBurst', (d) => { this.audio.play('explode', new THREE.Vector3(d.x, 0, d.z)); if (d.hit && this._mev?.active) this._mev.hit = true; if (d.hit) this.bus.emit('shake', 0.3); });
     b.on('enemyProjectileHit', () => this.audio.play('hurt'));
     b.on('enemyExplode', (e) => this.audio.play('explode', e.pos));
-    b.on('enemyEnrage', (e) => this.audio.play('enrage', { pos: e.pos }));
-    b.on('enemyHurt', (e) => this.audio.play('enemyHurt', e.pos));
+    b.on('enemyEnrage', (e) => this.audio.play('enrage', { pos: e.pos, kind: e.def?.id || '' }));
+    b.on('enemyHurt', (e) => this.audio.play('enemyHurt', { pos: e.pos, kind: e.def?.id || '' }));
     b.on('enemyKilled', (e) => {
       if (this.player.killHealPct && !this.player.dead) this.player.heal(this.player.maxHp * this.player.killHealPct, true); // V10.26 : objets de build
       if (e?.champion) { this.hud.notify(`★ Champion ${e.champion} vaincu !`, 'quest'); this._tut('champion'); }
-      if (e?.pos) this.audio.play('kill', e.pos);
+      if (e?.pos) this.audio.play('kill', { pos: e.pos, kind: e.def?.id || '' });
       if (!this.fx?.enabled || !e?.pos) return;
       try {
         this.fx.flash(e.pos.x, e.pos.y + 0.9, e.pos.z, 0xffffff, 2.4, 0.3);
@@ -2668,10 +2669,15 @@ export class Game {
     if (this._audEnvT >= 0.5) {
       this._audEnvT = 0;
       const w = this.weather, raining = w && (w.state === 'rain' || w.state === 'storm');
-      const town = Math.abs(p.x) < 44 && Math.abs(p.z) < 44;
-      a.setRoom(this.rift?.active || Math.hypot(p.x - DUNGEON_CENTER[0], p.z - DUNGEON_CENTER[1]) < 22 ? 'hall' : 'open');
-      if (this.rift?.active) a.setEnvironment({ night: 1, town: false, rain: 0, snow: false, fountain: 0, hw: false });
-      else a.setEnvironment({ hw: !!(this.hw?.on && eventActiveNow()), night: this.dayNight.night, town, rain: raining ? w.intensity : 0, snow: !!w && w.state === 'snow' && w.intensity > 0.3, fountain: town ? Math.max(0, 1 - Math.hypot(p.x, p.z) / 38) : 0 });
+      const town = Math.abs(p.x) < 62 && Math.abs(p.z) < 62; // V10.40 : l'enceinte agrandie de Korvalune (V10.39)
+      const inRift = !!this.rift?.active, inHall = !inRift && Math.hypot(p.x - DUNGEON_CENTER[0], p.z - DUNGEON_CENTER[1]) < 22;
+      a.setRoom(inRift || inHall ? 'hall' : 'open');
+      // V10.40 : un boss vivant près du joueur (ou le Gardien d'une faille) déclenche la musique de boss
+      const boss = (this.bosses || []).some((b) => b.alive && b.state !== 'dormant' && b.pos.distanceTo(p) < 40) || !!(inRift && this.rift?.guardian?.alive);
+      a.setMusicContext({ boss });
+      a.stepsOn = this.settings.footsteps !== false;
+      if (inRift) a.setEnvironment({ night: 1, town: false, rain: 0, snow: false, fountain: 0, hw: false, rift: true, hall: false, region: 'void' });
+      else a.setEnvironment({ rift: false, hall: inHall, region: regionAt(p.x, p.z).id, hw: !!(this.hw?.on && eventActiveNow()), night: this.dayNight.night, town, rain: raining ? w.intensity : 0, snow: !!w && w.state === 'snow' && w.intensity > 0.3, fountain: town ? Math.max(0, 1 - Math.hypot(p.x, p.z) / 38) : 0 });
     }
   }
 

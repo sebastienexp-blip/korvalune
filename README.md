@@ -137,7 +137,7 @@ src/
   quests/     Journal de quêtes piloté par événements
   network/    Client multijoueur (NetworkManager, joueurs distants)
   effects/    Particules et météo (pooled, peu de draw calls)
-  audio/      Sons synthétisés (Web Audio), aucun fichier requis
+  audio/      Gestionnaire audio (SoundBank, MusicPlayer, table d'événements) — fichiers réels dans public/audio
   ui/         HUD, mini-carte, chat, contrôles tactiles
   data/       skills/enemies/npcs/items.json — modifiables sans toucher au code
 server.js     Serveur multijoueur (Node.js + WebSocket, voir sections 5-6 plus haut)
@@ -1222,3 +1222,29 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `World.riverX` : la rivière contourne la ville par l'est ; routes de sortie recalées sur les portes ; exclusion des monstres portée à 92 m.
 - `npcs.json` : ~15 habitants (`dialogues.talks` = discours qui tournent ; `walk` = parcours de promenade, géré par `NPC.update`).
 - Portail des régions violet à l'échelle 1,7 (`buildPortal` accepte `opts.scale`).
+
+## V10.40 — Bande-son (vrais fichiers audio)
+
+**Avant** : toute la musique, les bruitages et les ambiances étaient synthétisés (oscillateurs, bruit, musique générative).
+**Maintenant** : plus aucun son synthétisé — tout vient de vrais fichiers MP3 (≈ 88 Mo) dans `public/audio/`.
+
+### Architecture (`src/audio/`)
+- `AudioManager.js` : même API publique qu'avant (`play`, `footstep`, `setEnvironment`, `setCombat`, `setMix`, `setMuted`…). Quatre bus (musique, effets, ambiance, interface) avec volumes séparés dans Réglages, bouton muet, réverbération de salle (acoustique seulement).
+- `SoundBank.js` : charge et décode les sons à la demande (4 téléchargements simultanés max, jamais la même variante deux fois de suite). Le préchargement en tâche de fond est sauté en mode économie de données et sur les appareils annonçant ≤ 3 Go de mémoire.
+- `MusicPlayer.js` : lecture en flux (une piste en mémoire), fondu enchaîné entre ambiances, listes de pistes par ambiance, enchaînement sans coupure à la fin d'un morceau. Priorité : cinématique > boss > combat > donjon/faille > Halloween > ville > région (désert, toundra, marais, corrompu, céleste, abysses, néant) > nuit > jour. Combat/boss/cinématique : changement immédiat ; le reste attend une demande stable (anti va-et-vient).
+- `events.js` : table « événement de jeu → couches de sons » (≈ 60 événements, familles de créatures, pas par terrain). Pour changer un son, modifier cette table.
+- `SkillSounds.js` : sons de lancement/impact des compétences selon l'élément.
+- `catalog.js` : **généré** (nombre de variantes, durées, gains d'égalisation). Ne pas éditer à la main.
+- Les ambiances (vent, pluie, forêt, grotte, ville…) sont des boucles à recouvrement fondu.
+- Les pas sont de retour (désactivables : Réglages › Son › Bruits de pas).
+
+### Ajouter / remplacer un fichier
+1. Déposer `nom-1.mp3`, `nom-2.mp3`… dans `public/audio/sfx/` (ou `music/`, `ui/`).
+2. Ajouter une ligne dans `public/audio/registry.json` (provenance, licence).
+3. Régénérer `src/audio/catalog.js` (nombre de variantes) ; `AudioManager.missingSounds()` liste les noms référencés sans fichier.
+
+### Sources et licences
+Voir `public/audio/CREDITS.md` et `public/audio/registry.json` (fichier par fichier). Musique : FreePD (domaine public / CC0 annoncé — **à revérifier sur freepd.com avant une exploitation commerciale**). Bruitages : recueil « conquest » issu d'enregistrements CC0/domaine public ; interface : Kenney (CC0).
+
+### Lacunes connues (aucun faux fichier ajouté)
+- battement de cœur (silencieux), sabots/galop du cheval, cri de griffon (approximé par corbeau grave + grand félin), thèmes de victoire/défaite dédiés (de courtes fanfares sont utilisées).

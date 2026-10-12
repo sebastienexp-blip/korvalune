@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.40', title: 'Une vraie bande-son',
+    items: [
+      '🎵 Fini la musique synthétisée : le jeu joue maintenant de vraies musiques (59 morceaux) — villes et villages, exploration de jour et de nuit, combats, boss, failles et donjons sombres, Halloween, chaque région du continent. Plusieurs morceaux par ambiance, enchaînés en fondu, sans coupure.',
+      '⚔️ Plus de 900 vrais bruitages : épées, haches, impacts et coups critiques, flèches, sorts de feu, d’eau, de foudre, de terre et de soin, voix des monstres par espèce (grognements, attaques, morts), pas selon le terrain, coffres, butin, équipement, interface, montures.',
+      '🌧️ Ambiances enregistrées : vent (plaine, forêt, montagne), pluie, orage, nuit, ville animée, fontaine, marais, grottes et failles. Oiseaux le jour, hibou et loups la nuit, cloches de la ville.',
+      '🔊 Dans les options > Son : volumes séparés pour la musique, les effets, l’ambiance et l’interface, bouton « Couper tout le son » et nouvelle case « Bruits de pas ».',
+      '📱 Pensé pour le mobile : les musiques sont lues en flux (une seule en mémoire), les bruitages se chargent à la demande, et le son démarre après ton premier toucher.'
+    ]
+  },
+  {
     version: '10.39', title: 'Korvalune, la grande cité',
     items: [
       '🏰 La ville est beaucoup plus grande (enceinte de 124 m) et organisée en quartiers : un grand château au centre avec sa cour, et quatre portes (nord, est, sud, ouest) reliées par de larges avenues.',

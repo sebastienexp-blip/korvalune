@@ -3,6 +3,7 @@ import { cleanSatchel } from '../data/satchel.js';
 import { cleanZenith, zenithBonus, zenithXp, MAX_LEVEL } from '../data/zenith.js';
 import { cleanRanks, effectiveSkill, setSkillTable } from '../combat/SkillRanks.js';
 import { playSkillCast, playSkillImpact } from '../audio/SkillSounds.js';
+import { regionAt } from '../world/Continent.js';
 import * as THREE from 'three';
 import { CONFIG } from '../core/config.js';
 import { clamp, damp, lerpAngle } from '../core/math.js';
@@ -442,11 +443,32 @@ export class Player {
     this.bus.emit('hud');
   }
 
+  // V10.40 : nature du sol sous les pieds (choix du bruit de pas)
+  _surface() {
+    const x = this.pos.x, z = this.pos.z;
+    if (this.swimming || this.world.heightAt(x, z) < this.world.waterLevel + 0.12) return 'water';
+    if (x > 1500) return 'dirt'; // arène des failles
+    if (Math.abs(x) < 62 && Math.abs(z) < 62) return 'stone'; // Korvalune : dalles et pavés
+    if (this._snowy) return 'snow';
+    switch (regionAt(x, z).id) {
+      case 'forest': return 'leaves';
+      case 'mount': return 'gravel';
+      case 'desert': return 'sand';
+      case 'swamp': return 'mud';
+      case 'tundra': return 'snow';
+      case 'corrupt': return 'dirt';
+      case 'celeste': case 'void': return 'stone';
+      case 'abyss': return 'gravel';
+      default: return 'grass';
+    }
+  }
+
   // V10.10 — monture : null = à pied. Les chevaux vont au sol ; les griffons survolent eau, falaises et obstacles.
   setMount(id) {
     const def = id ? MOUNT_BY_ID[id] : null;
     if (!def) {
       if (this._mountRig) { disposeMount(this._mountRig); this._mountRig = null; }
+      if (this.mount) this.audio.play('dismount');
       this.mount = null; this.flying = false; this.landing = false;
       return;
     }
@@ -455,6 +477,7 @@ export class Player {
     this.mount = def; this._mountRig = createMount(def); this.scene.add(this._mountRig.group);
     this._mountRig.group.position.copy(this.pos);
     this.flying = !!def.fly; this.landing = false; this.dash = null;
+    this.audio.play(def.fly ? 'gryphonCall' : 'mount');
   }
 
   // V10.18 : mode de déplacement pour le terrain : griffon 'fly', cheval 'swim' (traverse l'eau), à pied undefined
@@ -653,9 +676,11 @@ export class Player {
       this._stepD = (this._stepD ?? 1.5) + this.speed * dt;
       if (this._stepD > (run ? 2.5 : 1.9)) {
         this._stepD = 0;
-        // (V6.1 : bruits de pas supprimés à la demande)
+        this.audio.footstep(this._surface(), run); // V10.40 : vrais bruits de pas selon le terrain (réglable dans les options)
       }
     } else if (this.speed <= 1.2) this._stepD = 1.5;
+    // V10.40 : battements d'ailes du griffon en vol
+    if (this.flying && this.mount) { this._wingT = (this._wingT ?? 0) - dt; if (this._wingT <= 0) { this._wingT = 0.9 + Math.random() * 0.3; this.audio.play('wings'); } } else this._wingT = 0;
 
     if (!(this.flying && this.pos.y - groundY > 1.5)) this.world.pushOut(this.pos, CONFIG.player.radius);
     if (this.pos.x < 1500) { // (l'arène des spires est hors de la carte : pas de limite)

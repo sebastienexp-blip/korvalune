@@ -41,6 +41,33 @@ export function createWebServer({ distDir, onHealth, onApi }) {
     return entry;
   }
 
+
+  function serveAudio(req, res, rel, base) {
+    const file = path.join(distDir, rel);
+    if (!file.startsWith(distDir + path.sep)) { res.writeHead(404, base); res.end(); return; }
+    let st;
+    try { st = fs.statSync(file); } catch { st = null; }
+    if (!st || !st.isFile()) { res.writeHead(404, { ...base, 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Introuvable'); return; }
+    const type = MIME[path.extname(file).toLowerCase()] || 'application/octet-stream';
+    const etag = `"${st.size.toString(16)}-${Math.floor(st.mtimeMs).toString(16)}"`;
+    const headers = { ...base, 'Content-Type': type, ETag: etag, 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=604800' };
+    if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers); res.end(); return; }
+    let start = 0, end = st.size - 1, status = 200;
+    const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (m && (m[1] !== '' || m[2] !== '')) {
+      if (m[1] === '') { start = Math.max(0, st.size - Number(m[2])); } else { start = Number(m[1]); if (m[2] !== '') end = Math.min(end, Number(m[2])); }
+      if (start > end || start >= st.size) { res.writeHead(416, { ...headers, 'Content-Range': `bytes */${st.size}` }); res.end(); return; }
+      status = 206; headers['Content-Range'] = `bytes ${start}-${end}/${st.size}`;
+    }
+    headers['Content-Length'] = end - start + 1;
+    res.writeHead(status, headers);
+    if (req.method === 'HEAD') { res.end(); return; }
+    const stream = fs.createReadStream(file, { start, end });
+    stream.on('error', () => { try { res.destroy(); } catch { /* ignoré */ } });
+    res.on('close', () => stream.destroy());
+    stream.pipe(res);
+  }
+
   const server = http.createServer((req, res) => {
     const https = (req.headers['x-forwarded-proto'] || '').includes('https');
     const base = {
@@ -59,6 +86,9 @@ export function createWebServer({ distDir, onHealth, onApi }) {
     let rel;
     try { rel = decodeURIComponent(url.pathname).replace(/^\/+/, ''); } catch { res.writeHead(400, base); res.end(); return; }
     if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+    // V10.40 : fichiers audio (musiques en flux, bruitages) — lus à la demande sans les garder en mémoire, avec requêtes partielles (Range)
+    // indispensables aux lecteurs <audio> de Safari / iOS
+    if (/^audio\/.+\.(mp3|ogg|wav)$/i.test(rel)) { serveAudio(req, res, rel, base); return; }
     const entry = load(rel);
     if (!entry) { res.writeHead(404, { ...base, 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Introuvable'); return; }
     const headers = { ...base, 'Content-Type': entry.type, ETag: entry.etag, 'Cache-Control': entry.immutable ? 'public, max-age=31536000, immutable' : 'no-cache', Vary: 'Accept-Encoding' };

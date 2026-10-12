@@ -144,7 +144,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.39 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.40 — Korvalune</div>
         </div>
       </div>
 
@@ -839,6 +839,7 @@ export class HUD {
   showDialogue(npc, lines, opts = {}) {
     const box = this.q('#dialogue-box');
     box.classList.remove('hidden');
+    this.game?.audio?.play(opts.index ? 'page' : 'talk'); // V10.40
     this.q('#dlg-name').textContent = npc.name;
     this.q('#dlg-text').textContent = lines[opts.index || 0];
     const actions = this.q('#dlg-actions');

@@ -487,6 +487,7 @@ export class RiftSystem {
     const g = this.g, run = this.run, L = run.level;
     if (run.chest) { g.hud.notify('Terminez d’abord le coffre piégé en cours.', 'boss'); return; }
     o.state = 'fight';
+    g.audio.play('chestOpen', { pos: o.pos }); // V10.40
     const list = [];
     const n = 6;
     for (let i = 0; i < n; i++) {

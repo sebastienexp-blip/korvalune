@@ -450,77 +450,25 @@ export class IntroCinematic {
     this.scene = null;
   }
 
-  // ---------------------------------------------------------------- musique et sons (synthèse)
+  // ---------------------------------------------------------------- musique et sons (V10.40 : fichiers audio réels)
+  // musique : le thème d'ouverture (« Overture », domaine public) ; quelques bruitages réels soulignent les temps forts
   _initAudio() {
     const a = this.game.audio;
     if (!a) return;
     a.resume();
-    const ctx = a.ctx;
-    if (!ctx) return;
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-    this.ac = ctx;
-    const out = this.out = ctx.createGain(); out.gain.value = 0; out.connect(a.master || ctx.destination);
-    const t0 = this.at0 = ctx.currentTime + 0.15;
-    out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(0.9 * (a.mix?.music ?? 0.7) + 0.2, t0 + 2.5);
-    const rev = a._revIn; if (rev) { this.send = ctx.createGain(); this.send.gain.value = 0.5; this.send.connect(rev); out.connect(this.send); }
-    this.nodes = [];
-    const hold = (n) => { this.nodes.push(n); return n; };
-    // bruit
-    const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = nb.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    const noise = (start, dur, f0, f1, type, vol, q = 0.8) => {
-      const s = hold(ctx.createBufferSource()); s.buffer = nb; s.loop = true;
-      const f = ctx.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t0 + start); f.frequency.exponentialRampToValueAtTime(f1, t0 + start + dur);
-      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t0 + start); g.gain.linearRampToValueAtTime(vol, t0 + start + dur * 0.55); g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
-      s.connect(f); f.connect(g); g.connect(out); s.start(t0 + start); s.stop(t0 + start + dur + 0.1);
-    };
-    const tone = (start, dur, freq, type, vol, o = {}) => {
-      const osc = hold(ctx.createOscillator()); osc.type = type; osc.frequency.value = freq; if (o.det) osc.detune.value = o.det;
-      if (o.sweep) { osc.frequency.setValueAtTime(freq, t0 + start); osc.frequency.exponentialRampToValueAtTime(o.sweep, t0 + start + dur); }
-      const g = ctx.createGain(), at = o.attack ?? 0.05, rl = o.release ?? dur * 0.4;
-      g.gain.setValueAtTime(0.0001, t0 + start); g.gain.linearRampToValueAtTime(vol, t0 + start + at);
-      g.gain.setValueAtTime(vol, t0 + start + Math.max(at, dur - rl)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
-      let nd = osc;
-      if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(o.lp[0], t0 + start); f.frequency.linearRampToValueAtTime(o.lp[1], t0 + start + dur); osc.connect(f); nd = f; }
-      nd.connect(g); g.connect(out); osc.start(t0 + start); osc.stop(t0 + start + dur + 0.1);
-    };
-    // nappes d'accords
-    const pad = (start, dur, freqs, vol, lp) => { for (const f of freqs) for (const det of [-8, 7]) tone(start, dur, f, 'sawtooth', vol / freqs.length, { det, attack: dur * 0.35, release: dur * 0.4, lp }); };
-    const Am = [110, 164.81, 220, 261.63], F = [87.31, 130.81, 174.61, 261.63], C = [130.81, 164.81, 196, 261.63], G = [98, 146.83, 196, 246.94];
-    pad(0, 9, Am, 0.34, [260, 900]); pad(8, 9, F, 0.34, [300, 1100]); pad(16, 9, C, 0.36, [320, 1300]); pad(24, 5, G, 0.36, [350, 1500]);
-    const dis = [73.42, 103.83, 146.83, 207.65]; pad(28, 13, dis, 0.5, [900, 180]); pad(40, 7, [110, 164.81, 207.65, 261.63], 0.4, [260, 1100]);
-    pad(46, 9, [110, 164.81, 220, 329.63, 392], 0.5, [500, 2600]);
-    tone(0, 12, 55, 'sine', 0.5, { attack: 4, release: 3 }); tone(12, 16, 55, 'sine', 0.55, { attack: 2, release: 3 }); tone(28, 14, 41.2, 'sine', 0.7, { attack: 0.5, release: 4 }); tone(42, 12, 55, 'sine', 0.6, { attack: 2, release: 4 });
-    // cloches pentatoniques
-    const pent = [440, 523.25, 659.25, 783.99, 880, 1046.5];
-    const bell = (start, f, v = 0.16) => { tone(start, 3.2, f, 'sine', v, { attack: 0.01, release: 3 }); tone(start, 2.2, f * 2.76, 'sine', v * 0.25, { attack: 0.01, release: 2 }); };
-    for (let s = 3, i = 0; s < 27; s += 1.5 + (i % 3) * 0.5, i++) bell(s, pent[(i * 2 + (i >> 1)) % pent.length], 0.1 + Math.min(0.1, s / 200));
-    for (let s = 46.5, i = 0; s < 52; s += 0.7, i++) bell(s, pent[i % pent.length] * (i > 3 ? 2 : 1), 0.12);
-    // cœur d'éther : vibrato lumineux
-    tone(5, 22, 880, 'sine', 0.045, { attack: 5, release: 4 }); tone(5, 22, 1318.5, 'sine', 0.03, { attack: 7, release: 4 });
-    // montée, fracture, grondements
-    noise(23, 5, 400, 7000, 'highpass', 0.34, 0.6);
-    for (let k = 0; k < 7; k++) { const s = 21.2 + k * (1 - k * 0.05); tone(s, 0.5, 95, 'sine', 0.7, { attack: 0.005, release: 0.45, sweep: 42 }); }
-    tone(28, 3.2, 62, 'sine', 1, { attack: 0.01, release: 3, sweep: 26 }); tone(28, 2.6, 130, 'sawtooth', 0.4, { attack: 0.01, release: 2.4, lp: [2400, 120] });
-    noise(28, 3.4, 5000, 140, 'lowpass', 0.9, 0.5); noise(28, 1.2, 9000, 2000, 'bandpass', 0.5, 1.2);
-    for (let s = 32; s < 44; s += 2.4) tone(s, 1.4, 70, 'sine', 0.8, { attack: 0.005, release: 1.3, sweep: 34 });
-    for (let s = 31, i = 0; s < 43; s += 3.1, i++) noise(s, 1.6, 300, 4200, 'bandpass', 0.18, 2);
-    // révélation du titre
-    noise(44.5, 2.2, 600, 9000, 'highpass', 0.3, 0.7); tone(46, 8, 220, 'sine', 0.22, { attack: 0.8, release: 6 }); tone(46, 8, 440, 'sine', 0.12, { attack: 1.2, release: 6 }); tone(46, 8, 659.25, 'sine', 0.08, { attack: 1.5, release: 6 });
-    noise(46, 1.4, 5000, 12000, 'highpass', 0.14, 0.5);
+    if (!a.ctx) return;
+    this.ac = a.ctx; this.aud = a;
+    a.setMusicContext({ cinematic: true });
+    a.startMusic();
+    this._sfxTimers = [
+      [21.5, () => a.play('absolute')], [28, () => { a.play('explode'); a.thunder(); }], [31, () => a.play('guardian')],
+      [38, () => a.thunder()], [46, () => a.play('legendary')]
+    ].map(([s, fn]) => setTimeout(() => { try { fn(); } catch (e) { /* ignoré */ } }, s * 1000));
   }
 
-  _stopAudio(fade) {
-    if (!this.ac || !this.out) return;
-    const ctx = this.ac, now = ctx.currentTime;
-    try {
-      this.out.gain.cancelScheduledValues(now); this.out.gain.setValueAtTime(Math.max(0.0001, this.out.gain.value), now);
-      this.out.gain.linearRampToValueAtTime(0.0001, now + Math.max(0.05, fade));
-    } catch (e) { /* ignoré */ }
-    const nodes = this.nodes || []; this.nodes = [];
-    setTimeout(() => {
-      for (const n of nodes) { try { n.stop(); } catch (e) { /* déjà arrêté */ } try { n.disconnect(); } catch (e) { /* ignoré */ } }
-      try { this.out.disconnect(); this.send && this.send.disconnect(); } catch (e) { /* ignoré */ }
-    }, Math.max(100, fade * 1000 + 150));
+  _stopAudio() {
+    for (const id of this._sfxTimers || []) clearTimeout(id);
+    this._sfxTimers = [];
+    if (this.aud) this.aud.setMusicContext({ cinematic: false }); // la musique du monde reprend en fondu enchaîné
   }
 }
