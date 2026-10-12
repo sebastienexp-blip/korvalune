@@ -10,15 +10,16 @@ from PIL import Image
 
 # ---------------------------------------------------------------------------------------------- maillage
 class Mesh:
-    def __init__(self, V, F, UV=None, J=None, W=None):
+    def __init__(self, V, F, UV=None, J=None, W=None, C=None):
         self.V = np.asarray(V, np.float64).reshape(-1, 3)
         self.F = np.asarray(F, np.int64).reshape(-1, 3)
         self.UV = np.zeros((len(self.V), 2)) if UV is None else np.asarray(UV, np.float64).reshape(-1, 2)
         self.J = np.zeros((len(self.V), 4), np.int64) if J is None else J
         self.W = np.tile([1.0, 0, 0, 0], (len(self.V), 1)) if W is None else W
+        self.C = np.ones((len(self.V), 4)) if C is None else np.asarray(C, np.float64).reshape(-1, 4)
 
     def copy(self):
-        return Mesh(self.V.copy(), self.F.copy(), self.UV.copy(), self.J.copy(), self.W.copy())
+        return Mesh(self.V.copy(), self.F.copy(), self.UV.copy(), self.J.copy(), self.W.copy(), self.C.copy())
 
     def transform(self, M):
         """M : matrice 4x4 (appliquée aux positions)."""
@@ -36,7 +37,7 @@ def concat(meshes):
                 np.vstack([m.F + o for m, o in zip(meshes, off)]),
                 np.vstack([m.UV for m in meshes]),
                 np.vstack([m.J for m in meshes]),
-                np.vstack([m.W for m in meshes]))
+                np.vstack([m.W for m in meshes]), np.vstack([m.C for m in meshes]))
 
 
 def mirror_x(mesh, bone_swap):
@@ -378,7 +379,7 @@ class Material:
         self.texkey = texkey or name
 
 
-def write_glb(path, parts, skeleton, materials, animations=None, extras=None, tex_format=None):
+def write_glb(path, parts, skeleton, materials, animations=None, extras=None, tex_format=None, mesh_name='Corps', tex_dir=None):
     """parts : liste de (nom, Mesh, nom_matériau). animations : {nom: {'fps':int, 'channels': {os: {'rot': array(n,4), 'pos': array(n,3)|None}}, 'n': n}}."""
     animations = animations or {}
     bin_chunks = []
@@ -396,12 +397,13 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
         buffer_views.append(v)
         return len(buffer_views) - 1
 
-    def add_acc(arr, ctype, target=None, minmax=False):
+    def add_acc(arr, ctype, target=None, minmax=False, normalized=False):
         arr = np.ascontiguousarray(arr)
         comp = {np.dtype('float32'): 5126, np.dtype('uint16'): 5123, np.dtype('uint32'): 5125, np.dtype('uint8'): 5121}[arr.dtype]
         n = arr.shape[0]
         bv = add_view(arr.tobytes(), target)
         a = {'bufferView': bv, 'componentType': comp, 'count': n, 'type': ctype}
+        if normalized: a['normalized'] = True
         if minmax:
             a['min'] = arr.min(axis=0).astype(float).tolist(); a['max'] = arr.max(axis=0).astype(float).tolist()
         accessors.append(a)
@@ -414,8 +416,15 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
         if key in tex_cache:
             return tex_cache[key]
         data = _img_bytes(arr, fmt)
-        bv = add_view(data)
-        images.append({'bufferView': bv, 'mimeType': 'image/jpeg' if fmt == 'JPEG' else 'image/png', 'name': key})
+        if tex_dir:
+            import os
+            os.makedirs(tex_dir, exist_ok=True)
+            fn = key + ('.jpg' if fmt == 'JPEG' else '.png')
+            open(os.path.join(tex_dir, fn), 'wb').write(data)
+            images.append({'uri': os.path.basename(os.path.normpath(tex_dir)) + '/' + fn, 'name': key})
+        else:
+            bv = add_view(data)
+            images.append({'bufferView': bv, 'mimeType': 'image/jpeg' if fmt == 'JPEG' else 'image/png', 'name': key})
         textures.append({'sampler': 0, 'source': len(images) - 1})
         tex_cache[key] = len(textures) - 1
         return tex_cache[key]
@@ -440,6 +449,9 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
         gl_materials.append(g); mat_index[m.name] = len(gl_materials) - 1
 
     # nœuds : os
+    static = skeleton is None
+    if static:
+        skeleton = Skeleton()
     nodes = []
     for i, nm in enumerate(skeleton.names):
         par = skeleton.parents[i]
@@ -454,8 +466,9 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
     for i in range(nb):
         M = np.eye(4); M[:3, 3] = -skeleton.pos[i]
         ibm[i] = M.T.reshape(-1)
-    ibm_acc = add_acc(ibm.reshape(nb, 16), 'MAT4')
-    accessors[ibm_acc]['type'] = 'MAT4'
+    if not static:
+        ibm_acc = add_acc(ibm.reshape(nb, 16), 'MAT4')
+        accessors[ibm_acc]['type'] = 'MAT4'
 
     # maillage unique, une primitive par matériau
     by_mat = {}
@@ -476,16 +489,19 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
             'POSITION': add_acc(m.V.astype(np.float32), 'VEC3', 34962, True),
             'NORMAL': add_acc(N.astype(np.float32), 'VEC3', 34962),
             'TEXCOORD_0': add_acc(m.UV.astype(np.float32), 'VEC2', 34962),
-            'JOINTS_0': add_acc(m.J.astype(np.uint16), 'VEC4', 34962),
-            'WEIGHTS_0': add_acc(W, 'VEC4', 34962),
         }
+        if not static:
+            attrs['JOINTS_0'] = add_acc(m.J.astype(np.uint16), 'VEC4', 34962)
+            attrs['WEIGHTS_0'] = add_acc(W, 'VEC4', 34962)
+        if np.abs(m.C - 1).max() > 1e-3:
+            attrs['COLOR_0'] = add_acc((np.clip(m.C, 0, 1) * 255 + .5).astype(np.uint8), 'VEC4', 34962, normalized=True)
         idx = add_acc(m.F.astype(np.uint32).reshape(-1), 'SCALAR', 34963)
         accessors[idx]['count'] = int(m.F.size)
         prims.append({'attributes': attrs, 'indices': idx, 'material': mat_index[mat], 'mode': 4})
         stats[mat] = (len(m.V), len(m.F))
     mesh_node = nb
-    nodes.append({'name': 'Corps', 'mesh': 0, 'skin': 0})
-    skins = [{'name': 'Armature', 'inverseBindMatrices': ibm_acc, 'joints': list(range(nb)), 'skeleton': roots[0]}]
+    nodes.append({'name': mesh_name, 'mesh': 0, **({} if static else {'skin': 0})})
+    skins = [] if static else [{'name': 'Armature', 'inverseBindMatrices': ibm_acc, 'joints': list(range(nb)), 'skeleton': roots[0]}]
 
     # animations
     gl_anims = []
@@ -513,11 +529,12 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
     gltf = {
         'asset': {'version': '2.0', 'generator': 'glbkit (Korvalune)', **({'extras': extras} if extras else {})},
         'scene': 0, 'scenes': [{'name': 'Scene', 'nodes': roots + [mesh_node]}],
-        'nodes': nodes, 'meshes': [{'name': 'Corps', 'primitives': prims}], 'skins': skins,
+        'nodes': nodes, 'meshes': [{'name': mesh_name, 'primitives': prims}],
         'materials': gl_materials, 'accessors': accessors, 'bufferViews': buffer_views,
         'buffers': [{'byteLength': sum(len(c) for c in bin_chunks)}],
         'samplers': [{'magFilter': 9729, 'minFilter': 9987, 'wrapS': 10497, 'wrapT': 10497}],
     }
+    if skins: gltf['skins'] = skins
     if images: gltf['images'] = images; gltf['textures'] = textures
     if gl_anims: gltf['animations'] = gl_anims
     js = json.dumps(gltf, separators=(',', ':')).encode()

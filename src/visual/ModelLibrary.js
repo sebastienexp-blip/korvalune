@@ -101,7 +101,7 @@ export const ModelLibrary = {
       const k = c.name.toLowerCase();
       if (!this.clips.has(k)) this.clips.set(k, c);
     }
-    if (hasMesh) this.characters.push({ file, key: file.toLowerCase().replace(/\.(glb|gltf)$/i, ''), scene: gltf.scene, clips: gltf.animations || [] });
+    if (hasMesh) this.characters.push({ file, key: file.toLowerCase().replace(/\.(glb|gltf)$/i, ''), scene: gltf.scene, clips: gltf.animations || [], meta: (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {} });
   },
 
   // Cherche l'entrée correspondant à un rôle ; renvoie null → modèle procédural
@@ -158,7 +158,8 @@ export function tryCreateGlbRig(kind, opts = {}) {
   box.makeEmpty().setFromObject(inst);
   box.getSize(size);
   const target = kind === 'humanoid' ? 1.8 : 1.0;
-  const refH = kind === 'humanoid' ? size.y : Math.max(size.y, size.z * 0.6);
+  // un corps livré sans son équipement (pièces séparées) indique la hauteur de référence de l'ensemble complet
+  const refH = (entry.meta && entry.meta.refHeight) || (kind === 'humanoid' ? size.y : Math.max(size.y, size.z * 0.6));
   const k = refH > 1e-3 ? target / refH : 1;
   inst.scale.multiplyScalar(k);
   inst.position.y = -box.min.y * k;

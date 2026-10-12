@@ -61,6 +61,9 @@ Les packs KayKit sont de vrais modèles propres et animés, mais en style **cart
 2. **Hybride cartoon sombre** : packs CC0 retexturés en palette dark fantasy pour tout ce qui est décor/bâtiments/donjons (peu sensible au style), et générateur maison pour personnages/monstres/montures avec proportions réalistes.
 3. **Packs CC0 tels quels pour tout ce qui existe** (rapide, mais look cartoon, pas dark fantasy).
 
+## 4 bis. Décision prise : tout original, sombre réaliste
+Les packs CC0 ne sont donc **pas** utilisés pour les personnages ni les monstres. Ils restent une option pour les décors si tu le décides plus tard. Toutes les ressources du Lot 1 sont générées par `tools/models/` (aucune ressource externe, aucune licence tierce).
+
 ## 5. Lots de migration proposés (après la décision ci-dessus)
 
 1. **Lot 0 (fait)** : prototype d'un personnage animé dans une zone de test (`modeltest.html`).
@@ -73,3 +76,17 @@ Les packs KayKit sont de vrais modèles propres et animés, mais en style **cart
 8. **Lot 7** : textures de terrain, effets de sorts, cinématique, optimisation finale (LOD, KTX2).
 
 Chaque lot : test des systèmes (combat, collisions, quêtes, inventaire, montures, multijoueur), mesure de performance, puis seulement activation.
+
+## 6. État d'avancement
+
+**Lot 0 (fait)** — Veilleur de Corvalune (humanoïde), 27 os, 8 animations.
+**Lot 1 (fait, en prototype, non branché au jeu principal)** :
+- *Loup des Cendres* (`creatures/loup_des_cendres.glb`) : 29 os, 6 animations (idle, walk, run, attack, hit, death), ~12 000 triangles, 1,6 Mo.
+- *Lame de la Veille* (`armes/lame_de_la_veille.glb`) : arme statique, ~3 300 triangles, 0,6 Mo, métadonnées d'accroche (`Socket_Weapon_R`).
+- *Armure en pièces séparées* (`veilleur/veilleur_{casque,epaules,torse,bras,jambes,cape}.glb`) + corps animé (`veilleur_corps.glb`) : même squelette, textures partagées (`veilleur/tex/`, 1,9 Mo), 0,1 à 0,4 Mo par pièce.
+- Moteur : `visual/GlbEquipment.js` (poser une arme, lier une pièce au squelette, retirer), `ModelLibrary` lit la hauteur de référence du corps.
+- Zone de test `modeltest.html` : héros équipé contre le loup (IA minimale), collisions, retrait/remise des pièces en direct.
+
+**Mesures** (rendu logiciel dans Chromium, donc non représentatif d'un téléphone) : 28 appels de dessin et ~59 000 triangles pour héros + loup + décor de test ; chargement des 11 fichiers en 5,8 s en local.
+
+**Reste à faire avant d'activer dans le jeu** : (1) brancher l'équipement réel (`Player`/inventaire) sur `GlbEquipment` ; (2) version allégée du héros (LOD) — 43 000 triangles est trop pour une foule ; (3) correspondance des 97 monstres (variantes de teinte/échelle du loup) ; (4) tester sur téléphone.

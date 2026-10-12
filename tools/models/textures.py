@@ -163,3 +163,37 @@ def trim(seed=4):
 
 def shrink(arr, size):
     return np.asarray(Image.fromarray(arr).resize((size, size), Image.LANCZOS))
+
+
+def fur(seed=7):
+    """Pelage : brins fins orientés selon V (le long du corps), mèches plus sombres/claires."""
+    rng = np.random.default_rng(seed)
+    S = SZ
+    # brins : bruit étiré dans la direction des lignes (axe 0)
+    strands = fbm(S, rng, octaves=((128, 1), (256, .8), (512, .5)), aniso=(2.6, 0.35))
+    clumps = fbm(S, rng, octaves=((24, 1), (48, .7)), aniso=(1.6, 0.5))
+    patches = fbm(S, rng, octaves=((3, 1), (6, .6), (12, .4)))
+    h = 0.5 + 0.06 * strands + 0.04 * clumps
+    base = np.array([.34, .30, .26])
+    tone = 0.75 + 0.22 * norm01(strands)[..., None] + 0.2 * (norm01(patches) - .5)[..., None]
+    col = base * tone * (0.85 + 0.3 * norm01(clumps)[..., None])
+    # pointes plus claires, racines plus sombres
+    col = col * (0.9 + 0.2 * np.clip(strands, -1.5, 1.5)[..., None] * 0.3)
+    rough = np.clip(0.82 + 0.1 * strands * 0.3, .6, 1.0)
+    ao = np.clip(0.8 + 0.12 * norm01(strands) , 0, 1)
+    orm = np.stack([ao, rough, np.zeros_like(rough)], -1)
+    return srgb(col), to_normal(h, 2.2), srgb(orm), h
+
+
+def bone(seed=8):
+    rng = np.random.default_rng(seed)
+    S = SZ
+    cracks = gaussian_filter(scratches(S, rng, 80, (0.05, .35), 2), 1.0, mode='wrap')
+    grain = fbm(S, rng, octaves=((10, 1), (20, .6), (60, .4)), aniso=(1.0, 0.4))
+    stain = norm01(fbm(S, rng, octaves=((3, 1), (6, .7), (12, .4))))
+    h = 0.5 + 0.03 * grain - 0.2 * cracks
+    base = np.array([.62, .57, .47])
+    col = base * (0.8 + 0.25 * norm01(grain)[..., None]) * (1 - .35 * stain[..., None] ** 2) * (1 - .6 * cracks[..., None])
+    rough = np.clip(.55 + .2 * norm01(grain), .3, .95)
+    orm = np.stack([np.clip(.9 - .4 * cracks, 0, 1), rough, np.zeros_like(rough)], -1)
+    return srgb(col), to_normal(h, 3.0), srgb(orm), h

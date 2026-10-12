@@ -9,6 +9,9 @@ Ce dossier contient la **chaîne de fabrication** des modèles `.glb` : tout est
 | `textures.py` | textures PBR procédurales : acier sombre patiné, cuir, drap, argent lunaire gravé (couleur + normales + occlusion/rugosité/métal) |
 | `hero_geo.py` | le **Veilleur de Corvalune** : squelette de 27 os, corps, armure, casque à bec de corbeau, croissant de lune, cape |
 | `hero_anim.py` | animations : `idle`, `walk`, `run`, `attack`, `attack2`, `hit`, `death`, `jump` (30 images/s) |
+| `wolf_geo.py`, `wolf_anim.py`, `build_wolf.py` | **Loup des Cendres** : quadrupède de 29 os, pelage, crinière en lames, épines d'os, 6 animations |
+| `sword_geo.py`, `build_sword.py` | **Lame de la Veille** : épée statique avec métadonnées d'accroche |
+| `export_modular.py` | exporte le héros en corps + pièces d'armure séparées (squelette commun, textures partagées) |
 | `build_hero.py` | assemble le tout et écrit le `.glb` |
 | `check_glb.py` | vérifie un `.glb` indépendamment du moteur (structure, poids de peau, animations, dimensions) |
 | `viewer.html` | page de contrôle (captures d'écran des modèles, utilisée pendant le développement) |
