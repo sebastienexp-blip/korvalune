@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.37', title: 'Failles en cartes extérieures',
+    items: [
+      '🗺️ Les failles ne sont plus des donjons : chaque faille est une carte extérieure générée au hasard, d’un seul tenant, sans portes ni couloirs. Forêt, ruines, caverne, cimetière ou fournaise, avec une lisière naturelle (arbres, rochers) qui borde la zone.',
+      '👹 Le Gardien surgit toujours à une dizaine de mètres de toi (jamais collé), dès que la jauge est pleine.',
+      '🧭 La mini-carte dessine la zone explorée sans murs intérieurs.'
+    ]
+  },
+  {
     version: '10.36', title: 'Nouvelle interface mobile',
     items: [
       '📱 Toute l’interface en jeu est refaite sur mobile : verre dépoli, barres fines, pastilles compactes et vrais pictogrammes à la place des emojis (le PC garde son interface).',

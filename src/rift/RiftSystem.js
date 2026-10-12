@@ -10,7 +10,7 @@ import { makeLabel } from '../ui/Label.js';
 import { glowTexture, safeTexture } from '../visual/Textures.js';
 import { buildPortal, updatePortal } from '../world/Portals.js';
 import { STATUE_PORTAL_POS } from './RiftStatue.js';
-import { ARENA, cellCenter, cellAt, cellKey, generateLayout, buildRiftWorld } from './RiftLayout.js';
+import { ARENA, cellCenter, cellAt, cellKey, generateLayout, buildRiftWorld, inLayout } from './RiftLayout.js';
 import {
   MODES, GEMS, GEM_IDS, OBELISKS, TOTEMS, AFFIXES, AFFIX_IDS, GUARDIAN_NAMES, ZENITH_TIME, FERVOR_MAX,
   RIFT_THEMES, riftMults, themeFor, normalizeRiftSave, gemBonuses, gemUpgradeChance, gemStepsForTime,
@@ -713,8 +713,18 @@ export class RiftSystem {
   _spawnGuardian(forcedName) {
     const g = this.g, run = this.run, th = run.theme;
     run.guardianSpawned = true;
-    const bp = run.built.boss;
-    const pos = new THREE.Vector3(bp.x, 0, bp.z);
+    // V10.37 : le Gardien apparaît toujours à une dizaine de mètres du joueur (jamais sur lui)
+    const pp = g.player.pos, w = g.world;
+    let pos = null;
+    const a0 = Math.random() * Math.PI * 2;
+    for (let k = 0; k < 24 && !pos; k++) {
+      const a = a0 + k * 0.5236, r = k < 12 ? 10 : 8 + (k - 12) * 0.3;
+      const x = pp.x + Math.cos(a) * r, z = pp.z + Math.sin(a) * r;
+      if (!inLayout(run.layout, x, z)) continue;
+      if (w.blockedCircle && w.blockedCircle(x, z, 2.2)) continue;
+      pos = new THREE.Vector3(x, 0, z);
+    }
+    if (!pos) pos = new THREE.Vector3(pp.x + 10, 0, pp.z);
     const name = forcedName || pick(GUARDIAN_NAMES);
     const boss = new Boss(g.scene, g.world, g.bus, pos, { id: 'spire_warden', level: run.level, name: `${name} · Nv.${run.level}`, scale: 3.0, fur: th.wall, belly: th.color, eye: th.color });
     boss.maxHp = Math.round(boss.maxHp * run.mults.hp * 1.1); boss.hp = boss.maxHp;
@@ -726,7 +736,7 @@ export class RiftSystem {
     g.gw.tag(boss, 'b:spire_warden');
     g.bosses.push(boss);
     if (!forcedName) g.gw.announceGuardian(name);
-    g.hud.notify('👹 Le Gardien de la spire est apparu ! Retrouvez-le (point rouge sur la mini-carte).', 'boss');
+    g.hud.notify('👹 Le Gardien de la faille surgit tout près de vous !', 'boss');
     g.audio.play('guardian');
     g.particles.emit(pos.x, 1.5, pos.z, { count: 100, color: th.color, speed: 7, life: 1.4, up: 3 });
   }
@@ -1086,11 +1096,10 @@ export class RiftSystem {
       g.strokeStyle = seen ? '#cdd5f2' : '#6b7596'; g.lineWidth = 2;
       g.beginPath();
       const seg = (x0, z0, x1, z1) => { g.moveTo(sx(x0, z0), sy(x0, z0)); g.lineTo(sx(x1, z1), sy(x1, z1)); };
-      const door = 5;
-      if (!(c.links & 1)) seg(p.x - C, p.z - C, p.x + C, p.z - C); else { seg(p.x - C, p.z - C, p.x - door, p.z - C); seg(p.x + door, p.z - C, p.x + C, p.z - C); }
-      if (!(c.links & 4)) seg(p.x - C, p.z + C, p.x + C, p.z + C); else { seg(p.x - C, p.z + C, p.x - door, p.z + C); seg(p.x + door, p.z + C, p.x + C, p.z + C); }
-      if (!(c.links & 8)) seg(p.x - C, p.z - C, p.x - C, p.z + C); else { seg(p.x - C, p.z - C, p.x - C, p.z - door); seg(p.x - C, p.z + door, p.x - C, p.z + C); }
-      if (!(c.links & 2)) seg(p.x + C, p.z - C, p.x + C, p.z + C); else { seg(p.x + C, p.z - C, p.x + C, p.z - door); seg(p.x + C, p.z + door, p.x + C, p.z + C); }
+      if (!(c.links & 1)) seg(p.x - C, p.z - C, p.x + C, p.z - C); 
+      if (!(c.links & 4)) seg(p.x - C, p.z + C, p.x + C, p.z + C); 
+      if (!(c.links & 8)) seg(p.x - C, p.z - C, p.x - C, p.z + C); 
+      if (!(c.links & 2)) seg(p.x + C, p.z - C, p.x + C, p.z + C); 
       g.stroke();
     }
     const dot = (x, z, r, fill, stroke) => {

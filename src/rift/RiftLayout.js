@@ -53,7 +53,7 @@ export function generateLayout(seed, wanted = 14, worldIdx = 0) {
   const frontier = [start];
   while (cells.size < wanted) {
     // 65 % du temps on prolonge la dernière salle (couloirs sinueux), sinon on ramifie (culs-de-sac, embranchements)
-    const from = rnd() < 0.65 ? frontier[frontier.length - 1] : frontier[Math.floor(rnd() * frontier.length)];
+    const from = rnd() < 0.2 ? frontier[frontier.length - 1] : frontier[Math.floor(rnd() * frontier.length)];
     const opts = DIRS.filter((d) => {
       const nx = from.gx + d.dx, nz = from.gz + d.dz;
       return nx >= 0 && nz >= 0 && nx < N && nz < N && !cells.has(cellKey(nx, nz));
@@ -64,12 +64,11 @@ export function generateLayout(seed, wanted = 14, worldIdx = 0) {
     from.links |= d.b; c.links |= d.o;
     frontier.push(c);
   }
-  // boucles supplémentaires
+  // V10.37 : carte extérieure d'un seul tenant — toutes les zones voisines sont reliées (plus de portes ni de murs)
   for (const c of cells.values()) {
     for (const d of DIRS) {
-      if (c.links & d.b) continue;
       const n = cells.get(cellKey(c.gx + d.dx, c.gz + d.dz));
-      if (n && rnd() < 0.22) { c.links |= d.b; n.links |= d.o; }
+      if (n) { c.links |= d.b; n.links |= d.o; }
     }
   }
   // distances depuis le départ (BFS) → salle du gardien = la plus éloignée
@@ -196,34 +195,23 @@ export function buildRiftWorld(world, layout, theme) {
       ];
       for (const e of edges) {
         const neighbour = layout.cells.has(cellKey(c.gx + e.nx, c.gz + e.nz));
-        if (e.onlyIfNoNeighbour && neighbour) continue;
-        const open = (c.links & e.b) !== 0;
-        const step = style === 'cave' ? 2.6 : style === 'lava' ? 3 : 4;
+        if (neighbour) continue; // zones voisines : terrain ouvert
+        // lisière naturelle (arbres, rochers, stèles…) : bord de la carte
+        const step = 2.4;
         for (let t = -half + step / 2; t < half; t += step) {
-          if (open && Math.abs(t) < DOOR_W / 2 + (style === 'cave' ? 0.6 : 0.2)) continue;
-          const x = e.alongX ? e.cx + t : e.cx, z = e.alongX ? e.cz : e.cz + t;
-          if (style === 'ruins') {
-            if (neighbour && !open && Math.abs(t) > 4 && rnd() < 0.3) continue; // brèche dans la ruine (passage supplémentaire)
-            const h = rnd() < 0.2 ? rr(4.6, 6.2) : rr(1.1, 3.6);
-            addBox(x, z, e.alongX ? step + 0.05 : 1.5, h, e.alongX ? 1.5 : step + 0.05);
+          const x = (e.alongX ? e.cx + t : e.cx) + rr(-0.5, 0.5), z = (e.alongX ? e.cz : e.cz + t) + rr(-0.5, 0.5);
+          if (style === 'ruins' || style === 'crypt') {
+            if (rnd() < 0.55) { const h = rr(6, 9.5), s2 = rr(1.5, 2.1); items.bark.push({ x, y: h * 0.25, z, sx: 0.4, sy: h * 0.5, sz: 0.4, ry: 0 }); items.canopy.push({ x, y: h * 0.62, z, sx: s2 * 1.8, sy: s2 * 1.4, sz: s2 * 1.8, ry: rnd() * 3 }); world.addCircle(x, z, 1.35); colliders.push([x, z]); }
+            else { const sx = rr(1.5, 2.6); addRock(x, z, sx, rr(2.5, 4.5), sx, rnd() * 3); world.addCircle(x, z, sx * 0.95); colliders.push([x, z]); }
           } else if (style === 'graveyard') {
-            if (neighbour && !open && Math.abs(t) > 4 && rnd() < 0.22) continue;
-            addBox(x, z, e.alongX ? step + 0.05 : 0.9, rr(1.5, 2.3), e.alongX ? 0.9 : step + 0.05);
+            if (rnd() < 0.5) { const h = rr(4.5, 7); items.bark.push({ x, y: h / 2, z, sx: 0.35, sy: h, sz: 0.35, ry: 0 }); items.bark.push({ x: x + 0.6, y: h * 0.8, z, sx: 0.14, sy: 2, sz: 0.14, ry: 0, rz: 0.9 }); world.addCircle(x, z, 1.3); colliders.push([x, z]); }
+            else { const sx = rr(1.5, 2.4); addRock(x, z, sx, rr(2, 3.6), sx, rnd() * 3); world.addCircle(x, z, sx * 0.95); colliders.push([x, z]); }
           } else if (style === 'cave') {
-            const jx = e.alongX ? 0 : rr(-0.5, 0.5), jz = e.alongX ? rr(-0.5, 0.5) : 0;
-            const sx = rr(1.7, 2.8), sy = rr(3, 6.8), sz = rr(1.7, 2.8);
-            addRock(x + jx, z + jz, sx, sy, sz, rnd() * 3);
-            world.addCircle(x + jx, z + jz, Math.max(sx, sz) * 0.95); colliders.push([x, z]);
+            const sx = rr(1.8, 3), sy = rr(3.5, 7.5);
+            addRock(x, z, sx, sy, sx, rnd() * 3); world.addCircle(x, z, sx * 0.95); colliders.push([x, z]);
           } else { // lava : crocs d'obsidienne
-            const h = rr(3, 9);
-            addBox(x, z, e.alongX ? step + 0.05 : rr(1.4, 2.4), h, e.alongX ? rr(1.4, 2.4) : step + 0.05);
-          }
-        }
-        if (open) { // montants de porte
-          for (const sgn of [-1, 1]) {
-            const x = e.alongX ? e.cx + sgn * (DOOR_W / 2 + 0.4) : e.cx, z = e.alongX ? e.cz : e.cz + sgn * (DOOR_W / 2 + 0.4);
-            if (style === 'cave') { addRock(x, z, 1.6, 4.5, 1.6, rnd() * 3); world.addCircle(x, z, 1.5); colliders.push([x, z]); }
-            else addCyl(x, z, 0.8, style === 'graveyard' ? 3 : style === 'lava' ? 6 : rr(3.5, 6));
+            const h = rr(3.5, 9), w = rr(1.5, 2.6);
+            addBox(x, z, w, h, w);
           }
         }
       }
@@ -277,7 +265,7 @@ export function buildRiftWorld(world, layout, theme) {
     }
   };
   const styled = []; let lavaMesh = null;
-  if (style === 'crypt') {
+  if (false) {
   // murs : on collecte les segments (x, z, longueur, orientation)
   const segs = [];     // { x, z, w, d }  (largeur en x, profondeur en z)
   const posts = [];    // piliers de porte
@@ -354,6 +342,7 @@ export function buildRiftWorld(world, layout, theme) {
   group.add(pillars);
 
   } else buildStyled();
+  void DOOR_W; void WALL_T; void WALL_H;
 
   // cristaux d'éther (décor, sans collision)
   const crystalSpots = [];

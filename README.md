@@ -1202,3 +1202,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Classe `.touch-on` (appareil tactile) : HUD en verre dépoli, `src/ui/Icons.js` (pictogrammes SVG + glyphes de compétences), menu compact (`#btn-menu`), mini-carte réduite, quête sur une ligne.
 - Boutons de compétences ronds (`#t-sk0…6`, nombre réglable `touch.skillCount`) disposés en arc autour de l'attaque (`TouchControls.layoutCluster`), déplaçables via la disposition personnalisable.
 - PC inchangé (emojis, barre de 10 compétences).
+
+## V10.37 — Failles en cartes extérieures
+
+- `src/rift/RiftLayout.js` : la génération reste une grille de zones de 32 m, mais tout voisin est relié (plus de portes/murs) ; la lisière de la carte est faite d'arbres, rochers, stèles ou obsidienne avec colliders ; tous les styles passent par `buildStyled`.
+- `src/rift/RiftSystem.js` : `_spawnGuardian` place le Gardien à ~10 m du joueur (position libre, dans la carte) ; la mini-carte ne trace que le contour.
+- Déterminisme de groupe conservé (graine inchangée).
