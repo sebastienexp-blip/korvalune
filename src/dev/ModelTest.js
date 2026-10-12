@@ -63,12 +63,13 @@ let rig = null, wolf = null;
 
 (async () => {
   try {
-    const [body, wolfG, swordG, ...pcs] = await Promise.all([
-      load('veilleur/veilleur_corps.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
+    const [body, lodG, lod2G, wolfG, swordG, ...pcs] = await Promise.all([
+      load('veilleur/veilleur_corps.glb'), load('veilleur/veilleur_lod1.glb'), load('veilleur/veilleur_lod2.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
       ...Object.values(SLOTS).map((s) => load(`veilleur/veilleur_${s}.glb`))]);
     ModelLibrary._register('veilleur_corps.glb', body);
+    ModelLibrary._register('veilleur_lod1.glb', lodG); ModelLibrary._register('veilleur_lod2.glb', lod2G);
     ModelLibrary._register('loup_des_cendres.glb', wolfG);
-    ModelLibrary.mapping = { 'player:warrior': 'veilleur_corps.glb', 'species:wolf': 'loup_des_cendres.glb' };
+    ModelLibrary.mapping = { 'player:warrior': 'veilleur_corps.glb', 'player:warrior@lod1': 'veilleur_lod1.glb', 'player:warrior@lod2': 'veilleur_lod2.glb', 'species:wolf': 'loup_des_cendres.glb' };
     ModelLibrary.ready = true;
     rig = tryCreateGlbRig('humanoid', { role: 'player:warrior' });
     if (!rig) throw new Error('tryCreateGlbRig(humanoïde) a renvoyé null');
@@ -79,6 +80,7 @@ let rig = null, wolf = null;
     fakeSlots.mainhand = { id: 'sword' };
     refreshGlbGear(rig, fakeSlots, fakeResolve);
     spawnWolf();
+    spawnCrowd(12);
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
@@ -95,6 +97,17 @@ function toggleSlot(n) {
   refreshGlbGear(rig, fakeSlots, fakeResolve);
 }
 
+// foule de figurants en version allégée (LOD 1), pour mesurer le coût d'une foule de joueurs distants
+const crowd = [];
+function spawnCrowd(n) {
+  for (let i = 0; i < n; i++) {
+    const r = tryCreateGlbRig('humanoid', { role: 'player:warrior', lod: i % 2 ? 2 : 1 });
+    const a = (i / n) * Math.PI * 2, d = 8;
+    r.root.position.set(Math.cos(a) * d, 0, Math.sin(a) * d); r.root.rotation.y = -a - Math.PI / 2;
+    r.root.traverse((o) => { if (o.isMesh) o.castShadow = false; });
+    scene.add(r.root); crowd.push({ rig: r, v: i % 3 === 0 ? 0 : i % 3 === 1 ? 2 : 5 });
+  }
+}
 // ---------------------------------------------------------------- le héros
 const st = { x: 0, z: 2, yaw: Math.PI, speed: 0, dead: false, action: null, actionT: 0, actionDur: 0, grounded: true, vy: 0, y: 0, hp: 100 };
 const keys = new Set();
@@ -209,6 +222,7 @@ function step(dt, draw) {
     if (st.action) { st.actionT += dt; if (!st.hitDone && st.actionT > st.actionDur * 0.5) { st.hitDone = true; heroStrike(); } if (st.actionT >= st.actionDur) { st.action = null; st.actionT = 0; } }
     if (st.dead) st.actionT += dt;
     rig.root.position.set(st.x, st.y, st.z); rig.root.rotation.y = st.yaw;
+    for (const c of crowd) animateGlbRig(c.rig, { speed: c.v, grounded: true }, dt, 'humanoid');
     animateGlbRig(rig, { speed: st.speed, dead: st.dead, action: st.action, actionT: st.actionT, actionDur: st.actionDur, grounded: st.grounded, deadT: st.actionT }, dt, 'humanoid');
     stepWolf(dt);
     if (demo === 'attack' && !st.action && !st.dead) trigger('attack');

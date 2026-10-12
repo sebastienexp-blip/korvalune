@@ -42,7 +42,7 @@ export class RemotePlayer {
   _makeRig() {
     const cls = CLASSES[this.classId] || CLASSES.warrior, a = this.app;
     return createHumanoid({
-      cloth: cls.color, armor: cls.armor, shield: cls.shield, role: 'player:' + (this.classId || 'warrior'),
+      cloth: cls.color, armor: cls.armor, shield: cls.shield, role: 'player:' + (this.classId || 'warrior'), lod: 1,
       hair: a ? a.hairCol : 0x2c1f16, ...(a ? { eye: a.eyeCol, look: a } : {}), ...(a && a.skin != null ? { skin: a.skin } : {})
     });
   }

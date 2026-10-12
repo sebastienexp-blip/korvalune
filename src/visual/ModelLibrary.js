@@ -110,9 +110,18 @@ export const ModelLibrary = {
   },
 
   // Cherche l'entrée correspondant à un rôle ; renvoie null → modèle procédural
-  find(role, species, kind) {
+  find(role, species, kind, lod = 0) {
     if (!this.ready) return null;
     const byFile = (name) => this.characters.find((c) => c.file.toLowerCase() === String(name).toLowerCase());
+    if (lod) {   // version allégée : mapping « rôle@lod1 » ; sinon on retombe sur le modèle complet
+      const f = this.mapping[`${role}@lod${lod}`]; const e = f && byFile(f); if (e) return e;
+    }
+    const all = this.characters;
+    this.characters = all.filter((c) => !(c.meta && c.meta.lod));   // les LOD ne sont jamais choisis par mots-clés
+    try { return this._find(role, species, kind, byFile); } finally { this.characters = all; }
+  },
+
+  _find(role, species, kind, byFile) {
     for (const k of [role, species && `species:${species}`]) {
       if (k && this.mapping[k]) { const e = byFile(this.mapping[k]); if (e) return e; }
     }
@@ -153,7 +162,7 @@ const box = new THREE.Box3(), size = new THREE.Vector3();
 // Construit un rig compatible avec l'interface des rigs procéduraux.
 export function tryCreateGlbRig(kind, opts = {}) {
   const role = opts.role || '';
-  const entry = ModelLibrary.find(role, opts.species, kind);
+  const entry = ModelLibrary.find(role, opts.species, kind, opts.lod || 0);
   if (!entry) return null;
   const inst = SkeletonUtils.clone(entry.scene);
   const root = new THREE.Group();

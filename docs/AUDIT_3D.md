@@ -95,4 +95,8 @@ Chaque lot : test des systèmes (combat, collisions, quêtes, inventaire, montur
 - `ModelLibrary._register` classe désormais les GLB selon `extras.korvalune.type` : `armor` (par squelette et emplacement) et `weapon` (par type visuel `sword`…) vont dans `ModelLibrary.gear`, pas dans la liste des personnages.
 - `Player.refreshGearVisuals` : si le corps est un GLB (`rig.glbSkeleton`), appelle `refreshGlbGear` (src/visual/GlbEquipment.js) — emplacements du jeu → pièces (head→casque, shoulders→épaules, chest→torse, gloves→bras, legs/boots→jambes, cape→cape), teinte issue de l'objet (`tint` / couleur de rareté), arme principale selon `visual`. Le chemin procédural est inchangé.
 - Vérifié dans `modeltest.html` avec un faux équipement (captures visuelles). Non vérifié : intégration dans le jeu complet (build Vite impossible ici), joueurs distants (RemotePlayer n'affiche pas d'équipement), armes autres que l'épée (arc, bâton, dague, bouclier : aucun modèle, donc rien d'affiché sur un corps GLB).
-- Reste du lot : version LOD légère du héros (43 k triangles).
+- LOD du héros (outil `tools/models/lod.py`, réduction par regroupement de sommets, poids de squelette conservés, mêmes animations, armure incluse dans le maillage) :
+  `veilleur_lod1.glb` 12 629 triangles (0,7 Mo) — rendu proche de l'original ; `veilleur_lod2.glb` 6 129 triangles (0,4 Mo) — silhouette correcte, plumes et détails fins dégradés. Textures partagées avec le héros complet.
+  Branchement : `mapping['player:warrior@lod1']`, `tryCreateGlbRig(..., {lod:1})` ; `RemotePlayer` demande le LOD 1. Pas encore de bascule automatique selon la distance, ni d'arme sur le LOD.
+  Mesure (rendu logiciel, 12 figurants + héros + loup) : 100 appels de dessin, 170 000 triangles. À valider sur téléphone réel.
+- Reste du lot : armes autres que l'épée (arc, bâton, dague, bouclier), bascule LOD par distance.
