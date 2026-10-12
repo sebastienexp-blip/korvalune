@@ -1,6 +1,7 @@
 // V10.22 — Icônes de compétences uniques : chaque compétence a son propre pictogramme (emoji distinct) posé sur un cadre
 // généré à partir de son identifiant (forme, ornements, teinte). Deux compétences n'ont jamais la même image.
 import { skillColor } from '../visual/Fx.js';
+import { skillGlyph } from './Icons.js';
 
 function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 const hex = (n) => '#' + (n & 0xffffff).toString(16).padStart(6, '0');
@@ -49,7 +50,7 @@ export function skillIconHTML(skill, classId) {
     + (tier >= 1 ? orn(c) : '')
     + (tier >= 3 ? `<g fill="none" stroke="${cl}" stroke-width="1" opacity=".8">${shape(28.5)}</g>` : '')
     + `</svg>`;
-  html = `<span class="sk-ico" style="--ic:${c}">${svg}<span class="sk-emo">${skill.icon}</span></span>`;
+  html = `<span class="sk-ico" style="--ic:${c}">${svg}<span class="sk-emo">${skill.icon}</span>${skillGlyph(skill, classId)}</span>`;
   cache.set(key, html);
   return html;
 }

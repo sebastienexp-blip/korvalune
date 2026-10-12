@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.36', title: 'Nouvelle interface mobile',
+    items: [
+      '📱 Toute l’interface en jeu est refaite sur mobile : verre dépoli, barres fines, pastilles compactes et vrais pictogrammes à la place des emojis (le PC garde son interface).',
+      '🎯 Compétences en boutons ronds à droite, autour du bouton d’attaque, avec recharge chiffrée. Choisis combien (2 à 7) dans Options > Tactile, et déplace chaque bouton où tu veux (« Modifier la disposition »).',
+      '🧭 Mini-carte plus petite, quête affichée sur une seule ligne (touche-la pour tout voir), potions sous le bouton d’attaque, joystick et sprint à gauche.',
+      '☰ Un seul bouton Menu ouvre la grille : Inventaire, Personnage, Compétences, Quêtes, Succès, Social, Portail, Pass, Boutique, Discussion.',
+      '🖼️ Chaque compétence a un pictogramme vectoriel à son image (flamme, éclair, bouclier, flèches, dague…).'
+    ]
+  },
+  {
     version: '10.35', title: 'Commandes à la souris (PC)',
     items: [
       '🖱️ Clic gauche : se déplacer (maintiens pour suivre le curseur). Sur un monstre : tu le poursuis et tu lances la compétence du clic gauche (la frappe de base par défaut). Sur un PNJ, du butin, un portail ou un coffre : tu y vas et tu interagis. Maj + clic gauche : attaquer sur place.',

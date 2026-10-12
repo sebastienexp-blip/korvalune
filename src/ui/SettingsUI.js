@@ -19,7 +19,7 @@ export const DEFAULTS = {
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
 };
-export const TOUCH_DEFAULTS = { mode: 'auto', joySize: 1, btnSize: 1, opacity: 1, look: 1, pinch: 1, deadzone: 0.08, vibrate: true, leftHand: false, layout: {}, layoutP: {} };
+export const TOUCH_DEFAULTS = { mode: 'auto', skillCount: 5, joySize: 1, btnSize: 1, opacity: 1, look: 1, pinch: 1, deadzone: 0.08, vibrate: true, leftHand: false, layout: {}, layoutP: {} };
 
 const pct = (v) => `${v} %`;
 const TABS = [
@@ -69,6 +69,7 @@ const TABS = [
   { id: 'touch', label: '👆 Tactile', items: [
     { t: 'select', p: 'touch', k: 'mode', label: 'Contrôles tactiles', opts: [['auto', 'Automatique (selon l’appareil)'], ['on', 'Toujours affichés'], ['off', 'Masqués']] },
     { t: 'range', p: 'touch', k: 'joySize', label: 'Taille du joystick', min: 0.6, max: 1.8, step: 0.05, fmt: (v) => Math.round(v * 100) + ' %' },
+    { t: 'range', p: 'touch', k: 'skillCount', label: 'Boutons de compétences à droite (mobile)', min: 2, max: 7, step: 1, fmt: (v) => String(v) },
     { t: 'range', p: 'touch', k: 'btnSize', label: 'Taille des boutons', min: 0.6, max: 1.8, step: 0.05, fmt: (v) => Math.round(v * 100) + ' %' },
     { t: 'range', p: 'touch', k: 'opacity', label: 'Opacité des boutons', min: 0.25, max: 1, step: 0.05, fmt: (v) => Math.round(v * 100) + ' %' },
     { t: 'range', p: 'touch', k: 'deadzone', label: 'Zone morte du joystick', min: 0, max: 0.4, step: 0.02, fmt: (v) => Math.round(v * 100) + ' %' },

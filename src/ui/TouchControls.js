@@ -3,9 +3,10 @@
 // (mode « modifier la disposition » : on fait glisser chaque bouton où l'on veut).
 const ELS = {
   joy: '#touch-joystick', run: '#t-run', roll: '#t-jump', crouch: '#t-crouch', interact: '#t-interact',
-  attack: '#t-attack', lock: '#t-lock', heal: '#pq-heal', mana: '#pq-mana'
+  attack: '#t-attack', lock: '#t-lock', heal: '#pq-heal', mana: '#pq-mana',
+  sk0: '#t-sk0', sk1: '#t-sk1', sk2: '#t-sk2', sk3: '#t-sk3', sk4: '#t-sk4', sk5: '#t-sk5', sk6: '#t-sk6'
 };
-export const TOUCH_LABELS = { joy: 'Joystick', run: 'Sprint', roll: 'Roulade', crouch: 'Accroupi', interact: 'Interagir', attack: 'Attaque', lock: 'Caméra', heal: 'Potion de vie', mana: 'Potion de mana' };
+export const TOUCH_LABELS = { joy: 'Joystick', run: 'Sprint', roll: 'Roulade', crouch: 'Accroupi', interact: 'Interagir', attack: 'Attaque', lock: 'Caméra', heal: 'Potion de vie', mana: 'Potion de mana', sk0: 'Compétence 1', sk1: 'Compétence 2', sk2: 'Compétence 3', sk3: 'Compétence 4', sk4: 'Compétence 5', sk5: 'Compétence 6', sk6: 'Compétence 7' };
 
 export class TouchControls {
   constructor(root, input, bus) {
@@ -51,6 +52,7 @@ export class TouchControls {
     this.root.classList.toggle('lefthand', !!t.leftHand);
     this.layoutL = t.layout || {}; this.layoutP = t.layoutP || {};
     this.applyLayout();
+    this.layoutCluster(this._n);
     this.refreshEnabled();
   }
 
@@ -75,6 +77,25 @@ export class TouchControls {
         }
       }
     }
+  }
+
+  // Disposition par défaut du pouce droit : bouton d'attaque en bas à droite, compétences en arc autour, roulade et interaction à gauche.
+  // Positions en px depuis le coin bas-droit (centre du bouton) ; chaque bouton reste déplaçable (mode « modifier la disposition »).
+  layoutCluster(n = this._n || 5) {
+    this._n = n;
+    const C = { x: 64, y: 98 };
+    const put = (id, x, y, sz) => { const e = this.el[id]; if (!e) return; e.style.setProperty('--cx', String(Math.round(x))); e.style.setProperty('--cy', String(Math.round(y))); e.style.setProperty('--sz', String(sz)); };
+    put('attack', C.x, C.y, 86);
+    const maxY = Math.max(190, innerHeight - 118); // ne jamais monter dans la zone de la mini-carte
+    const polar = (r, deg) => [C.x + r * Math.cos((deg * Math.PI) / 180), Math.min(maxY, C.y + r * Math.sin((deg * Math.PI) / 180))];
+    const ring1 = n <= 3 ? [20, 55, 90] : [14, 45, 76, 107];
+    const n1 = Math.min(n, ring1.length), rest = n - n1;
+    for (let i = 0; i < n1; i++) { const [x, y] = polar(100, ring1[i]); put('sk' + i, x, y, 52); }
+    const ring2 = rest === 1 ? [62] : rest === 2 ? [46, 78] : [34, 58, 82];
+    for (let j = 0; j < rest; j++) { const [x, y] = polar(166, ring2[j]); put('sk' + (n1 + j), x, y, 46); }
+    // rangée du bas : potions (sous l'attaque), puis roulade et interaction
+    put('roll', C.x + 108, 30, 44);
+    put('interact', C.x + 162, 30, 44);
   }
 
   // --- joystick ---
@@ -128,6 +149,14 @@ export class TouchControls {
         window.addEventListener('touchend', end); window.addEventListener('touchcancel', end);
       }
     }
+    // V10.36 : boutons ronds de compétences (mobile)
+    for (let i = 0; i < 7; i++) {
+      const el = root.querySelector('#t-sk' + i); if (!el) continue;
+      el.addEventListener('touchstart', (e) => { e.preventDefault(); if (this.editing) return; const id = el.dataset.skill; if (!id) return; this.input.buzz(); el.classList.add('held'); this.bus.emit('skillPressed', id); }, { passive: false });
+      const rel = () => el.classList.remove('held');
+      el.addEventListener('touchend', rel); el.addEventListener('touchcancel', rel);
+    }
+    root.addEventListener('touchskills', (e) => this.layoutCluster(e.detail.n));
     tap('#t-interact', () => this.bus.emit('interact'));
     toggle('#t-run', 'run');
     toggle('#t-crouch', 'crouch');

@@ -1,3 +1,4 @@
+import { ICONS, iconDefsHTML } from './Icons.js';
 import skillDefs from '../data/skills.json';
 import { DIFFICULTIES } from '../data/difficulty.js';
 import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../data/halloween.js';
@@ -143,7 +144,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.35 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.36 — Korvalune</div>
         </div>
       </div>
 
@@ -267,6 +268,7 @@ export class HUD {
         <button id="btn-pause">⏸</button>
 
         <div id="side-buttons">
+          <button id="btn-menu" class="tbtn small" aria-label="Menu" aria-expanded="false">☰</button>
           <button id="btn-inv" class="tbtn small">🎒</button>
           <button id="btn-char" class="tbtn small">🧍</button>
           <button id="btn-skills" class="tbtn small">✨</button>
@@ -314,6 +316,7 @@ export class HUD {
             <button id="t-crouch" class="tbtn round">⬇</button>
             <button id="t-interact" class="tbtn round">✋</button>
             <button id="t-attack" class="tbtn big">⚔</button>
+            ${[0, 1, 2, 3, 4, 5, 6].map((i) => `<button id="t-sk${i}" class="tbtn tsk hidden" aria-label="Compétence ${i + 1}"></button>`).join('')}
           </div>
           <button id="t-lock" class="tbtn small">🔒</button>
         </div>
@@ -618,7 +621,64 @@ export class HUD {
     this.q('#loading-text').textContent = text;
   }
 
+  // V10.36 : emoji (PC) + pictogramme vectoriel (mobile) côte à côte ; la classe .touch-on choisit lequel s'affiche
+  _decorateIcons() {
+    if (this._iconsDone) return;
+    this._iconsDone = true;
+    if (!document.getElementById('ico-defs')) { const d = document.createElement('div'); d.id = 'ico-defs'; d.innerHTML = iconDefsHTML(); document.body.appendChild(d); }
+    const MAP = [
+      ['#btn-inv', 'bag', 'Inventaire'], ['#btn-char', 'char', 'Personnage'], ['#btn-skills', 'skills', 'Compétences'], ['#btn-quests', 'quests', 'Quêtes'],
+      ['#btn-ach', 'trophy', 'Succès'], ['#btn-social', 'people', 'Social'], ['#btn-tp', 'portal', 'Portail'], ['#btn-mount', 'horse', 'Monture'],
+      ['#btn-pass', 'medal', 'Pass'], ['#btn-lune', 'moon', 'Boutique', '.bl-ico'], ['#btn-chat', 'chat', 'Discussion'], ['#btn-menu', 'menu', 'Menu'],
+      ['#btn-pause', 'pause', 'Pause'], ['#t-attack', 'sword'], ['#t-jump', 'roll'], ['#t-run', 'bolt'], ['#t-crouch', 'down'], ['#t-interact', 'hand'], ['#t-lock', 'lock'],
+      ['#pq-heal', 'flaskHeal', null, '.pq-ic'], ['#pq-mana', 'flaskMana', null, '.pq-ic'], ['#map-expand', 'map'], ['#map-mode', 'compass']
+    ];
+    for (const [sel, icon, label, inner] of MAP) {
+      const el = this.q(sel); if (!el) continue;
+      if (label) el.dataset.label = label;
+      if (sel === '#btn-menu' || sel === '#btn-mount') el.classList.add('keep');
+      const host = inner ? el.querySelector(inner) : el;
+      if (!host) continue;
+      const dot = host.querySelector('i.pass-dot'); if (dot) dot.remove();
+      host.innerHTML = `<span class="ic-e">${host.innerHTML}</span><span class="ic-s">${ICONS[icon]}</span>`;
+      if (dot) host.appendChild(dot);
+    }
+  }
+
+  // menu compact (mobile) : un seul bouton ouvre la grille des écrans
+  _bindMenu() {
+    const side = this.q('#side-buttons'), btn = this.q('#btn-menu');
+    if (!side || !btn || this._menuBound) return;
+    this._menuBound = true;
+    const set = (v) => { side.classList.toggle('open', v); btn.setAttribute('aria-expanded', String(v)); };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); set(!side.classList.contains('open')); });
+    side.addEventListener('click', (e) => { if (e.target.closest('.tbtn') && e.target.closest('.tbtn') !== btn) set(false); });
+    document.addEventListener('pointerdown', (e) => { if (side.classList.contains('open') && !side.contains(e.target)) set(false); }, true);
+    const qp = this.q('#quest-panel');
+    if (qp) qp.addEventListener('click', () => { if (this.root.classList.contains('touch-on')) qp.classList.toggle('expanded'); });
+  }
+
+  // boutons ronds de compétences (mobile) : les N premières cases de la barre (N réglable)
+  buildTouchSkills(skillBar) {
+    const g = this.game;
+    const n = Math.max(2, Math.min(7, (g && g.settings && g.settings.touch && g.settings.touch.skillCount) || 5));
+    this._touchN = n;
+    for (let i = 0; i < 7; i++) {
+      const b = this.q('#t-sk' + i); if (!b) continue;
+      const id = i < n ? skillBar[i] : null;
+      b.classList.toggle('hidden', i >= n);
+      b.classList.toggle('empty', i < n && !(id && byId[id]));
+      if (id && byId[id]) {
+        b.dataset.skill = id;
+        b.innerHTML = `<span class="sk-icon">${skillIconHTML(byId[id])}</span><span class="sk-cdn"></span><div class="sk-cd"></div>`;
+      } else { delete b.dataset.skill; b.innerHTML = '<span class="tsk-plus"></span>'; }
+    }
+    this.root.dispatchEvent(new CustomEvent('touchskills', { detail: { n } }));
+  }
+
   buildSkillbar(skillBar) {
+    this._decorateIcons(); this._bindMenu();
+    this.buildTouchSkills(skillBar);
     this._slotEls = null;
     const bar = this.q('#skillbar');
     bar.innerHTML = '';
@@ -666,7 +726,7 @@ export class HUD {
   }
 
   updateSkillCooldowns(player) {
-    if (!this._slotEls) this._slotEls = [...this.q('#skillbar').querySelectorAll('.skill-slot[data-skill]')];
+    if (!this._slotEls) this._slotEls = [...this.q('#skillbar').querySelectorAll('.skill-slot[data-skill]'), ...this.q('#touch-actions').querySelectorAll('.tsk[data-skill]')];
     for (const el of this._slotEls) {
       const s = byId[el.dataset.skill];
       if (!s) continue;
@@ -674,6 +734,7 @@ export class HUD {
       const cdEl = el.querySelector('.sk-cd');
       const frac = cd / s.cooldown;
       cdEl.style.height = `${Math.max(0, frac) * 100}%`;
+      const cn = el.querySelector('.sk-cdn'); if (cn) { const t = cd > 0.05 ? (cd >= 10 ? String(Math.round(cd)) : cd.toFixed(1)) : ''; if (cn.textContent !== t) cn.textContent = t; }
       el.classList.toggle('unusable', frac > 0);
     }
   }
@@ -692,7 +753,7 @@ export class HUD {
     this._bar('bar-xp', p.xp, p.xpNeeded);
     this.q('#txt-hp').textContent = `${Math.ceil(p.hp)}/${p.maxHp}`;
     this.q('#txt-mana').textContent = `${Math.ceil(p.mana)}/${p.maxMana}`;
-    this.q('#coins').textContent = `🪙 ${p.coins}`;
+    this.q('#coins').innerHTML = `<span class="ic-e">🪙</span><span class="ic-s">${ICONS.coin}</span> ${p.coins}`;
     this.q('#btn-char').classList.toggle('has-points', p.statPoints > 0);
   }
 
@@ -700,7 +761,7 @@ export class HUD {
 
   setClock(str, isNight) {
     const el = this.q('#clock');
-    el.textContent = `${isNight ? '🌙' : '☀'} ${str}`;
+    el.innerHTML = `<span class="ic-e">${isNight ? '🌙' : '☀'}</span><span class="ic-s">${isNight ? ICONS.nightMoon : ICONS.sun}</span> ${str}`;
   }
 
   showTarget(t) {

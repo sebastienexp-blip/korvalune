@@ -2118,7 +2118,7 @@ export class Game {
       const b = this.hud.q(sel); if (!b) continue;
       const id = this.player.potions[kind], def = getItem(id);
       if (!def) continue;
-      b.querySelector('.pq-ic').textContent = def.icon;
+      (b.querySelector('.pq-ic .ic-e') || b.querySelector('.pq-ic')).textContent = def.icon;
       b.querySelector('.pq-n').textContent = potionCooldown(id) + 's';
       b.title = `${def.name} (${kind === 'heal' ? 'V' : 'B'}) — recharge ${potionCooldown(id)} s`;
       b.style.setProperty('--pc', this.hud.rarityColorOf?.(def) || '#e2b866');
@@ -2560,7 +2560,7 @@ export class Game {
       this.input.setKeys(s.keys);
       if (this.player && key === 'keys') this.hud.buildSkillbar(this.player.skillBar);
     }
-    if (this.touch) this.touch.apply(s.touch);
+    if (this.touch) { this.touch.apply(s.touch); if (this.player) this.hud.buildSkillbar(this.player.skillBar); }
   }
 
   resetSettings() {

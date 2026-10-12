@@ -1196,3 +1196,9 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `src/core/ClickControl.js` : clic gauche (déplacer / attaquer avec la compétence de l'emplacement gauche / interagir, Maj = sur place), clic droit (compétence de l'emplacement droit, ou interaction sur un objet), option `pcMouse`. Caméras aériennes et PC uniquement.
 - `player.mouseSlots = { l, r }` (sauvegardé, validé côté serveur), affichés aux deux extrémités de la barre sur PC ; assignation par les boutons G / D de l'écran Compétences.
 - La rotation de caméra passe au clic molette quand ce mode est actif.
+
+## V10.36 — Interface mobile
+
+- Classe `.touch-on` (appareil tactile) : HUD en verre dépoli, `src/ui/Icons.js` (pictogrammes SVG + glyphes de compétences), menu compact (`#btn-menu`), mini-carte réduite, quête sur une ligne.
+- Boutons de compétences ronds (`#t-sk0…6`, nombre réglable `touch.skillCount`) disposés en arc autour de l'attaque (`TouchControls.layoutCluster`), déplaçables via la disposition personnalisable.
+- PC inchangé (emojis, barre de 10 compétences).
