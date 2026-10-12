@@ -1,4 +1,4 @@
-// V10.35 — Contrôles souris façon Diablo (caméra aérienne, PC) :
+// V10.35 — Commandes à la souris (caméra aérienne, PC) :
 //  • clic gauche (maintenu) : se déplacer vers le curseur ; sur un monstre : le poursuivre et l'attaquer ;
 //    sur un PNJ / butin / portail / coffre : y aller et interagir. Maj + clic gauche : attaquer sur place.
 //  • clic droit (maintenu) : lance la compétence liée au clic droit vers le curseur ; sur un PNJ/objet : y aller et interagir.
@@ -154,11 +154,12 @@ export class ClickControl {
     }
     if (this.engage && (!this.engage.alive || this.engage.state === 'dormant')) this.engage = null;
 
-    // bouton droit maintenu : compétence liée
+    // bouton droit maintenu : compétence de l'emplacement « clic droit »
     if (this.holdR && cur && !this.obj) {
-      const slot = Math.max(1, Math.min(10, g.settings.rmbSkill | 0 || 2));
-      const id = p.skillBar[slot - 1];
-      if (id) {
+      const id = p.mouseSlots?.r;
+      if (!id) {
+        if (performance.now() - (this._hintT || 0) > 4000) { this._hintT = performance.now(); g.hud.notify('Aucune compétence sur le clic droit : ouvre l’écran Compétences (K) et touche « D » sur une compétence.', 'info'); }
+      } else {
         const e = this._enemyAtCursor();
         if (e) { p.target = e; g._manualTargetT = performance.now(); }
         if (!p.busyUntil || p.busyUntil <= performance.now() / 1000) p.yaw = Math.atan2((e ? e.pos.x : cur.x) - p.pos.x, (e ? e.pos.z : cur.z) - p.pos.z);
@@ -184,13 +185,21 @@ export class ClickControl {
     if (this.dest) this._steer(this.dest.x, this.dest.z, dt, true);
   }
 
+  // compétence du clic gauche (par défaut la frappe de base)
+  _leftId() { return this.g.player.mouseSlots?.l || 'strike'; }
+
   _basicRange() {
-    const p = this.g.player, fam = weaponFamily(p._equipRef);
-    const r = fam === 'bow' || fam === 'crossbow' ? 16 : (SKILLS.strike?.range || 3.4);
-    return r;
+    const p = this.g.player, id = this._leftId(), fam = weaponFamily(p._equipRef);
+    if (id === 'strike') return fam === 'bow' || fam === 'crossbow' ? 16 : (SKILLS.strike?.range || 3.4);
+    return Math.max(2.5, SKILLS[id]?.range || 3.4);
   }
 
-  _basic() { this.g.player.tryUseSkill('strike'); }
+  _basic() {
+    const p = this.g.player, id = this._leftId();
+    // compétence en recharge : on retombe sur la frappe de base pour ne jamais rester inactif
+    if (id !== 'strike' && (p.cooldowns[id] || 0) > 0) { p.tryUseSkill('strike'); return; }
+    p.tryUseSkill(id);
+  }
 
   _steer(x, z, dt, isDest = false) {
     const g = this.g, p = g.player, inp = g.input;

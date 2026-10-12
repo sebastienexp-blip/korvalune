@@ -76,6 +76,10 @@ export class Player {
       starter.forEach((id, i) => { this.skillBar[i] = id; });
     }
 
+    // V10.35 : emplacements dédiés aux boutons de la souris (clic gauche / clic droit)
+    const ms = save?.mouseSlots;
+    this.mouseSlots = { l: typeof ms?.l === 'string' ? ms.l : 'strike', r: ms ? (typeof ms.r === 'string' ? ms.r : null) : (this.skillBar[1] || this.skillBar[0] || null) };
+
     this._cls = cls;
     this.rig = this._makeRig();
     this.rig.root.position.copy(this.pos);
@@ -214,6 +218,14 @@ export class Player {
   getSkillPool() { return getClassSkillPool(this.classId); }
   getUnlockedSkills() { return this.getSkillPool().filter((s) => s.levelReq <= this.level); }
   isSkillUnlocked(id) { const s = SKILLS[id]; return !!s && s.levelReq <= this.level && (s.classId === null || s.classId === this.classId); }
+
+  setMouseSlot(btn, id) {
+    if (btn !== 'l' && btn !== 'r') return false;
+    if (id !== null && !this.isSkillUnlocked(id)) return false;
+    this.mouseSlots[btn] = id;
+    this.bus.emit('skillBarChanged');
+    return true;
+  }
 
   // Place (ou retire avec id=null) une compétence débloquée dans un emplacement de la barre (0-9).
   setBarSlot(index, id) {
@@ -676,7 +688,7 @@ export class Player {
     return {
       classId: this.classId, name: this.name, skin: this.skin, hairCol: this.hairCol, eyeCol: this.eyeCol, look: this.look, pos: [this.pos.x, this.pos.y, this.pos.z], yaw: this.yaw,
       level: this.level, xp: this.xp, coins: this.coins, soldTotal: this.soldTotal, potions: this.potions, satchel: this.satchel, skillRanks: this.skillRanks, zenith: this.zenith, stats: this.stats, statPoints: this.statPoints, hp: this.hp, mana: this.mana,
-      skillBar: this.skillBar
+      skillBar: this.skillBar, mouseSlots: this.mouseSlots
     };
   }
 }

@@ -3,12 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
-    version: '10.35', title: 'Souris façon Diablo (PC)',
+    version: '10.35', title: 'Commandes à la souris (PC)',
     items: [
-      '🖱️ Clic gauche : se déplacer (maintiens pour suivre le curseur). Sur un monstre : tu le poursuis et tu l’attaques. Sur un PNJ, du butin, un portail ou un coffre : tu y vas et tu interagis. Maj + clic gauche : attaquer sur place.',
-      '🖱️ Clic droit (maintenu) : lance la compétence de ton choix vers le curseur (par défaut l’emplacement 2 ; réglable dans Options). Sur un PNJ ou un objet : y aller et interagir.',
-      '⌨️ Tous les raccourcis clavier restent actifs ; bouger au clavier annule le déplacement à la souris. Pour pivoter la caméra : clic molette + glisser.',
-      '⚙️ Actif avec les caméras aériennes (par défaut) ; désactivable dans Options > Commandes.'
+      '🖱️ Clic gauche : se déplacer (maintiens pour suivre le curseur). Sur un monstre : tu le poursuis et tu lances la compétence du clic gauche (la frappe de base par défaut). Sur un PNJ, du butin, un portail ou un coffre : tu y vas et tu interagis. Maj + clic gauche : attaquer sur place.',
+      '🖱️ Clic droit (maintenu) : lance la compétence du clic droit vers le curseur. Sur un PNJ ou un objet : y aller et interagir.',
+      '🎯 Deux nouveaux emplacements sur la barre de compétences (PC) : un pour le clic gauche, un pour le clic droit, avec leur icône de souris. Assigne-les dans l’écran Compétences (K) avec les boutons « G » et « D » de chaque compétence.',
+      '⌨️ Les raccourcis clavier 1–0 restent actifs ; bouger au clavier annule le déplacement à la souris. Pour pivoter la caméra : clic molette + glisser. Désactivable dans Options > Commandes.'
     ]
   },
   {

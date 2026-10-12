@@ -328,6 +328,10 @@ function sanitizeSave(prev, incoming, elapsedMs) {
     ? incoming.skillBar.slice(0, 10).map((id) => (typeof id === 'string' ? sanitize(id, 40) : null))
     : (prev?.skillBar || []);
 
+  clean.mouseSlots = incoming.mouseSlots && typeof incoming.mouseSlots === 'object'
+    ? { l: typeof incoming.mouseSlots.l === 'string' ? sanitize(incoming.mouseSlots.l, 40) : null, r: typeof incoming.mouseSlots.r === 'string' ? sanitize(incoming.mouseSlots.r, 40) : null }
+    : (prev?.mouseSlots || undefined);
+
   // V4.7 : coffres du monde déjà ouverts (identifiants courts)
   clean.chests = Array.isArray(incoming.chests) ? incoming.chests.filter((x) => typeof x === 'string' && x.length <= 20).slice(0, 300) : (prev?.chests || []);
   clean.bank = noCosmetics(sanitizeItemSlots(incoming.bank, 240, sanitize)) ?? (prev?.bank || []);

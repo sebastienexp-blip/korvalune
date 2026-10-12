@@ -1191,7 +1191,8 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - Menu joueur (`Game._openPlayerMenu`) : clic sur un avatar ou un nom (Amis / Groupe) ; ajout d'ami par avatar (`friend:add` avec `id`).
 - Téléportation vers un membre du groupe (recharge 20 s) ; XP de groupe +10 % par coéquipier à moins de 100 m (`share.xpMult`).
 
-## V10.35 — Souris façon Diablo
+## V10.35 — Commandes à la souris
 
-- `src/core/ClickControl.js` : clic gauche (déplacer / attaquer / interagir, Maj = sur place), clic droit (compétence liée, réglage `rmbSkill`), option `pcMouse`. Caméras aériennes uniquement, PC uniquement.
+- `src/core/ClickControl.js` : clic gauche (déplacer / attaquer avec la compétence de l'emplacement gauche / interagir, Maj = sur place), clic droit (compétence de l'emplacement droit, ou interaction sur un objet), option `pcMouse`. Caméras aériennes et PC uniquement.
+- `player.mouseSlots = { l, r }` (sauvegardé, validé côté serveur), affichés aux deux extrémités de la barre sur PC ; assignation par les boutons G / D de l'écran Compétences.
 - La rotation de caméra passe au clic molette quand ce mode est actif.

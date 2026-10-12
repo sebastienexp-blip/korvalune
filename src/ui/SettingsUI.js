@@ -14,7 +14,7 @@ export const DEFAULTS = {
   petLoot: true, petLootCons: true, petConsMin: 1, petLootMat: false, petLootRune: false,
   // V10.29 : équipement du compagnon — rareté minimale / maximale et types ; notifications de ramassage
   petGearMin: 'off', petGearMax: 'all', petLootWeapon: true, petLootArmor: true, petLootJewel: true,
-  lootNotif: 'all', lootNotifMats: true, introCinematic: true, groundGps: true, pcMouse: true, rmbSkill: 2, notifAll: true, notifLevel: true, notifXp: true, lootLabels: 'all', lootLabelMats: true,
+  lootNotif: 'all', lootNotifMats: true, introCinematic: true, groundGps: true, pcMouse: true, notifAll: true, notifLevel: true, notifXp: true, lootLabels: 'all', lootLabelMats: true,
   // interface / jeu
   showQuests: true, showMinimap: true, showHints: true, notifInfo: true, autoTarget: true, autosave: 60, autoFullscreen: false,
   uiScale: 100
@@ -59,8 +59,7 @@ const TABS = [
     { t: 'select', k: 'camRotate', label: 'Rotation de la caméra', opts: [['auto', 'Auto (selon la caméra)'], ['on', 'Activée (clic droit / glisser pour tourner)'], ['off', 'Désactivée (caméra figée)']] },
     { t: 'select', k: 'autoLoot', label: 'Ramassage automatique du butin', opts: [['off', 'Désactivé (touche d\'interaction)'], ['basic', 'Potions, parchemins et consommables'], ['all', 'Tout le butin proche']] },
     { t: 'check', k: 'cameraLock', label: 'Caméra verrouillée (mode libre)' },
-    { t: 'check', k: 'pcMouse', label: 'PC : souris façon Diablo (clic gauche : se déplacer / attaquer · clic droit : compétence) — caméra aérienne' },
-    { t: 'select', k: 'rmbSkill', label: 'Compétence du clic droit (emplacement)', opts: [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6'], [7, '7'], [8, '8'], [9, '9'], [10, '10']] },
+    { t: 'check', k: 'pcMouse', label: 'PC : commandes à la souris (clic gauche : se déplacer / attaquer · clic droit : compétence) — caméras aériennes' },
     { t: 'select', k: 'rotateBtn', label: 'Pivoter la caméra avec', opts: [['right', 'Clic droit + glisser'], ['middle', 'Clic molette + glisser']] },
     { t: 'range', k: 'lookSens', label: 'Sensibilité de la souris', min: 20, max: 250, step: 10, fmt: pct },
     { t: 'check', k: 'invertY', label: 'Inverser l’axe vertical' },

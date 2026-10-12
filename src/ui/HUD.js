@@ -17,6 +17,11 @@ import { ItemGestures } from './ItemGestures.js';
 import { POTION_INFO, potionCooldown, potionServes } from '../data/potions.js';
 import { skillIconHTML } from './SkillIcon.js';
 import { slotCategory, RUNE_BY_ID, fmtBonusMap } from '../data/crafting.js';
+// icône de souris (bouton gauche ou droit en surbrillance)
+const MOUSE_ICON = {
+  l: '<svg viewBox="0 0 12 16" width="11" height="14"><rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M1 7.5h10M6 1v6.5" stroke="#fff" stroke-width="1"/><path d="M6 1.2A4.8 4.8 0 0 0 1.2 6v1.5H6z" fill="#ffd45a"/></svg>',
+  r: '<svg viewBox="0 0 12 16" width="11" height="14"><rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M1 7.5h10M6 1v6.5" stroke="#fff" stroke-width="1"/><path d="M6 1.2A4.8 4.8 0 0 1 10.8 6v1.5H6z" fill="#ffd45a"/></svg>'
+};
 const byId = Object.fromEntries(skillDefs.map((s) => [s.id, s]));
 
 // Résumé lisible des effets d'une compétence (écran Compétences)
@@ -617,22 +622,29 @@ export class HUD {
     this._slotEls = null;
     const bar = this.q('#skillbar');
     bar.innerHTML = '';
-    skillBar.forEach((id, i) => {
+    const g = this.game;
+    const mouseOn = !!(g && g.player && g.player.mouseSlots && g.settings.pcMouse !== false && !(g.input && g.input.isTouch));
+    const mkSlot = (id, keyHTML, extraCls = '') => {
       const b = document.createElement('button');
-      b.className = 'skill-slot';
-      const keyLabel = (this.game && this.game.skillKeyLabel) ? this.game.skillKeyLabel(i) : (i < 9 ? String(i + 1) : '0');
+      b.className = 'skill-slot ' + extraCls;
       if (id && byId[id]) {
         const s = byId[id];
         b.dataset.skill = id;
-        b.innerHTML = `<span class="sk-icon">${skillIconHTML(s)}</span><span class="sk-key">${keyLabel}</span><div class="sk-cd"></div>`;
+        b.innerHTML = `<span class="sk-icon">${skillIconHTML(s)}</span>${keyHTML}<div class="sk-cd"></div>`;
         // V10.24 : « pointerdown » et non « click » : un second doigt posé pendant que le joystick est tenu ne produit pas toujours de clic
         b.addEventListener('pointerdown', (e) => { e.preventDefault(); this.bus.emit('skillPressed', id); });
       } else {
         b.className += ' skill-slot-empty';
-        b.innerHTML = `<span class="sk-key">${keyLabel}</span>`;
+        b.innerHTML = keyHTML;
       }
-      bar.appendChild(b);
+      return b;
+    };
+    if (mouseOn) bar.appendChild(mkSlot(g.player.mouseSlots.l, `<span class="sk-key sk-mouse">${MOUSE_ICON.l}</span>`, 'mouse-slot'));
+    skillBar.forEach((id, i) => {
+      const keyLabel = (g && g.skillKeyLabel) ? g.skillKeyLabel(i) : (i < 9 ? String(i + 1) : '0');
+      bar.appendChild(mkSlot(id, `<span class="sk-key">${keyLabel}</span>`));
     });
+    if (mouseOn) bar.appendChild(mkSlot(g.player.mouseSlots.r, `<span class="sk-key sk-mouse">${MOUSE_ICON.r}</span>`, 'mouse-slot'));
   }
 
   // V3.8 : icônes des améliorations temporaires (buffs) et du bouclier
@@ -1145,7 +1157,7 @@ export class HUD {
       ${can.ok ? '' : `<small class="zn-why">${can.msg}</small>`}</div>`;
   }
 
-  renderSkills(player, onToggleBarSlot, onToggleSkill, onUpgrade) {
+  renderSkills(player, onToggleBarSlot, onToggleSkill, onUpgrade, onMouseSlot) {
     const barEl = this.q('#skills-bar-preview');
     barEl.innerHTML = '';
     player.skillBar.forEach((id, i) => {
@@ -1157,6 +1169,17 @@ export class HUD {
       barEl.appendChild(cell);
     });
 
+    if (onMouseSlot && player.mouseSlots) {
+      for (const b of ['l', 'r']) {
+        const id = player.mouseSlots[b];
+        const cell = document.createElement('button');
+        cell.className = 'skill-slot mouse-slot' + (id ? '' : ' skill-slot-empty');
+        cell.innerHTML = id && byId[id] ? `<span class="sk-icon">${skillIconHTML(byId[id])}</span><span class="sk-key sk-mouse">${MOUSE_ICON[b]}</span>` : `<span class="sk-key sk-mouse">${MOUSE_ICON[b]}</span>`;
+        cell.title = b === 'l' ? 'Clic gauche' : 'Clic droit';
+        if (id) cell.onclick = () => onMouseSlot(b, null);
+        barEl.appendChild(cell);
+      }
+    }
     const COST = { stamina: 'endurance', mana: 'mana', hp: 'PV' };
     const num = (v) => String(v).replace('.', ',');
     const pool = this.q('#skills-pool');
@@ -1190,6 +1213,17 @@ export class HUD {
         <span class="sk-card-info"><b>${s.name}</b><small>${s.desc || ''}</small><span class="sk-meta">${meta.join(' · ')}</span>${rankHTML}${modLine}</span>
         <span class="sk-card-tag">${tag}</span>
       `;
+      if (unlocked && onMouseSlot && player.mouseSlots) {
+        const ms = document.createElement('span'); ms.className = 'sk-ms';
+        for (const [b, t] of [['l', 'G'], ['r', 'D']]) {
+          const c = document.createElement('i'); c.textContent = t; c.dataset.ms = b;
+          c.title = b === 'l' ? 'Assigner au clic gauche' : 'Assigner au clic droit';
+          if (player.mouseSlots[b] === s.id) c.className = 'on';
+          c.onclick = (ev) => { ev.stopPropagation(); onMouseSlot(b, s.id); };
+          ms.appendChild(c);
+        }
+        card.querySelector('.sk-card-info').appendChild(ms);
+      }
       const up = card.querySelector('[data-up]');
       if (up && onUpgrade) up.onclick = (ev) => { ev.stopPropagation(); onUpgrade(s.id); };
       if (unlocked) { card.onclick = () => onToggleSkill(s.id); card.title = equipped ? 'Retirer de la barre' : 'Ajouter à la barre'; }

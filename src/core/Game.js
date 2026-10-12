@@ -1451,7 +1451,7 @@ export class Game {
     document.exitPointerLock?.();
     this.modalOpen = true;
     this.hud.showScreen('skills-screen');
-    const refresh = () => this.hud.renderSkills(this.player, onToggleBarSlot, onToggleSkill, onUpgrade);
+    const refresh = () => this.hud.renderSkills(this.player, onToggleBarSlot, onToggleSkill, onUpgrade, (b, id) => { this.player.setMouseSlot(b, id); this.hud.buildSkillbar(this.player.skillBar); this.audio.play('click'); refresh(); });
     const onUpgrade = (skillId) => {
       const r = tryUpgrade(this.player, skillId);
       this.hud.notify(r.ok ? `⬆ ${r.msg}` : r.msg, r.ok ? 'quest' : 'boss');
@@ -2555,6 +2555,7 @@ export class Game {
     // entrées
     const o = this.input.opts;
     o.lookSens = (s.lookSens || 100) / 100; o.invertY = !!s.invertY; o.invertWheel = !!s.invertWheel; o.zoomSpeed = (s.zoomSpeed || 100) / 100; o.rotateBtn = s.rotateBtn === 'middle' ? 'middle' : 'right';
+    if (key === 'pcMouse' && this.player) this.hud.buildSkillbar(this.player.skillBar);
     if (key === 'keys' || !key) {
       this.input.setKeys(s.keys);
       if (this.player && key === 'keys') this.hud.buildSkillbar(this.player.skillBar);
