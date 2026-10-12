@@ -18,12 +18,12 @@ import { planLandmarks, buildLandmarks } from './Landmarks.js';
 const REGION_IDS = REGIONS.map((r) => r.id).filter((id) => id !== 'prairie');
 // Routes (points de contrôle), de la ville vers chaque région
 const ROAD_PTS = [
-  [[0, 40], [6, 100], [20, 160], [36, 215], [42, 265], [52, 320], [60, 358]],                                // sud : Montagnes de Fer → Royaume Céleste
-  [[-40, 8], [-95, 28], [-150, 40], [-210, 45], [-262, 20], [-308, -60], [-340, -150]],                      // ouest : Forêt des Ombres → Abysses
-  [[40, -14], [110, -30], [180, 10], [245, 58]],                                                            // est : Désert d'Ambre
+  [[0, 64], [6, 100], [20, 160], [36, 215], [42, 265], [52, 320], [60, 358]],                                // sud : Montagnes de Fer → Royaume Céleste
+  [[-64, -10], [-95, 28], [-150, 40], [-210, 45], [-262, 20], [-308, -60], [-340, -150]],                      // ouest : Forêt des Ombres → Abysses
+  [[64, -10], [110, -30], [180, 10], [245, 58]],                                                            // est : Désert d'Ambre
   [[245, 58], [282, -30], [280, -130], [272, -215]],                                                         // désert → Terres Corrompues
   [[245, 58], [262, 120], [282, 190], [298, 242]],                                                           // désert → Néant Primordial
-  [[0, -40], [5, -100], [0, -160], [-8, -220], [-14, -292]],                                                 // nord : Toundra de Givre
+  [[0, -64], [5, -100], [0, -160], [-8, -220], [-14, -292]],                                                 // nord : Toundra de Givre
   [[-150, 40], [-163, 110], [-176, 175], [-186, 232]]                                                        // forêt → Marais de Brume
 ];
 const ROAD_GRID = { step: 2, half: 524, influence: 11 };
@@ -61,7 +61,10 @@ export class World {
   }
 
   // ---------- Terrain ----------
-  riverX(z) { return 70 + 30 * Math.sin(z * 0.012); }
+  riverX(z) { // V10.39 : la rivière contourne la ville agrandie par l'est (bosse douce centrée en z = -50)
+    const k = (z + 50) / 150;
+    return 70 + 30 * Math.sin(z * 0.012) + 55 * Math.exp(-k * k);
+  }
   // (hérité) abscisse de l'ancienne route sud — la vraie logique est roadDist()
   pathX(z) { return 6 * Math.sin(z * 0.03) * smoothstep(30, 75, z); }
 

@@ -503,5 +503,509 @@
       ]
     },
     "workshop": "mystic"
+  },
+  "captain": {
+    "id": "captain",
+    "name": "Capitaine Rhoda",
+    "title": "Capitaine de la garde du château",
+    "look": {
+      "cloth": 2767466,
+      "armor": 12107984,
+      "cape": 5909146,
+      "hair": 5913122
+    },
+    "dialogues": {
+      "intro": [
+        "Le château de Korvalune n'a jamais fermé ses portes, voyageur. Mais ces derniers temps, je double les tours de garde.",
+        "Depuis la nuit où le ciel s'est fendu, les failles s'ouvrent plus souvent. Nous n'avons pas assez de bras."
+      ],
+      "talks": [
+        [
+          "Le château de Korvalune n'a jamais fermé ses portes, voyageur. Mais ces derniers temps, je double les tours de garde.",
+          "Depuis la nuit où le ciel s'est fendu, les failles s'ouvrent plus souvent. Nous n'avons pas assez de bras."
+        ],
+        [
+          "On raconte que le Cœur d'Éther battait autrefois sous cette forteresse. Les anciens disent qu'on l'entend encore parfois, la nuit, si on colle l'oreille aux pierres.",
+          "Moi, je n'entends que mes soldats ronfler. Mais je ne ris plus de ces histoires."
+        ],
+        [
+          "Les héros qui reviennent d'une faille rapportent tous la même chose : une voix, très loin sous la roche, qui appelle un nom que personne ne reconnaît.",
+          "Si tu entends quelque chose, viens m'en parler. À moi, personne d'autre."
+        ]
+      ]
+    }
+  },
+  "herald": {
+    "id": "herald",
+    "name": "Héraut Ilan",
+    "title": "Crieur public",
+    "look": {
+      "cloth": 9054778,
+      "armor": 12623952,
+      "cape": 2775690,
+      "hair": 3811866
+    },
+    "dialogues": {
+      "intro": [
+        "Oyez, oyez ! Korvalune, cité des Sept Routes, accueille tous ceux qui portent une lame ou un sort !",
+        "Les spires se réveillent, les failles s'ouvrent : la Couronne offre récompense à qui les referme !"
+      ],
+      "talks": [
+        [
+          "Oyez, oyez ! Korvalune, cité des Sept Routes, accueille tous ceux qui portent une lame ou un sort !",
+          "Les spires se réveillent, les failles s'ouvrent : la Couronne offre récompense à qui les referme !"
+        ],
+        [
+          "Nouvelles du jour : la Route du Sud est dégagée, les loups reculent. La Route de l'Est, en revanche... ne la prenez pas sans escorte.",
+          "Et que ceux qui cherchent fortune passent par le quartier marchand : la foire est ouverte !"
+        ],
+        [
+          "On murmure qu'un grand dessein se prépare. La Couronne réunit ses conseillers au château. Moi, je crie ce qu'on me dit de crier.",
+          "Mais mes oreilles traînent : il y est question d'un Veilleur de pierre qui aurait ouvert les yeux."
+        ]
+      ]
+    },
+    "walk": [
+      [
+        -6,
+        44
+      ],
+      [
+        -6,
+        33
+      ],
+      [
+        6,
+        33
+      ],
+      [
+        6,
+        44
+      ]
+    ]
+  },
+  "nessa": {
+    "id": "nessa",
+    "name": "Conteuse Nessa",
+    "title": "Gardienne des récits",
+    "look": {
+      "cloth": 6965882,
+      "armor": 9075306,
+      "cape": 3811914,
+      "hair": 14211296
+    },
+    "dialogues": {
+      "intro": [
+        "Assieds-toi un instant, enfant. Je vais te raconter l'histoire des deux lunes.",
+        "Autrefois, deux lunes veillaient sur Korvalune. L'une donnait sa lumière, l'autre la gardait. Ensemble, elles nourrissaient le Cœur d'Éther."
+      ],
+      "talks": [
+        [
+          "Assieds-toi un instant, enfant. Je vais te raconter l'histoire des deux lunes.",
+          "Autrefois, deux lunes veillaient sur Korvalune. L'une donnait sa lumière, l'autre la gardait. Ensemble, elles nourrissaient le Cœur d'Éther."
+        ],
+        [
+          "Chaque spire est un doigt de pierre tendu vers les lunes. Les anciens peuples les ont bâties pour tenir le monde en équilibre.",
+          "Puis quelqu'un a voulu en prendre plus que sa part... mais ça, c'est une autre histoire, et je ne la raconte qu'aux héros."
+        ],
+        [
+          "Quand le Cœur s'est fracturé, les lunes ont pâli. Regarde le ciel par nuit claire : tu verras que l'une des deux tremble.",
+          "Les vieux savent ce que cela veut dire. Le temps presse."
+        ]
+      ]
+    }
+  },
+  "archivist": {
+    "id": "archivist",
+    "name": "Archiviste Maelis",
+    "title": "Gardienne de la bibliothèque royale",
+    "look": {
+      "cloth": 3820154,
+      "armor": 10528952,
+      "cape": 2763354,
+      "hair": 8018490
+    },
+    "dialogues": {
+      "intro": [
+        "Chut ! Ici, on respecte le silence des livres. Même si, depuis la fracture, la moitié de mes registres se réécrit toute seule.",
+        "Ne me demande pas comment. Je n'ai pas la réponse."
+      ],
+      "talks": [
+        [
+          "Chut ! Ici, on respecte le silence des livres. Même si, depuis la fracture, la moitié de mes registres se réécrit toute seule.",
+          "Ne me demande pas comment. Je n'ai pas la réponse."
+        ],
+        [
+          "J'ai retrouvé un fragment de carte : sept routes partent de Korvalune, mais le tracé en montre une huitième, effacée à la main. Qui l'a effacée, et pourquoi ?",
+          "Si tu croises une route qui n'existe pas, note-la. Les archives te remercieront."
+        ],
+        [
+          "Les spires portent des noms oubliés. Chacune garde un Gardien, et chaque Gardien, dit-on, a un jour été l'un des nôtres.",
+          "Ce qui donne un sens plus sombre à tes combats, n'est-ce pas ?"
+        ]
+      ]
+    }
+  },
+  "portalkeeper": {
+    "id": "portalkeeper",
+    "name": "Gardien des portails Ysmer",
+    "title": "Maître des passages",
+    "look": {
+      "cloth": 4860538,
+      "armor": 11575504,
+      "cape": 9063167,
+      "hair": 14737648
+    },
+    "dialogues": {
+      "intro": [
+        "Le Portail des régions est ouvert à tous. Il suit les fils de l'Éther qui relient les routes : un pas ici, un pas là-bas.",
+        "Mais attention : les fils s'usent. Chaque jour, j'en vois un de moins."
+      ],
+      "talks": [
+        [
+          "Le Portail des régions est ouvert à tous. Il suit les fils de l'Éther qui relient les routes : un pas ici, un pas là-bas.",
+          "Mais attention : les fils s'usent. Chaque jour, j'en vois un de moins."
+        ],
+        [
+          "Le portail violet te ramène ici, et celui de la Spire te mène aux failles. Ils sont frères, mais pas jumeaux.",
+          "L'un obéit à la pierre, l'autre... à quelque chose d'autre."
+        ],
+        [
+          "Cette nuit, le portail a vibré avant que quiconque ne le touche. Comme si quelque chose, de l'autre côté, avait frappé.",
+          "J'ai vu bien des merveilles, héros. Mais celle-là, je ne l'aime pas."
+        ]
+      ]
+    }
+  },
+  "sentinel": {
+    "id": "sentinel",
+    "name": "Sentinelle Doran",
+    "title": "Veilleur des portails",
+    "look": {
+      "cloth": 3816026,
+      "armor": 10133680,
+      "cape": 4860554,
+      "hair": 3811882
+    },
+    "dialogues": {
+      "intro": [
+        "Je monte la garde devant les portails depuis vingt ans. Jamais ils n'ont brillé aussi fort.",
+        "Si tu en franchis un, reviens entier. On a besoin de monde."
+      ],
+      "talks": [
+        [
+          "Je monte la garde devant les portails depuis vingt ans. Jamais ils n'ont brillé aussi fort.",
+          "Si tu en franchis un, reviens entier. On a besoin de monde."
+        ],
+        [
+          "Une fois, un voyageur est sorti d'une faille en pleurant de rire. Il disait que la lune lui avait parlé. Il n'a plus jamais voulu y retourner.",
+          "Les gens sont étranges, ici."
+        ]
+      ]
+    }
+  },
+  "gateE": {
+    "id": "gateE",
+    "name": "Garde Brann",
+    "title": "Garde de Korvalune",
+    "look": {
+      "cloth": 3824186,
+      "armor": 11581632,
+      "cape": 8018474,
+      "hair": 5913122
+    },
+    "dialogues": {
+      "intro": [
+        "Porte de l'Est : ça mène au Désert d'Ambre. Prends de l'eau et une monture.",
+        "Les caravanes ne passent plus guère. Quand elles passent, elles ne passent pas entières."
+      ],
+      "talks": [
+        [
+          "Porte de l'Est : ça mène au Désert d'Ambre. Prends de l'eau et une monture.",
+          "Les caravanes ne passent plus guère. Quand elles passent, elles ne passent pas entières."
+        ],
+        [
+          "On dit que le sable cache les vieux temples d'avant la fracture. Moi, je préfère garder ma porte."
+        ]
+      ]
+    }
+  },
+  "gateW": {
+    "id": "gateW",
+    "name": "Garde Lysa",
+    "title": "Garde de Korvalune",
+    "look": {
+      "cloth": 3820122,
+      "armor": 11581632,
+      "cape": 2775610,
+      "hair": 9058850
+    },
+    "dialogues": {
+      "intro": [
+        "Porte de l'Ouest. La Forêt des Ombres commence juste après la colline.",
+        "Ne t'éloigne pas de la route, même si tu entends une voix amicale. Surtout si tu entends une voix amicale."
+      ],
+      "talks": [
+        [
+          "Porte de l'Ouest. La Forêt des Ombres commence juste après la colline.",
+          "Ne t'éloigne pas de la route, même si tu entends une voix amicale. Surtout si tu entends une voix amicale."
+        ],
+        [
+          "Les chasseurs reviennent parfois avec des histoires de cercles de pierre qui chantent. Je ne leur demande pas de preuves."
+        ]
+      ]
+    }
+  },
+  "gateN": {
+    "id": "gateN",
+    "name": "Garde Teor",
+    "title": "Garde de Korvalune",
+    "look": {
+      "cloth": 5913146,
+      "armor": 11581632,
+      "cape": 2767482,
+      "hair": 3815994
+    },
+    "dialogues": {
+      "intro": [
+        "Porte du Nord : la Toundra de Givre, et le froid qui va avec. Prends un manteau.",
+        "Les gens du nord disent que la citadelle flottante n'a pas bougé depuis la fracture. Mais moi, je regarde le ciel tous les jours : elle descend."
+      ],
+      "talks": [
+        [
+          "Porte du Nord : la Toundra de Givre, et le froid qui va avec. Prends un manteau.",
+          "Les gens du nord disent que la citadelle flottante n'a pas bougé depuis la fracture. Mais moi, je regarde le ciel tous les jours : elle descend."
+        ],
+        [
+          "Quand le vent tourne, on entend un chant de cloches venu de très haut. Les vieux disent que c'est l'Éther qui pleure."
+        ]
+      ]
+    }
+  },
+  "tilda": {
+    "id": "tilda",
+    "name": "Marchande Tilda",
+    "title": "Drapière",
+    "look": {
+      "cloth": 10504842,
+      "armor": 12624032,
+      "cape": 5909082,
+      "hair": 4860442
+    },
+    "dialogues": {
+      "intro": [
+        "Draps de Brumevent, soies du désert, laine de la toundra ! Tout ce que les Sept Routes ont de plus doux.",
+        "Tu ne trouves pas ça en faille, crois-moi."
+      ],
+      "talks": [
+        [
+          "Draps de Brumevent, soies du désert, laine de la toundra ! Tout ce que les Sept Routes ont de plus doux.",
+          "Tu ne trouves pas ça en faille, crois-moi."
+        ],
+        [
+          "Les affaires reprennent depuis que les routes sont plus sûres. Merci à ceux qui s'en occupent, même si je ne les vois jamais.",
+          "Je garde toujours un tissu du meilleur pour un héros qui m'en rapporte les fils."
+        ]
+      ]
+    }
+  },
+  "orsin": {
+    "id": "orsin",
+    "name": "Marchand Orsin",
+    "title": "Colporteur de curiosités",
+    "look": {
+      "cloth": 4864650,
+      "armor": 12628096,
+      "cape": 2763354,
+      "hair": 10522752
+    },
+    "dialogues": {
+      "intro": [
+        "Psst ! Un éclat d'étoile ? Un bout de lune ? Tout est authentique, ou presque.",
+        "Ce globe bleu, là : il murmure quand personne ne l'écoute. Ça ne se vend pas, ça se mérite."
+      ],
+      "talks": [
+        [
+          "Psst ! Un éclat d'étoile ? Un bout de lune ? Tout est authentique, ou presque.",
+          "Ce globe bleu, là : il murmure quand personne ne l'écoute. Ça ne se vend pas, ça se mérite."
+        ],
+        [
+          "Hier, un client m'a rapporté une pierre qui pulsait au rythme du Cœur d'Éther. Il me l'a vendue pour une bouchée de pain, puis il a fui.",
+          "Elle est dans mon coffre. Je n'ose plus l'ouvrir."
+        ]
+      ]
+    }
+  },
+  "pip": {
+    "id": "pip",
+    "name": "Pip",
+    "title": "Gamin des rues",
+    "look": {
+      "cloth": 8018490,
+      "armor": 6974058,
+      "cape": 0,
+      "hair": 9067050
+    },
+    "dialogues": {
+      "intro": [
+        "Chut ! Je joue aux héros. Moi, je ferme les failles avec mon bâton !",
+        "Toi aussi tu y vas ? Tu me rapporteras un caillou brillant ?"
+      ],
+      "talks": [
+        [
+          "Chut ! Je joue aux héros. Moi, je ferme les failles avec mon bâton !",
+          "Toi aussi tu y vas ? Tu me rapporteras un caillou brillant ?"
+        ],
+        [
+          "Mamie Nessa dit que les lunes pleurent. Moi je crois qu'elles se disputent.",
+          "Si tu les entends crier, dis-leur de se réconcilier !"
+        ]
+      ]
+    },
+    "walk": [
+      [
+        -3,
+        44
+      ],
+      [
+        3,
+        50
+      ],
+      [
+        -4,
+        52
+      ],
+      [
+        4,
+        44
+      ]
+    ]
+  },
+  "mira": {
+    "id": "mira",
+    "name": "Passante Mira",
+    "title": "Couturière du quartier",
+    "look": {
+      "cloth": 6965850,
+      "armor": 9075322,
+      "cape": 4860474,
+      "hair": 5909018
+    },
+    "dialogues": {
+      "intro": [
+        "Je file au marché avant que les meilleurs fils ne partent !",
+        "Ah, un héros ! Garde ton épée affûtée, la route me paraît longue ces temps-ci."
+      ],
+      "talks": [
+        [
+          "Je file au marché avant que les meilleurs fils ne partent !",
+          "Ah, un héros ! Garde ton épée affûtée, la route me paraît longue ces temps-ci."
+        ],
+        [
+          "Mon mari est parti vers l'est avec une caravane. Je guette son retour chaque soir à la porte.",
+          "Si tu le croises... il s'appelle Corin. Dis-lui que le pain refroidit."
+        ]
+      ]
+    },
+    "walk": [
+      [
+        28,
+        -10
+      ],
+      [
+        56,
+        -10
+      ]
+    ]
+  },
+  "joss": {
+    "id": "joss",
+    "name": "Porteur Joss",
+    "title": "Porteur de la place",
+    "look": {
+      "cloth": 5925450,
+      "armor": 8026730,
+      "cape": 0,
+      "hair": 3811866
+    },
+    "dialogues": {
+      "intro": [
+        "Lourd, tout ça ! Les marchands me paient au poids, pas à l'effort.",
+        "Pousse-toi, héros, ou je te colle un sac sur le dos."
+      ],
+      "talks": [
+        [
+          "Lourd, tout ça ! Les marchands me paient au poids, pas à l'effort.",
+          "Pousse-toi, héros, ou je te colle un sac sur le dos."
+        ],
+        [
+          "Cette nuit, j'ai vu une lumière violette dans la bibliothèque du château. Quand j'ai levé les yeux, elle s'était éteinte.",
+          "Ne le répète pas. Je tiens à mon emploi."
+        ]
+      ]
+    },
+    "walk": [
+      [
+        -4,
+        24
+      ],
+      [
+        4,
+        60
+      ],
+      [
+        -4,
+        60
+      ],
+      [
+        4,
+        24
+      ]
+    ]
+  },
+  "aldric": {
+    "id": "aldric",
+    "name": "Pèlerin Aldric",
+    "title": "Voyageur du Nord",
+    "look": {
+      "cloth": 5921386,
+      "armor": 9079450,
+      "cape": 3816026,
+      "hair": 12632264
+    },
+    "dialogues": {
+      "intro": [
+        "J'ai marché trois mois pour voir la citadelle flottante de plus près. On la voit à peine depuis la toundra.",
+        "Quand les lunes se couchent, elle brille. Comme un phare qu'on aurait oublié d'éteindre."
+      ],
+      "talks": [
+        [
+          "J'ai marché trois mois pour voir la citadelle flottante de plus près. On la voit à peine depuis la toundra.",
+          "Quand les lunes se couchent, elle brille. Comme un phare qu'on aurait oublié d'éteindre."
+        ],
+        [
+          "On m'a dit à Korvalune que les héros peuvent refermer le ciel. Je n'y crois pas trop, mais je suis venu voir.",
+          "Montre-moi que j'ai eu tort."
+        ]
+      ]
+    },
+    "walk": [
+      [
+        -4,
+        -58
+      ],
+      [
+        4,
+        -40
+      ],
+      [
+        -4,
+        -40
+      ],
+      [
+        4,
+        -58
+      ]
+    ]
   }
 }

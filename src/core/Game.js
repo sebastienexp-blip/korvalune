@@ -34,6 +34,7 @@ import { wearGear } from '../crafting/Crafting.js';
 import { PASS_ITEM_BY_ID, rewardOf as passRewardOf } from '../data/battlePass.js';
 import { Workshop } from '../ui/Workshop.js';
 import { buildForgeDecor } from '../world/Monolith.js';
+import { POS } from '../world/TownMap.js';
 import { setDifficultyId, getDifficulty, DIFFICULTIES, clampDifficulty } from '../data/difficulty.js';
 
 import { makeLabel } from '../ui/Label.js';
@@ -369,15 +370,15 @@ export class Game {
 
   _spawnNpcs() {
     this.npcs = [];
-    const y = this.world.heightAt(6, 33);
-    const guard = new NPC(this.scene, npcsData.guard, new THREE.Vector3(6, y, 33), Math.PI);
+    const y = this.world.heightAt(POS.guard[0], POS.guard[1]);
+    const guard = new NPC(this.scene, npcsData.guard, new THREE.Vector3(POS.guard[0], y, POS.guard[1]), Math.PI);
     guard.id = 'guard';
     this.npcs.push(guard);
 
     const stalls = [
-      { def: npcsData.weaponsmith, pos: [-7.5, -4.9], yaw: 0.3 },
-      { def: npcsData.armorsmith, pos: [7.5, -5.9], yaw: -0.3 },
-      { def: npcsData.apothecary, pos: [-6, 4.1], yaw: Math.PI }
+      { def: npcsData.weaponsmith, pos: POS.weaponsmith, yaw: 0 },
+      { def: npcsData.armorsmith, pos: POS.armorsmith, yaw: 0 },
+      { def: npcsData.apothecary, pos: POS.apothecary, yaw: 0 }
     ];
     stalls.forEach((s, i) => {
       const sy = this.world.heightAt(s.pos[0], s.pos[1]);
@@ -388,7 +389,7 @@ export class Game {
 
     // V10.10 — écurie : maître d'écurie + un cheval et un griffon en exposition
     {
-      const sx = 20, sz = 18, sy = this.world.heightAt(sx, sz);
+      const sx = POS.stable[0], sz = POS.stable[1], sy = this.world.heightAt(sx, sz);
       const bram = new NPC(this.scene, npcsData.stablemaster, new THREE.Vector3(sx, sy, sz), Math.PI);
       bram.id = 'stablemaster';
       this.npcs.push(bram);
@@ -408,30 +409,46 @@ export class Game {
         const n = new NPC(this.scene, def, new THREE.Vector3(x, this.world.heightAt(x, z), z), yaw);
         n.id = def.id; this.npcs.push(n); return n;
       };
-      place(npcsData.smith, -14, -2, Math.PI / 2);
-      place(npcsData.monolith, 0, -9, 0);
-      place(npcsData.mystic, 10, 5, -Math.PI / 2);
-      try { this._forgeDecor = buildForgeDecor(this.scene, this.world, -18, -2, 0); } catch (e) { console.warn('[V10.19] décor de forge ignoré', e); }
+      place(npcsData.smith, POS.smith[0], POS.smith[1], Math.PI / 2);
+      place(npcsData.monolith, POS.monolith[0], POS.monolith[1], 0);
+      place(npcsData.mystic, POS.mystic[0], POS.mystic[1], Math.PI / 2);
+      try { this._forgeDecor = buildForgeDecor(this.scene, this.world, POS.forgeDecor[0], POS.forgeDecor[1], 0); } catch (e) { console.warn('[V10.19] décor de forge ignoré', e); }
     }
 
     // V10.12 — barbier : la barbière devant la maison de la rue sud-ouest (enseigne + poteau rayé)
     {
-      const bx = -10.6, bz = 19.0, by = this.world.heightAt(bx, bz);
+      const bx = POS.barber[0], bz = POS.barber[1], by = this.world.heightAt(bx, bz);
       const odile = new NPC(this.scene, npcsData.barber, new THREE.Vector3(bx, by, bz), 0.25);
       odile.id = 'barber';
       this.npcs.push(odile);
-      try { this._barberDecor = buildBarberDecor(this.scene, this.world, { x: -11, z: 15, depth: 5, width: 5.5 }); } catch (e) { console.warn('[V10.12] façade du barbier ignorée', e); }
+      try { this._barberDecor = buildBarberDecor(this.scene, this.world, { x: POS.barberHouse.x, z: POS.barberHouse.z, depth: POS.barberHouse.d, width: POS.barberHouse.w }); } catch (e) { console.warn('[V10.12] façade du barbier ignorée', e); }
     }
 
     // V10.13 — événement Halloween : décor, Jack (tête de citrouille, près du puits), bonbons cachés, monstres de saison
     try { this.hw = new Halloween(this); } catch (e) { console.warn('[V10.13] événement Halloween ignoré', e); }
 
+    // V10.39 — habitants de Korvalune : gardes des portes, château, portails, marché et passants qui se promènent
+    {
+      const at = (id, x, z, yaw) => { const def = npcsData[id]; const n = new NPC(this.scene, def, new THREE.Vector3(x, this.world.heightAt(x, z), z), yaw); n.id = id; this.npcs.push(n); return n; };
+      at('captain', 0, 4.5, Math.PI);
+      at('archivist', -14, -18, Math.PI / 2);
+      at('nessa', -9.5, 42.5, Math.PI / 2);
+      at('portalkeeper', -8, -42, 0.3);
+      at('sentinel', 9, -53, Math.PI);
+      at('gateE', POS.gateGuards.E[0], POS.gateGuards.E[1], -Math.PI / 2);
+      at('gateW', POS.gateGuards.W[0], POS.gateGuards.W[1], Math.PI / 2);
+      at('gateN', POS.gateGuards.N[0], POS.gateGuards.N[1], 0);
+      at('tilda', POS.tilda[0], POS.tilda[1], Math.PI);
+      at('orsin', POS.orsin[0], POS.orsin[1], Math.PI);
+      for (const id of ['herald', 'pip', 'mira', 'joss', 'aldric']) { const w = npcsData[id].walk; at(id, w[0][0], w[0][1], 0); }
+    }
+
     // PNJ des quêtes principales (chaînes déclarées dans npcs.json).
     const questGivers = [
-      { def: npcsData.hugo, pos: [-7, 28], yaw: 0.5 },          // accueil : près de la porte sud
-      { def: npcsData.sebastien, pos: [-24, -3], yaw: -1.2 },    // quartier ouest
-      { def: npcsData.morgane, pos: [24, -16], yaw: 2.4 },       // quartier est
-      { def: npcsData.laurine, pos: [-8, -11.5], yaw: 0.2 }      // devant l'auberge
+      { def: npcsData.hugo, pos: POS.hugo, yaw: 0.5 },            // accueil : près de la porte sud
+      { def: npcsData.sebastien, pos: POS.sebastien, yaw: -1.2 }, // cour du château, côté ouest
+      { def: npcsData.morgane, pos: POS.morgane, yaw: 1.2 },      // cour du château, côté est
+      { def: npcsData.laurine, pos: POS.laurine, yaw: 0.2 }       // devant l'auberge
     ];
     questGivers.forEach((s) => {
       const sy = this.world.heightAt(s.pos[0], s.pos[1]);
@@ -471,7 +488,7 @@ export class Game {
     let sid = 0;
     const rand = mulberry32(4242);
     const wl = CONFIG.world.waterLevel;
-    const TOWN_EXCLUDE = 64, DUNGEON_EXCLUDE = 26, B = CONFIG.world.bound - 40;
+    const TOWN_EXCLUDE = 92, DUNGEON_EXCLUDE = 26, B = CONFIG.world.bound - 40;
 
     // V8.0 — Tout le continent est peuplé, région par région, niveaux 1 → 200.
     // Prairies / Forêt / Montagnes : faune de base ; les autres régions : leur propre famille de monstres (+ élites).
@@ -518,7 +535,7 @@ export class Game {
 
     // --- Meute de loups niveau 1 tout autour de la ville (les débutants s'entraînent ici)
     for (let placed = 0, tries = 0; placed < 34 && tries < 600; tries++) {
-      const a = rand() * Math.PI * 2, r = 58 + rand() * 34;
+      const a = rand() * Math.PI * 2, r = 96 + rand() * 30;
       const x = Math.cos(a) * r, z = Math.sin(a) * r;
       if (this.world.heightAt(x, z) < wl + 0.6) continue;
       if (Math.hypot(x - DUNGEON_CENTER[0], z - DUNGEON_CENTER[1]) < DUNGEON_EXCLUDE) continue;
@@ -608,7 +625,7 @@ export class Game {
     const m = this._mev || (this._mev = { cd: 150 + Math.random() * 120, active: false, t: 0, spawnT: 0, hit: false });
     if (!m.active) {
       if (this.modalOpen || this.dialogueOpen) return;
-      if (Math.hypot(p.pos.x, p.pos.z) < 75 || Math.hypot(p.pos.x - DUNGEON_CENTER[0], p.pos.z - DUNGEON_CENTER[1]) < 30) return; // pas en ville
+      if (Math.hypot(p.pos.x, p.pos.z) < 100 || Math.hypot(p.pos.x - DUNGEON_CENTER[0], p.pos.z - DUNGEON_CENTER[1]) < 30) return; // pas en ville
       m.cd -= dt;
       if (m.cd <= 0) this.startMeteorShower();
       return;
@@ -1278,9 +1295,9 @@ export class Game {
     // V8.0 : le continent a été redessiné — une ancienne sauvegarde posée en mer ou hors terre ferme repart de Korvalune
     try {
       const pp = this.player.pos;
-      if (save?.pos && (!isLand(pp.x, pp.z) || this.world.heightAt(pp.x, pp.z) < this.world.waterLevel + 0.3)) {
-        pp.set(0, this.world.heightAt(0, 12) + 0.5, 12);
-        this.hud.notify('Le continent a été redessiné : vous reprenez votre aventure à Korvalune.', 'info');
+      if (save?.pos && (!isLand(pp.x, pp.z) || this.world.heightAt(pp.x, pp.z) < this.world.waterLevel + 0.3 || (Math.abs(pp.x) < 70 && Math.abs(pp.z) < 70 && !this.world.isWalkable(pp.x, pp.z, 0.45)))) {
+        pp.set(POS.spawn[0], this.world.heightAt(POS.spawn[0], POS.spawn[1]) + 0.5, POS.spawn[1]);
+        this.hud.notify('Korvalune a été agrandie : vous reprenez votre aventure sur la place du Voyageur.', 'info');
       }
     } catch (e) { /* ignoré */ }
     netShare.localPlayer = this.player;
@@ -2225,7 +2242,7 @@ export class Game {
   }
 
   _teleportCost() {
-    const spawn = this.world.spots.spawn || new THREE.Vector3(0, 0, 12);
+    const spawn = this.world.spots.spawn || new THREE.Vector3(POS.spawn[0], 0, POS.spawn[1]);
     const dist = this.player.pos.distanceTo(spawn);
     if (dist < 15) return 0; // déjà en ville, pas besoin de payer
     return Math.min(300, Math.max(20, Math.round(dist * 0.8)));
@@ -2238,7 +2255,7 @@ export class Game {
       if (this.player.coins < cost) { this.hud.notify('Pas assez d\'or pour se téléporter.', 'boss'); return; }
       this.player.addCoins(-cost);
     }
-    this.player.pos.copy(this.world.spots.spawn || new THREE.Vector3(0, 0, 12));
+    this.player.pos.copy(this.world.spots.spawn || new THREE.Vector3(POS.spawn[0], 0, POS.spawn[1]));
     this.player.vel.set(0, 0, 0);
     this.particles.emit(this.player.pos.x, this.player.pos.y + 1, this.player.pos.z, { count: 50, color: 0x8fd0ff, speed: 5, life: 0.9, up: 2.5 });
     this.audio.play('portal');
@@ -2306,13 +2323,13 @@ export class Game {
         }
       }
     }
-    const f = this._lastSafe || w.spots.spawn || new THREE.Vector3(0, 0, 12);
+    const f = this._lastSafe || w.spots.spawn || new THREE.Vector3(POS.spawn[0], 0, POS.spawn[1]);
     p.set(f.x, w.heightAt(f.x, f.z), f.z); this.player.vel.set(0, 0, 0);
     this.hud.notify('Vous avez été replacé dans un endroit sûr.', 'info');
   }
 
   _regionArrival(r) {
-    let [sx, sz] = r.site;
+    let [sx, sz] = r.id === 'prairie' ? [0, 104] : r.site; // V10.39 : les prairies commencent devant la porte sud (le centre est le château)
     for (let k = 0; k < 40; k++) {
       for (let a = 0; a < 8; a++) {
         const x = sx + Math.cos(a * 0.785) * k * 6, z = sz + Math.sin(a * 0.785) * k * 6;
@@ -2324,9 +2341,9 @@ export class Game {
 
   _buildPortals() {
     this.portals = [];
-    const portal = buildPortal(this.world, [0, -29.5], '#8fd0ff', 'Portail des régions', { noLight: true });
+    const portal = buildPortal(this.world, POS.regionsPortal, '#a24dff', 'Portail des régions', { noLight: true, scale: 1.7 });
     try {
-      const lb = makeLabel('Portail des régions', { color: '#8fd0ff', size: 38, width: 768, height: 96, scale: 4.2 });
+      const lb = makeLabel('Portail des régions', { color: '#d3a8ff', size: 38, width: 768, height: 96, scale: 4.2 });
       lb.position.set(0, 5.1, 0.2);
       portal.group.add(lb);
     } catch (e) { /* étiquette ignorée */ }
@@ -3165,6 +3182,7 @@ export class Game {
       } else key = this.quests.completed.has('commencement') ? 'done' : 'hunt';
     }
     let lines = npc.def.dialogues[key] || npc.def.dialogues.intro;
+    if (key === 'intro' && npc.def.dialogues.talks) { const t = npc.def.dialogues.talks; npc._ti = (npc._ti || 0) % t.length; lines = t[npc._ti++]; } // V10.39 : les habitants varient leurs discours
     if (npc.id === 'guard' && this.quests.tutorialStep()?.target === 'guard') {
       lines = ['Bienvenue à Korvalune, voyageur ! Moi, c\'est Halvar. Je veille sur cette place.',
         'Tu n\'as presque rien sur toi, je le vois bien. Ma potion de soin est à toi pour toujours : elle ne s’épuise jamais, il faut juste attendre un peu entre deux gorgées.',
@@ -3258,7 +3276,7 @@ export class Game {
       if (b.state !== 'dormant' && b.alive) nearestActiveBoss = nearestActiveBoss || b;
     }
     this._camQuat.copy(this.camera.quaternion);
-    for (const n of this.npcs) n.update(dt, this._camQuat);
+    for (const n of this.npcs) n.update(dt, this._camQuat, this.player?.pos);
     for (const m of this._stableDisplay || []) updateMount(m, dt, 0, false);
     this._barberDecor?.update(dt);
     this._forgeDecor?.update(dt);
@@ -3342,7 +3360,7 @@ export class Game {
     if (this.player.target && !this.player.target.alive) this.player.target = null;
     if (!this._mmWorld) {
       this._mmWorld = { mapCanvas: this.world.mapCanvas, size: CONFIG.world.size };
-      this._mmExtra = { zone: '', portals: [{ x: 0, z: -29.5, color: '#8fd0ff', name: 'Portails' }] };
+      this._mmExtra = { zone: '', portals: [{ x: POS.regionsPortal[0], z: POS.regionsPortal[1], color: '#a24dff', name: 'Portails' }] };
     }
     const inRift = !!this.rift?.active;
     // V8.7 — anti-blocage : si le joueur se retrouve dans l'eau / hors du terrain (ancienne sauvegarde, téléportation, bug), il est remis sur la terre ferme la plus proche

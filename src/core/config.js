@@ -1,8 +1,8 @@
 // Configuration centralisée du jeu.
 export const CONFIG = {
-  world: { size: 1100, segments: 200, waterLevel: -1.4, flat: true, townRadius: 52, bound: 500 },
+  world: { size: 1100, segments: 200, waterLevel: -1.4, flat: true, townRadius: 82, bound: 500 },
   dayNight: { cycleSeconds: 780, startHour: 9 },
-  player: { walk: 4.2, run: 7.4, crouch: 2.2, jump: 7.6, gravity: 22, radius: 0.45, spawn: [0, 12] },
+  player: { walk: 4.2, run: 7.4, crouch: 2.2, jump: 7.6, gravity: 22, radius: 0.45, spawn: [0, 50] },
   camera: { min: 2.5, max: 14, start: 7, fov: 60, far: 900 },
   quality: {
     verylow: { label: 'Très faible', pixelRatio: 0.75, shadows: false, shadowMap: 512, trees: 0.12, fogFar: 90, particles: 0.2 },

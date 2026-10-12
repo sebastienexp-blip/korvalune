@@ -436,7 +436,7 @@ export class Player {
   respawn() {
     this.dead = false;
     this.hp = this.maxHp; this.mana = this.maxMana; this.stamina = this.maxStamina;
-    this.pos.copy(this.world.spots.spawn || new THREE.Vector3(0, 0, 12));
+    this.pos.copy(this.world.spots.spawn || new THREE.Vector3(CONFIG.player.spawn[0], 0, CONFIG.player.spawn[1]));
     this.vel.set(0, 0, 0);
     this.invuln = 1.2;
     this.bus.emit('hud');

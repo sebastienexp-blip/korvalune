@@ -10,6 +10,7 @@ export function buildPortal(world, pos, color, label, opts = {}) {
   const [px, pz] = pos;
   const py = world.heightAt(px, pz);
   g.position.set(px, py, pz);
+  if (opts.scale) g.scale.setScalar(opts.scale);
   world.group.add(g);
 
   const stone = new THREE.MeshStandardMaterial({ color: 0x5a5650, roughness: 0.95, flatShading: true });
@@ -38,7 +39,7 @@ export function buildPortal(world, pos, color, label, opts = {}) {
   const glow = opts.noLight ? null : new THREE.PointLight(new THREE.Color(color), 1.4, 7, 2);
   if (glow) { glow.position.y = 2.05; g.add(glow); fx.push(glow); }
 
-  if (!opts.noCollide) world.addBox(px, pz, 1.9, 0.6, py - 1, py + 4);
+  if (!opts.noCollide) world.addBox(px, pz, 1.9 * (opts.scale || 1), 0.6 * (opts.scale || 1), py - 1, py + 4 * (opts.scale || 1));
 
   // V2.5 : vortex tournant, anneaux d'énergie, halo et étincelles en orbite
   let swirl = null, rings = [], orbs = [];

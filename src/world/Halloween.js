@@ -6,16 +6,17 @@ import { mulberry32 } from '../core/math.js';
 import { HUNT_SPOTS, EVENT_MONSTERS, CANDY, eventActive, shopOpen } from '../data/halloween.js';
 import enemiesData from '../data/enemies.json';
 import npcsData from '../data/npcs.json';
+import { HALF, POS } from './TownMap.js';
 
 // V10.13 — Événement Halloween (partie jeu) : décor, ciel, Jack à tête de citrouille, bonbons cachés, monstres et Roi Citrouille.
 // Tout est léger (instances, sprites, aucune lumière dynamique) pour rester fluide sur mobile.
 
-export const JACK_POS = [3.4, 1.3];   // à côté du puits (centre de la ville)
+export const JACK_POS = [POS.well[0] + 3.4, POS.well[1] + 1.3];   // à côté du puits (place du Voyageur)
 
 const mk = (geo, mat, parent, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; };
 
 // La ville (enceinte de 36 m de demi-côté + marge) reste un lieu sûr : aucun monstre d'événement n'y apparaît ni n'y entre.
-export const inTown = (x, z, m = 38) => Math.abs(x) < m && Math.abs(z) < m;
+export const inTown = (x, z, m = HALF + 6) => Math.abs(x) < m && Math.abs(z) < m;
 
 // ---------------------------------------------------------------- tête de citrouille sculptée
 // R = rayon. La tête regarde vers +Z. Retourne { group, glows } (glows : matériaux lumineux animés).
@@ -166,10 +167,10 @@ export class Halloween {
     const g = this.g, world = g.world, rnd = mulberry32(1031);
     // citrouilles lanternes : un seul InstancedMesh pour les corps, un pour les faces, un pour les tiges
     const spots = [];
-    const tryAdd = (x, z, s = 1) => { if (world.isWalkable(x, z, 0.55) && spots.length < 96) spots.push({ x, z, s, yaw: Math.atan2(-x, -z) + (rnd() - 0.5) * 1.2 }); };
-    for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2 + 0.4; tryAdd(Math.cos(a) * 4.6, Math.sin(a) * 4.6, 0.9 + rnd() * 0.4); }   // autour du puits
-    for (let z = -32; z <= 32; z += 5) { tryAdd(-5.6, z + rnd() * 2, 0.8 + rnd() * 0.5); tryAdd(5.6, z + rnd() * 2, 0.8 + rnd() * 0.5); }  // le long de la grand-rue
-    for (let tries = 0; tries < 260 && spots.length < 90; tries++) tryAdd((rnd() - 0.5) * 66, (rnd() - 0.5) * 66, 0.7 + rnd() * 0.7);
+    const tryAdd = (x, z, s = 1) => { if (world.isWalkable(x, z, 0.55) && spots.length < 150) spots.push({ x, z, s, yaw: Math.atan2(-x, -z) + (rnd() - 0.5) * 1.2 }); };
+    for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2 + 0.4; tryAdd(POS.well[0] + Math.cos(a) * 4.6, POS.well[1] + Math.sin(a) * 4.6, 0.9 + rnd() * 0.4); }   // autour du puits
+    for (let z = -60; z <= 60; z += 5) { tryAdd(-5.6, z + rnd() * 2, 0.8 + rnd() * 0.5); tryAdd(5.6, z + rnd() * 2, 0.8 + rnd() * 0.5); }  // le long de la grand-rue
+    for (let tries = 0; tries < 600 && spots.length < 140; tries++) tryAdd((rnd() - 0.5) * 120, (rnd() - 0.5) * 120, 0.7 + rnd() * 0.7);
     const N = spots.length;
     const bodyGeo = new THREE.SphereGeometry(0.3, 14, 10); { const q = bodyGeo.attributes.position; for (let i = 0; i < q.count; i++) { const a = Math.atan2(q.getZ(i), q.getX(i)), k = 1 + 0.07 * Math.cos(a * 8); q.setXYZ(i, q.getX(i) * k, q.getY(i) * 0.82, q.getZ(i) * k); } bodyGeo.computeVertexNormals(); }
     const bodies = new THREE.InstancedMesh(bodyGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, emissive: 0x5a1c00, emissiveIntensity: 0.55 }), N);
@@ -283,7 +284,7 @@ export class Halloween {
     for (let t = 0; t < 14; t++) {
       const a = Math.random() * Math.PI * 2, r = minR + Math.random() * (maxR - minR);
       const x = near.x + Math.cos(a) * r, z = near.z + Math.sin(a) * r;
-      if (!w.isWalkable(x, z, 0.6) || inTown(x, z, 42)) continue;
+      if (!w.isWalkable(x, z, 0.6) || inTown(x, z, HALF + 10)) continue;
       const pos = new THREE.Vector3(x, w.heightAt(x, z), z);
       const level = Math.max(1, g.player.level + levelAdd + Math.round((Math.random() - 0.5) * 2));
       const e = new Enemy(g.scene, w, def, level, pos, g.bus, this._eid++);

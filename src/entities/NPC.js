@@ -16,12 +16,36 @@ export class NPC {
     this.rig.root.add(this.label);
     this.t = Math.random() * 10;
     this.baseYaw = yaw;
+    this.walk = def.walk || null; this.wi = this.walk ? 1 : 0; this.moving = false;
   }
 
-  update(dt, camQuat) {
+  update(dt, camQuat, playerPos) {
     this.t += dt;
     if (this.rig.isProp) this.rig.update(dt);
-    else { animateHumanoid(this.rig, { speed: 0, grounded: true, action: null }, dt); this.rig.head.rotation.y = Math.sin(this.t * 0.6) * 0.25; }
+    else {
+      let sp = 0;
+      if (this.walk) { // V10.39 : promeneurs — ils s'arrêtent et se tournent vers le joueur quand il est proche
+        const near = playerPos && Math.hypot(playerPos.x - this.pos.x, playerPos.z - this.pos.z) < 4.2;
+        if (near) {
+          const ty = Math.atan2(playerPos.x - this.pos.x, playerPos.z - this.pos.z);
+          let dy = ty - this.rig.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+          this.rig.root.rotation.y += dy * Math.min(1, dt * 4);
+        } else {
+          const w = this.walk[this.wi], dx = w[0] - this.pos.x, dz = w[1] - this.pos.z, dist = Math.hypot(dx, dz);
+          if (dist < 0.4) this.wi = (this.wi + 1) % this.walk.length;
+          else {
+            const st = Math.min(dist, 1.35 * dt);
+            this.pos.x += dx / dist * st; this.pos.z += dz / dist * st;
+            this.rig.root.position.x = this.pos.x; this.rig.root.position.z = this.pos.z;
+            let dy = Math.atan2(dx, dz) - this.rig.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+            this.rig.root.rotation.y += dy * Math.min(1, dt * 5);
+            sp = 1.35;
+          }
+        }
+      }
+      animateHumanoid(this.rig, { speed: sp, grounded: true, action: null }, dt);
+      this.rig.head.rotation.y = sp ? 0 : Math.sin(this.t * 0.6) * 0.25;
+    }
     if (camQuat) this.label.quaternion.copy(camQuat);
   }
 }

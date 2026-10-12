@@ -1,11 +1,12 @@
 // V10.34 — Portail de ville : un portail violet s'ouvre sur le terrain, mène au portail du retour en ville ;
 // le portail de la ville ramène exactement là où on était. Le groupe peut l'emprunter aussi.
+import { POS } from './TownMap.js';
 import * as THREE from 'three';
 import { buildPortal, updatePortal } from './Portals.js';
 import { makeLabel } from '../ui/Label.js';
 import { CONFIG } from '../core/config.js';
 
-export const TOWN_PORTAL_POS = [10.5, -27.5]; // provisoire : sera déplacé dans la zone des portails (refonte de la ville)
+export const TOWN_PORTAL_POS = POS.returnPortal; // quartier des portails (nord de Korvalune)
 const COLOR = '#a24dff';
 const LIFE = 10 * 60 * 1000;    // le portail reste ouvert 10 minutes
 const CHANNEL = 2.2;            // secondes d'incantation

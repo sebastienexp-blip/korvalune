@@ -3,6 +3,17 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.39', title: 'Korvalune, la grande cité',
+    items: [
+      '🏰 La ville est beaucoup plus grande (enceinte de 124 m) et organisée en quartiers : un grand château au centre avec sa cour, et quatre portes (nord, est, sud, ouest) reliées par de larges avenues.',
+      '🛍️ Quartier marchand à l’est : six étals avec auvents rayés, fontaine, forgeron, armurière, herboriste, drapière et colporteur. Quartier des artisans à l’ouest : forge, établis d’armurier, d’alchimie et d’enchantement.',
+      '✨ Personnalisation au sud-ouest (Monolithe des Métamorphoses et barbière), écurie et auberge au sud-est, puits et place du Voyageur à l’entrée.',
+      '🌀 Quartier des portails au nord : le grand Portail des régions est violet, avec le portail du retour et la statue de la Spire.',
+      '🗣️ Une quinzaine de nouveaux habitants (capitaine, archiviste, conteuse, gardes de porte, marchands, gamin des rues…) avec leurs propres discours qui varient à chaque conversation. Certains se promènent dans les rues : approche-toi, ils s’arrêtent. Écoute bien : ils parlent déjà des lunes, du Cœur d’Éther et de ce qui se prépare.',
+      '🌊 La rivière contourne maintenant la ville par l’est. Si ton personnage se trouvait dans la vieille ville, il reprend sur la place du Voyageur.'
+    ]
+  },
+  {
     version: '10.38', title: 'Nouvelles images de compétences (mobile)',
     items: [
       '🎨 Chaque compétence a maintenant sa propre illustration réaliste (acier, or, flammes, glace, foudre, ombre…), posée dans le cadre d’origine : forme, ornements et couleur inchangés. Deux compétences n’ont jamais la même image.',

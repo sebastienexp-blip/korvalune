@@ -1214,3 +1214,11 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - `src/ui/SkillArt.js` : image par compétence = objet principal (≈35 dessins ombrés) + élément en fond (feu, glace, foudre, ombre…) + variante tirée de l'identifiant ; vérifié unique pour les 194 compétences. Affichée sur mobile (`.touch-on`) dans le cadre de `SkillIcon.js` ; PC inchangé.
 - Identifiants SVG rendus uniques à chaque affichage (un `<svg>` masqué cassait les dégradés partagés).
 - Accroupissement supprimé (bouton, raccourci, logique joueur).
+
+## V10.39 — Refonte de Korvalune
+
+- `src/world/TownMap.js` : toutes les positions de la ville (enceinte `HALF = 62`, portes, château, quartiers, PNJ, portails) ; `TOWN_R = 82` pour le terrain aplani (`CONFIG.world.townRadius`).
+- `src/world/Town.js` : maisons semées par quartier (`planHouses`, déterministe ; maisons « héros » détaillées + maisons allégées), enceinte à quatre portes, château (cour praticable, donjon, tours), étals du marché, établis, écurie, quartier des portails, arbres et lampadaires instanciés.
+- `World.riverX` : la rivière contourne la ville par l'est ; routes de sortie recalées sur les portes ; exclusion des monstres portée à 92 m.
+- `npcs.json` : ~15 habitants (`dialogues.talks` = discours qui tournent ; `walk` = parcours de promenade, géré par `NPC.update`).
+- Portail des régions violet à l'échelle 1,7 (`buildPortal` accepte `opts.scale`).
