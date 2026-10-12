@@ -22,12 +22,20 @@ const key = new THREE.DirectionalLight(0xbfc9ff, 3.2); key.position.set(-3, 5, 4
 const rim = new THREE.DirectionalLight(0xff9a60, 2.4); rim.position.set(4, 2, -3); scene.add(rim);
 scene.add(new THREE.HemisphereLight(0x8a8ab8, 0x3a3028, 0.9));
 const ground = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshStandardMaterial({ color: 0x1b1a22, roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
-const gltf = await new GLTFLoader().loadAsync(q.get('f'));
-const root = gltf.scene; scene.add(root);
-root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
-const mixer = new THREE.AnimationMixer(root);
-const clip = q.get('clip'); const t = +q.get('t') || 0;
-if (clip) { const c = gltf.animations.find(a => a.name === clip); if (c) { const a = mixer.clipAction(c); a.play(); mixer.setTime(t); } }
+const files = q.get('f').split(','); const gap = +q.get('gap') || 1.4;
+const clipN = (q.get('clip') || '').split(','); const t = +q.get('t') || 0;
+let gltf, root;
+for (let i = 0; i < files.length; i++) {
+  const g = await new GLTFLoader().loadAsync(files[i]);
+  const r0 = g.scene; r0.position.x = (i - (files.length - 1) / 2) * gap; scene.add(r0);
+  r0.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+  const mx = new THREE.AnimationMixer(r0);
+  const cn = clipN[i] || clipN[0];
+  if (cn) { const c = g.animations.find(a => a.name === cn); if (c) { const a = mx.clipAction(c); a.play(); mx.setTime(t); } }
+  if (i === 0) { gltf = g; root = r0; }
+  if ((q.get('scale') || '') && files[i].includes('kaykit')) r0.scale.setScalar(+q.get('scale'));
+}
+const mixer = null;
 const yaw = (+q.get('yaw') || 0) * Math.PI / 180, dist = +q.get('d') || 5.2, ty = +q.get('ty') || 0.9, fov = +q.get('fov');
 if (fov) { cam.fov = fov; cam.updateProjectionMatrix(); }
 cam.position.set(Math.sin(yaw) * dist, ty + (+q.get('dy') || 0.15), Math.cos(yaw) * dist); cam.lookAt(+q.get('tx') || 0, ty, 0);
