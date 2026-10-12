@@ -57,3 +57,40 @@ export function detach(objs) {
     if (o.isSkinnedMesh) { o.skeleton.dispose?.(); }
   }
 }
+
+// ---- Branchement sur le système d'équipement du jeu (Player.refreshGearVisuals) ----
+import { ModelLibrary } from './ModelLibrary.js';
+
+// emplacement du jeu → pièces GLB à afficher
+const SLOT_TO_PIECES = { head: ['casque'], shoulders: ['epaules'], chest: ['torse'], gloves: ['bras'], legs: ['jambes'], boots: ['jambes'], cape: ['cape'] };
+
+export function refreshGlbGear(rig, slots, resolveItem) {
+  const lib = ModelLibrary.gear;
+  const armor = lib.armor[rig.glbSkeleton] || {};
+  const st = rig.glbGear || (rig.glbGear = { pieces: {}, weapon: null, weaponKey: null });
+  const want = {};                                    // pièce → objet équipé qui la demande
+  for (const [slot, pcs] of Object.entries(SLOT_TO_PIECES)) {
+    if (!slots[slot]) continue;
+    for (const p of pcs) if (!want[p]) want[p] = slots[slot];
+  }
+  for (const [p, cur] of Object.entries(st.pieces)) {          // retire ce qui n'est plus porté
+    if (!want[p]) { detach(cur.meshes); delete st.pieces[p]; }
+  }
+  for (const [p, item] of Object.entries(want)) {
+    const view = resolveItem(item);
+    const tint = (view && (view.tint || view.rarityInfo?.color)) || null;
+    const cur = st.pieces[p];
+    if (cur && cur.tint === tint) continue;
+    if (cur) detach(cur.meshes);
+    if (!armor[p]) { delete st.pieces[p]; continue; }
+    st.pieces[p] = { tint, meshes: equipPiece(rig, armor[p], { tint }) };
+  }
+  // arme principale : un GLB par type visuel (« sword »…) ; type sans modèle → rien (l'arme procédurale n'existe pas sur un corps GLB)
+  const mv = slots.mainhand && resolveItem(slots.mainhand);
+  const key = mv && mv.visual && lib.weapons[mv.visual] ? mv.visual : null;
+  if (key !== st.weaponKey) {
+    if (st.weapon) detach(st.weapon);
+    st.weapon = key ? attachWeapon(rig, lib.weapons[key]) : null;
+    st.weaponKey = key;
+  }
+}

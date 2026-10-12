@@ -94,7 +94,12 @@ export const ModelLibrary = {
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
   },
 
+  gear: { armor: {}, weapons: {} },   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
+
   _register(file, gltf) {
+    const gm = (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {};
+    if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot] = gltf; return; }
+    if (gm.type === 'weapon' && gm.visual) { this.gear.weapons[gm.visual] = gltf; return; }
     let hasMesh = false;
     gltf.scene.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) hasMesh = true; });
     for (const c of gltf.animations || []) {
@@ -189,6 +194,7 @@ export function tryCreateGlbRig(kind, opts = {}) {
     root, body: root, hips: stub(), torso: stub(), head,
     mats, matRefs: { weapons: {} },
     equipVisuals: { weapons: {}, shield: stub(), helm: stub(), shoulders: [stub(), stub()], chest: stub(), cape: stub() },
+    glbSkeleton: (entry.meta && entry.meta.skeleton) || null,   // non nul → le corps accepte des pièces d'équipement GLB
     phase: 0, k: 0, t: 0, hurtT: 0, crouchK: 0,
     glb: { entry, mixer, role, actions: {}, state: null, action: null, prevHurt: 0, prevActionT: 0, flash: 0 }
   };

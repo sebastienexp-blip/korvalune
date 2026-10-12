@@ -17,7 +17,7 @@ def mats(quick):
 
 if __name__ == '__main__':
     out = sys.argv[1]
-    extras = {'korvalune': {'type': 'weapon', 'id': 'lame_de_la_veille', 'attach': {'socket': 'Socket_Weapon_R', 'quat': [0.5, 0.5, 0.5, 0.5], 'offset': [0, 0, 0]},
+    extras = {'korvalune': {'type': 'weapon', 'id': 'lame_de_la_veille', 'visual': 'sword', 'attach': {'socket': 'Socket_Weapon_R', 'quat': [0.5, 0.5, 0.5, 0.5], 'offset': [0, 0, 0]},
                             'note': 'origine = centre de la poignée ; lame vers +Y ; la quaternion oriente la lame vers l\'avant, tranchants en haut/bas'}}
     st = write_glb(out, G.parts, None, mats('--quick' in sys.argv), {}, extras=extras, mesh_name='Epee')
     print(st, os.path.getsize(out))

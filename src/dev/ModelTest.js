@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ModelLibrary, tryCreateGlbRig, animateGlbRig } from '../visual/ModelLibrary.js';
-import { attachWeapon, equipPiece, detach } from '../visual/GlbEquipment.js';
+import { refreshGlbGear } from '../visual/GlbEquipment.js';
 
 THREE.Cache.enabled = true;   // les textures partagées entre pièces ne sont téléchargées qu'une fois
 const q = new URLSearchParams(location.search);
@@ -53,8 +53,12 @@ obstacles.push({ x: -3, z: -4, r: 0.6 });
 const loader = new GLTFLoader();
 const load = (f) => loader.loadAsync(MP + f);
 const SLOTS = { 1: 'casque', 2: 'epaules', 3: 'torse', 4: 'bras', 5: 'jambes', 6: 'cape' };
-const pieces = {};      // emplacement → { gltf, meshes }
-let sword = null, swordObj = null;
+const GAME_SLOT = { 1: 'head', 2: 'shoulders', 3: 'chest', 4: 'gloves', 5: 'legs', 6: 'cape', 7: 'mainhand' };
+// faux équipement : même forme que Equipment.slots ; resolveItem simulé (le vrai vient du jeu)
+const fakeSlots = {};
+const fakeResolve = (it) => it && (it.id === 'sword' ? { visual: 'sword', tint: it.tint } : { tint: it.tint });
+const TINTS = [null, '#c9a227', '#7a1f2b', '#3f7f9a'];
+let sword = null;
 let rig = null, wolf = null;
 
 (async () => {
@@ -69,21 +73,26 @@ let rig = null, wolf = null;
     rig = tryCreateGlbRig('humanoid', { role: 'player:warrior' });
     if (!rig) throw new Error('tryCreateGlbRig(humanoïde) a renvoyé null');
     scene.add(rig.root);
-    Object.values(SLOTS).forEach((s, i) => { pieces[s] = { gltf: pcs[i], meshes: equipPiece(rig, pcs[i]) }; });
-    sword = swordG; swordObj = attachWeapon(rig, swordG);
+    Object.values(SLOTS).forEach((s, i) => ModelLibrary._register(`veilleur_${s}.glb`, pcs[i]));
+    ModelLibrary._register('lame_de_la_veille.glb', swordG);
+    for (const n of [1, 2, 3, 4, 5, 6]) fakeSlots[GAME_SLOT[n]] = { id: 'armor' };
+    fakeSlots.mainhand = { id: 'sword' };
+    refreshGlbGear(rig, fakeSlots, fakeResolve);
     spawnWolf();
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
-      `1-6 : casque, épaules, torse, bras, jambes, cape · 7 : épée · L : nouveau loup<br><span id="st"></span>`;
+      `1-6 + 7 : équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br><span id="st"></span>`;
   } catch (e) { hud.textContent = 'Erreur de chargement : ' + (e && e.message); console.error(e); }
 })();
 
 function toggleSlot(n) {
   if (!rig) return;
-  if (n === 7) { if (swordObj) { detach(swordObj); swordObj = null; } else swordObj = attachWeapon(rig, sword); return; }
-  const slot = SLOTS[n]; const p = pieces[slot]; if (!p) return;
-  if (p.meshes.length) { detach(p.meshes); p.meshes = []; } else p.meshes = equipPiece(rig, p.gltf);
+  const g = GAME_SLOT[n]; if (!g) return;
+  const cur = fakeSlots[g];
+  if (!cur) fakeSlots[g] = n === 7 ? { id: 'sword' } : { id: 'armor' };
+  else { const i = TINTS.indexOf(cur.tint || null); const nx = TINTS[(i + 1) % TINTS.length]; if (i === TINTS.length - 1) fakeSlots[g] = null; else cur.tint = nx; }
+  refreshGlbGear(rig, fakeSlots, fakeResolve);
 }
 
 // ---------------------------------------------------------------- le héros

@@ -90,3 +90,9 @@ Chaque lot : test des systèmes (combat, collisions, quêtes, inventaire, montur
 **Mesures** (rendu logiciel dans Chromium, donc non représentatif d'un téléphone) : 28 appels de dessin et ~59 000 triangles pour héros + loup + décor de test ; chargement des 11 fichiers en 5,8 s en local.
 
 **Reste à faire avant d'activer dans le jeu** : (1) brancher l'équipement réel (`Player`/inventaire) sur `GlbEquipment` ; (2) version allégée du héros (LOD) — 43 000 triangles est trop pour une foule ; (3) correspondance des 97 monstres (variantes de teinte/échelle du loup) ; (4) tester sur téléphone.
+
+## Lot 2 — équipement sur corps GLB (en cours, branche `prototype-glb`)
+- `ModelLibrary._register` classe désormais les GLB selon `extras.korvalune.type` : `armor` (par squelette et emplacement) et `weapon` (par type visuel `sword`…) vont dans `ModelLibrary.gear`, pas dans la liste des personnages.
+- `Player.refreshGearVisuals` : si le corps est un GLB (`rig.glbSkeleton`), appelle `refreshGlbGear` (src/visual/GlbEquipment.js) — emplacements du jeu → pièces (head→casque, shoulders→épaules, chest→torse, gloves→bras, legs/boots→jambes, cape→cape), teinte issue de l'objet (`tint` / couleur de rareté), arme principale selon `visual`. Le chemin procédural est inchangé.
+- Vérifié dans `modeltest.html` avec un faux équipement (captures visuelles). Non vérifié : intégration dans le jeu complet (build Vite impossible ici), joueurs distants (RemotePlayer n'affiche pas d'équipement), armes autres que l'épée (arc, bâton, dague, bouclier : aucun modèle, donc rien d'affiché sur un corps GLB).
+- Reste du lot : version LOD légère du héros (43 k triangles).
