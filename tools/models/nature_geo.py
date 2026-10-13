@@ -328,6 +328,21 @@ def grass_tuft(seed=10):
         parts.append(round_normals(tinted(m, (0.5, 0.62, 0.28), 0.15, rng, 1.0), (0, -0.4, 0), 0.8, True))
     return concat(parts)
 
+def flower(seed=11):
+    """Fleur de prairie : tige + 7 pétales blancs (teintés par instance dans le jeu) + cœur jaune. Hauteur ~0.33 m."""
+    rng = np.random.default_rng(seed); parts = []
+    stem = tube([[0, 0, 0], [0.01, 0.15, 0.005], [0.0, 0.3, 0.0]], [0.011, 0.009, 0.008], 4, C_GRASS, rng, color=(0.2, 0.42, 0.14))
+    stem.UV[:] = uvc(C_GRASS, 0.5, 0.5); parts.append(stem)
+    top = np.array([0, 0.31, 0])
+    for k in range(7):
+        a = 2 * np.pi * k / 7 + rng.uniform(-0.1, 0.1)
+        d = np.array([np.cos(a) * 0.9, 0.35, np.sin(a) * 0.9])
+        m = card(top, d, [0, 1, 0], 0.085, 0.06, C_LEAF, droop=0.012, rows=1)
+        m.C[:, :3] = 1.0; parts.append(round_normals(m, top - np.array([0, 0.05, 0]), 0.5))
+    heart = tube([[0, 0.305, 0], [0, 0.325, 0]], [0.026, 0.02], 6, C_GRASS, rng, color=(1.0, 0.82, 0.25), cap=True)
+    heart.UV[:] = uvc(C_GRASS, 0.5, 0.5); parts.append(heart)
+    return concat(parts)
+
 # nom → (fabrique, métadonnées)
 def catalog():
     items = {}
@@ -348,4 +363,5 @@ def catalog():
     items['champignon'] = (mushroom(), 'mushroom', 'hi')
     items['roseau'] = (reed(), 'reed', 'hi')
     items['herbe'] = (grass_tuft(), 'grass', 'hi')
+    items['fleur'] = (flower(), 'flower', 'hi')
     return items

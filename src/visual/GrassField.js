@@ -36,7 +36,9 @@ export class GrassField {
     // fleurs : 1 par cellule maximum, en prairies (bruit basse fréquence)
     const fmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide });
     addSway(fmat, { amp: 0.07, height: 0.35, fadeR: this.R - 1, speed: 2.2 });
-    this.flowers = new THREE.InstancedMesh(flowerGeometry(), fmat, cells * cells);
+    const glbFlower = ModelLibrary.nature && ModelLibrary.nature.flower ? ModelLibrary.natureGeometry('flower') : null;
+    if (glbFlower) ModelLibrary.natureMaterial(fmat);
+    this.flowers = new THREE.InstancedMesh(glbFlower || flowerGeometry(), fmat, cells * cells);
     this.flowers.frustumCulled = false;
     const col = new THREE.Color();
     this._flowerPalette = [0xffffff, 0xffd83a, 0xff6a8a, 0x9a7aff, 0xff9a3a, 0x6ab8ff].map((c) => col.set(c).clone());
