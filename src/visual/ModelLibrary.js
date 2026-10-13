@@ -177,10 +177,13 @@ export const ModelLibrary = {
   },
 
   /** Instance d'un module de la ville (Group) ; tint = { wall, roof, trim } (couleurs hex) pour les rôles de sommets. */
-  townInstance(kind, { tint = null, windowMat = null, shadow = true } = {}) {
+  townInstance(kind, { tint = null, windowMat = null, shadow = true, ownGlow = false, matOverride = null } = {}) {
     const grp = new THREE.Group();
     this._townPart(kind).forEach((p, i) => {
-      const m = new THREE.Mesh(this._townGeo(kind, i, tint), this.townMaterial(p.name, p.src, windowMat));
+      let mat = this.townMaterial(p.name, p.src, windowMat);
+      if (ownGlow && p.name === 'glow') mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true });          // matériau propre : couleur/opacité animables
+      else if (matOverride && matOverride[p.name]) { mat = mat.clone(); const o = matOverride[p.name]; if (o.color !== undefined) mat.color.set(o.color); if (o.emissive !== undefined && mat.emissive) { mat.emissive.set(o.emissive); mat.emissiveIntensity = o.emissiveIntensity ?? 0.5; } }
+      const m = new THREE.Mesh(this._townGeo(kind, i, tint), mat);
       m.castShadow = shadow && p.name !== 'window'; m.receiveShadow = true;
       grp.add(m);
     });

@@ -195,6 +195,29 @@ def dead(seed=4):
         parts.append(tube([e, e + d2 * ln * 0.35, e + d2 * ln * 0.6], [0.04, 0.025, 0.008], 4, C_DEAD, rng, 0.1))
     return concat(parts)
 
+def old_oak(seed=21):
+    """Vieux chêne monumental (repères) : tronc massif ≈ 12 m, racines apparentes, grosses branches, couronne ≈ 17 m."""
+    rng = np.random.default_rng(seed)
+    ys = np.linspace(-0.3, 12, 11); rad = 2.9 - 1.3 * np.clip(ys / 12, 0, 1) ** 0.9
+    wob = np.stack([0.35 * np.sin(ys * 0.5), ys, 0.3 * np.cos(ys * 0.45)], 1)
+    parts = [tube(wob, rad, 12, C_BARK, rng, 0.1)]
+    for k in range(6):
+        a = 2 * np.pi * k / 6 + 0.3
+        pts = [[np.cos(a) * 1.4, 1.4, np.sin(a) * 1.4], [np.cos(a) * 2.8, 0.45, np.sin(a) * 2.8], [np.cos(a) * 4.4, -0.15, np.sin(a) * 4.4]]
+        parts.append(tube(pts, [0.7, 0.45, 0.18], 6, C_BARK, rng, 0.1))
+    cc = np.array([0, 14.5, 0]); R = np.array([8.8, 5.2, 8.8])
+    for k in range(5):
+        a = 2 * np.pi * k / 5 + 0.2
+        end = cc + np.array([np.cos(a) * 5.5, -2.0, np.sin(a) * 5.5])
+        pts = [wob[-3], (wob[-1] + end) * 0.5 + [0, 0.8, 0], end]
+        parts.append(tube(pts, [0.75, 0.45, 0.2], 7, C_BARK, rng, 0.06))
+    for i in range(70):
+        while True:
+            p = rng.uniform(-1, 1, 3)
+            if np.linalg.norm(p) <= 1 and p[1] > -0.5: break
+        parts += cluster(cc + p * R, rng.uniform(3.8, 5.4), C_LEAF, 'green', rng, cc, 8.0, n=3, droop=0.12)
+    return concat(parts)
+
 # ------------------------------------------------------------------------------------------- roches
 def _rock_blob(rng, n=110, rough=0.28, flat=0.72, rad=1.0):
     from scipy.spatial import ConvexHull
@@ -316,6 +339,7 @@ def catalog():
         items['bouleau' + suf] = (birch(lod), 'birch', lod)
         items['buisson' + suf] = (bush(lod), 'bush', lod)
     items['arbre_mort'] = (dead(), 'dead', 'hi')
+    items['vieux_chene'] = (old_oak(), 'oldoak', 'hi')
     items['rocher_1'] = (boulder(1), 'boulder1', 'hi')
     items['rocher_7'] = (boulder(7), 'boulder7', 'hi')
     items['rocher_amas'] = (rock_cluster(), 'cluster', 'hi')

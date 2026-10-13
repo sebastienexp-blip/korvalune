@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from glbkit import *
-import town_geo as G, town_geo2 as G2, town_tex as TT
+import town_geo as G, town_geo2 as G2, lm_geo as LM, town_tex as TT
 
 def materials():
     out = {}
@@ -50,6 +50,16 @@ def catalog():
     items['auge'] = G2.trough()
     items['portail_regions'] = G2.portal_gate()
     items['torchere'] = G2.torchere()
+    for nm, fn in (('lm_moulin', LM.windmill), ('lm_moulin_helice', LM.windmill_sails), ('lm_menhirs', LM.menhirs), ('lm_ferme', LM.farm), ('lm_camp', LM.camp),
+                   ('lm_flamme', LM.flame), ('lm_autel', LM.altar), ('lm_autel_sang', lambda: LM.altar(True)), ('lm_forteresse', LM.fortress), ('lm_tour_guet', LM.watchtower),
+                   ('lm_tour_brulee', lambda: LM.watchtower(True)), ('lm_obelisque', LM.obelisk_base), ('lm_obelisque_coeur', LM.obelisk_core), ('lm_arche', LM.arch),
+                   ('lm_fontaine', LM.fountain_astres), ('lm_orbe', LM.orb), ('lm_temple', LM.temple), ('lm_gueule', LM.maw), ('lm_monolithe', LM.monolith_lm), ('lm_rune', LM.rune),
+                   ('lm_anneau', LM.ring_lm), ('lm_portique', LM.border_gate), ('lm_portique_banniere', LM.border_banner),
+                   ('ruine_mur', LM.ruin_wall), ('ruine_mur_casse', lambda: LM.ruin_wall(True)), ('ruine_mur_mousse', lambda: LM.ruin_wall(False, True)), ('ruine_mur_casse_mousse', lambda: LM.ruin_wall(True, True)),
+                   ('ruine_gravats', LM.ruin_rubble), ('ruine_pilier', LM.ruin_pillar), ('ruine_piedestal', LM.pedestal),
+                   ('portail_cadre', LM.portal_frame), ('chariot', LM.wagon), ('forge_decor', LM.forge_decor), ('forge_braises', LM.forge_coals),
+                   ('statue_monolithe', LM.monolith_statue), ('statue_runes', LM.monolith_runes), ('statue_cristal', LM.monolith_crystal), ('statue_anneau_a', lambda: LM.monolith_ring(.65)), ('statue_anneau_b', lambda: LM.monolith_ring(.85))):
+        items[nm] = fn()
     return items
 
 if __name__ == '__main__':

@@ -33,3 +33,7 @@ Originales : `montures/monture_cheval.glb` (14 780 tri, 29 os) et `montures/mont
 ## Nature (Lot 5)
 Originale, générée par `tools/models/build_nature.py` (géométries `nature_geo.py`, atlas `nature_tex.py`). 21 fichiers `nature/nature_*.glb` statiques (aucun squelette), **un seul matériau « nature » et un seul atlas** `nature/tex/nature_basecolor.png` (1024×512, 8 cases : écorce, bouleau, roche, bois mort, frondes de pin, feuillage, herbe, champignon ; découpe alpha). La teinte vient des couleurs de sommets (essence / saison) ; les feuillages ont des normales « arrondies ».
 Pin, chêne (vert / clair / automne), bouleau, buisson : variantes `_lo` (≈ 2× moins de triangles) utilisées quand la qualité des arbres est basse. Total ≈ 0,4 Mo + atlas 0,3 Mo.
+
+## Lot 6 — Repères, ruines, portails, forge, monolithe (V10.41)
+Modèles créés par script (glbkit), originaux, sans asset tiers : `lm_*` (moulin, menhirs, ferme, camp, flamme, autels, forteresse, tours, obélisque, arche, fontaine, temple, gueule, monolithe, rune, anneau, portiques), `ruine_*` (murs, gravats, pilier, piédestal), `portail_cadre`, `chariot`, `forge_decor`, `forge_braises`, `statue_*` (monolithe, runes, cristal, anneaux).
+Intégration : Landmarks, DungeonRuins, Portals, Caravan, Monolith ; repli procédural conservé. Testé en solo (aucune erreur console). Non testé sur téléphone réel.
