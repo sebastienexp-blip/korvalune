@@ -16,7 +16,7 @@ import { normalizeLook } from '../data/looks.js';
 import { CLASSES, PRIMARY_STAT, CLASS_POWER, SKILLS, getClassSkillPool } from '../combat/Classes.js';
 import { getItem, RARITY, resolveItem } from '../inventory/Item.js';
 import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../combat/WeaponRules.js';
-import { refreshGlbGear } from '../visual/GlbEquipment.js';
+import { refreshGlbGear, ARMOR_STYLE } from '../visual/GlbEquipment.js';
 
 const KEY_TO_AXIS = { KeyW: 1, KeyS: -1 };
 
@@ -280,8 +280,12 @@ export class Player {
   refreshGearVisuals(equipment) {
     if (this.rig.glbSkeleton) {          // corps GLB : équipement en pièces séparées
       this._equipRef = equipment;
-      try { refreshGlbGear(this.rig, equipment.slots, resolveItem); } catch (e) { console.warn('[V10.41] équipement GLB', e); }
-      if (this.rig.humanHead) this.rig.humanHead.visible = !(this.rig.glbGear && this.rig.glbGear.pieces.casque);   // le casque remplace visage et coiffure
+      try { this.rig.armorStyle = ARMOR_STYLE[this.classId] || null; refreshGlbGear(this.rig, equipment.slots, resolveItem); } catch (e) { console.warn('[V10.41] équipement GLB', e); }
+      if (this.rig.humanHead) {   // casque de plates : remplace visage et coiffure ; capuche (cuir / tissu) : le visage reste visible, la coiffure disparaît dessous
+        const cq = this.rig.glbGear && this.rig.glbGear.pieces.casque;
+        this.rig.humanHead.visible = !(cq && !cq.style);
+        if (this.rig.customHair) this.rig.customHair.visible = !cq;
+      }
       return;
     }
     const ev = this.rig.equipVisuals;

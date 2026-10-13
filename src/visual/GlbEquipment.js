@@ -64,6 +64,9 @@ import { ModelLibrary } from './ModelLibrary.js';
 // emplacement du jeu → pièces GLB à afficher
 const SLOT_TO_PIECES = { head: ['casque'], shoulders: ['epaules'], chest: ['torse'], gloves: ['bras'], legs: ['jambes'], boots: ['jambes'], cape: ['cape'] };
 
+// style d'armure par classe : plates (guerrier, paladin), cuir (archer, assassin), tissu (mage)
+export const ARMOR_STYLE = { archer: 'cuir', assassin: 'cuir', mage: 'tissu' };
+
 export function refreshGlbGear(rig, slots, resolveItem) {
   const lib = ModelLibrary.gear;
   const armor = lib.armor[rig.glbSkeleton] || {};
@@ -80,10 +83,12 @@ export function refreshGlbGear(rig, slots, resolveItem) {
     const view = resolveItem(item);
     const tint = (view && (view.tint || view.rarityInfo?.color)) || null;
     const cur = st.pieces[p];
-    if (cur && cur.tint === tint) continue;
+    const styled = rig.armorStyle && armor[p + '@' + rig.armorStyle] ? rig.armorStyle : null;   // cuir / tissu selon la classe
+    if (cur && cur.tint === tint && cur.style === styled) continue;
     if (cur) detach(cur.meshes);
-    if (!armor[p]) { delete st.pieces[p]; continue; }
-    st.pieces[p] = { tint, meshes: equipPiece(rig, armor[p], { tint }) };
+    const src = styled ? armor[p + '@' + styled] : armor[p];
+    if (!src) { delete st.pieces[p]; continue; }
+    st.pieces[p] = { tint, style: styled, meshes: equipPiece(rig, src, { tint }) };
   }
   // armes : un GLB par type visuel (« sword », « bow »…). Un type sans modèle → rien (l'arme procédurale n'existe pas sur un corps GLB)
   const setHeld = (field, key) => {

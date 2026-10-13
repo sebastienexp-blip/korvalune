@@ -242,7 +242,7 @@ export const ModelLibrary = {
 
   _register(file, gltf) {
     const gm = (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {};
-    if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot] = gltf; return; }
+    if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot + (gm.style ? '@' + gm.style : '')] = gltf; return; }
     if (gm.type === 'mount' && gm.kind) { this.gear.mounts[gm.kind] = { gltf, meta: gm }; return; }
     if (gm.type === 'nature' && gm.kind) { this.nature[gm.kind + (gm.lod === 'lo' ? '_lo' : '')] = gltf; return; }
     if (gm.type === 'town' && gm.kind) { this.town[gm.kind] = gltf; return; }
