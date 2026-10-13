@@ -24,7 +24,7 @@ const ROLE_KEYWORDS = {
   'player:mage': ['mage', 'wizard', 'sorcer', 'witch', 'cleric'],
   'player:archer': ['ranger', 'archer', 'hunter', 'elf', 'rogue'],
   'player:assassin': ['rogue', 'assassin', 'thief', 'ninja', 'ranger'],
-  npc: ['villager', 'peasant', 'merchant', 'civilian', 'farmer', 'cleric', 'knight'],
+  npc: ['villageois', 'villager', 'peasant', 'merchant', 'civilian', 'farmer', 'cleric', 'knight'],
   'species:bandit': ['bandit', 'rogue', 'barbarian', 'goblin', 'orc', 'skeleton_minion', 'skeleton'],
   'species:elite': ['skeleton_warrior', 'warrior', 'knight', 'orc', 'barbarian', 'skeleton'],
   'species:brute': ['ogre', 'orc', 'golem', 'troll', 'brute', 'barbarian'],

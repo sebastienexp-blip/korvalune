@@ -49,3 +49,8 @@ Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le vis
 ## Chargement et niveaux de détail (V10.42)
 - `ModelLibrary._load` : fichiers triés par priorité (décor/ville, héros et armures, ennemis/bêtes, puis boss/montures), 4 téléchargements en parallèle, barre de progression « Chargement des modèles 3D… n/N » ; coupure seulement si aucun fichier n'aboutit pendant ≥12 s (plafond global 90 s), au lieu d'un délai fixe de 25 s.
 - Arbres : version allégée (`*_lo`) affichée au-delà de ~120 m (hystérésis 10 m, sans ombre) — testé : 96 lots sur 138 ont un niveau allégé, 64 passent en lointain à une position donnée. Performance non mesurée sur téléphone.
+
+## Fleur, habitants (V10.42)
+- `nature/nature_fleur.glb` (62 tri) : fleur de prairie, utilisée par GrassField (teinte par instance).
+- `ennemis/pnj_villageois_{a,b,c}.glb` (~8–10 k tri) : trois corps d'habitants (tunique, robe, tunique) sans arme, cheveux bruns/gris/blonds, sur le squelette du Veilleur. Test en jeu : les 28 PNJ à pied utilisent ces modèles (hors monolithe, resté procédural). Vêtements en couleur unie (pas de texture de tissu), visages simples ; chaque PNJ n'a pas d'apparence propre à son métier.
+- Non converti : décor du barbier (enseigne à texte canvas + poteau animé par texture), Halloween (sculpté en code).

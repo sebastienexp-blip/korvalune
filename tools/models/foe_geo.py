@@ -33,7 +33,7 @@ def sin_(d): return float(np.sin(np.deg2rad(d) / 2))
 def cos_(d): return float(np.cos(np.deg2rad(d) / 2))
 
 # ------------------------------------------------------------------------------------------------ têtes
-def head(w=1.0, h=1.0, d=1.0, jaw=0.5, brow=0.3, nose=0.5, ears=0.0, ear_pt=0.0, tusk=0.0, eye=None, k=1.0, hood=False, base_cloth='cloth'):
+def head(w=1.0, h=1.0, d=1.0, jaw=0.5, brow=0.3, nose=0.5, ears=0.0, ear_pt=0.0, tusk=0.0, eye=None, k=1.0, hood=False, base_cloth='cloth', hair=None):
     parts = []
     y0, y1 = 1.545, 1.545 + 0.255 * h
     n = 14
@@ -82,6 +82,14 @@ def head(w=1.0, h=1.0, d=1.0, jaw=0.5, brow=0.3, nose=0.5, ears=0.0, ear_pt=0.0,
         parts.append(('capuche', top.mesh(), base_cloth))
         dr = smoothpath([S([0, 1.64, -0.07]), S([0, 1.54, -0.12]), S([0, 1.44, -0.115])], 8)
         parts.append(('capuche_drape', Loft(dr, prof([(0, .07), (1, .06)], 8), prof([(0, .12), (1, .15)], 8), p=2.4, segs=24, cap1=1, tile=.2, ref=(0, 0, 1)).mesh(), base_cloth))
+    if hair:   # calotte de cheveux : plus ajustée que la capuche, front dégagé
+        n2 = 10
+        cap = Loft(np.stack([np.zeros(n2), np.linspace(1.585, 1.585 + 0.235 * h, n2), np.full(n2, -0.02)], 1),
+                   d * prof([(0, .097), (.35, .118), (.8, .108), (1, .05)], n2), w * prof([(0, .092), (.35, .101), (.8, .094), (1, .045)], n2),
+                   p=2.4, segs=24, cap1=2, tile=0.2, ref=(0, 0, 1))
+        parts.append(('cheveux', cap.mesh(), hair))
+        dr = smoothpath([S([0, 1.66, -0.075]), S([0, 1.58, -0.105]), S([0, 1.50, -0.10])], 6)
+        parts.append(('cheveux_nuque', Loft(dr, prof([(0, .06), (1, .045)], 6), prof([(0, .10), (1, .09)], 6), p=2.4, segs=20, cap1=1, tile=.15, ref=(0, 0, 1)).mesh(), hair))
     c = S([0, 1.55, 0.0])
     out = []
     for n_, m, mat in parts:
@@ -113,6 +121,10 @@ V = {
   # V10.42 — boss (type « creature » côté jeu : ils passent par createCreature)
   'gardien': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.12, h=1.0, d=1.12, jaw=1.25, brow=1.5, nose=.25, tusk=0.0, ears=0.0, eye=True, k=0.9), skin=(0.30, 0.31, 0.32), weapon=('club', 'R', 1.9), scale=(1.75, 1.2, 1.65), warty=1.0, boss=True),
   'seigneur': dict(keep=ELITE, head=dict(w=1.0, h=1.05, jaw=.8, brow=1.0, nose=.5, ears=.5, ear_pt=1.0, tusk=.5, eye=True, hood=True, k=1.0), skin=(0.14, 0.10, 0.19), weapon=('sword', 'R'), shield=True, scale=(1.35, 1.3, 1.35), decimate=0.07, boss=True),
+  # V10.42 — habitants (PNJ) : mêmes os/animations, sans arme
+  'villageois_a': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=0.98, jaw=.4, brow=.2, nose=.55, eye=False, hair='hair'), skin=(0.55, 0.38, 0.28), weapon=None, scale=(1.0, 1.0, 1.0), civil=True, tunic='tunic_a'),
+  'villageois_b': dict(keep=r'^cape$', head=dict(w=0.94, h=1.02, jaw=.2, brow=.1, nose=.45, eye=False, hair='hair_light'), skin=(0.50, 0.36, 0.30), weapon=None, robe=True, scale=(0.98, 1.02, 0.98), civil=True, tunic='tunic_b'),
+  'villageois_c': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.02, h=0.98, jaw=.55, brow=.35, nose=.7, eye=False, hair='hair_blond'), skin=(0.62, 0.47, 0.37), weapon=None, scale=(1.03, 0.98, 1.05), civil=True, tunic='tunic_c'),
   'goblin':  dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.1, h=1.0, d=1.1, jaw=.5, brow=.6, nose=1.0, ears=1.0, ear_pt=1.0, tusk=.4, eye=True, k=1.55), skin=(0.16, 0.30, 0.10), weapon=('dagger', 'R'), scale=(0.92, 0.95, 0.92), warty=0.6),
 }
 
@@ -127,6 +139,8 @@ def build(name):
                 # membres nus : peau (sauf si habillé en armure complète)
                 if name != 'elite' or n.startswith(('cou', 'main')):
                     mat = 'hide' if n.startswith(('cou', 'main', 'bras')) or v.get('legs_bare', True) else mat
+            if v.get('civil') and not v.get('robe') and re.match(r'^(torse|jambe|botte)(_R)?$', n): mat = v['tunic'] if n.startswith(('torse', 'jambe')) else 'leather'
+            if v.get('civil') and v.get('robe') and n.startswith(('torse', 'jambe', 'bras')): mat = v['tunic']
             if name in ('bandit', 'archer') and re.match(r'^(torse|jambe|botte)(_R)?$', n): mat = 'linen' if n.startswith(('torse', 'jambe')) else 'leather'
             if name in ('zealot', 'mage') and n.startswith(('torse', 'jambe', 'bras')): mat = 'cloth'
             if name == 'elite' and n.startswith(('torse', 'jambe')): mat = 'linen'
@@ -136,15 +150,18 @@ def build(name):
         parts.append(('pagne', kilt(), 'leather'))
     if v['head']: parts += head(**v['head'])
     if v.get('robe'):
-        parts.append(('robe', robe(), 'cloth'))
+        parts.append(('robe', robe(), v.get('tunic', 'cloth')))
     # armes
-    kind = v['weapon'][0]
-    wp = {'dagger': W.dagger, 'sword': None, 'staff': W.staff, 'bow': W.bow, 'club': None}[kind] if kind != 'club' else None
-    if kind == 'club': wparts = W.club(v['weapon'][2])
+    kind = v['weapon'][0] if v['weapon'] else None
+    wp = None if kind is None else {'dagger': W.dagger, 'sword': None, 'staff': W.staff, 'bow': W.bow, 'club': None}[kind] if kind != 'club' else None
+    wparts = []
+    if kind is None: pass
+    elif kind == 'club': wparts = W.club(v['weapon'][2])
     elif kind == 'sword':
         import sword_geo as SG; wparts = [(n, m, mat) for n, m, mat in SG.parts]
     else: wparts = wp()
-    if v['weapon'][1] == 'R':
+    if kind is None: pass
+    elif v['weapon'][1] == 'R':
         q = {'staff': [sin_(55), 0, 0, cos_(55)], 'club': [sin_(70), 0, 0, cos_(70)]}.get(kind, SWORD_Q)
         parts += bake(wparts, 'Hand_R', q, HAND_R_W, 'arme')
     else:
