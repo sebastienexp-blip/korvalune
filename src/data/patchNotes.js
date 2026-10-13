@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.44', title: 'Personnages et équipement entièrement modélisés',
+    items: [
+      '🧍 Un vrai corps humain en 3D pour toutes les classes et toutes les races, avec couleur de peau, yeux et cheveux au choix.',
+      '🙂 Visages, nez, yeux, lèvres, oreilles (humaines, elfes, orques), 22 coiffures et 5 barbes : tout est modélisé.',
+      '⚔️ Neuf nouvelles armes en 3D : hache, masse, marteau de guerre, lance, hallebarde, cimeterre, arbalète, grimoire et baguette.',
+      '🛡️ Armures en cuir pour l’archer et l’assassin, robe de tissu à capuche pour le mage ; le guerrier et le paladin gardent les plates.'
+    ]
+  },
+  {
     version: '10.43', title: 'Un monde en 3D et une nouvelle bande-son',
     items: [
       '🏰 Le monde passe en modèles 3D : ville, décors, habitants, ennemis, boss, montures et arbres ont un nouveau look plus sombre et réaliste.',
