@@ -53,16 +53,19 @@ obstacles.push({ x: -3, z: -4, r: 0.6 });
 const loader = new GLTFLoader();
 const load = (f) => loader.loadAsync(MP + f);
 const SLOTS = { 1: 'casque', 2: 'epaules', 3: 'torse', 4: 'bras', 5: 'jambes', 6: 'cape' };
-const GAME_SLOT = { 1: 'head', 2: 'shoulders', 3: 'chest', 4: 'gloves', 5: 'legs', 6: 'cape', 7: 'mainhand' };
+const GAME_SLOT = { 1: 'head', 2: 'shoulders', 3: 'chest', 4: 'gloves', 5: 'legs', 6: 'cape', 7: 'mainhand', 8: 'offhand' };
+const MAIN = ['sword', 'dagger', 'staff', 'bow']; const OFF = ['shield', 'orb', 'quiver', 'offdagger']; let mainIdx = 0, offIdx = 0;
 // faux équipement : même forme que Equipment.slots ; resolveItem simulé (le vrai vient du jeu)
 const fakeSlots = {};
-const fakeResolve = (it) => it && (it.id === 'sword' ? { visual: 'sword', tint: it.tint } : { tint: it.tint });
+const fakeResolve = (it) => it && (it.visual ? { visual: it.visual, tint: it.tint } : { tint: it.tint });
 const TINTS = [null, '#c9a227', '#7a1f2b', '#3f7f9a'];
 let sword = null;
 let rig = null, wolf = null;
 
 (async () => {
   try {
+    const WEAPONS = ['dague_du_veilleur', 'dague_gauche', 'baton_de_la_veille', 'arc_de_la_veille', 'ecu_de_la_veille', 'orbe_de_la_veille', 'carquois'];
+    const weaponGltfs = await Promise.all(WEAPONS.map((w) => load(`armes/${w}.glb`)));
     const [body, lodG, lod2G, wolfG, swordG, ...pcs] = await Promise.all([
       load('veilleur/veilleur_corps.glb'), load('veilleur/veilleur_lod1.glb'), load('veilleur/veilleur_lod2.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
       ...Object.values(SLOTS).map((s) => load(`veilleur/veilleur_${s}.glb`))]);
@@ -76,28 +79,36 @@ let rig = null, wolf = null;
     scene.add(rig.root);
     Object.values(SLOTS).forEach((s, i) => ModelLibrary._register(`veilleur_${s}.glb`, pcs[i]));
     ModelLibrary._register('lame_de_la_veille.glb', swordG);
+    for (const g of weaponGltfs) ModelLibrary._register('arme.glb', g);
     for (const n of [1, 2, 3, 4, 5, 6]) fakeSlots[GAME_SLOT[n]] = { id: 'armor' };
-    fakeSlots.mainhand = { id: 'sword' };
+    fakeSlots.mainhand = { visual: 'sword' };
     refreshGlbGear(rig, fakeSlots, fakeResolve);
     spawnWolf();
     spawnCrowd(12);
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
-      `1-6 + 7 : équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br><span id="st"></span>`;
+      `1-6 : armure · 7 : arme (épée, dague, bâton, arc) · 8 : objet secondaire (bouclier, orbe, carquois, dague) — équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br><span id="st"></span>`;
   } catch (e) { hud.textContent = 'Erreur de chargement : ' + (e && e.message); console.error(e); }
 })();
 
 function toggleSlot(n) {
   if (!rig) return;
   const g = GAME_SLOT[n]; if (!g) return;
-  const cur = fakeSlots[g];
-  if (!cur) fakeSlots[g] = n === 7 ? { id: 'sword' } : { id: 'armor' };
-  else { const i = TINTS.indexOf(cur.tint || null); const nx = TINTS[(i + 1) % TINTS.length]; if (i === TINTS.length - 1) fakeSlots[g] = null; else cur.tint = nx; }
+  if (n >= 7) {                       // armes : chaque appui passe au type suivant, puis retrait
+    const list = n === 7 ? MAIN : OFF, cur = fakeSlots[g] && fakeSlots[g].visual;
+    const i = cur ? list.indexOf(cur) + 1 : 0;
+    fakeSlots[g] = i >= list.length ? null : { visual: list[i] };
+  } else {
+    const cur = fakeSlots[g];
+    if (!cur) fakeSlots[g] = { id: 'armor' };
+    else { const i = TINTS.indexOf(cur.tint || null); if (i === TINTS.length - 1) fakeSlots[g] = null; else cur.tint = TINTS[i + 1]; }
+  }
   refreshGlbGear(rig, fakeSlots, fakeResolve);
 }
+window.__equip = (slot, visual) => { fakeSlots[slot] = visual ? { visual } : null; refreshGlbGear(rig, fakeSlots, fakeResolve); };
 
-// foule de figurants en version allégée (LOD 1), pour mesurer le coût d'une foule de joueurs distants
+// foule de figurants en versions allégées (LOD 1 et 2), pour mesurer le coût d'une foule de joueurs distants
 const crowd = [];
 function spawnCrowd(n) {
   for (let i = 0; i < n; i++) {
@@ -116,7 +127,7 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Space') { e.preventDefault(); trigger('attack'); }
   if (e.code === 'KeyE') trigger('attack2'); if (e.code === 'KeyH') trigger('hit'); if (e.code === 'KeyX') trigger('death'); if (e.code === 'KeyR') trigger('revive');
   if (e.code === 'KeyL') spawnWolf();
-  const d = /^Digit([1-7])$/.exec(e.code); if (d) toggleSlot(+d[1]);
+  const d = /^Digit([1-8])$/.exec(e.code); if (d) toggleSlot(+d[1]);
 });
 addEventListener('keyup', (e) => keys.delete(e.code));
 let forceRun = false;

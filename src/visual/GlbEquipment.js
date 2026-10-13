@@ -85,12 +85,16 @@ export function refreshGlbGear(rig, slots, resolveItem) {
     if (!armor[p]) { delete st.pieces[p]; continue; }
     st.pieces[p] = { tint, meshes: equipPiece(rig, armor[p], { tint }) };
   }
-  // arme principale : un GLB par type visuel (« sword »…) ; type sans modèle → rien (l'arme procédurale n'existe pas sur un corps GLB)
+  // armes : un GLB par type visuel (« sword », « bow »…). Un type sans modèle → rien (l'arme procédurale n'existe pas sur un corps GLB)
+  const setHeld = (field, key) => {
+    if (key === st[field + 'Key']) return;
+    if (st[field]) detach(st[field]);
+    st[field] = key ? attachWeapon(rig, lib.weapons[key]) : null;
+    st[field + 'Key'] = key;
+  };
   const mv = slots.mainhand && resolveItem(slots.mainhand);
-  const key = mv && mv.visual && lib.weapons[mv.visual] ? mv.visual : null;
-  if (key !== st.weaponKey) {
-    if (st.weapon) detach(st.weapon);
-    st.weapon = key ? attachWeapon(rig, lib.weapons[key]) : null;
-    st.weaponKey = key;
-  }
+  setHeld('weapon', mv && mv.visual && lib.weapons[mv.visual] ? mv.visual : null);
+  const ov = slots.offhand && resolveItem(slots.offhand);          // objet secondaire : bouclier par défaut, ou orbe / carquois / dague
+  const ok = ov ? (ov.visual || 'shield') : null;
+  setHeld('off', ok && lib.weapons[ok] ? ok : null);
 }
