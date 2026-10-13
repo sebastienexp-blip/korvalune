@@ -45,3 +45,7 @@ Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le vis
 
 ## Empaquetage pour activation
 `python3 tools/models/package_models.py public/models_proto <dossier_sortie>` produit l'arborescence plate attendue par le chargeur (`*.glb`, `tex/`, `index.json`) ; textures homonymes de contenu différent renommées par empreinte. Testé en solo dans le vrai jeu : 19 personnages/créatures, 92 modules de ville, 22 de nature chargés, aucune erreur. Poids total : ~23 Mo de GLB + ~6 Mo de textures (à mesurer sur téléphone avant activation). Rien n'est copié dans `public/models` : le site public n'utilise toujours que le procédural.
+
+## Chargement et niveaux de détail (V10.42)
+- `ModelLibrary._load` : fichiers triés par priorité (décor/ville, héros et armures, ennemis/bêtes, puis boss/montures), 4 téléchargements en parallèle, barre de progression « Chargement des modèles 3D… n/N » ; coupure seulement si aucun fichier n'aboutit pendant ≥12 s (plafond global 90 s), au lieu d'un délai fixe de 25 s.
+- Arbres : version allégée (`*_lo`) affichée au-delà de ~120 m (hystérésis 10 m, sans ombre) — testé : 96 lots sur 138 ont un niveau allégé, 64 passent en lointain à une position donnée. Performance non mesurée sur téléphone.

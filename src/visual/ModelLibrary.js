@@ -78,18 +78,26 @@ export const ModelLibrary = {
     const files = (index.files || []).filter((f) => /\.(glb|gltf)$/i.test(f));
     if (!files.length) return;
     const loader = new GLTFLoader();
-    const started = performance.now();
-    let i = 0;
+    // V10.42 — ordre de priorité (le décor et le héros d'abord, montures/boss en dernier) ; la coupure ne se déclenche que si plus
+    // aucun fichier n'aboutit pendant `stallMs` (réseau lent ≠ réseau bloqué), avec un plafond global `hardMs`.
+    const prio = (f) => /^(ville_|nature_)/.test(f) ? 0 : /veilleur|armure|casque|epaul|plastron|jambi|botte|gant/i.test(f) ? 1 : /^(ennemi_|bete_|loup)/.test(f) ? 2 : /^(boss_|monture_)/.test(f) ? 4 : 3;
+    files.sort((a, b) => prio(a) - prio(b) || a.localeCompare(b));
+    const stallMs = Math.max(timeoutMs * 0.6, 12000), hardMs = Math.max(timeoutMs * 4, 90000);
+    const started = performance.now(); let last = started, done = 0, i = 0;
+    const alive = () => { const n = performance.now(); return n - last < stallMs && n - started < hardMs; };
     const worker = async () => {
-      while (i < files.length && performance.now() - started < timeoutMs) {
+      while (i < files.length && alive()) {
         const file = files[i++];
         try {
           const gltf = await loader.loadAsync(`${base}models/${encodeURIComponent(file)}`);
           this._register(file, gltf);
         } catch (e) { console.warn('[V3] GLB ignoré :', file, e); }
+        last = performance.now(); done++;
+        if (this.onProgress) try { this.onProgress(done, files.length); } catch { /* affichage facultatif */ }
       }
     };
-    await Promise.all([worker(), worker(), worker()]);
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    if (done < files.length) console.warn(`[V3] chargement interrompu : ${done}/${files.length} modèles`);
     this.ready = this.characters.length > 0;
     this.count = this.characters.length;
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);

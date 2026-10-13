@@ -272,6 +272,7 @@ export class Game {
     try { const q = new URLSearchParams(location.search); if (q.has('paid')) { this._paidReturn = q.get('paid'); history.replaceState(null, '', location.pathname); } } catch { /* ignoré */ } // retour de la page de paiement Stripe
     this.net.connect();
     this.hud.setLoading(0.02, 'Chargement des modèles 3D…');
+    ModelLibrary.onProgress = (d, n) => this.hud.setLoading(0.02 + 0.01 * (d / n), `Chargement des modèles 3D… ${d}/${n}`);
     await ModelLibrary.init();
     this.hud.setLoading(0.03, 'Préparation du monde…');
     this.world = new World(this.scene);
@@ -2395,6 +2396,7 @@ export class Game {
     try {
       updateVisualUniforms(performance.now() * 0.001, this.player.pos);
       this.world.updateGrass(this.player.pos.x, this.player.pos.z);
+      this.world.updateTreeLod && this.world.updateTreeLod(this.player.pos.x, this.player.pos.z);
       if (this.scene.environment) this.scene.environmentIntensity = 0.1 + 0.22 * (1 - this.dayNight.night);
       const p = this.player, rig = p.rig;
       // zoom léger à l'impact + élargissement du champ de vision en course (sensation de vitesse)

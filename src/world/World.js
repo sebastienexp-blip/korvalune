@@ -534,7 +534,17 @@ export class World {
         mesh.castShadow = true;
         mesh.computeBoundingSphere();
         this.group.add(mesh);
-        this.treeChunks.push({ mesh, total: list.length, list });
+        const ch = { mesh, total: list.length, list };
+        // V10.42 — niveau de détail par distance : même lot d'instances en version allégée, sans ombre, affichée au loin
+        const loKind = glb && lod === 'hi' && { pine: 'pine', oak: 'oak_green', light: 'oak_light', autumn: 'oak_autumn', birch: 'birch' }[sp];
+        const loGeo = loKind && ModelLibrary.nature[loKind + '_lo'] && ModelLibrary.natureGeometry(loKind, 'lo');
+        if (loGeo && loGeo !== G[sp]) {
+          const lo = new THREE.InstancedMesh(loGeo, treeMat, list.length);
+          lo.instanceMatrix.copy(mesh.instanceMatrix); if (mesh.instanceColor) lo.instanceColor = mesh.instanceColor;
+          lo.castShadow = false; lo.visible = false; lo.boundingSphere = mesh.boundingSphere;
+          this.group.add(lo); ch.lo = lo;
+        }
+        this.treeChunks.push(ch);
       }
     }
 
@@ -748,13 +758,25 @@ export class World {
   }
   setDebrisVisible(v) { for (const m of this.debris || []) m.visible = !!v; }
 
+  // Arbres lointains en version allégée (appelé chaque image ; coût négligeable : une comparaison par chunk)
+  updateTreeLod(px, pz) {
+    const R = this._treeLodDist || 120;
+    for (const ch of this.treeChunks) {
+      if (!ch.lo) continue;
+      const bs = ch.mesh.boundingSphere; if (!bs) continue;
+      const d = Math.hypot(bs.center.x - px, bs.center.z - pz) - bs.radius;
+      const far = d > R + (ch.far ? -10 : 10);   // hystérésis : évite le clignotement à la frontière
+      if (far !== !!ch.far) { ch.far = far; ch.mesh.visible = !far; ch.lo.visible = far; }
+    }
+  }
+
   setGrassVisible(v) { if (this.grass) this.grass.setVisible(v); }
   updateGrass(px, pz) { if (this.grass) this.grass.update(px, pz); }
 
   setTreeDensity(f) {
     for (const ch of this.treeChunks) {
       const n = Math.floor(ch.total * f);
-      ch.mesh.count = n;
+      ch.mesh.count = n; if (ch.lo) ch.lo.count = n;
       // V8.6 : un arbre masqué par la qualité graphique n'a plus de collision (plus de murs invisibles)
       if (ch.list) for (let i = 0; i < ch.list.length; i++) { const c = ch.list[i].col; if (c) c.off = i >= n; }
     }
