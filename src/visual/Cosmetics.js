@@ -339,10 +339,11 @@ function buildPetGlb(fx, rig) {
   if (kind === 'golem') need.push('cos_fam_golem_patte'); if (kind === 'spider') need.push('cos_fam_araignee_patte');
   if (!ML.hasTown(need)) return null;
   const col = fx.color ?? 0xffffff, tip = fx.tip ?? col, eyeC = fx.eye ?? 0x151015;
-  const glowHex = kind === 'unicorn' ? 0xff9ad8 : kind === 'golem' ? tip : kind === 'fairy' ? 0xcff6ff : null;
+  const glowHex = kind === 'unicorn' ? 0xff9ad8 : kind === 'fairy' ? 0xcff6ff : null;
   const mats = [];
   const make = (k, opt = {}) => {
-    const tint = opt.tint || { wall: col, roof: tip, trim: eyeC };
+    const lit = (h) => { const c = new THREE.Color(h); return new THREE.Color(Math.min(1, c.r * 1.7), Math.min(1, c.g * 1.7), Math.min(1, c.b * 1.7)).getHex(); };   // la pierre texturée est sombre : on éclaircit la teinte
+    const tint = opt.tint || (kind === 'golem' ? { wall: lit(col), roof: tip, trim: eyeC } : { wall: col, roof: tip, trim: eyeC });
     const inst = ML.townInstance(k, { tint, shadow: opt.shadow !== false, ownGlow: true, matOverride: glowy ? { flat: { color: 0xffffff, emissive: 0xff5a00, emissiveIntensity: 0.45 } } : null });
     inst.traverse((o) => {
       if (!o.isMesh) return;
