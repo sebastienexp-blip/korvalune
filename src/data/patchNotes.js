@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.46', title: 'Mode histoire : le prologue',
+    items: [
+      '📖 Nouveau : le mode histoire commence ! Après ta première chasse aux loups, le Monolithe s’éveille. Prologue en trois quêtes avec la Mystique Vaelis, la Capitaine Rhoda et le garde Halvar.',
+      '🎬 Première cinématique dans le jeu : caméra dirigée, sous-titres et voix off. Tu peux la passer à tout moment.',
+      '🗣️ Voix off : les dialogues de l’histoire sont lus à voix haute (voix du navigateur pour l’instant, voix de comédiens à venir). Volume et activation dans Options > Son.'
+    ]
+  },
+  {
     version: '10.45', title: 'Plus de nuit, carte personnalisable, points plus rapides',
     items: [
       '☀️ La nuit est supprimée : le jeu reste de jour, de l’aube dorée à la fin d’après-midi. Les failles sont aussi bien plus lumineuses.',

@@ -1,0 +1,18 @@
+id;scene;personnage;voix_prevue;texte;fichier
+pro_c1_01;cinématique c1;nessa;Atma;"On raconte qu’une pierre dormait au cœur de Korvalune, depuis avant les premiers rois.";public/voices/pro_c1_01.mp3
+pro_c1_02;cinématique c1;nessa;Atma;"Personne ne l’avait jamais vue bouger. Personne, jusqu’à ce soir.";public/voices/pro_c1_02.mp3
+pro_c1_03;cinématique c1;veilleur;Eric;"Qui… a touché… l’Éclat ?";public/voices/pro_c1_03.mp3
+pro_c1_04;cinématique c1;veilleur;Eric;"Le ciel saigne encore. Je le sens. Approche, porteur. Le temps nous est compté.";public/voices/pro_c1_04.mp3
+pro_c1_05;cinématique c1;nessa;Atma;"C’est ainsi qu’un voyageur sans nom devint le dernier espoir du monde. Sur le moment, il avait surtout faim.";public/voices/pro_c1_05.mp3
+pro_c2_01;cinématique c2;nessa;Atma;"Ainsi s’achève le premier chapitre.";public/voices/pro_c2_01.mp3
+pro_c2_02;cinématique c2;nessa;Atma;"Le suivant sera moins ensoleillé.";public/voices/pro_c2_02.mp3
+pro_vaelis_01;story_p1/talk;vaelis;Douce;"Ah, te voilà. Le Monolithe a frémi toute la nuit, et je n’ai pas fermé l’œil. Aucune tisane ne tient face à une pierre qui s’éveille.";public/voices/pro_vaelis_01.mp3
+pro_vaelis_02;story_p1/talk;vaelis;Douce;"Regarde ta main. Cette lueur n’est pas un reflet : c’est un éclat du Cœur d’Éther. Il t’a choisi.";public/voices/pro_vaelis_02.mp3
+pro_vaelis_03;story_p1/talk;vaelis;Douce;"Va voir la capitaine Rhoda. Si les failles s’ouvrent, c’est elle qui tiendra la ville. Dis-lui ce que tu portes.";public/voices/pro_vaelis_03.mp3
+pro_rhoda_01;story_p2/rhoda_a;rhoda;Romain / femme ferme;"Alors c’est toi, le porteur dont parle Vaelis. Je ne crois que ce que je vois, et je vois quelqu’un qui n’a même pas de casque.";public/voices/pro_rhoda_01.mp3
+pro_rhoda_02;story_p2/rhoda_a;rhoda;Romain / femme ferme;"Des bandits profitent du désordre pour piller les caravanes. Chasses-en cinq, et prouve-moi que ton éclat sert à autre chose qu’à briller.";public/voices/pro_rhoda_02.mp3
+pro_rhoda_03;story_p2/rhoda_b;rhoda;Romain / femme ferme;"Cinq de moins. Tu tiens mieux ton épée que ta langue, et c’est un compliment.";public/voices/pro_rhoda_03.mp3
+pro_rhoda_04;story_p2/rhoda_b;rhoda;Romain / femme ferme;"Va trouver Halvar, à la porte sud. Il a des choses à te dire sur le Veilleur, et sur la forêt qui s’étend au-delà.";public/voices/pro_rhoda_04.mp3
+pro_halvar_01;story_p3/halvar;halvar;Paul K;"Ah, le porteur ! Rhoda m’a prévenu. Tu as l’air plus solide qu’hier.";public/voices/pro_halvar_01.mp3
+pro_halvar_02;story_p3/halvar;halvar;Paul K;"Ma grand-mère disait toujours : la pierre s’éveillera quand le ciel se fendra. Je croyais à une histoire pour endormir les enfants.";public/voices/pro_halvar_02.mp3
+pro_halvar_03;story_p3/halvar;halvar;Paul K;"Les Ombres gagnent la forêt, à l’est. Va. Et reviens entier : j’ai déjà assez de papiers à remplir.";public/voices/pro_halvar_03.mp3

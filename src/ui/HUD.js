@@ -1,5 +1,6 @@
 import { ICONS, iconDefsHTML } from './Icons.js';
 import skillDefs from '../data/skills.json';
+import { SPEAKERS } from '../data/story.js';
 import { DIFFICULTIES } from '../data/difficulty.js';
 import { EVENT, eventActive as hwEventActive, shopOpen as hwShopOpen } from '../data/halloween.js';
 import { ITEMS, RARITY, resolveItem } from '../inventory/Item.js';
@@ -144,7 +145,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.45 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.46 — Korvalune</div>
         </div>
       </div>
 
@@ -840,8 +841,11 @@ export class HUD {
     const box = this.q('#dialogue-box');
     box.classList.remove('hidden');
     this.game?.audio?.play(opts.index ? 'page' : 'talk'); // V10.40
-    this.q('#dlg-name').textContent = npc.name;
-    this.q('#dlg-text').textContent = lines[opts.index || 0];
+    const cur = lines[opts.index || 0];
+    const isObj = cur && typeof cur === 'object'; // V10.46 : réplique d'histoire { id, who, t } (nom du personnage + voix off)
+    this.q('#dlg-name').textContent = isObj && SPEAKERS[cur.who] ? SPEAKERS[cur.who].name : npc.name;
+    this.q('#dlg-text').textContent = isObj ? cur.t : cur;
+    if (isObj && this.game?.story) this.game.story.voice.speak(cur); else this.game?.story?.voice.stop();
     const actions = this.q('#dlg-actions');
     actions.innerHTML = '';
     const idx = opts.index || 0;
@@ -857,7 +861,7 @@ export class HUD {
       actions.appendChild(btn);
     }
   }
-  hideDialogue() { this.q('#dialogue-box').classList.add('hidden'); }
+  hideDialogue() { this.q('#dialogue-box').classList.add('hidden'); this.game?.story?.voice.stop(); }
 
   // V10.14 — garde-robe : cosmétiques possédés (liés au compte : ni vendables ni échangeables), équipables d'un toucher
   renderWardrobe() {

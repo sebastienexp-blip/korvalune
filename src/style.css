@@ -1349,3 +1349,6 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .touch-on .pq .pq-k { display: none; }
 .touch-on .pq .pq-n { right: -4px; bottom: -4px; font-size: 10px; min-width: 16px; height: 16px; line-height: 14px; background: rgba(8, 12, 26, 0.92); }
 .lefthand.touch-on #potion-quick { right: auto; left: calc(64px - 20px + env(safe-area-inset-left, 0px)); flex-direction: row; }
+
+/* V10.46 — pendant une cinématique d'histoire, l'interface de jeu est masquée */
+#game-ui.cine-hide{visibility:hidden !important}

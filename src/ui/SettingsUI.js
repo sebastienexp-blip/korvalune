@@ -7,7 +7,7 @@ export const DEFAULTS = {
   quality: null, renderScale: 100, fpsCap: 0, viewDist: 100, grass: true, particleScale: 100, exposure: 100, fovAdj: 0,
   shake: 100, floatText: true, showFps: false, vignette: true, shadows: true, visualV25: true, realLook: true, adaptive: true,
   // son
-  volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, mute: false, footsteps: true,
+  volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, voiceVol: 90, voiceOn: true, mute: false, footsteps: true,
   // souris / clavier
   lookSens: 100, invertY: false, invertWheel: false, zoomSpeed: 100, rotateBtn: 'right', cameraMode: 'iso', camRotate: 'auto', autoLoot: 'off', cameraLock: true,
   // V10.24 : compagnon qui ramasse le butin
@@ -51,6 +51,8 @@ const TABS = [
     { t: 'range', k: 'sfxVol', label: 'Effets (combat, pas, butin)', min: 0, max: 100, step: 1, fmt: pct, test: 'hit' },
     { t: 'range', k: 'ambVol', label: 'Ambiance (vent, pluie, nature)', min: 0, max: 100, step: 1, fmt: pct },
     { t: 'range', k: 'uiVol', label: 'Interface (clics, quêtes)', min: 0, max: 100, step: 1, fmt: pct, test: 'click' },
+    { t: 'check', k: 'voiceOn', label: 'Voix off de l’histoire (dialogues et cinématiques)' },
+    { t: 'range', k: 'voiceVol', label: 'Volume des voix', min: 0, max: 100, step: 1, fmt: pct },
     { t: 'note', text: 'Le son se coupe automatiquement quand l’onglet passe en arrière-plan.' }
   ] },
   { id: 'keys', label: '⌨️ Clavier & souris', items: [

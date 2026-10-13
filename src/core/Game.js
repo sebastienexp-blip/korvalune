@@ -40,6 +40,8 @@ import { setDifficultyId, getDifficulty, DIFFICULTIES, clampDifficulty } from '.
 import { makeLabel } from '../ui/Label.js';
 import { CombatSystem } from '../combat/CombatSystem.js';
 import { QuestManager } from '../quests/QuestManager.js';
+import { StoryDirector } from '../story/StoryDirector.js';
+import { STORY_QUESTS } from '../data/story.js';
 import { generateSecondaryQuests } from '../data/secondaryQuests.js';
 import { MAIN_QUESTS } from '../data/mainQuests.js';
 import { TUTORIAL_QUESTS } from '../data/tutorialQuests.js';
@@ -1305,7 +1307,9 @@ export class Game {
     netShare.localPlayer = this.player;
     this._secondaryQuests = this._secondaryQuests || generateSecondaryQuests();
     if (this.quests) this.quests.dispose(); // V10.29 : le journal du personnage précédent est débranché
-    this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...DISCOVERY_QUESTS, ...this._secondaryQuests]);
+    this.quests = new QuestManager(this.bus, save, [...TUTORIAL_QUESTS, ...MAIN_QUESTS, ...STORY_QUESTS, ...DISCOVERY_QUESTS, ...this._secondaryQuests]);
+    if (this.story) this.story.dispose();
+    this.story = new StoryDirector(this); // V10.46 : mode histoire (prologue)
     setTimeout(() => this._startDiscoveryQuests(), 4000);
     this.mounts = Array.isArray(save?.mounts) ? save.mounts.filter((m) => MOUNT_BY_ID[m]) : [];
     this.mountSel = MOUNT_BY_ID[save?.mountSel] ? save.mountSel : '';
@@ -3217,6 +3221,8 @@ export class Game {
         'Tu n\'as presque rien sur toi, je le vois bien. Ma potion de soin est à toi pour toujours : elle ne s’épuise jamais, il faut juste attendre un peu entre deux gorgées.',
         'J\'ai aussi posé une armure à tes pieds : ramasse-la avec E, puis équipe-la depuis ton inventaire.'];
     }
+    const storyLines = this.story?.talkLines(npc.id); // V10.46 : dialogues du mode histoire (prioritaires)
+    if (storyLines) lines = storyLines;
     this.hud.showDialogue(npc.def, lines, {
       onEnd: () => {
         this.dialogueOpen = false;
@@ -3365,6 +3371,7 @@ export class Game {
       this.cameraRig.follow = mv.y > 0.35 && Math.abs(mv.x) < 0.7;
     }
     this.cameraRig.update(this.player.pos, dt, look, wheel, this.player.yaw);
+    if (this.story) this.story.update(dt);
     updateOcclusion(this.camera.position, this.player.pos, !this.rift?.active);
     if (this.quests) this._tutTick(look, wheel);
     if (this._shake) {
