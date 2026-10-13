@@ -634,7 +634,7 @@ export class HUD {
     ];
     for (const [sel, icon, label, inner] of MAP) {
       const el = this.q(sel); if (!el) continue;
-      if (label) el.dataset.label = label;
+      if (label) { el.dataset.label = label; if (!el.title) el.title = label; }
       if (sel === '#btn-menu' || sel === '#btn-mount') el.classList.add('keep');
       const host = inner ? el.querySelector(inner) : el;
       if (!host) continue;

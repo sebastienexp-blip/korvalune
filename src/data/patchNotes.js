@@ -10,7 +10,7 @@ export const PATCH_NOTES = [
       '📍 Carte du monde : touchez la carte pour poser ou retirer un marqueur personnel.',
       '🏰 Les remparts intérieurs autour du château ont disparu, seul le donjon reste.',
       '🔊 Plus de fanfare au passage de niveau ; nouveaux sons pour le butin et le ramassage.',
-      '⌨️ PC : la barre de compétences affiche les vraies illustrations (acier, flammes, glace…), des cases plus grandes et les touches en keycaps.',
+      '⌨️ PC : la barre de compétences affiche les vraies illustrations (acier, flammes, glace…), des cases plus grandes, les touches en keycaps et les cases clic gauche / clic droit conservées. Les boutons du menu passent aux icônes vectorielles modernes.',
       '🎃 Quêtes de Jack : parler à Jack valide enfin l’étape, même hors connexion.'
     ]
   },
