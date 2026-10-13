@@ -197,6 +197,7 @@ export const ModelLibrary = {
       }
     }
     geo.setAttribute('color', new THREE.BufferAttribute(out, 3));
+    geo.userData.shared = true;   // jamais libérée par les cosmétiques / décors qui la partagent
     return (this._townGeos[key] = geo);
   },
 
@@ -344,11 +345,14 @@ export function tryCreateGlbRig(kind, opts = {}) {
   });
 
   const stub = () => ({ visible: false });
-  const head = new THREE.Object3D();
+  // points d'ancrage réels (cosmétiques : ailes dans le dos, couvre-chefs sur la tête), à la hauteur d'un humanoïde de 1,8 m
+  const head = new THREE.Object3D(); head.position.y = kind === 'humanoid' ? 1.7 : 0;
   root.add(head);
+  const torso = new THREE.Object3D(); torso.position.y = kind === 'humanoid' ? 1.0 : 0;
+  root.add(torso);
   const mixer = new THREE.AnimationMixer(inst);
   const rig = {
-    root, body: root, hips: stub(), torso: stub(), head,
+    root, body: root, hips: stub(), torso, head,
     mats, matRefs: { weapons: {} },
     equipVisuals: { weapons: {}, shield: stub(), helm: stub(), shoulders: [stub(), stub()], chest: stub(), cape: stub() },
     glbSkeleton: (entry.meta && entry.meta.skeleton) || null,   // non nul → le corps accepte des pièces d'équipement GLB

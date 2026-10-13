@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { glowTexture, safeTexture } from './Textures.js';
 import { CATALOG_BY_ID } from '../data/shopCatalog.js';
+import { ModelLibrary } from './ModelLibrary.js';
 
 let _glow;
 const glowTex = () => (_glow === undefined ? (_glow = safeTexture(glowTexture, 64)) : _glow);
@@ -55,7 +56,32 @@ function wingShape(style) {
   return s;
 }
 
+// V11 — ailes en modèle 3D (.glb) : une aile par côté (miroir), teintée par les rôles de sommets (principale / secondaire), battement conservé.
+const WING_KIND = { ange: 'cos_aile_ange', demon: 'cos_aile_demon', cristal: 'cos_aile_cristal' };
+function buildWingsGlb(fx, rig) {
+  const kind = WING_KIND[fx.style || 'ange'];
+  if (!kind || !ModelLibrary.hasTown([kind])) return null;
+  const col = new THREE.Color(fx.color || 0xffffff), glowCol = new THREE.Color(fx.glow || fx.color || 0xffffff), prism = !!fx.prism;
+  const tint = prism ? { wall: 0xffffff, roof: 0xffffff, trim: 0xffffff } : { wall: col.getHex(), roof: glowCol.getHex(), trim: glowCol.getHex() };
+  const inst = ModelLibrary.townInstance(kind, { tint, shadow: false, ownGlow: true, matOverride: { flat: { color: 0xffffff, emissive: prism ? 0x000000 : col.getHex(), emissiveIntensity: 0.3 } } });
+  const mats = [];
+  inst.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; mats.push(o.material); if (o.material.isMeshBasicMaterial) { o.material.transparent = true; o.material.opacity = 0.93; } } });
+  const root = new THREE.Group(), sides = [];
+  for (const sx of [1, -1]) {
+    const pivot = new THREE.Group(), side = sx === 1 ? inst : inst.clone();
+    side.scale.x = sx; pivot.add(side);
+    pivot.position.set(sx * 0.09, 0.4, -0.2);
+    pivot.rotation.y = sx * 0.55; pivot.rotation.z = sx * 0.12;
+    root.add(pivot);
+    sides.push({ pivot, sx, base: 0.55, op: 1 });
+  }
+  root.scale.setScalar(0.95);
+  (rig.torso || rig.root).add(root);
+  return { group: root, sides, fx, col, glowCol, geo: { dispose() {} }, glb: true, mats };
+}
+
 function buildWings(fx, rig) {
+  try { const g = buildWingsGlb(fx, rig); if (g) return g; } catch (e) { console.warn('[V11] ailes GLB indisponibles', e); }
   const root = new THREE.Group();
   const col = new THREE.Color(fx.color || 0xffffff);
   const glowCol = new THREE.Color(fx.glow || fx.color || 0xffffff);
@@ -141,9 +167,11 @@ export function updateCosmetics(rig, dt, speed = 0) {
     const w = f.wings, flap = Math.sin(t * (speed > 0.5 ? 7 : 2.2)) * (speed > 0.5 ? 0.28 : 0.1);
     for (const s of w.sides) {
       s.pivot.rotation.y = s.sx * (s.base + flap);
+      if (w.glb) continue;
       if (w.fx.prism) { prismColor(t, 0, s.body.material.color); prismColor(t, 0.25, s.halo.material.color); }
       s.halo.material.opacity = (0.28 + 0.14 * Math.sin(t * 2.6)) * s.op;
     }
+    if (w.glb && w.fx.prism) for (const m of w.mats) prismColor(t, 0, m.color);
   }
   if (f.pet) updatePet(f.pet, rig, dt, t);
   if (f.trail) {
@@ -208,7 +236,8 @@ function restoreSkin(rig) {
 }
 
 function applySkin(rig, fx) {
-  const sm = rig.skinMats; if (!sm) return; // modèle 3D importé : pas de skin
+  const sm = rig.skinMats;
+  if (!sm) { if (fx.head && rig.head && rig.glb) buildHeadgear(rig, fx.head); return; }   // modèle 3D importé : pas de recoloration, mais les couvre-chefs 3D se posent
   const paint = (m, hex, glow) => {
     if (!m || hex == null) return;
     saveMat(rig, m);
@@ -230,11 +259,20 @@ function applySkin(rig, fx) {
   if (fx.head && rig.head) buildHeadgear(rig, fx.head);
 }
 
+const HEAD_GLB = { crown: 'cos_couronne', halo: 'cos_halo', horns: 'cos_cornes', catears: 'cos_oreilles_chat', wolfears: 'cos_oreilles_loup', witchhat: 'cos_chapeau_sorciere', pumpkin: 'cos_citrouille' };
 function buildHeadgear(rig, kind) {
   const head = rig.head, added = [], hidden = [];
   const add = (o) => { head.add(o); added.push(o); return o; };
   const mk = (geo, mat, x = 0, y = 0, z = 0, parent = null) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; (parent ? parent.add(m) : add(m)); return m; };
   const gold = () => stdMat(0xffd34a, { roughness: 0.3, metalness: 0.85, emissive: 0x553300, emissiveIntensity: 0.4 });
+  const gk = HEAD_GLB[kind];
+  if (gk && ModelLibrary.hasTown([gk])) {   // V11 : modèle 3D (.glb) ; sinon formes procédurales ci-dessous
+    if (kind === 'pumpkin') for (const ch of head.children) { if (ch.visible) { ch.visible = false; hidden.push(ch); } }
+    const m = add(ModelLibrary.townInstance(gk, { shadow: true }));
+    m.traverse((o) => { o.frustumCulled = false; });
+    if (kind === 'pumpkin') { m.position.y = 0.03; if (rig.glb) m.scale.setScalar(1.15); }
+    rig.skinHead = { added, hidden }; return;
+  }
   if (kind === 'crown') {
     const g = add(new THREE.Group()); g.position.y = 0.13;
     const m = gold();
@@ -287,7 +325,84 @@ function prismMats(group) {
   return arr;
 }
 
+// V11 — familiers en modèles 3D (.glb) : corps / tête / pattes / queue / ailes séparés, les mêmes crochets d'animation que le modèle procédural.
+const PET_QUAD = { cat: ['chat', 1.2], fox: ['renard', 1.35], wolf: ['loup', 1.5], bunny: ['lapin', 1.0], unicorn: ['licorne', 1.6] };
+const PET_WING = { owl: ['plume', 0.8, 0.28, -0.02], bird: ['plume', 1.0, 0.26, 0], bat: ['chauve', 1.1, 0.03, 0], dragon: ['chauve', 0.93, 0.3, 0], fairy: ['fee', 0.6, 0.07, -0.02] };
+const PET_BODY = { owl: 'hibou', bird: 'oiseau', bat: 'chauve', dragon: 'dragon', fairy: 'fee', golem: 'golem', spider: 'araignee', pumpkin: 'citrouille' };
+function buildPetGlb(fx, rig) {
+  const kind = fx.kind, ML = ModelLibrary;
+  const quad = PET_QUAD[kind]; const glowy = kind === 'bird' && fx.color === 0xff8a1a;
+  const body = quad ? null : (kind === 'bird' && glowy ? 'phenix' : PET_BODY[kind]);
+  if (!quad && !body) return null;
+  const need = quad ? ['corps', 'tete', 'patte', 'queue'].map((x) => `cos_fam_${quad[0]}_${x}`) : [`cos_fam_${body}`];
+  const wing = PET_WING[kind]; if (wing) need.push(`cos_fam_aile_${wing[0]}`);
+  if (kind === 'golem') need.push('cos_fam_golem_patte'); if (kind === 'spider') need.push('cos_fam_araignee_patte');
+  if (!ML.hasTown(need)) return null;
+  const col = fx.color ?? 0xffffff, tip = fx.tip ?? col, eyeC = fx.eye ?? 0x151015;
+  const glowHex = kind === 'unicorn' ? 0xff9ad8 : kind === 'golem' ? tip : kind === 'fairy' ? 0xcff6ff : null;
+  const mats = [];
+  const make = (k, opt = {}) => {
+    const tint = opt.tint || { wall: col, roof: tip, trim: eyeC };
+    const inst = ML.townInstance(k, { tint, shadow: opt.shadow !== false, ownGlow: true, matOverride: glowy ? { flat: { color: 0xffffff, emissive: 0xff5a00, emissiveIntensity: 0.45 } } : null });
+    inst.traverse((o) => {
+      if (!o.isMesh) return;
+      o.frustumCulled = false;
+      if (o.material.isMeshBasicMaterial) {
+        const gh = opt.glow ?? glowHex; if (gh != null) o.material.color.set(gh);
+        o.material.transparent = !!opt.alpha; if (opt.alpha) { o.material.opacity = opt.alpha; o.material.depthWrite = false; }
+        mats.push(o.material);
+      }
+    });
+    return inst;
+  };
+  const group = new THREE.Group();
+  const p = { group, fx, kind, legs: [], wings: [], hover: 0, bounce: 0, spin: 0, scale: 1, pos: new THREE.Vector3(), init: false, face: 0, speed: 0, tailRef: null };
+  const place = (o, x, y, z, parent = group) => { o.position.set(x, y, z); parent.add(o); return o; };
+  const mirror = (k, sx, opt) => { const i = make(k, opt); i.scale.x = sx; return i; };
+  if (quad) {
+    const [nm, L] = quad;
+    group.add(make(`cos_fam_${nm}_corps`));
+    const head = place(new THREE.Group(), 0, 0.3, L * 0.15 + 0.06); head.add(make(`cos_fam_${nm}_tete`));
+    for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) { const lg = place(new THREE.Group(), x * 0.07, 0.12, z * 0.12 * L * 0.8); lg.add(make(`cos_fam_${nm}_patte`)); p.legs.push(lg); }
+    const tl = place(new THREE.Group(), 0, 0.24, -L * 0.16); tl.add(make(`cos_fam_${nm}_queue`));
+    p.tailRef = tl; p.headRef = head;
+    if (kind === 'unicorn') p.scale = 1.1;
+  } else {
+    group.add(make(`cos_fam_${body}`, kind === 'pumpkin' ? { glow: null } : {}));
+    if (kind === 'owl') p.hover = 0.9;
+    if (kind === 'bird') p.hover = 1.0;
+    if (kind === 'bat') { p.hover = 1.2; p.fast = 1.6; }
+    if (kind === 'dragon') p.hover = 0.85;
+    if (kind === 'fairy') { p.hover = 1.35; p.fast = 2.2; }
+    if (kind === 'golem') { p.scale = 0.95; for (const sx of [-1, 1]) { const lg = place(new THREE.Group(), sx * 0.08, 0.17, 0); lg.add(make('cos_fam_golem_patte')); p.legs.push(lg); } }
+    if (kind === 'spider') for (const sx of [-1, 1]) for (let i = 0; i < 4; i++) { const lg = place(new THREE.Group(), sx * 0.07, 0.16, 0.08 - i * 0.07); lg.add(mirror('cos_fam_araignee_patte', sx)); lg.userData.base = sx; lg.rotation.y = sx * (0.5 - i * 0.28); p.legs.push(lg); }
+    if (kind === 'pumpkin') {
+      const bl = place(new THREE.Group(), 0, 0.18, 0); bl.scale.set(1.1, 0.9, 1.05);
+      bl.add(group.children[0]); group.add(bl); p.blob = bl; p.bounce = 1;
+      if (fx.crown && ML.hasTown(['cos_couronne'])) { const cr = make('cos_couronne'); cr.scale.setScalar(0.62); cr.position.y = 0.1; bl.add(cr); }
+    }
+  }
+  if (wing) {
+    const [wk, size, wy, wz] = wing;
+    const wt = kind === 'dragon' ? { wall: tip, roof: col, trim: col } : kind === 'fairy' ? null : { wall: col, roof: tip, trim: eyeC };
+    for (const sx of [-1, 1]) {
+      const pv = place(new THREE.Group(), sx * 0.07, wy, wz);
+      const w = make(`cos_fam_aile_${wk}`, { tint: wt || undefined, glow: kind === 'fairy' ? 0xffffff : undefined, alpha: kind === 'fairy' ? 0.65 : 0 });
+      w.scale.set(sx * size, size, size); pv.add(w); p.wings.push({ pv, sx });
+    }
+  }
+  p.prism = fx.prism ? mats : null;
+  group.scale.setScalar(p.scale * 1.3);
+  group.visible = false;
+  return p;
+}
+
 function buildPet(fx, rig) {
+  try { const g = buildPetGlb(fx, rig); if (g) { if (fx.kind === 'fairy') { /* halo lumineux : effet, conservé procédural */ g.halo = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), new THREE.MeshBasicMaterial({ color: fx.tip ?? fx.color, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false })); g.halo.position.set(0, 0.04, 0); g.group.add(g.halo); } return g; } } catch (e) { console.warn('[V11] familier GLB indisponible', e); }
+  return buildPetProc(fx, rig);
+}
+
+function buildPetProc(fx, rig) {
   const group = new THREE.Group();
   const col = fx.color ?? 0xffffff, tip = fx.tip ?? col, eyeC = fx.eye ?? 0x151015;
   const body = stdMat(col, { roughness: 0.75 });
