@@ -330,6 +330,14 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 
 /* Emplacements de compétences (barre en jeu + écran des compétences) */
 .skill-slot { position: relative; flex: 0 0 auto; width: 42px; height: 42px; border-radius: 8px; background: radial-gradient(circle at 50% 30%, #25376a, #0f1730); border: 1px solid rgba(226, 184, 102, 0.45); overflow: hidden; color: #fff; padding: 0; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35), 0 2px 5px rgba(0, 0, 0, 0.4); }
+/* V10.45 — barre de compétences PC : cases plus grandes, cadre de métal biseauté, touche en « keycap » */
+#skillbar .skill-slot { width: 56px; height: 56px; border-radius: 7px; background: #0a0e1b; border: 2px solid #8c6b2f; box-shadow: inset 0 0 0 1px rgba(255, 226, 150, 0.35), inset 0 -6px 10px rgba(0, 0, 0, 0.45), 0 3px 8px rgba(0, 0, 0, 0.55); }
+#skillbar .skill-slot:hover { border-color: #e2b866; }
+#skillbar .skill-slot .sk-icon { display: block; width: 100%; height: 100%; font-size: inherit; }
+#skillbar .skill-slot .sk-ico { width: 100%; height: 100%; display: flex; }
+#skillbar .skill-slot .sk-ico svg { filter: none; }
+#skillbar .skill-slot .sk-key { top: auto; bottom: 3px; left: 3px; padding: 0 5px; font-size: 11px; line-height: 15px; color: #1d1a14; background: linear-gradient(#f1ede2, #aaa496); border-radius: 3px; box-shadow: 0 1px 0 #4a4538, 0 0 0 1px rgba(0, 0, 0, 0.5); text-shadow: none; opacity: 1; z-index: 2; }
+#skillbar .skill-slot-empty { background: rgba(8, 12, 26, 0.45); border: 2px dashed rgba(226, 184, 102, 0.3); box-shadow: none; }
 .skill-slot:active { transform: scale(0.94); }
 .skill-slot-empty { background: rgba(255, 255, 255, 0.03); border-style: dashed; border-color: rgba(226, 184, 102, 0.25); box-shadow: none; }
 .sk-icon { font-size: 22px; }
@@ -1203,7 +1211,8 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .ic-s { display: none; }
 #btn-menu { display: none; }
 .touch-on #side-buttons #btn-menu.tbtn.small { display: flex; }
-.sk-ico .sk-art { display: none; }
+.sk-ico .sk-art { display: inline; }   /* V10.45 : l'illustration (matière acier, or, flammes…) remplace aussi l'émoji sur PC */
+.sk-ico .sk-emo { display: none; }
 .touch-on .ic-e { display: none; }
 .touch-on .ic-s { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 .touch-on .ic-s .ico { width: 56%; height: 56%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
