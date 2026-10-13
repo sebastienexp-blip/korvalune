@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { grassTuftGeometry, flowerGeometry } from './Foliage.js';
 import { addSway } from './Safe.js';
+import { ModelLibrary } from './ModelLibrary.js';
 import { fbm } from '../world/noise.js';
 import { CONFIG } from '../core/config.js';
 
@@ -25,7 +26,9 @@ export class GrassField {
     const total = cells * cells * density;
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: THREE.DoubleSide });
     addSway(mat, { amp: 0.14, height: 0.6, fadeR: this.R - 1, speed: 1.9 });
-    this.grass = new THREE.InstancedMesh(grassTuftGeometry(), mat, total);
+    const glbGrass = ModelLibrary.nature && ModelLibrary.nature.grass ? ModelLibrary.natureGeometry('grass') : null;
+    if (glbGrass) ModelLibrary.natureMaterial(mat);
+    this.grass = new THREE.InstancedMesh(glbGrass || grassTuftGeometry(), mat, total);
     this.grass.frustumCulled = false;
     this.grass.receiveShadow = false;
     this.grass.castShadow = false;

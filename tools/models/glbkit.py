@@ -17,6 +17,7 @@ class Mesh:
         self.J = np.zeros((len(self.V), 4), np.int64) if J is None else J
         self.W = np.tile([1.0, 0, 0, 0], (len(self.V), 1)) if W is None else W
         self.C = np.ones((len(self.V), 4)) if C is None else np.asarray(C, np.float64).reshape(-1, 4)
+        self.N = None   # normales imposées (facultatif) : feuillage à normales « arrondies »
 
     def copy(self):
         return Mesh(self.V.copy(), self.F.copy(), self.UV.copy(), self.J.copy(), self.W.copy(), self.C.copy())
@@ -33,11 +34,15 @@ class Mesh:
 def concat(meshes):
     meshes = [m for m in meshes if m is not None and len(m.V)]
     off = np.cumsum([0] + [len(m.V) for m in meshes])[:-1]
-    return Mesh(np.vstack([m.V for m in meshes]),
+    anyN = any(getattr(m, 'N', None) is not None for m in meshes)
+    out = Mesh(np.vstack([m.V for m in meshes]),
                 np.vstack([m.F + o for m, o in zip(meshes, off)]),
                 np.vstack([m.UV for m in meshes]),
                 np.vstack([m.J for m in meshes]),
                 np.vstack([m.W for m in meshes]), np.vstack([m.C for m in meshes]))
+    if anyN:
+        out.N = np.vstack([m.N if getattr(m, 'N', None) is not None else normals(m) for m in meshes])
+    return out
 
 
 def mirror_x(mesh, bone_swap):
@@ -374,7 +379,7 @@ def _img_bytes(arr, fmt='PNG', quality=90):
 
 class Material:
     def __init__(self, name, base=None, normal=None, orm=None, factor=(1, 1, 1, 1), metal=1.0, rough=1.0,
-                 emissive=(0, 0, 0), emissive_tex=None, normal_scale=1.0, double_sided=False, alpha_mode=None, cutoff=0.5, texkey=None):
+                 emissive=(0, 0, 0), emissive_tex=None, normal_scale=1.0, double_sided=False, alpha_mode=None, cutoff=0.5, texkey=None, base_fmt='JPEG'):
         self.__dict__.update(locals())
         self.texkey = texkey or name
 
@@ -434,7 +439,7 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
         pbr = {'baseColorFactor': list(m.factor), 'metallicFactor': m.metal, 'roughnessFactor': m.rough}
         g = {'name': m.name, 'pbrMetallicRoughness': pbr}
         if m.base is not None:
-            pbr['baseColorTexture'] = {'index': add_tex(m.base, m.texkey + '_basecolor', 'JPEG')}
+            pbr['baseColorTexture'] = {'index': add_tex(m.base, m.texkey + '_basecolor', m.base_fmt)}
         if m.orm is not None:
             pbr['metallicRoughnessTexture'] = {'index': add_tex(m.orm, m.texkey + '_metalrough', 'PNG')}
             g['occlusionTexture'] = {'index': tex_cache[m.texkey + '_metalrough'], 'strength': 1.0}
@@ -482,7 +487,7 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
         F = m.F
         area = np.linalg.norm(np.cross(m.V[F[:, 1]] - m.V[F[:, 0]], m.V[F[:, 2]] - m.V[F[:, 0]]), axis=1)
         m.F = F[area > 1e-12]
-        N = normals(m)
+        N = m.N if getattr(m, 'N', None) is not None else normals(m)
         s = m.W.sum(axis=1, keepdims=True); s[s == 0] = 1
         W = (m.W / s).astype(np.float32)
         attrs = {

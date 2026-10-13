@@ -95,12 +95,48 @@ export const ModelLibrary = {
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
   },
 
+  nature: {},          // décor statique GLB (V10.41 Lot 5) : kind[_lo] → gltf
   gear: { armor: {}, weapons: {}, mounts: {} },   // mounts[kind] : montures GLB (cheval, griffon)   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
+
+  /** Géométrie fusionnée (un seul maillage, attributs position/normal/uv/color) d'un décor GLB, ou null si absent. */
+  natureGeometry(kind, lod = 'hi') {
+    const key = lod === 'lo' && this.nature[kind + '_lo'] ? kind + '_lo' : kind;
+    const g = this.nature[key];
+    if (!g) return null;
+    this._natGeo ||= {};
+    if (this._natGeo[key]) return this._natGeo[key];
+    let mesh = null;
+    g.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
+    if (!mesh) return null;
+    const geo = mesh.geometry.clone();
+    const c = geo.getAttribute('color');
+    const n = geo.getAttribute('position').count;
+    const col = new Float32Array(n * 3).fill(1);
+    if (c) for (let i = 0; i < n; i++) { col[i * 3] = c.getX(i); col[i * 3 + 1] = c.getY(i); col[i * 3 + 2] = c.getZ(i); }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    this._natMap ||= mesh.material && mesh.material.map;
+    return (this._natGeo[key] = geo);
+  },
+
+  /** Prépare un matériau (vertexColors, éventuellement balancement) pour l'atlas de nature : texture, découpe des feuilles, normales de feuillage non retournées. */
+  natureMaterial(mat) {
+    if (!this._natMap) return mat;
+    mat.map = this._natMap; mat.alphaTest = 0.5; mat.side = THREE.DoubleSide; mat.vertexColors = true;
+    const prev = mat.onBeforeCompile, key = mat.customProgramCacheKey ? mat.customProgramCacheKey() : '';
+    mat.onBeforeCompile = (sh, r) => {
+      if (prev) prev(sh, r);
+      sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal *= faceDirection;');
+    };
+    mat.customProgramCacheKey = () => key + '_nat';
+    mat.needsUpdate = true;
+    return mat;
+  },
 
   _register(file, gltf) {
     const gm = (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {};
     if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot] = gltf; return; }
     if (gm.type === 'mount' && gm.kind) { this.gear.mounts[gm.kind] = { gltf, meta: gm }; return; }
+    if (gm.type === 'nature' && gm.kind) { this.nature[gm.kind + (gm.lod === 'lo' ? '_lo' : '')] = gltf; return; }
     if (gm.type === 'weapon' && gm.visual) { this.gear.weapons[gm.visual] = gltf; return; }
     let hasMesh = false;
     gltf.scene.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) hasMesh = true; });

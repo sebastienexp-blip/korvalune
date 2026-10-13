@@ -10,8 +10,8 @@ const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true
 r.setSize(W, H); r.setPixelRatio(1); r.shadowMap.enabled = true; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05;
 document.body.appendChild(r.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x262431);
-scene.fog = new THREE.Fog(0x262431, 8, 20);
-const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 50);
+scene.fog = new THREE.Fog(0x262431, +q.get("fogn") || 8, +q.get("fogf") || 20);
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 200);
 // éclairage : clair de lune + contre-jour chaud + environnement
 const pm = new THREE.PMREMGenerator(r);
 const env = new THREE.Scene(); env.background = new THREE.Color(0x30304a);
@@ -21,14 +21,15 @@ scene.environment = pm.fromScene(env, 0.04).texture; scene.environmentIntensity 
 const key = new THREE.DirectionalLight(0xbfc9ff, 3.2); key.position.set(-3, 5, 4); key.castShadow = true; scene.add(key);
 const rim = new THREE.DirectionalLight(0xff9a60, 2.4); rim.position.set(4, 2, -3); scene.add(rim);
 scene.add(new THREE.HemisphereLight(0x8a8ab8, 0x3a3028, 0.9));
-const ground = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshStandardMaterial({ color: 0x1b1a22, roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const ground = new THREE.Mesh(new THREE.CircleGeometry(+q.get("gr") || 6, 48), new THREE.MeshStandardMaterial({ color: 0x1b1a22, roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 const files = q.get('f').split(','); const gap = +q.get('gap') || 1.4;
 const clipN = (q.get('clip') || '').split(','); const t = +q.get('t') || 0;
 let gltf, root;
 for (let i = 0; i < files.length; i++) {
   const g = await new GLTFLoader().loadAsync(files[i]);
   const r0 = g.scene; r0.position.x = (i - (files.length - 1) / 2) * gap; scene.add(r0);
-  r0.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+  r0.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false;
+    if (o.material && o.material.name === 'nature') { const m = o.material; m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal *= faceDirection;'); }; m.customProgramCacheKey = () => 'natfix'; } } });
   const mx = new THREE.AnimationMixer(r0);
   const cn = clipN[i] || clipN[0];
   if (cn) { const c = g.animations.find(a => a.name === cn); if (c) { const a = mx.clipAction(c); a.play(); mx.setTime(t); } }

@@ -8,6 +8,7 @@ import { isSafeMode, addSway } from '../visual/Safe.js';
 import { groundDetailTexture, waterSparkleTexture, safeTexture } from '../visual/Textures.js';
 import * as FO from '../visual/Foliage.js';
 import { GrassField } from '../visual/GrassField.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 import { REGIONS, REGION_INDEX, regionField, coastD } from './Continent.js';
 import { planLandmarks, buildLandmarks } from './Landmarks.js';
 
@@ -458,12 +459,18 @@ export class World {
   _scatterV25() {
     const lod = this.vq && this.vq.trees <= 0.3 ? 'lo' : 'hi';
     // 1) Géométries d'abord : si l'une échoue on retombe sur le mode classique sans rien avoir posé
+    // V10.41 : décor GLB (atlas partagé) si tout le jeu de modèles est présent, sinon rendu procédural d'origine
+    const NK = ['pine', 'oak_green', 'oak_light', 'oak_autumn', 'birch', 'dead', 'boulder1', 'boulder7', 'cluster', 'bush', 'stump', 'log', 'mushroom', 'reed'];
+    const glb = NK.every((k) => ModelLibrary.nature && ModelLibrary.nature[k]);
+    const NG = (k, fb) => (glb && ModelLibrary.natureGeometry(k, lod)) || fb();
+    const nat = (m) => (glb ? ModelLibrary.natureMaterial(m) : m);
+    this._glbNature = glb;
     const G = {
-      pine: FO.pineGeometry(lod), oak: FO.oakGeometry(lod, 'green'), light: FO.oakGeometry(lod, 'light'),
-      autumn: FO.oakGeometry(lod, 'autumn'), birch: FO.birchGeometry(lod), dead: FO.deadTreeGeometry()
+      pine: NG('pine', () => FO.pineGeometry(lod)), oak: NG('oak_green', () => FO.oakGeometry(lod, 'green')), light: NG('oak_light', () => FO.oakGeometry(lod, 'light')),
+      autumn: NG('oak_autumn', () => FO.oakGeometry(lod, 'autumn')), birch: NG('birch', () => FO.birchGeometry(lod)), dead: NG('dead', () => FO.deadTreeGeometry())
     };
-    const rocksG = [FO.boulderGeometry(1), FO.boulderGeometry(7), FO.rockClusterGeometry()];
-    const bushG = FO.bushGeometry(lod), stumpG = FO.stumpGeometry(), logG = FO.logGeometry(), mushG = FO.mushroomGeometry(), reedG = FO.reedGeometry();
+    const rocksG = [NG('boulder1', () => FO.boulderGeometry(1)), NG('boulder7', () => FO.boulderGeometry(7)), NG('cluster', () => FO.rockClusterGeometry())];
+    const bushG = NG('bush', () => FO.bushGeometry(lod)), stumpG = NG('stump', () => FO.stumpGeometry()), logG = NG('log', () => FO.logGeometry()), mushG = NG('mushroom', () => FO.mushroomGeometry()), reedG = NG('reed', () => FO.reedGeometry());
 
     const rnd = this.rand, half = CONFIG.world.bound - 8;
     const wl = this.waterLevel, tr = CONFIG.world.townRadius;
@@ -509,6 +516,7 @@ export class World {
     }
     const treeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
     addSway(treeMat, { amp: 0.16, height: 8, speed: 1.1 });
+    nat(treeMat);
     const dummy = new THREE.Object3D(), col = new THREE.Color();
     for (const sp of SP) {
       for (const list of per[sp]) {
@@ -543,7 +551,7 @@ export class World {
     }
     rocks.forEach((list, k) => {
       if (!list.length) return;
-      const mesh = new THREE.InstancedMesh(rocksG[k], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }), list.length);
+      const mesh = new THREE.InstancedMesh(rocksG[k], nat(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })), list.length);
       list.forEach((r, i) => {
         const sc = k === 2 ? r.s * 0.8 : r.s;
         dummy.position.set(r.x, r.y + sc * 0.05, r.z);
@@ -569,6 +577,7 @@ export class World {
     }
     const bushMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 });
     addSway(bushMat, { amp: 0.07, height: 1.2, speed: 1.4 });
+    nat(bushMat);
     const bushMesh = new THREE.InstancedMesh(bushG, bushMat, bushes.length);
     bushes.forEach((b, i) => {
       dummy.position.set(b.x, b.y, b.z);
@@ -607,12 +616,13 @@ export class World {
       this.group.add(mesh);
     };
     const forest = (x, z) => fbm(x * 0.02 + 200, z * 0.02 + 200, 3) > 0.46;
-    const vcMat = () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
+    const vcMat = () => nat(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
     scatterProps(stumpG, 170, 5000, (x, z, h) => valid(x, z, h, 8) && forest(x, z), (o, d) => { const s = 0.7 + o.v * 0.9; d.scale.set(s, s * (0.8 + o.v * 0.5), s); this.addCircle(o.x, o.z, 0.35 * s); }, vcMat());
     scatterProps(logG, 110, 5000, (x, z, h) => valid(x, z, h, 8) && forest(x, z), (o, d) => { const s = 0.8 + o.v * 0.8; d.scale.setScalar(s); }, vcMat());
     scatterProps(mushG, 320, 6000, (x, z, h) => valid(x, z, h, 6) && forest(x, z), (o, d) => { const s = 0.7 + o.v * 1.1; d.scale.setScalar(s); }, vcMat(), false);
-    const reedMat = vcMat();
+    const reedMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
     addSway(reedMat, { amp: 0.1, height: 1.2, speed: 1.6 });
+    nat(reedMat);
     scatterProps(reedG, 260, 14000, (x, z, h) => h > wl - 0.25 && h < wl + 0.55 && Math.hypot(x, z) > tr + 8, (o, d) => { const s = 0.8 + o.v * 0.8; d.scale.set(s, s, s); }, reedMat, false);
     this._v25Foliage = true;
     try { this._scatterBiomeProps(); } catch (e) { console.warn('[V7] décors de région indisponibles', e); }

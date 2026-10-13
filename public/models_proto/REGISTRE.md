@@ -29,3 +29,7 @@ Originales, générées par `tools/models/build_beasts.py` : `creatures/bete_{bo
 
 ## Montures (Lot 4)
 Originales : `montures/monture_cheval.glb` (14 780 tri, 29 os) et `montures/monture_griffon.glb` (17 416 tri, 35 os), textures `montures/tex/` (poil neutre teintable, cuir, drap, argent). Générées par `tools/models/build_horse.py` et `build_griffon.py`. Le héros embarque l'animation `ride`.
+
+## Nature (Lot 5)
+Originale, générée par `tools/models/build_nature.py` (géométries `nature_geo.py`, atlas `nature_tex.py`). 21 fichiers `nature/nature_*.glb` statiques (aucun squelette), **un seul matériau « nature » et un seul atlas** `nature/tex/nature_basecolor.png` (1024×512, 8 cases : écorce, bouleau, roche, bois mort, frondes de pin, feuillage, herbe, champignon ; découpe alpha). La teinte vient des couleurs de sommets (essence / saison) ; les feuillages ont des normales « arrondies ».
+Pin, chêne (vert / clair / automne), bouleau, buisson : variantes `_lo` (≈ 2× moins de triangles) utilisées quand la qualité des arbres est basse. Total ≈ 0,4 Mo + atlas 0,3 Mo.
