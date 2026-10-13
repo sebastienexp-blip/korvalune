@@ -77,14 +77,20 @@ export function buildTown(world) {
   const bankGroup = new THREE.Group();
   bankGroup.position.set(bx, by + 0.42, bz);
   g.add(bankGroup);
-  const bankWood = new THREE.MeshStandardMaterial({ color: 0x4a3420, roughness: 0.85 });
-  const bankTrim = new THREE.MeshStandardMaterial({ color: 0x8a6a30, roughness: 0.4, metalness: 0.5 });
-  const bBase = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.6, 0.72), bankWood);
-  bBase.position.y = 0.3; bBase.castShadow = true; bankGroup.add(bBase);
-  const bLid = new THREE.Mesh(new THREE.BoxGeometry(1.14, 0.42, 0.76), bankWood);
-  bLid.position.set(0, 0.62, -0.32); bLid.rotation.x = -0.05; bLid.castShadow = true; bankGroup.add(bLid);
-  const bTrim = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.07, 0.78), bankTrim);
-  bTrim.position.y = 0.62; bankGroup.add(bTrim);
+  let bLid;
+  if (ModelLibrary.hasTown(['coffre_base', 'coffre_couvercle'])) {
+    const cb = ModelLibrary.townInstance('coffre_base'); cb.scale.set(1.158, 1.2, 1.2); bankGroup.add(cb);
+    bLid = ModelLibrary.townInstance('coffre_couvercle'); bLid.scale.set(1.158, 1.2, 1.2); bLid.position.set(0, 0.6, -0.36); bankGroup.add(bLid);
+  } else {
+    const bankWood = new THREE.MeshStandardMaterial({ color: 0x4a3420, roughness: 0.85 });
+    const bankTrim = new THREE.MeshStandardMaterial({ color: 0x8a6a30, roughness: 0.4, metalness: 0.5 });
+    const bBase = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.6, 0.72), bankWood);
+    bBase.position.y = 0.3; bBase.castShadow = true; bankGroup.add(bBase);
+    bLid = new THREE.Mesh(new THREE.BoxGeometry(1.14, 0.42, 0.76), bankWood);
+    bLid.position.set(0, 0.62, -0.32); bLid.rotation.x = -0.05; bLid.castShadow = true; bankGroup.add(bLid);
+    const bTrim = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.07, 0.78), bankTrim);
+    bTrim.position.y = 0.62; bankGroup.add(bTrim);
+  }
   const bGlow = new THREE.PointLight(0x6ab0ff, 1.1, 5, 2);
   bGlow.position.y = 0.9; bankGroup.add(bGlow);
   add(new THREE.CylinderGeometry(1.5, 1.7, 0.1, 16), stone, bx, by + 0.05, bz);
@@ -99,6 +105,8 @@ export function buildTown(world) {
 }
 
 // V10.41 : maisons du kit GLB (6 variantes : 2 orientations de faîtage × 3 hauteurs), teintes de murs/toit par sommets
+const DIST_KINDS = ['etal_armes', 'etal_armures', 'etal_potions', 'etal_fruits', 'etal_tissus', 'etal_curios', 'fontaine', 'etabli_forge', 'etabli_alchimie', 'etabli_enchant', 'etabli_armurier', 'cercle_monolithe', 'ecurie_abri', 'barriere', 'auge', 'portail_regions', 'torchere'];
+const CITY_KINDS = ['mur', 'tour_coin', 'tour_porte', 'tour_chateau_coin', 'tour_chateau_porte', 'tour_carree', 'linteau_ville', 'linteau_chateau', 'banniere_porte', 'donjon'];
 const HOUSE_KINDS = ['long', 'pignon'].flatMap((o) => ['a', 'b', 'c'].map((h) => `maison_${o}_${h}`));
 function houseGlb(world, g, H) {
   const y = world.heightAt(H.x, H.z);
@@ -351,20 +359,32 @@ function buildCityLayout(world, g, T, stone, wood, add) {
   const roofRed = new THREE.MeshStandardMaterial({ color: 0x5a2a26, map: T.roof || null, roughness: 0.85 });
   const TH = 2.0, WH = 6.4;
   const merlons = [];
+  const glbCity = ModelLibrary.hasTown(CITY_KINDS);
+  const wallSegs = [];
+  const placeGlb = (kind, x, y, z, ry = 0, opts = {}) => {
+    const o = ModelLibrary.townInstance(kind, { windowMat: world.windowMat, ...opts });
+    o.position.set(x, y, z); o.rotation.y = ry; g.add(o); return o;
+  };
   const run = (x0, z0, x1, z1, wh = WH, th = TH) => {
     const alongX = Math.abs(x1 - x0) > Math.abs(z1 - z0);
     const len = Math.hypot(x1 - x0, z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
     if (len < 0.5) return;
-    add(new THREE.BoxGeometry(alongX ? len : th, wh, alongX ? th : len), wallMat, cx, y0 + wh / 2, cz).receiveShadow = true;
+    if (glbCity) {
+      const ns = Math.max(1, Math.round(len / 6));
+      for (let i = 0; i < ns; i++) { const t = (i + 0.5) / ns; wallSegs.push({ x: x0 + (x1 - x0) * t, z: z0 + (z1 - z0) * t, ry: alongX ? 0 : Math.PI / 2, sx: len / ns / 6, sy: wh / 6.4, sz: th / 2 }); }
+    } else add(new THREE.BoxGeometry(alongX ? len : th, wh, alongX ? th : len), wallMat, cx, y0 + wh / 2, cz).receiveShadow = true;
     const n = Math.max(1, Math.round(len / 6));
     for (let i = 0; i < n; i++) {
       const t = (i + 0.5) / n;
       world.addBox(x0 + (x1 - x0) * t, z0 + (z1 - z0) * t, alongX ? len / n / 2 + 0.1 : th / 2, alongX ? th / 2 : len / n / 2 + 0.1, y0 - 1, y0 + wh + 1);
     }
+    if (glbCity) return;
     const m = Math.max(1, Math.floor(len / 2.4));
     for (let i = 0; i < m; i++) { const t = (i + 0.5) / m; merlons.push([x0 + (x1 - x0) * t, z0 + (z1 - z0) * t, alongX, wh, th]); }
   };
+  const TOWER_KIND = { '3.6|12': 'tour_coin', '2.5|10': 'tour_porte', '3.8|16': 'tour_chateau_coin', '2.6|12.5': 'tour_chateau_porte' };
   const tower = (x, z, r, h, roofMat, rr = r + 0.5) => {
+    if (glbCity && TOWER_KIND[`${r}|${h}`]) { placeGlb(TOWER_KIND[`${r}|${h}`], x, y0, z, (x * 7.3 + z * 3.1) % 6.28); world.addCircle(x, z, r + 0.2); return; }
     add(new THREE.CylinderGeometry(r, r * 1.1, h, 14), wallMat, x, y0 + h / 2, z);
     add(new THREE.CylinderGeometry(r + 0.45, r + 0.45, 0.5, 14), stone, x, y0 + h + 0.2, z);
     add(new THREE.ConeGeometry(rr, h * 0.38, 14), roofMat, x, y0 + h + 0.45 + h * 0.19, z);
@@ -388,6 +408,11 @@ function buildCityLayout(world, g, T, stone, wood, add) {
     }
     // linteau + arche au-dessus de la porte, bannière violette
     const lw = GW * 2 + 0.4;
+    if (glbCity) {
+      placeGlb('linteau_ville', gt.x, y0 + 6.5, gt.z, alongX ? 0 : Math.PI / 2);
+      placeGlb('banniere_porte', gt.x + (alongX ? 0 : (k === 'E' ? -1.2 : 1.2)), y0 + 2.3, gt.z + (alongX ? (k === 'N' ? 1.2 : -1.2) : 0), alongX ? 0 : Math.PI / 2);
+      continue;
+    }
     add(new THREE.BoxGeometry(alongX ? lw : TH + 0.6, 2.2, alongX ? TH + 0.6 : lw), wallMat, gt.x, y0 + 7.6, gt.z);
     const ban = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 4.2), new THREE.MeshStandardMaterial({ color: 0x5a2a9a, roughness: 0.9, side: THREE.DoubleSide }));
     ban.position.set(gt.x + (alongX ? 0 : (k === 'E' ? -1.2 : 1.2)), y0 + 4.4, gt.z + (alongX ? (k === 'N' ? 1.2 : -1.2) : 0));
@@ -396,8 +421,11 @@ function buildCityLayout(world, g, T, stone, wood, add) {
   }
   // tours intermédiaires carrées
   for (const [x, z] of [[-31, -H], [31, -H], [-31, H], [31, H], [H, -36], [H, 24], [-H, -36], [-H, 24]]) {
-    add(new THREE.BoxGeometry(4.6, 9, 4.6), wallMat, x, y0 + 4.5, z);
-    add(new THREE.BoxGeometry(5.2, 0.5, 5.2), stone, x, y0 + 9.2, z);
+    if (glbCity) placeGlb('tour_carree', x, y0, z, 0);
+    else {
+      add(new THREE.BoxGeometry(4.6, 9, 4.6), wallMat, x, y0 + 4.5, z);
+      add(new THREE.BoxGeometry(5.2, 0.5, 5.2), stone, x, y0 + 9.2, z);
+    }
     world.addBox(x, z, 2.4, 2.4, y0 - 1, y0 + 10);
   }
   // le château : enceinte intérieure + donjon central
@@ -410,31 +438,42 @@ function buildCityLayout(world, g, T, stone, wood, add) {
   run(C.x + C.gateHW, C.z + C.hd, C.x + C.hw, C.z + C.hd, CW, CTH);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) tower(C.x + sx * C.hw, C.z + sz * C.hd, 3.8, 16, roofBlue, 4.4);
   for (const s of [-1, 1]) tower(C.x + s * (C.gateHW + 2.4), C.z + C.hd, 2.6, 12.5, roofBlue, 3.2);
-  add(new THREE.BoxGeometry(C.gateHW * 2 + 0.4, 2.4, CTH + 0.8), wallMat, C.x, cy0 + 9.6, C.z + C.hd);   // linteau de la porte du château
+  if (glbCity) placeGlb('linteau_chateau', C.x, cy0 + 8.4, C.z + C.hd, 0);
+  else add(new THREE.BoxGeometry(C.gateHW * 2 + 0.4, 2.4, CTH + 0.8), wallMat, C.x, cy0 + 9.6, C.z + C.hd);   // linteau de la porte du château
   // donjon : grand corps central à étages, tourelles, toit en flèche
   const kx = C.x, kz = C.keepZ, kw = 18, kd = 12, kh = 21;
   const keepMat = new THREE.MeshStandardMaterial({ color: 0xc4c0b4, map: T.stone || null, roughness: 0.92 });
-  add(new THREE.BoxGeometry(kw, kh, kd), keepMat, kx, cy0 + kh / 2, kz);
-  add(new THREE.BoxGeometry(kw + 1.2, 0.8, kd + 1.2), stone, kx, cy0 + kh + 0.4, kz);
-  add(new THREE.BoxGeometry(kw + 1.2, 0.6, kd + 1.2), stone, kx, cy0 + 9.5, kz);
   world.addBox(kx, kz, kw / 2 + 0.3, kd / 2 + 0.3, cy0 - 1, cy0 + kh + 2);
-  const spire = add(new THREE.ConeGeometry(7.2, 11, 4), roofBlue, kx, cy0 + kh + 0.8 + 5.5, kz); spire.rotation.y = Math.PI / 4;
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-    const tx = kx + sx * (kw / 2 - 0.6), tz = kz + sz * (kd / 2 - 0.4);
-    add(new THREE.CylinderGeometry(1.7, 1.9, kh + 5, 10), keepMat, tx, cy0 + (kh + 5) / 2, tz);
-    add(new THREE.ConeGeometry(2.3, 4.6, 10), roofBlue, tx, cy0 + kh + 5 + 2.3, tz);
+  if (glbCity) placeGlb('donjon', kx, cy0, kz, 0);
+  else {
+    add(new THREE.BoxGeometry(kw, kh, kd), keepMat, kx, cy0 + kh / 2, kz);
+    add(new THREE.BoxGeometry(kw + 1.2, 0.8, kd + 1.2), stone, kx, cy0 + kh + 0.4, kz);
+    add(new THREE.BoxGeometry(kw + 1.2, 0.6, kd + 1.2), stone, kx, cy0 + 9.5, kz);
+    const spire = add(new THREE.ConeGeometry(7.2, 11, 4), roofBlue, kx, cy0 + kh + 0.8 + 5.5, kz); spire.rotation.y = Math.PI / 4;
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      const tx = kx + sx * (kw / 2 - 0.6), tz = kz + sz * (kd / 2 - 0.4);
+      add(new THREE.CylinderGeometry(1.7, 1.9, kh + 5, 10), keepMat, tx, cy0 + (kh + 5) / 2, tz);
+      add(new THREE.ConeGeometry(2.3, 4.6, 10), roofBlue, tx, cy0 + kh + 5 + 2.3, tz);
+    }
+    // portail et fenêtres éclairées du donjon (face sud)
+    add(new THREE.BoxGeometry(3.4, 5, 0.4), wood, kx, cy0 + 2.5, kz + kd / 2 + 0.1);
+    add(new THREE.CylinderGeometry(1.7, 1.7, 0.4, 14, 1, false, -Math.PI / 2, Math.PI).rotateX(-Math.PI / 2), wood, kx, cy0 + 5, kz + kd / 2 + 0.1);
+    for (const row of [0, 1, 2]) for (let i = -3; i <= 3; i++) {
+      if (row === 0 && Math.abs(i) < 1) continue;
+      add(new THREE.BoxGeometry(0.9, 1.6, 0.15), world.windowMat, kx + i * 2.3, cy0 + 4.2 + row * 5.2, kz + kd / 2 + 0.06).castShadow = false;
+    }
+    // grandes bannières du donjon
+    const kban = new THREE.MeshStandardMaterial({ color: 0x5a2a9a, roughness: 0.9, side: THREE.DoubleSide });
+    for (const sx of [-1, 1]) { const b = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 8), kban); b.position.set(kx + sx * 6.4, cy0 + 13, kz + kd / 2 + 0.2); g.add(b); }
   }
-  // portail et fenêtres éclairées du donjon (face sud)
-  add(new THREE.BoxGeometry(3.4, 5, 0.4), wood, kx, cy0 + 2.5, kz + kd / 2 + 0.1);
-  add(new THREE.CylinderGeometry(1.7, 1.7, 0.4, 14, 1, false, -Math.PI / 2, Math.PI).rotateX(-Math.PI / 2), wood, kx, cy0 + 5, kz + kd / 2 + 0.1);
-  for (const row of [0, 1, 2]) for (let i = -3; i <= 3; i++) {
-    if (row === 0 && Math.abs(i) < 1) continue;
-    add(new THREE.BoxGeometry(0.9, 1.6, 0.15), world.windowMat, kx + i * 2.3, cy0 + 4.2 + row * 5.2, kz + kd / 2 + 0.06).castShadow = false;
-  }
-  // grandes bannières du donjon
-  const kban = new THREE.MeshStandardMaterial({ color: 0x5a2a9a, roughness: 0.9, side: THREE.DoubleSide });
-  for (const sx of [-1, 1]) { const b = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 8), kban); b.position.set(kx + sx * 6.4, cy0 + 13, kz + kd / 2 + 0.2); g.add(b); }
 
+  // remparts GLB : un InstancedMesh par matériau pour tous les tronçons
+  if (glbCity && wallSegs.length) {
+    const ims = ModelLibrary.townInstanced('mur', wallSegs.length, { windowMat: world.windowMat, tint: { wall: 0xb4b0a4, roof: 0xffffff, trim: 0xffffff } });
+    const dm = new THREE.Object3D();
+    wallSegs.forEach((w, i) => { dm.position.set(w.x, y0, w.z); dm.rotation.set(0, w.ry, 0); dm.scale.set(w.sx, w.sy, w.sz); dm.updateMatrix(); for (const im of ims) im.setMatrixAt(i, dm.matrix); });
+    for (const im of ims) g.add(im);
+  }
   // créneaux : un seul draw call
   const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.9, 1), wallMat, merlons.length);
   const d = new THREE.Object3D();
@@ -481,6 +520,8 @@ function buildDistricts(world, g, T, stone, wood, add) {
   const iron = new THREE.MeshStandardMaterial({ color: 0x2c2e36, roughness: 0.5, metalness: 0.7 });
   const brass = new THREE.MeshStandardMaterial({ color: 0xc9a74a, roughness: 0.35, metalness: 0.8 });
   const darkWood = new THREE.MeshStandardMaterial({ color: 0x4a3420, roughness: 0.85 });
+  const glbDist = ModelLibrary.hasTown(DIST_KINDS);
+  const placeGlb = (kind, x, y, z, ry = 0) => { const o = ModelLibrary.townInstance(kind, { windowMat: world.windowMat }); o.position.set(x, y, z); o.rotation.y = ry; g.add(o); return o; };
   const halo = (x, y, z, color, size = 3, parent = g) => {
     if (!glowTex) return;
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
@@ -489,6 +530,12 @@ function buildDistricts(world, g, T, stone, wood, add) {
 
   // ---- étals du marché : comptoir, auvent rayé, marchandises
   const stall = (x, z, facing, ca, cb, goods) => {
+    if (glbDist && STALL_BY.has(goods)) {
+      const y = world.heightAt(x, z);
+      placeGlb(STALL_BY.get(goods), x, y, z, facing === 'n' ? Math.PI : 0);
+      world.addBox(x, z, 1.9, 0.6, y - 1, y + 3);
+      return;
+    }
     const y = world.heightAt(x, z), grp = new THREE.Group();
     grp.position.set(x, y, z); grp.rotation.y = facing === 'n' ? Math.PI : 0; g.add(grp);
     const a = (geo, mat, px, py, pz) => add(geo, mat, px, py, pz, grp);
@@ -512,23 +559,36 @@ function buildDistricts(world, g, T, stone, wood, add) {
   const cloth = (a) => { const cs = [0xc04a6a, 0x4a6ac0, 0xd0a030, 0x4aa070]; for (let i = 0; i < 4; i++) a(new THREE.BoxGeometry(0.75, 0.22, 0.55), new THREE.MeshStandardMaterial({ color: cs[i], roughness: 0.95 }), -1.2 + i * 0.8, 1.2, 0).castShadow = false; };
   const curios = (a) => { a(new THREE.SphereGeometry(0.26, 12, 10), new THREE.MeshStandardMaterial({ color: 0x8fd0ff, emissive: 0x3a7aaa, emissiveIntensity: 0.5, roughness: 0.2 }), -0.9, 1.45, 0); a(new THREE.OctahedronGeometry(0.22), new THREE.MeshStandardMaterial({ color: 0xc9a0ff, emissive: 0x6a3aaa, emissiveIntensity: 0.5 }), 0, 1.45, 0); a(new THREE.TorusGeometry(0.2, 0.05, 6, 12), brass, 0.9, 1.35, 0); };
   const MX = POS.market.x;
+  const fruitGoods = (a) => fruit(a, [0xd03a2a, 0xe0a020, 0x6aa030]);
+  const STALL_BY = new Map([[weapons, 'etal_armes'], [armors, 'etal_armures'], [potions, 'etal_potions'], [fruitGoods, 'etal_fruits'], [cloth, 'etal_tissus'], [curios, 'etal_curios']]);
   stall(POS.weaponsmith[0], POS.weaponsmith[1] + 1.1, 's', 0xb03030, 0xe8dcc0, weapons);
   stall(POS.armorsmith[0], POS.armorsmith[1] + 1.1, 's', 0x2f5f9a, 0xe8dcc0, armors);
   stall(POS.apothecary[0], POS.apothecary[1] + 1.1, 's', 0x3a8a4a, 0xe8dcc0, potions);
-  stall(POS.tilda[0] - 10, POS.tilda[1] - 1.1, 'n', 0xc09030, 0xe8dcc0, (a) => fruit(a, [0xd03a2a, 0xe0a020, 0x6aa030]));
+  stall(POS.tilda[0] - 10, POS.tilda[1] - 1.1, 'n', 0xc09030, 0xe8dcc0, fruitGoods);
   stall(POS.tilda[0], POS.tilda[1] - 1.1, 'n', 0xa04a8a, 0xe8dcc0, cloth);
   stall(POS.orsin[0], POS.orsin[1] - 1.1, 'n', 0x4a3a8a, 0xd0b060, curios);
   // fontaine du marché
   const fy = world.heightAt(MX, POS.market.z);
+  if (glbDist) placeGlb('fontaine', MX, fy, POS.market.z);
+  else {
   add(new THREE.CylinderGeometry(3.2, 3.5, 0.7, 20), stone, MX, fy + 0.35, POS.market.z);
   add(new THREE.CylinderGeometry(2.7, 2.7, 0.05, 20), new THREE.MeshStandardMaterial({ color: 0x2f7fb6, roughness: 0.1, metalness: 0.2 }), MX, fy + 0.68, POS.market.z);
   add(new THREE.CylinderGeometry(0.45, 0.6, 2.2, 10), stone, MX, fy + 1.4, POS.market.z);
   add(new THREE.CylinderGeometry(1.2, 0.5, 0.4, 14), stone, MX, fy + 2.5, POS.market.z);
   add(new THREE.SphereGeometry(0.35, 10, 8), new THREE.MeshStandardMaterial({ color: 0x8fd8ff, emissive: 0x3a8ab0, emissiveIntensity: 0.6 }), MX, fy + 3.0, POS.market.z);
+  }
   world.addCircle(MX, POS.market.z, 3.6);
 
   // ---- établis (artisans) : table, outils, accessoires selon le métier
+  const BENCH_KIND = { armor: 'etabli_armurier', alchemy: 'etabli_alchimie', enchant: 'etabli_enchant', forge: 'etabli_forge' };
   const bench = (x, z, rot, kind) => {
+    if (glbDist) {
+      const y = world.heightAt(x, z);
+      placeGlb(BENCH_KIND[kind], x, y, z, rot);
+      if (kind === 'enchant') halo(x, y + 1.9, z, 0x9a7aff, 3.2);
+      world.addBox(x, z, Math.abs(Math.cos(rot)) * 1.5 + Math.abs(Math.sin(rot)) * 0.7, Math.abs(Math.cos(rot)) * 0.7 + Math.abs(Math.sin(rot)) * 1.5, y - 1, y + 2.5);
+      return;
+    }
     const y = world.heightAt(x, z), grp = new THREE.Group();
     grp.position.set(x, y, z); grp.rotation.y = rot; g.add(grp);
     const a = (geo, mat, px, py, pz) => add(geo, mat, px, py, pz, grp);
@@ -559,11 +619,14 @@ function buildDistricts(world, g, T, stone, wood, add) {
 
   // ---- place des Métamorphoses : cercle de pierre autour du monolithe, quatre torchères runiques
   const [mx, mz] = POS.monolith, my = world.heightAt(mx, mz);
-  add(new THREE.TorusGeometry(6.5, 0.28, 6, 36).rotateX(Math.PI / 2), stone, mx, my + 0.14, mz).castShadow = false;
+  if (glbDist) placeGlb('cercle_monolithe', mx, my, mz);
+  else add(new THREE.TorusGeometry(6.5, 0.28, 6, 36).rotateX(Math.PI / 2), stone, mx, my + 0.14, mz).castShadow = false;
   for (let i = 0; i < 4; i++) {
     const a2 = i * Math.PI / 2 + Math.PI / 4, px = mx + Math.cos(a2) * 6.5, pz = mz + Math.sin(a2) * 6.5;
-    add(new THREE.CylinderGeometry(0.35, 0.45, 2.4, 8), stone, px, my + 1.2, pz);
-    const f = add(new THREE.OctahedronGeometry(0.4), new THREE.MeshBasicMaterial({ color: 0x8fe3ff }), px, my + 3.0, pz); f.castShadow = false;
+    if (!glbDist) {
+      add(new THREE.CylinderGeometry(0.35, 0.45, 2.4, 8), stone, px, my + 1.2, pz);
+      const f = add(new THREE.OctahedronGeometry(0.4), new THREE.MeshBasicMaterial({ color: 0x8fe3ff }), px, my + 3.0, pz); f.castShadow = false;
+    }
     halo(px, my + 3.0, pz, 0x8fe3ff, 3);
     world.addCircle(px, pz, 0.5);
   }
@@ -571,34 +634,46 @@ function buildDistricts(world, g, T, stone, wood, add) {
   // ---- écurie : abri ouvert, enclos, auge, foin
   const [sx0, sz0] = POS.stable, sy = world.heightAt(sx0, sz0);
   const shedX = sx0 + 12, shedZ = sz0 - 2;
-  for (const px of [-5, 5]) for (const pz of [-3.5, 3.5]) add(new THREE.CylinderGeometry(0.22, 0.26, 4.2, 7), wood, shedX + px, sy + 2.1, shedZ + pz);
-  const sroof = add(new THREE.BoxGeometry(12, 0.3, 9), new THREE.MeshStandardMaterial({ color: 0x6a3a2a, map: T.roof || null, roughness: 0.85 }), shedX, sy + 4.5, shedZ); sroof.rotation.x = 0.12;
-  add(new THREE.BoxGeometry(11, 0.4, 0.6), darkWood, shedX, sy + 0.5, shedZ - 3.4);
+  if (glbDist) placeGlb('ecurie_abri', shedX, sy, shedZ);
+  if (!glbDist) for (const px of [-5, 5]) for (const pz of [-3.5, 3.5]) add(new THREE.CylinderGeometry(0.22, 0.26, 4.2, 7), wood, shedX + px, sy + 2.1, shedZ + pz);
+  if (!glbDist) { const sroof = add(new THREE.BoxGeometry(12, 0.3, 9), new THREE.MeshStandardMaterial({ color: 0x6a3a2a, map: T.roof || null, roughness: 0.85 }), shedX, sy + 4.5, shedZ); sroof.rotation.x = 0.12; }
+  if (!glbDist) add(new THREE.BoxGeometry(11, 0.4, 0.6), darkWood, shedX, sy + 0.5, shedZ - 3.4);
   world.addBox(shedX, shedZ - 3.4, 5.6, 0.4, sy - 1, sy + 1.2);
   const fence = (x1, z1, x2, z2) => {
     const len = Math.hypot(x2 - x1, z2 - z1), n = Math.max(1, Math.round(len / 2.5));
-    for (let i = 0; i <= n; i++) add(new THREE.BoxGeometry(0.18, 1.3, 0.18), wood, x1 + (x2 - x1) * i / n, sy + 0.65, z1 + (z2 - z1) * i / n).castShadow = false;
-    for (const hy of [0.5, 1.05]) { const r = add(new THREE.BoxGeometry(Math.abs(x2 - x1) > Math.abs(z2 - z1) ? len : 0.1, 0.1, Math.abs(x2 - x1) > Math.abs(z2 - z1) ? 0.1 : len), wood, (x1 + x2) / 2, sy + hy, (z1 + z2) / 2); r.castShadow = false; }
+    if (glbDist) {
+      const ang = Math.atan2(z2 - z1, x2 - x1);
+      for (let i = 0; i < n; i++) { const o = placeGlb('barriere', x1 + (x2 - x1) * i / n, sy, z1 + (z2 - z1) * i / n, -ang); o.scale.x = (len / n) / 2.5; }
+    } else for (let i = 0; i <= n; i++) add(new THREE.BoxGeometry(0.18, 1.3, 0.18), wood, x1 + (x2 - x1) * i / n, sy + 0.65, z1 + (z2 - z1) * i / n).castShadow = false;
+    if (!glbDist) for (const hy of [0.5, 1.05]) { const r = add(new THREE.BoxGeometry(Math.abs(x2 - x1) > Math.abs(z2 - z1) ? len : 0.1, 0.1, Math.abs(x2 - x1) > Math.abs(z2 - z1) ? 0.1 : len), wood, (x1 + x2) / 2, sy + hy, (z1 + z2) / 2); r.castShadow = false; }
     const alongX = Math.abs(x2 - x1) > Math.abs(z2 - z1);
     world.addBox((x1 + x2) / 2, (z1 + z2) / 2, alongX ? len / 2 : 0.2, alongX ? 0.2 : len / 2, sy - 1, sy + 1.5);
   };
   const fx0 = sx0 - 8, fx1 = sx0 + 16, fz0 = sz0 - 7, fz1 = sz0 + 8;
   fence(fx0, fz0, fx1, fz0); fence(fx0, fz0, fx0, fz0 + 4); fence(fx1, fz0, fx1, fz1); fence(fx0, fz1, fx1, fz1); // ouverture au nord-ouest côté entrée
-  add(new THREE.BoxGeometry(2.4, 0.5, 0.6), darkWood, sx0 - 4, sy + 0.4, sz0 - 5.5); world.addBox(sx0 - 4, sz0 - 5.5, 1.2, 0.3, sy - 1, sy + 1);
+  if (glbDist) placeGlb('auge', sx0 - 4, sy, sz0 - 5.5); else add(new THREE.BoxGeometry(2.4, 0.5, 0.6), darkWood, sx0 - 4, sy + 0.4, sz0 - 5.5);
+  world.addBox(sx0 - 4, sz0 - 5.5, 1.2, 0.3, sy - 1, sy + 1);
 
   // ---- quartier des portails : piliers monumentaux, braseros violets, cristaux
   const [rx, rz] = POS.regionsPortal, ry = world.heightAt(rx, rz);
   const purple = new THREE.MeshBasicMaterial({ color: 0xa24dff });
+  if (glbDist) placeGlb('portail_regions', rx, ry, rz - 1);
   for (const s of [-1, 1]) {
-    add(new THREE.CylinderGeometry(1.0, 1.25, 11, 10), stone, rx + s * 8, ry + 5.5, rz - 1); world.addCircle(rx + s * 8, rz - 1, 1.3);
-    add(new THREE.CylinderGeometry(1.4, 1.4, 0.6, 10), stone, rx + s * 8, ry + 11.2, rz - 1);
-    const o = add(new THREE.OctahedronGeometry(0.8), purple, rx + s * 8, ry + 12.6, rz - 1); o.castShadow = false;
+    world.addCircle(rx + s * 8, rz - 1, 1.3);
+    if (!glbDist) {
+      add(new THREE.CylinderGeometry(1.0, 1.25, 11, 10), stone, rx + s * 8, ry + 5.5, rz - 1);
+      add(new THREE.CylinderGeometry(1.4, 1.4, 0.6, 10), stone, rx + s * 8, ry + 11.2, rz - 1);
+      const o = add(new THREE.OctahedronGeometry(0.8), purple, rx + s * 8, ry + 12.6, rz - 1); o.castShadow = false;
+    }
     halo(rx + s * 8, ry + 12.6, rz - 1, 0xa24dff, 6);
   }
-  add(new THREE.BoxGeometry(18, 1.4, 2.2), stone, rx, ry + 11.6, rz - 1);
+  if (!glbDist) add(new THREE.BoxGeometry(18, 1.4, 2.2), stone, rx, ry + 11.6, rz - 1);
   for (const [px, pz] of [[-12, -42], [12, -42], [-22, -55], [22, -55], [-8, -57], [8, -57]]) {
-    add(new THREE.CylinderGeometry(0.5, 0.65, 1.6, 8), stone, px, y0 + 0.8, pz);
-    const f = add(new THREE.OctahedronGeometry(0.45), purple, px, y0 + 2.1, pz); f.castShadow = false;
+    if (glbDist) placeGlb('torchere', px, y0, pz, (px * 3.1) % 6.28);
+    else {
+      add(new THREE.CylinderGeometry(0.5, 0.65, 1.6, 8), stone, px, y0 + 0.8, pz);
+      const f = add(new THREE.OctahedronGeometry(0.45), purple, px, y0 + 2.1, pz); f.castShadow = false;
+    }
     halo(px, y0 + 2.1, pz, 0xa24dff, 3.2);
     world.addCircle(px, pz, 0.7);
   }
@@ -612,6 +687,14 @@ function buildDistricts(world, g, T, stone, wood, add) {
   for (let t = 0; t < 900 && spots.length < 46; t++) {
     const x = (rnd() * 2 - 1) * (HALF - 5), z = (rnd() * 2 - 1) * (HALF - 5);
     if (okSpot(x, z) && !houseNear(x, z)) spots.push({ x, z, s: 0.8 + rnd() * 0.6 });
+  }
+  const oakG = ModelLibrary.nature && ModelLibrary.nature.oak_green ? ModelLibrary.natureGeometry('oak_green', 'lo') : null;
+  if (oakG) {
+    const om = new THREE.InstancedMesh(oakG, ModelLibrary.natureMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 })), spots.length);
+    const d2 = new THREE.Object3D();
+    spots.forEach((sp, i) => { d2.position.set(sp.x, world.heightAt(sp.x, sp.z) - 0.05, sp.z); d2.rotation.set(0, i * 2.4, 0); d2.scale.setScalar(sp.s * 0.85); d2.updateMatrix(); om.setMatrixAt(i, d2.matrix); world.addCircle(sp.x, sp.z, 0.5); });
+    om.castShadow = true; om.frustumCulled = false; g.add(om);
+    return;
   }
   const trunkGeo = new THREE.CylinderGeometry(0.22, 0.32, 3, 6), crownGeo = new THREE.IcosahedronGeometry(1.7, 1);
   const trunks = new THREE.InstancedMesh(trunkGeo, wood, spots.length), crowns = new THREE.InstancedMesh(crownGeo, new THREE.MeshStandardMaterial({ color: 0x4a7a34, roughness: 0.9, flatShading: true }), spots.length);

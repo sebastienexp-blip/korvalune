@@ -147,6 +147,7 @@ export const ModelLibrary = {
   /** Matériau partagé du kit (une seule copie des textures pour tous les fichiers) ; `window` = matériau de fenêtre du monde (nuit). */
   townMaterial(name, src, windowMat) {
     if (name === 'window' && windowMat) return windowMat;
+    if (name === 'glow') { this._townMats ||= {}; return (this._townMats.glow ||= new THREE.MeshBasicMaterial({ vertexColors: true })); }
     this._townMats ||= {};
     if (!this._townMats[name]) { const m = src.clone(); m.vertexColors = true; this._townMats[name] = m; }
     return this._townMats[name];
@@ -187,9 +188,9 @@ export const ModelLibrary = {
   },
 
   /** Un InstancedMesh par matériau du module ; le même tableau de matrices s'applique à tous. */
-  townInstanced(kind, count, { windowMat = null, shadow = true } = {}) {
+  townInstanced(kind, count, { windowMat = null, shadow = true, tint = null } = {}) {
     return this._townPart(kind).map((p, i) => {
-      const im = new THREE.InstancedMesh(this._townGeo(kind, i, null), this.townMaterial(p.name, p.src, windowMat), count);
+      const im = new THREE.InstancedMesh(this._townGeo(kind, i, tint), this.townMaterial(p.name, p.src, windowMat), count);
       im.castShadow = shadow && p.name !== 'window'; im.receiveShadow = true; im.frustumCulled = false;
       return im;
     });
