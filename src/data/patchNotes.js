@@ -3,6 +3,17 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.45', title: 'Plus de nuit, carte personnalisable, points plus rapides',
+    items: [
+      '☀️ La nuit est supprimée : le jeu reste de jour, de l’aube dorée à la fin d’après-midi. Les failles sont aussi bien plus lumineuses.',
+      '✨ Distribution des points : boutons +1, +5 et Max sur chaque attribut.',
+      '📍 Carte du monde : touchez la carte pour poser ou retirer un marqueur personnel.',
+      '🏰 Les remparts intérieurs autour du château ont disparu, seul le donjon reste.',
+      '🔊 Plus de fanfare au passage de niveau ; nouveaux sons pour le butin et le ramassage.',
+      '🎃 Quêtes de Jack : parler à Jack valide enfin l’étape, même hors connexion.'
+    ]
+  },
+  {
     version: '10.44', title: 'Personnages et équipement entièrement modélisés',
     items: [
       '🧍 Un vrai corps humain en 3D pour toutes les classes et toutes les races, avec couleur de peau, yeux et cheveux au choix.',

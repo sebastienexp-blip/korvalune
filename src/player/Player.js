@@ -358,10 +358,11 @@ export class Player {
   addPotion(id) { if (this.potions.owned.includes(id)) return false; this.potions.owned.push(id); return true; }
   addSale(n) { n = Math.max(0, Math.floor(n)); this.soldTotal += n; this.addCoins(n); } // V10.21
 
-  spendStatPoint(statName) {
+  spendStatPoint(statName, n = 1) {   // V10.45 : n points d'un coup (+1, +5, tout)
     if (this.statPoints <= 0 || !(statName in this.stats)) return false;
-    this.stats[statName]++;
-    this.statPoints--;
+    n = Math.max(1, Math.min(this.statPoints, Math.floor(n) || 1));
+    this.stats[statName] += n;
+    this.statPoints -= n;
     this.recomputeDerived();
     this.bus.emit('hud');
     return true;

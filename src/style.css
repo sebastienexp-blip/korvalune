@@ -441,6 +441,7 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 .stat-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed rgba(255, 255, 255, 0.08); }
 .stat-val { display: flex; align-items: center; gap: 8px; }
 .stat-plus { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--brass); background: rgba(226, 184, 102, 0.22); color: var(--brass-hi); font-weight: 800; font-size: 16px; line-height: 1; padding: 0; }
+.stat-plus-n { width: auto; min-width: 38px; border-radius: 14px; padding: 0 8px; font-size: 13px; margin-left: 4px; }
 .stat-points-banner { background: rgba(226, 184, 102, 0.14); border: 1px solid var(--brass); color: var(--brass-hi); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 6px; }
 
 /* ---------- Fiche d'objet ---------- */

@@ -29,13 +29,13 @@ export const EVENTS = {
   kill: (o) => [...creature(o.kind, 'death', 1), L(creatureSize(o.kind) > 1 ? 'death-thud-big' : 'death-thud-small', 0.7, [0.95, 1.05], 0.35)],
   // --- soins, progression, butin
   heal: () => [L(['cast-healing-mid', 'cure'], 0.9)],
-  levelup: () => [L('level-up', 1, [1, 1]), L('cast-healing-high', 0.7, [1, 1], 0.3)],
+  levelup: () => [],   // V10.45 : plus de fanfare de niveau (la bannière reste)
   quest: () => [L('quest-done', 1, [1, 1])],
   legendary: () => [L('summon', 0.9, [1, 1]), L('church-bell', 0.6, [1, 1], 0.4)],
   absolute: () => [L('summon', 1, [0.85, 0.9]), L('light-spell', 0.9, [1, 1], 0.15), L('church-bell', 0.8, [0.85, 0.9], 0.5), L('dragon-call', 0.35, [0.9, 1], 0.9)],
   zone: () => [L('scroll', 0.8, [1, 1])],
-  loot: () => [L('drop', 0.7), L(['coin-pickup', 'coins'], 0.6, [0.95, 1.05], 0.12)],
-  pickup: () => [L('pickup', 0.85)],
+  loot: () => [L('rustle', 0.75), L('clink', 0.5, [0.95, 1.1], 0.07)],
+  pickup: () => [L('cloth-rustle', 0.8, [0.95, 1.1]), L('tap', 0.45, [1.1, 1.3], 0.04)],
   coin: () => [L(['coin-pickup', 'coins'], 0.85)],
   equip: () => [L(['equip-plate', 'equip-mail', 'equip-leather', 'equip-cloth'], 0.9)],
   portal: () => [L('teleport-in', 1, [0.95, 1.05]), L('spell-circle', 0.5, [1, 1], 0.05)],

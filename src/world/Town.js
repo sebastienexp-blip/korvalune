@@ -428,18 +428,10 @@ function buildCityLayout(world, g, T, stone, wood, add) {
     }
     world.addBox(x, z, 2.4, 2.4, y0 - 1, y0 + 10);
   }
-  // le château : enceinte intérieure + donjon central
+  // le château : donjon central (V10.45 : sans enceinte intérieure)
   const C = CASTLE, cy0 = y0;
   const CW = 8.6, CTH = 2.4;
-  run(C.x - C.hw, C.z - C.hd, C.x + C.hw, C.z - C.hd, CW, CTH);                       // arrière
-  run(C.x - C.hw, C.z - C.hd, C.x - C.hw, C.z + C.hd, CW, CTH);                       // ouest
-  run(C.x + C.hw, C.z - C.hd, C.x + C.hw, C.z + C.hd, CW, CTH);                       // est
-  run(C.x - C.hw, C.z + C.hd, C.x - C.gateHW, C.z + C.hd, CW, CTH);                   // façade (porte au centre)
-  run(C.x + C.gateHW, C.z + C.hd, C.x + C.hw, C.z + C.hd, CW, CTH);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) tower(C.x + sx * C.hw, C.z + sz * C.hd, 3.8, 16, roofBlue, 4.4);
-  for (const s of [-1, 1]) tower(C.x + s * (C.gateHW + 2.4), C.z + C.hd, 2.6, 12.5, roofBlue, 3.2);
-  if (glbCity) placeGlb('linteau_chateau', C.x, cy0 + 8.4, C.z + C.hd, 0);
-  else add(new THREE.BoxGeometry(C.gateHW * 2 + 0.4, 2.4, CTH + 0.8), wallMat, C.x, cy0 + 9.6, C.z + C.hd);   // linteau de la porte du château
+  // V10.45 : l'enceinte intérieure du château (murs, tours, porte) est supprimée — seul le donjon reste au centre de la ville
   // donjon : grand corps central à étages, tourelles, toit en flèche
   const kx = C.x, kz = C.keepZ, kw = 18, kd = 12, kh = 21;
   const keepMat = new THREE.MeshStandardMaterial({ color: 0xc4c0b4, map: T.stone || null, roughness: 0.92 });

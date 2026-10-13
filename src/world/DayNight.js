@@ -164,11 +164,15 @@ void main(){
   }
 
   update(dt, focus, camera) {
-    // jour long, nuit courte : le temps s'écoule ~2,6x plus vite quand il fait noir
-    const h0 = this.hour;
-    const dark = h0 >= 19 || h0 < 5.2 ? 1 : h0 >= 17.4 ? smoothstep(17.4, 19, h0) : h0 >= 5.2 && h0 < 6.6 ? 1 - smoothstep(5.2, 6.6, h0) : 0;
-    const rate = 1 + dark * 1.6;
-    this.hour = (this.hour + (dt * 24 * rate) / CONFIG.dayNight.cycleSeconds) % 24;
+    // V10.45 : plus de nuit. L'horloge interne tourne sur 24 h, mais l'heure du jeu fait seulement l'aller-retour entre 7 h 30 (matin doré)
+    // et 16 h 30 (fin d'après-midi) : le soleil ne passe jamais sous l'horizon.
+    if (this._clock === undefined || Math.abs(this.hour - (this._lastHour ?? this.hour)) > 0.02) {   // heure imposée de l'extérieur (sauvegarde, commande)
+      const x = Math.min(1, Math.max(0, (this.hour - 7.5) / 9));
+      this._clock = Math.acos(1 - 2 * x) / (2 * Math.PI) * 24;
+    }
+    this._clock = (this._clock + (dt * 24) / CONFIG.dayNight.cycleSeconds) % 24;
+    this.hour = 7.5 + 9 * (0.5 - 0.5 * Math.cos((this._clock / 24) * 2 * Math.PI));
+    this._lastHour = this.hour;
     let i = 0;
     while (i < KEYS.length - 2 && this.hour >= KEYS[i + 1].h) i++;
     const a = KEYS[i], b = KEYS[i + 1];

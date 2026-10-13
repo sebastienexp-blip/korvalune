@@ -144,7 +144,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.44 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.45 — Korvalune</div>
         </div>
       </div>
 
@@ -544,7 +544,7 @@ export class HUD {
       <div id="worldmap-screen" class="hidden panel-screen">
         <h2>Carte du monde</h2>
         <div id="worldmap-canvas-wrap"><canvas id="worldmap-canvas" width="640" height="640"></canvas><div id="wm-zoom"><button id="wm-zin" aria-label="Zoom avant">+</button><button id="wm-zout" aria-label="Zoom arrière">−</button><button id="wm-zme" aria-label="Centrer sur moi">◎</button></div></div>
-        <div id="worldmap-legend"><span>⚔️ Armes</span><span>🛡️ Armures</span><span>🧪 Potions</span><span>🐎 Écurie</span><span>✂️ Barbier</span><span>🏦 Banque</span><span>🗿 Spires</span><span>🎃 Événement</span><span>🍬 Bonbons</span><span>📦 Coffre</span><span>💀 Boss</span><span>👺 Gobelin</span><span>👑 Roi Citrouille</span><span>◆ PNJ de quêtes</span><span>❗ Quête</span><span>🟢 Groupe</span><span>🔵 Joueurs</span></div>
+        <div id="worldmap-legend"><span>📍 Appui sur la carte : poser / retirer un marqueur</span><span>⚔️ Armes</span><span>🛡️ Armures</span><span>🧪 Potions</span><span>🐎 Écurie</span><span>✂️ Barbier</span><span>🏦 Banque</span><span>🗿 Spires</span><span>🎃 Événement</span><span>🍬 Bonbons</span><span>📦 Coffre</span><span>💀 Boss</span><span>👺 Gobelin</span><span>👑 Roi Citrouille</span><span>◆ PNJ de quêtes</span><span>❗ Quête</span><span>🟢 Groupe</span><span>🔵 Joueurs</span></div>
         <button data-act="close-map">Fermer</button>
       </div>
 
@@ -1144,7 +1144,7 @@ export class HUD {
     const statRow = (key, label) => `
       <div class="stat-row stat-row-info${key === prim ? ' stat-main' : ''}">
         <span>${key === prim ? '⭐ ' : ''}${label}<small class="stat-hint">${key === prim ? 'Attribut principal de votre classe — ' : ''}${STAT_INFO[key]}</small></span>
-        <span class="stat-val"><b>${player.stats[key]}</b>${hasPoints ? `<button class="stat-plus" data-stat="${key}" aria-label="Ajouter un point : ${label}">+</button>` : ''}</span>
+        <span class="stat-val"><b>${player.stats[key]}</b>${hasPoints ? `<button class="stat-plus" data-stat="${key}" data-n="1" aria-label="Ajouter un point : ${label}">+</button>${player.statPoints >= 5 ? `<button class="stat-plus stat-plus-n" data-stat="${key}" data-n="5" aria-label="Ajouter 5 points : ${label}">+5</button>` : ''}${player.statPoints >= 2 ? `<button class="stat-plus stat-plus-n" data-stat="${key}" data-n="${player.statPoints}" aria-label="Tout mettre : ${label}">Max</button>` : ''}` : ''}</span>
       </div>`;
     st.innerHTML = `
       <div class="stat-block">
@@ -1177,7 +1177,7 @@ export class HUD {
     `;
     const rb = st.querySelector('.stat-respec'); if (rb && onRespec) rb.onclick = () => onRespec();
     for (const btn of st.querySelectorAll('.stat-plus')) {
-      btn.onclick = () => onSpend(btn.dataset.stat);
+      btn.onclick = () => onSpend(btn.dataset.stat, Number(btn.dataset.n) || 1);
     }
   }
 

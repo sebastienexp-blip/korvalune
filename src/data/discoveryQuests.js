@@ -54,7 +54,7 @@ export const DISCOVERY_QUESTS = [
     steps: [
       ev('jack', 'Parlez à Jack Tête-de-Citrouille, près du puits', 'halloween'),
       ev('candy', 'Ramassez 6 bonbons cachés dans la ville', 'candy', { need: 6 }),
-      ev('kill', 'Vainquez 10 monstres d’Halloween (hors de la ville, la nuit !)', 'hwkill', { need: 10 }),
+      ev('kill', 'Vainquez 10 monstres d’Halloween (hors de la ville)', 'hwkill', { need: 10 }),
       ev('buy', 'Achetez un objet dans la boutique de Jack', 'hwbuy')
     ],
     reward: reward(10, 1.2) }

@@ -1451,8 +1451,8 @@ export class Game {
       refresh();
       this.hud.renderInventory(this.inventory, this.equipment, this.player, (a, i) => this._onItemAction(a, i));
     };
-    const onSpend = (statKey) => {
-      if (this.player.spendStatPoint(statKey)) { this.audio.play('click'); refresh(); }
+    const onSpend = (statKey, n = 1) => {
+      if (this.player.spendStatPoint(statKey, n)) { this.audio.play('click'); refresh(); }
     };
     let armed = false; // double clic : le premier arme, le second confirme
     const onRespec = () => {
@@ -1592,8 +1592,8 @@ export class Game {
   }
 
   _openHalloween(npc) {
+    this._tut('halloween');   // V10.45 : parler à Jack valide l'étape même hors connexion (la quête restait bloquée)
     if (!this.net.loggedIn) { this.hud.notify('Connecte-toi à ton compte pour participer à l\u2019événement d\u2019Halloween.', 'info'); return; }
-    this._tut('halloween');
     document.exitPointerLock?.();
     this.modalOpen = true;
     const lines = npc.def.dialogues?.intro;
@@ -2754,11 +2754,29 @@ export class Game {
         const r = c.getBoundingClientRect(), k = CONFIG.world.size / wm.zoom / r.width;
         wm.cx -= (cur.x - prev.x) * k; wm.cz -= (cur.y - prev.y) * k; clampC(); redraw();
       });
-      const up = (e) => { pts.delete(e.pointerId); lastD = 0; };
-      c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+      // V10.45 : marqueurs personnels — un appui court sur la carte pose un 📍 ; un appui près d'un marqueur le retire (conservés sur l'appareil)
+      let tap = null;
+      c.addEventListener('pointerdown', (e) => { tap = pts.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null; });
+      const up = (e) => {
+        const wasSingle = pts.size === 1;
+        if (tap && wasSingle && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 8 && performance.now() - tap.t < 450) {
+          const r = c.getBoundingClientRect(), size = CONFIG.world.size;
+          const wx = ((e.clientX - r.left) / r.width - 0.5) * size / wm.zoom + wm.cx, wz = ((e.clientY - r.top) / r.height - 0.5) * size / wm.zoom + wm.cz;
+          const marks = this._wmMarks || (this._wmMarks = this._loadMarks());
+          const reach = 18 / r.width * size / wm.zoom;
+          const near = marks.findIndex((m) => Math.hypot(m.x - wx, m.z - wz) < reach);
+          if (near >= 0) marks.splice(near, 1); else if (marks.length < 20) marks.push({ x: Math.round(wx), z: Math.round(wz) });
+          this._saveMarks(); redraw();
+        }
+        tap = null; pts.delete(e.pointerId); lastD = 0;
+      };
+      c.addEventListener('pointerup', up); c.addEventListener('pointercancel', (e) => { tap = null; pts.delete(e.pointerId); lastD = 0; });
     }
     this._drawWorldMap();
   }
+
+  _loadMarks() { try { const a = JSON.parse(localStorage.getItem('korvalune.wmMarks') || '[]'); return Array.isArray(a) ? a.filter((m) => Number.isFinite(m?.x) && Number.isFinite(m?.z)).slice(0, 20) : []; } catch { return []; } }
+  _saveMarks() { try { localStorage.setItem('korvalune.wmMarks', JSON.stringify(this._wmMarks || [])); } catch { /* ignoré */ } }
 
   _drawWorldMap() {
     const c = this.root.querySelector('#worldmap-canvas'), g = c.getContext('2d');
@@ -2825,6 +2843,8 @@ export class Game {
     for (const b of this.bosses || []) if (b.alive) wmIcon(b.pos.x, b.pos.z, '💀', '#ff6a5a');
     if (this.lootSprite?.alive) wmIcon(this.lootSprite.pos.x, this.lootSprite.pos.z, '👺', '#ffd45a');
     if (this.hw?.on && eventActiveNow()) { wmIcon(JACK_POS[0] + 4, JACK_POS[1] - 6, '🎃', '#ff9a3c'); if (this.hw.king?.alive) wmIcon(this.hw.king.pos.x, this.hw.king.pos.z, '👑', '#ff9a3c'); }
+    // marqueurs personnels (appui sur la carte)
+    for (const m of this._wmMarks || (this._wmMarks = this._loadMarks())) wmIcon(m.x, m.z, '📍', '#ff5a7a');
     // joueur : flèche orientée (devant = (sin yaw, cos yaw), la carte a z vers le bas)
     if (this.player) {
       const px = toX(this.player.pos.x), pz = toY(this.player.pos.z);

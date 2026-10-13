@@ -26,7 +26,7 @@ const SENDS = { sfx: 0.2, ui: 0.05, ambience: 0.2, music: 0.25 };
 const BUS_LEVEL = { sfx: 2.0, ui: 2.0, ambience: 1.0, music: 1.0 };
 
 // sons chargés dès la première interaction (le reste est chargé à la demande puis en tâche de fond)
-const CORE = ['ui-click', 'ui-open', 'ui-close', 'ui-error', 'swing-sword', 'slash', 'hack', 'strike', 'step-grass', 'step-dirt', 'step-stone', 'human-hurt', 'cloth-rustle', 'fall', 'coin-pickup', 'pickup', 'level-up', 'quest-done', 'bow-draw', 'arrow', 'cast-air-low', 'cast-fire-low', 'impact-fire-low'];
+const CORE = ['ui-click', 'ui-open', 'ui-close', 'ui-error', 'swing-sword', 'slash', 'hack', 'strike', 'step-grass', 'step-dirt', 'step-stone', 'human-hurt', 'cloth-rustle', 'fall', 'coin-pickup', 'pickup', 'rustle', 'clink', 'tap', 'level-up', 'quest-done', 'bow-draw', 'arrow', 'cast-air-low', 'cast-fire-low', 'impact-fire-low'];
 const FAMILIES = ['human', 'human-rough', 'wolf', 'bear', 'boar', 'rat', 'troll', 'goblin', 'ghost', 'skeleton', 'wight', 'dragon', 'slime', 'spider', 'bats'];
 const BACKGROUND = [...FAMILIES.flatMap((f) => [`${f}-attack`, `${f}-hurt`, `${f}-death`, `${f}-call`]),
   ...['fire', 'water', 'air', 'earth', 'healing'].flatMap((e) => [`cast-${e}-low`, `cast-${e}-mid`, `cast-${e}-high`, `impact-${e}-low`, `impact-${e}-mid`, `impact-${e}-high`]),
@@ -259,7 +259,7 @@ export class AudioManager {
     this._last[name] = now;
     const bus = UI_SOUNDS.has(name) ? 'ui' : 'sfx';
     if (name === 'step') { if (this.stepsOn !== false) this._step(o); return; }
-    if (name === 'levelup' || name === 'riftDone') this.duck(0.3, 3);
+    if (name === 'riftDone') this.duck(0.3, 3);
     else if (name === 'quest' || name === 'guardian') this.duck(0.5, 1.8);
     else if (name === 'death') { this.duck(0.4, 4); this.music?.playStinger('defeat', this); }
     if (name === 'riftDone') this.music?.playStinger('victory', this);

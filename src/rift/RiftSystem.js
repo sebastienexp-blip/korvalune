@@ -301,7 +301,7 @@ export class RiftSystem {
     if (on) {
       this._env = { near: scene.fog.near, far: scene.fog.far, bg: scene.background, vis: sky.map((o) => (o ? o.visible : false)) };
       sky.forEach((o) => { if (o) o.visible = false; });
-      scene.background = new THREE.Color(this.run.theme.fog);
+      scene.background = new THREE.Color(this._riftFog(this.run.theme));
       g.world.setGrassVisible?.(false);
     } else if (this._env) {
       sky.forEach((o, i) => { if (o) o.visible = this._env.vis[i]; });
@@ -313,13 +313,20 @@ export class RiftSystem {
     }
   }
 
+  // V10.45 : brume des failles éclaircie (elle était presque noire) : mélange avec la couleur des murs et un minimum de luminosité
+  _riftFog(th) {
+    const c = new THREE.Color(th.fog).lerp(new THREE.Color(th.wall), 0.65);
+    const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, hsl.s * 0.9, Math.max(hsl.l, 0.34));
+    return c;
+  }
+
   // appelé après DayNight / Zones / Weather chaque image
   postUpdate() {
     if (!this.active) return;
     const g = this.g, dn = g.dayNight, f = g.scene.fog, th = this.run.theme;
-    f.color.setHex(th.fog); f.near = 14; f.far = clamp((g._q?.fogFar || 180) * 0.5, 70, 110);
-    dn.hemi.intensity = 1.25; dn.hemi.color.setHex(th.hemi);
-    dn.sun.intensity = 1.2; dn.sun.color.setHex(0xffffff);
+    f.color.set(this._riftFog(th)); f.near = 14; f.far = clamp((g._q?.fogFar || 180) * 0.5, 70, 110);
+    dn.hemi.intensity = 2.1; dn.hemi.color.setHex(th.hemi);
+    dn.sun.intensity = 1.9; dn.sun.color.setHex(0xffffff);
     if (g.weather) { g.weather.rain.visible = false; g.weather.snow.visible = false; }
   }
 
