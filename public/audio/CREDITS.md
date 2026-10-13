@@ -4,8 +4,8 @@ Tous les sons et musiques du jeu sont des **fichiers audio réels** placés dans
 Le détail fichier par fichier (provenance, page d'origine, licence, conditions) est dans [`registry.json`](registry.json).
 
 ## Musiques (`music/`) — 5 morceaux + 2 jingles
-Les 5 morceaux (Crown of Fallen Kings, Grave of Crowns, Iron Against Bone, Steel Against Stone, The Cathedral's Cold Breath) ont été **fournis par le propriétaire du projet** ;
-l'origine et les droits d'utilisation sont à sa charge (à confirmer avant toute exploitation commerciale). Ré-encodés en MP3 96 kbps, volume normalisé à -20 LUFS.
+Les 5 morceaux (Crown of Fallen Kings, Grave of Crowns, Iron Against Bone, Steel Against Stone, The Cathedral's Cold Breath) ont été **créés par IA et fournis par le propriétaire du projet** ;
+les droits d'usage dépendent des conditions du service de génération utilisé (à garder en tête pour une exploitation commerciale). Ré-encodés en MP3 96 kbps, volume normalisé à -20 LUFS.
 Les deux jingles courts `stinger-victory` / `stinger-defeat` (fanfares de victoire / défaite) viennent de FreePD (CC0 / domaine public) ; voir `registry.json`.
 
 ## Bruitages et ambiances (`sfx/`) — 901 fichiers
