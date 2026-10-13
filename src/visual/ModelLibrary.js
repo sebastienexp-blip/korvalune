@@ -95,7 +95,8 @@ export const ModelLibrary = {
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
   },
 
-  nature: {},          // décor statique GLB (V10.41 Lot 5) : kind[_lo] → gltf
+  nature: {},
+  town: {},            // kit « ville » GLB (V10.41 Lot 6) : kind → gltf          // décor statique GLB (V10.41 Lot 5) : kind[_lo] → gltf
   gear: { armor: {}, weapons: {}, mounts: {} },   // mounts[kind] : montures GLB (cheval, griffon)   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
 
   /** Géométrie fusionnée (un seul maillage, attributs position/normal/uv/color) d'un décor GLB, ou null si absent. */
@@ -132,11 +133,74 @@ export const ModelLibrary = {
     return mat;
   },
 
+  hasTown(kinds) { return kinds.every((k) => this.town[k]); },
+  townMeta(kind) { const g = this.town[kind]; return (g && g.asset && g.asset.extras && g.asset.extras.korvalune) || {}; },
+
+  _townPart(kind) {
+    this._townParts ||= {};
+    if (this._townParts[kind]) return this._townParts[kind];
+    const g = this.town[kind]; const parts = [];
+    if (g) g.scene.traverse((o) => { if (o.isMesh) parts.push({ geo: o.geometry, src: o.material, name: o.material.name }); });
+    return (this._townParts[kind] = parts);
+  },
+
+  /** Matériau partagé du kit (une seule copie des textures pour tous les fichiers) ; `window` = matériau de fenêtre du monde (nuit). */
+  townMaterial(name, src, windowMat) {
+    if (name === 'window' && windowMat) return windowMat;
+    this._townMats ||= {};
+    if (!this._townMats[name]) { const m = src.clone(); m.vertexColors = true; this._townMats[name] = m; }
+    return this._townMats[name];
+  },
+
+  _townGeo(kind, i, tint) {
+    const part = this._townPart(kind)[i];
+    const key = `${kind}|${i}|${tint ? [tint.wall, tint.roof, tint.trim].join(',') : ''}`;
+    this._townGeos ||= {};
+    if (this._townGeos[key]) return this._townGeos[key];
+    const geo = part.geo.clone();
+    const c = part.geo.getAttribute('color'), n = geo.getAttribute('position').count;
+    const out = new Float32Array(n * 3).fill(1);
+    const T = tint ? { wall: new THREE.Color(tint.wall), roof: new THREE.Color(tint.roof), trim: new THREE.Color(tint.trim ?? tint.roof) } : null;
+    if (c) {
+      for (let k = 0; k < n; k++) {
+        let r = c.getX(k), gg = c.getY(k), b = c.getZ(k);
+        if (T && c.itemSize === 4) {
+          const a = c.getW(k), t = Math.abs(a - 0.8) < 0.05 ? T.wall : Math.abs(a - 0.6) < 0.05 ? T.roof : Math.abs(a - 0.4) < 0.05 ? T.trim : null;
+          if (t) { r *= t.r; gg *= t.g; b *= t.b; }
+        }
+        out[k * 3] = r; out[k * 3 + 1] = gg; out[k * 3 + 2] = b;
+      }
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(out, 3));
+    return (this._townGeos[key] = geo);
+  },
+
+  /** Instance d'un module de la ville (Group) ; tint = { wall, roof, trim } (couleurs hex) pour les rôles de sommets. */
+  townInstance(kind, { tint = null, windowMat = null, shadow = true } = {}) {
+    const grp = new THREE.Group();
+    this._townPart(kind).forEach((p, i) => {
+      const m = new THREE.Mesh(this._townGeo(kind, i, tint), this.townMaterial(p.name, p.src, windowMat));
+      m.castShadow = shadow && p.name !== 'window'; m.receiveShadow = true;
+      grp.add(m);
+    });
+    return grp;
+  },
+
+  /** Un InstancedMesh par matériau du module ; le même tableau de matrices s'applique à tous. */
+  townInstanced(kind, count, { windowMat = null, shadow = true } = {}) {
+    return this._townPart(kind).map((p, i) => {
+      const im = new THREE.InstancedMesh(this._townGeo(kind, i, null), this.townMaterial(p.name, p.src, windowMat), count);
+      im.castShadow = shadow && p.name !== 'window'; im.receiveShadow = true; im.frustumCulled = false;
+      return im;
+    });
+  },
+
   _register(file, gltf) {
     const gm = (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {};
     if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot] = gltf; return; }
     if (gm.type === 'mount' && gm.kind) { this.gear.mounts[gm.kind] = { gltf, meta: gm }; return; }
     if (gm.type === 'nature' && gm.kind) { this.nature[gm.kind + (gm.lod === 'lo' ? '_lo' : '')] = gltf; return; }
+    if (gm.type === 'town' && gm.kind) { this.town[gm.kind] = gltf; return; }
     if (gm.type === 'weapon' && gm.visual) { this.gear.weapons[gm.visual] = gltf; return; }
     let hasMesh = false;
     gltf.scene.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) hasMesh = true; });

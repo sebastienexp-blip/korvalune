@@ -29,6 +29,12 @@ for (let i = 0; i < files.length; i++) {
   const g = await new GLTFLoader().loadAsync(files[i]);
   const r0 = g.scene; r0.position.x = (i - (files.length - 1) / 2) * gap; scene.add(r0);
   r0.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false;
+    if (q.get('tint') && o.geometry && o.geometry.attributes.color && o.geometry.attributes.color.itemSize === 4) {
+      const c = o.geometry.attributes.color, W = new THREE.Color(0xc8b596), R = new THREE.Color(0x7a2e2a), roles = { 0.8: W, 0.6: R, 0.4: new THREE.Color(0x3f5b72) };
+      const out = new Float32Array(c.count * 3);
+      for (let i = 0; i < c.count; i++) { const a = Math.round(c.getW(i) * 10) / 10, t = roles[a] || null; out[i*3] = c.getX(i) * (t ? t.r : 1); out[i*3+1] = c.getY(i) * (t ? t.g : 1); out[i*3+2] = c.getZ(i) * (t ? t.b : 1); }
+      o.geometry = o.geometry.clone(); o.geometry.setAttribute('color', new THREE.BufferAttribute(out, 3)); if (o.material.transparent) o.material.transparent = false;
+    }
     if (o.material && o.material.name === 'nature') { const m = o.material; m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal *= faceDirection;'); }; m.customProgramCacheKey = () => 'natfix'; } } });
   const mx = new THREE.AnimationMixer(r0);
   const cn = clipN[i] || clipN[0];

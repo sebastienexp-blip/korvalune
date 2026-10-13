@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { plasterTexture, roofTexture, stoneTexture, glowTexture, barkTexture, safeTexture } from '../visual/Textures.js';
 import { mulberry32 } from '../core/math.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 import { HALF, GATE_HW, GATES, CASTLE, POS, KEEP_CLEAR, HOUSE_BLOCKS } from './TownMap.js';
 
 // V10.39 — Korvalune agrandie : enceinte de 124 m, château au centre, quatre portes, quartiers par catégorie
@@ -59,7 +60,9 @@ export function buildTown(world) {
   };
 
   const houses = planHouses();
+  const glbHouses = ModelLibrary.hasTown(HOUSE_KINDS);
   for (const H of houses) {
+    if (glbHouses) { try { houseGlb(world, g, H); continue; } catch (e) { console.warn('[V10.41] maison GLB ignorée', e); } }
     if (V && T.plaster && T.roof && H.hero) {
       try { houseV25(world, g, H, T, stone, wood, add); continue; } catch (e) { console.warn('[V2.5] maison classique utilisée', e); }
     }
@@ -93,6 +96,27 @@ export function buildTown(world) {
 
   world.spots.bank = new THREE.Vector3(bx, by, bz + 1.6);
   return { bankPos: new THREE.Vector3(bx, by, bz), bankChest: { group: bankGroup, lid: bLid } };
+}
+
+// V10.41 : maisons du kit GLB (6 variantes : 2 orientations de faîtage × 3 hauteurs), teintes de murs/toit par sommets
+const HOUSE_KINDS = ['long', 'pignon'].flatMap((o) => ['a', 'b', 'c'].map((h) => `maison_${o}_${h}`));
+function houseGlb(world, g, H) {
+  const y = world.heightAt(H.x, H.z);
+  const hk = H.h < 4.25 ? 'a' : H.h < 5.15 ? 'b' : 'c';
+  const kind = `maison_${H.w >= H.d ? 'long' : 'pignon'}_${hk}`;
+  const meta = ModelLibrary.townMeta(kind), [w0, h0, d0] = meta.dims;
+  const grp = ModelLibrary.townInstance(kind, { tint: { wall: H.wall, roof: H.roof, trim: H.roof }, windowMat: world.windowMat });
+  grp.position.set(H.x, y, H.z);
+  grp.scale.set(H.w / w0, H.h / h0, H.d / d0);
+  g.add(grp);
+  const span = Math.min(H.w, H.d), rh = span * 0.62;
+  const [cx, cy, cz] = meta.chimney;
+  world.chimneys.push({ x: H.x + cx * (H.w / w0), y: y + cy * (H.h / h0), z: H.z + cz * (H.d / d0) });
+  world.addBox(H.x, H.z, H.w / 2 + 0.25, H.d / 2 + 0.25, y - 1, y + H.h + rh + 1);
+  if (H.hero && H.w >= 11 && ModelLibrary.town.enseigne_auberge) {   // auberge : enseigne suspendue
+    const sg = ModelLibrary.townInstance('enseigne_auberge', { windowMat: world.windowMat });
+    sg.position.set(H.x + 3.2, y + 3.1, H.z + H.d / 2); g.add(sg);
+  }
 }
 
 // maison allégée : socle, murs, toit à pignons (extrusion), porte, deux fenêtres, cheminée
@@ -224,16 +248,24 @@ function houseV25(world, g, H, T, stone, wood, add) {
 // Décor : puits, lampadaires, tonneaux, caisses, foin
 function decorateTown(world, g, T, stone, wood, add) {
   const y0 = world.heightAt(0, 0);
+  const glbProps = ModelLibrary.hasTown(['puits', 'tonneau', 'caisse', 'foin', 'lampadaire']);
   // puits (place du Voyageur)
   const [wx, wz] = POS.well, wy = world.heightAt(wx, wz);
-  add(new THREE.CylinderGeometry(1.5, 1.7, 1, 16), stone, wx, wy + 0.5, wz);
-  add(new THREE.CylinderGeometry(1.15, 1.15, 0.05, 16), new THREE.MeshStandardMaterial({ color: 0x2f6f96, roughness: 0.1, metalness: 0.2 }), wx, wy + 1.04, wz);
-  for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.09, 0.09, 2.6, 6), wood, wx + sx * 1.3, wy + 2.1, wz);
-  const wroof = add(new THREE.ConeGeometry(1.9, 0.9, 4), new THREE.MeshStandardMaterial({ color: 0x6a2f2f, flatShading: true }), wx, wy + 3.6, wz);
-  wroof.rotation.y = Math.PI / 4;
-  add(new THREE.TorusGeometry(1.6, 0.14, 6, 18).rotateX(Math.PI / 2), stone, wx, wy + 1.0, wz);
-  add(new THREE.CylinderGeometry(0.2, 0.16, 0.26, 8), wood, wx + 0.5, wy + 1.35, wz + 0.1).castShadow = false;
-  world.addCircle(wx, wz, 1.9);
+  if (glbProps) {
+    const wg = ModelLibrary.townInstance('puits', { windowMat: world.windowMat });
+    wg.position.set(wx, wy, wz); g.add(wg);
+    world.addCircle(wx, wz, 1.9);
+  } else {
+    const [wx, wz] = POS.well, wy = world.heightAt(wx, wz);
+    add(new THREE.CylinderGeometry(1.5, 1.7, 1, 16), stone, wx, wy + 0.5, wz);
+    add(new THREE.CylinderGeometry(1.15, 1.15, 0.05, 16), new THREE.MeshStandardMaterial({ color: 0x2f6f96, roughness: 0.1, metalness: 0.2 }), wx, wy + 1.04, wz);
+    for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.09, 0.09, 2.6, 6), wood, wx + sx * 1.3, wy + 2.1, wz);
+    const wroof = add(new THREE.ConeGeometry(1.9, 0.9, 4), new THREE.MeshStandardMaterial({ color: 0x6a2f2f, flatShading: true }), wx, wy + 3.6, wz);
+    wroof.rotation.y = Math.PI / 4;
+    add(new THREE.TorusGeometry(1.6, 0.14, 6, 18).rotateX(Math.PI / 2), stone, wx, wy + 1.0, wz);
+    add(new THREE.CylinderGeometry(0.2, 0.16, 0.26, 8), wood, wx + 0.5, wy + 1.35, wz + 0.1).castShadow = false;
+    world.addCircle(wx, wz, 1.9);
+  }
 
   const band = new THREE.MeshStandardMaterial({ color: 0x3a3a3e, metalness: 0.7, roughness: 0.5 });
   const barrelGeo = new THREE.CylinderGeometry(0.42, 0.38, 0.9, 12);
@@ -251,9 +283,19 @@ function decorateTown(world, g, T, stone, wood, add) {
   const barrels = [[30, -12.5], [31.2, -12.8], [54, -12.6], [55, -13.5], [-8.4, 52], [9, 31], [24, 33], [-26, 40], [-38, -17], [-41, -5], [-52, -19], [33, 8], [53, 8.4], [-22, 18], [20, -30], [-20, -30], [58, 36], [36, 56], [46, 58]];
   const crates = [[30.2, -13.4, 0.3], [53.2, -12.2, 0.7], [33.4, 9, 0], [54.4, 9.2, 0.5], [-39.5, -18.6, 0.2], [-52.6, -20.4, 0.9], [-22.6, 19.2, 0.4], [26.4, 33.4, 0.1], [-8.6, 53.2, 0.6], [37, 55.4, 0.3]];
   const hays = [[40, 58.4, 0.4], [44.4, 58.2, 1.6], [50.4, 52, 0], [-36, 47, 0.8], [56.4, 38, 0.2]];
-  inst(barrelGeo, wood, barrels, 0.45);
-  inst(crateGeo, crateMat, crates, 0.4);
-  inst(hayGeo, hayMat, hays, 0.55);
+  if (glbProps) {
+    const instGlb = (kind, list) => {
+      if (!list.length) return;
+      const ims = ModelLibrary.townInstanced(kind, list.length, { windowMat: world.windowMat });
+      list.forEach(([x, z, r], i) => { dummy.position.set(x, world.heightAt(x, z), z); dummy.rotation.set(0, r || 0, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); for (const im of ims) im.setMatrixAt(i, dummy.matrix); });
+      for (const im of ims) g.add(im);
+    };
+    instGlb('tonneau', barrels); instGlb('caisse', crates); instGlb('foin', hays);
+  } else {
+    inst(barrelGeo, wood, barrels, 0.45);
+    inst(crateGeo, crateMat, crates, 0.4);
+    inst(hayGeo, hayMat, hays, 0.55);
+  }
   barrels.forEach(([x, z]) => world.addCircle(x, z, 0.45));
   crates.forEach(([x, z]) => world.addBox(x, z, 0.42, 0.42, -1, 2));
   hays.forEach(([x, z]) => world.addCircle(x, z, 0.65));
@@ -267,20 +309,32 @@ function decorateTown(world, g, T, stone, wood, add) {
   for (const a of [0, 1, 2, 3, 4, 5]) L.push([POS.well[0] + Math.cos(a * 1.047) * 13, POS.well[1] + Math.sin(a * 1.047) * 13]);
   for (const [x, z] of [[-30, -36], [30, -36], [-30, 18], [30, 18], [-15, -39], [15, -39], [-24, 0], [24, 0]]) L.push([x, z]);
   const lamps = L.filter(([x, z]) => !KEEP_CLEAR.some(([cx, cz, r]) => r < 6 && Math.hypot(x - cx, z - cz) < r));
-  const poleMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2e, metalness: 0.6, roughness: 0.5 });
-  const poles = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.07, 0.1, 3.2, 6), poleMat, lamps.length);
-  const bulbs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.2, 8, 6), world.windowMat, lamps.length);
   const hp = new Float32Array(lamps.length * 3);
-  lamps.forEach(([x, z], i) => {
-    const y = world.heightAt(x, z);
-    dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1);
-    dummy.position.set(x, y + 1.6, z); dummy.updateMatrix(); poles.setMatrixAt(i, dummy.matrix);
-    dummy.position.set(x, y + 3.3, z); dummy.updateMatrix(); bulbs.setMatrixAt(i, dummy.matrix);
-    hp.set([x, y + 3.3, z], i * 3);
-    world.addCircle(x, z, 0.2);
-  });
-  poles.frustumCulled = bulbs.frustumCulled = false; poles.castShadow = true;
-  g.add(poles, bulbs);
+  if (glbProps) {
+    const ims = ModelLibrary.townInstanced('lampadaire', lamps.length, { windowMat: world.windowMat });
+    lamps.forEach(([x, z], i) => {
+      const y = world.heightAt(x, z);
+      dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1); dummy.position.set(x, y, z); dummy.updateMatrix();
+      for (const im of ims) im.setMatrixAt(i, dummy.matrix);
+      hp.set([x, y + 3.3, z], i * 3);
+      world.addCircle(x, z, 0.2);
+    });
+    for (const im of ims) g.add(im);
+  } else {
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2e, metalness: 0.6, roughness: 0.5 });
+    const poles = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.07, 0.1, 3.2, 6), poleMat, lamps.length);
+    const bulbs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.2, 8, 6), world.windowMat, lamps.length);
+      lamps.forEach(([x, z], i) => {
+      const y = world.heightAt(x, z);
+      dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1);
+      dummy.position.set(x, y + 1.6, z); dummy.updateMatrix(); poles.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(x, y + 3.3, z); dummy.updateMatrix(); bulbs.setMatrixAt(i, dummy.matrix);
+      hp.set([x, y + 3.3, z], i * 3);
+      world.addCircle(x, z, 0.2);
+    });
+    poles.frustumCulled = bulbs.frustumCulled = false; poles.castShadow = true;
+    g.add(poles, bulbs);
+  }
   if (T.glow) {
     const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(hp, 3));
     const pts = new THREE.Points(pg, new THREE.PointsMaterial({ map: T.glow, color: 0xffb860, size: 3.2, sizeAttenuation: true, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
