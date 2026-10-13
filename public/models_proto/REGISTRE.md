@@ -60,3 +60,6 @@ Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le vis
 
 ## Cinématique d'introduction (V10.42)
 `ville/ville_intro_citadelle.glb` (1 998 tri : île flottante, donjon, 5 tours, enceinte, fenêtres allumées) et `ville_intro_rocher.glb` (132 tri, 9 instances en orbite). Remplacent l'île/tours dessinés par code ; lune, aurores, failles, cristal et faisceaux restent générés par code (effets). Test : cinématique jouée en entier dans le jeu avec les modèles, aucune erreur.
+
+## Autres joueurs (V10.42)
+Leur équipement n'est pas transmis par le réseau : avec un corps .glb ils recevaient aucune arme. `giveClassGear` leur pose l'arme (et l'objet secondaire) par défaut de leur classe (épée+écu, bâton+orbe, arc+carquois, dagues). Les corps de foule (LOD 1) n'ont que le support d'arme main droite : l'objet secondaire peut manquer. Non testé en multijoueur (serveur indisponible ici) ; syntaxe vérifiée seulement.

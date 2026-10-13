@@ -98,3 +98,14 @@ export function refreshGlbGear(rig, slots, resolveItem) {
   const ok = ov ? (ov.visual || 'shield') : null;
   setHeld('off', ok && lib.weapons[ok] ? ok : null);
 }
+
+// Autres joueurs : leur équipement n'est pas synchronisé par le réseau → arme (et objet secondaire) par défaut de leur classe, pour ne pas les montrer les mains vides.
+const CLASS_GEAR = { warrior: ['sword', 'shield'], paladin: ['sword', 'shield'], mage: ['staff', 'orb'], archer: ['bow', 'quiver'], assassin: ['dagger', 'offdagger'] };
+export function giveClassGear(rig, classId) {
+  if (!rig.glbSkeleton) return;
+  const lib = ModelLibrary.gear, [main, off] = CLASS_GEAR[classId] || CLASS_GEAR.warrior;
+  const st = rig.glbGear || (rig.glbGear = { pieces: {}, weapon: null, weaponKey: null });
+  if (st.weapon || st.off) return;
+  if (lib.weapons[main]) { st.weapon = attachWeapon(rig, lib.weapons[main]); st.weaponKey = main; }
+  if (lib.weapons[off]) { st.off = attachWeapon(rig, lib.weapons[off]); st.offKey = off; }
+}
