@@ -536,7 +536,12 @@ const easeOut = (t) => 1 - (1 - t) * (1 - t);
 const wrapAngle = (a) => ((((a + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
 
 export function animateHumanoid(rig, s, dt) {
-  if (rig.glb) return animateGlbRig(rig, s, dt, 'humanoid');
+  if (rig.glb) {
+    animateGlbRig(rig, s, dt, 'humanoid');
+    if (rig.weaponAura) updateWeaponAura(rig.weaponAura, dt);
+    if (rig.cosFx) updateCosmetics(rig, dt, s.speed || 0);   // familier, ailes, traînée, cercle : avant, ils n'étaient jamais animés (ni posés) sur un corps .glb
+    return;
+  }
   rig.t += dt;
   rig.hurtT = Math.max(0, rig.hurtT - dt * 3.5);
   const P = rig.pose || (rig.pose = {});
