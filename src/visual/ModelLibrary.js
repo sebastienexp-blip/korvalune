@@ -125,6 +125,11 @@ export const ModelLibrary = {
     for (const k of [role, species && `species:${species}`]) {
       if (k && this.mapping[k]) { const e = byFile(this.mapping[k]); if (e) return e; }
     }
+    { // ennemis humanoïdes livrés avec leur espèce dans les métadonnées du fichier (extras.korvalune.species)
+      const sp = species && (SPECIES_ALIAS[species] || species);
+      const e = sp && this.characters.find((c) => c.meta && c.meta.species === sp);
+      if (e && kind === 'humanoid') return e;
+    }
     const keyOf = (r) => ROLE_KEYWORDS[r] || ROLE_KEYWORDS[String(r).split(':')[0]];
     const lists = [keyOf(role), species && ROLE_KEYWORDS[`species:${species}`]].filter(Boolean);
     for (const kws of lists) {
@@ -134,7 +139,7 @@ export const ModelLibrary = {
       }
     }
     if (kind === 'humanoid' && /^(player|npc)/.test(role || '')) {
-      const pool = this.characters.filter((c) => !/wolf|boar|bear|dog|fox|spider|bat|rat|slime|dragon/.test(c.key));
+      const pool = this.characters.filter((c) => !(c.meta && c.meta.species) && !/wolf|boar|bear|dog|fox|spider|bat|rat|slime|dragon/.test(c.key));
       if (pool.length) return pool[hashStr(role) % pool.length];
     }
     return null;
@@ -156,6 +161,9 @@ export const ModelLibrary = {
     return null;
   }
 };
+
+// espèces sans modèle propre : utilisent celui d'une espèce proche
+const SPECIES_ALIAS = { guard: 'elite' };
 
 const box = new THREE.Box3(), size = new THREE.Vector3();
 

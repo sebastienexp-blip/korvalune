@@ -20,3 +20,6 @@ Droits : propriété du projet Korvalune.
 | `veilleur/veilleur_lod1.glb`, `veilleur_lod2.glb` | héros allégé | 12 629 / 6 129 | oui (8 clips) | 27 os |
 
 Régénération : voir `tools/models/README.md`.
+
+## Ennemis humanoïdes (Lot 3)
+Tous originaux, générés par `tools/models/build_foes.py` (aucune ressource tierce). Fichiers : `ennemis/ennemi_{bandit,elite,zealot,mage,archer,brute,troll,goblin}.glb`, textures de peau et d'os dans `ennemis/tex/`, textures d'acier/cuir/drap/argent partagées avec `veilleur/tex/`.

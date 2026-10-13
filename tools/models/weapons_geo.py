@@ -194,3 +194,19 @@ def quiver():
             ang = s * np.pi / 2
             parts.append((f'plume{k}_{s}', Loft(fl, 0.0008, prof([(0, .003), (.4, .011), (1, .004)], 6), p=2.0, segs=6, cap1=1, tile=.05, ref=(np.cos(ang), 0, np.sin(ang))).mesh(), 'leather'))
     return parts
+
+# ------------------------------------------------------------------------------------------------ massue (ennemis)
+def club(big=1.0):
+    """Massue de bois cloutée. Origine = prise ; tête vers +Y."""
+    parts = []
+    n = 20; y = np.linspace(-0.12, 0.78 * big, n); t = np.linspace(0, 1, n)
+    r = 0.018 + 0.05 * big * np.clip((t - 0.35) / 0.65, 0, 1) ** 1.5 * (1 - 0.25 * np.clip((t - 0.9) / 0.1, 0, 1))
+    path = np.stack([0.006 * np.sin(y * 7), y, 0.006 * np.cos(y * 5)], 1)
+    parts.append(('massue', Loft(path, r, r * 0.95, p=2.2, segs=12, cap0=1, cap1=2, tile=0.2, ref=(1, 0, 0)).mesh(), 'wood'))
+    parts.append(('prise', tube(line(P(0, -0.1, 0), P(0, 0.1, 0), 8), 0.0225, 0.0225, mid=0.0245, tile=.1).mesh(), 'leather'))
+    for k in range(7):
+        a = k * 2.4; yy = (0.5 + 0.045 * (k % 4)) * big
+        rr = (0.018 + 0.05 * big * np.clip(((yy + 0.12) / (0.9 * big) - 0.35) / 0.65, 0, 1) ** 1.5) * 0.95 + 0.002
+        base = P(rr * np.cos(a), yy, rr * np.sin(a)); tip = P((rr + 0.03) * np.cos(a), yy + 0.006, (rr + 0.03) * np.sin(a))
+        parts.append((f'clou{k}', tube(line(base, tip, 4), 0.011, 0.002, cap=0, segs=6, tile=.05).mesh(), 'steel'))
+    return parts

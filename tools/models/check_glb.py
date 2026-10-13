@@ -37,6 +37,7 @@ def main(path):
     tris = 0; verts = 0
     allpos = []
     kind = (js['asset'].get('extras') or {}).get('korvalune', {}).get('type', 'full')
+    meta_k = (js['asset'].get('extras') or {}).get('korvalune', {})
     skinned = 'skins' in js
     nb = len(js['skins'][0]['joints']) if skinned else 0
     for mi, m in enumerate(js['meshes']):
@@ -59,7 +60,8 @@ def main(path):
         humanoid = (P[:, 1].max() > 1.5) and kind == 'full'
         chk(abs(P[:, 1].min()) < 0.03, 'pieds au sol (y min ≈ 0)')
         if humanoid or kind == 'body': chk((1.5 if kind == 'body' else 1.7) < P[:, 1].max() < 2.0, 'taille humaine (1,5–2,0 m selon la pièce)')
-        chk(abs(P[:, 0].min() + P[:, 0].max()) < 0.04, 'centré en X (pivot à l\'axe du corps)')
+        if not (meta_k or {}).get('species'):   # un ennemi tient une arme/un bouclier d'un seul côté : la boîte n'est pas symétrique
+            chk(abs(P[:, 0].min() + P[:, 0].max()) < 0.04, 'centré en X (pivot à l\'axe du corps)')
     if skinned:
         ibm = acc(js, bn, js['skins'][0]['inverseBindMatrices']).reshape(-1, 4, 4)
         chk(len(ibm) == nb and np.isfinite(ibm).all(), 'matrices de repos inverses valides')

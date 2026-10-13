@@ -197,3 +197,23 @@ def bone(seed=8):
     rough = np.clip(.55 + .2 * norm01(grain), .3, .95)
     orm = np.stack([np.clip(.9 - .4 * cracks, 0, 1), rough, np.zeros_like(rough)], -1)
     return srgb(col), to_normal(h, 3.0), srgb(orm), h
+
+
+def skin(seed=11, tone=(0.42, 0.27, 0.20), warty=0.0):
+    """Peau : teinte de base (linéaire), marbrures, pores, veines ; warty > 0 → peau épaisse/granuleuse (troll, gobelin)."""
+    rng = np.random.default_rng(seed)
+    S = SZ
+    low = fbm(S, rng, octaves=((3, 1), (6, .6), (12, .3)))
+    pore = fbm(S, rng, octaves=((96, 1), (192, .7), (320, .4)))
+    cells = voronoi_cells(S, rng, 700)
+    veins = gaussian_filter(scratches(S, rng, 70, (0.08, .4), 1), 1.6, mode='wrap')
+    bump = (1 - np.exp(-cells * 11)) * warty
+    h = 0.5 + 0.02 * pore + 0.05 * bump + 0.015 * low
+    t = np.array(tone)
+    col = t * (0.88 + 0.14 * low[..., None] * .5) * (0.94 + 0.06 * pore[..., None])
+    col = col + np.array([.05, -.01, -.01]) * norm01(low)[..., None] * 0.6      # rougeurs
+    col = col * (1 - 0.18 * veins[..., None]) + np.array([.02, .03, .07]) * veins[..., None] * .5
+    col = col * (1 - 0.25 * bump[..., None])
+    rough = np.clip(.58 + .12 * pore * .3 + .1 * bump, .4, .9)
+    orm = np.stack([np.clip(.92 - .2 * bump, 0, 1), rough, np.zeros_like(rough)], -1)
+    return srgb(col), to_normal(h, 3.0 + 3 * warty), srgb(orm), h

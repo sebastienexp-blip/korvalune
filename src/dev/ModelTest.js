@@ -65,6 +65,8 @@ let rig = null, wolf = null;
 (async () => {
   try {
     const WEAPONS = ['dague_du_veilleur', 'dague_gauche', 'baton_de_la_veille', 'arc_de_la_veille', 'ecu_de_la_veille', 'orbe_de_la_veille', 'carquois'];
+    const FOES = ['bandit', 'elite', 'zealot', 'mage', 'archer', 'brute', 'troll', 'goblin'];
+    const foeGltfs = await Promise.all(FOES.map((f) => load(`ennemis/ennemi_${f}.glb`)));
     const weaponGltfs = await Promise.all(WEAPONS.map((w) => load(`armes/${w}.glb`)));
     const [body, lodG, lod2G, wolfG, swordG, ...pcs] = await Promise.all([
       load('veilleur/veilleur_corps.glb'), load('veilleur/veilleur_lod1.glb'), load('veilleur/veilleur_lod2.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
@@ -85,6 +87,7 @@ let rig = null, wolf = null;
     refreshGlbGear(rig, fakeSlots, fakeResolve);
     spawnWolf();
     spawnCrowd(12);
+    spawnFoes(foeGltfs);
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
@@ -108,6 +111,20 @@ function toggleSlot(n) {
 }
 window.__equip = (slot, visual) => { fakeSlots[slot] = visual ? { visual } : null; refreshGlbGear(rig, fakeSlots, fakeResolve); };
 
+// ennemis humanoïdes : un de chaque espèce, créés par le même chemin que le jeu (rôle « enemy:… », espèce, échelle du monstre)
+const foes = [];
+const FOE_SCALE = { brute: 1.3, troll: 1.5, goblin: 0.72 };
+function spawnFoes(gltfs) {
+  const names = ['bandit', 'elite', 'zealot', 'mage', 'archer', 'brute', 'troll', 'goblin'];
+  gltfs.forEach((g, i) => ModelLibrary._register(`ennemi_${names[i]}.glb`, g));
+  names.forEach((sp, i) => {
+    const r = tryCreateGlbRig('humanoid', { role: 'enemy:' + sp, species: sp, scale: FOE_SCALE[sp] || 1 });
+    if (!r) { console.warn('pas de modèle pour', sp); return; }
+    r.root.position.set(-7 + i * 2, 0, -9); scene.add(r.root); foes.push(r);
+  });
+  const guard = tryCreateGlbRig('humanoid', { role: 'enemy:shield_guard', species: 'guard' });
+  if (guard) { guard.root.position.set(9, 0, -9); scene.add(guard.root); foes.push(guard); }
+}
 // foule de figurants en versions allégées (LOD 1 et 2), pour mesurer le coût d'une foule de joueurs distants
 const crowd = [];
 function spawnCrowd(n) {
@@ -233,6 +250,7 @@ function step(dt, draw) {
     if (st.action) { st.actionT += dt; if (!st.hitDone && st.actionT > st.actionDur * 0.5) { st.hitDone = true; heroStrike(); } if (st.actionT >= st.actionDur) { st.action = null; st.actionT = 0; } }
     if (st.dead) st.actionT += dt;
     rig.root.position.set(st.x, st.y, st.z); rig.root.rotation.y = st.yaw;
+    for (const f of foes) animateGlbRig(f, { speed: 0, grounded: true }, dt, 'humanoid');
     for (const c of crowd) animateGlbRig(c.rig, { speed: c.v, grounded: true }, dt, 'humanoid');
     animateGlbRig(rig, { speed: st.speed, dead: st.dead, action: st.action, actionT: st.actionT, actionDur: st.actionDur, grounded: st.grounded, deadT: st.actionT }, dt, 'humanoid');
     stepWolf(dt);
