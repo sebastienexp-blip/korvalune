@@ -148,10 +148,25 @@ def jump(u):
     for k, nm in enumerate(('Cape_1', 'Cape_2', 'Cape_3')): p.r(nm, 0.5 * up * (1 + 0.3 * k), 0, 0)
     return p
 
+def ride(u):
+    """En selle : cuisses vers l'avant et écartées, genoux fléchis, mains jointes aux rênes ; léger balancement."""
+    p = Pose(); w = 2 * np.pi * u; sw = np.sin(w)
+    for side, sg in (('L', 1), ('R', -1)):
+        p.r(f'UpperLeg_{side}', -1.05, 0, 0.42 * sg)
+        p.r(f'LowerLeg_{side}', 1.25, 0, -0.10 * sg)
+        p.r(f'Foot_{side}', -0.35, 0, 0)
+        p.r(f'UpperArm_{side}', -0.75 + 0.03 * sw, 0, 0.12 * sg)
+        p.r(f'LowerArm_{side}', -0.95 - 0.03 * sw, 0, 0)
+    p.pos['Hips'] += (0, 0.012 * np.sin(2 * w) - 0.012, 0)
+    p.r('Spine', 0.10 + 0.02 * sw, 0, 0); p.r('Chest', 0.05, 0, 0); p.r('Head', -0.10 - 0.015 * sw, 0, 0)
+    for k, nm in enumerate(('Cape_1', 'Cape_2', 'Cape_3')):
+        p.r(nm, 0.35 + 0.06 * np.sin(w - 0.8 * k), 0.03 * np.sin(w - 1.2 * k), 0)
+    return p
+
 CLIPS = {  # nom : (fonction, durée s, boucle)
     'idle': (idle, 2.6, True), 'walk': (walk, 0.90, True), 'run': (run, 0.62, True),
     'attack': (attack, 0.80, False), 'attack2': (attack2, 0.95, False), 'hit': (hit, 0.40, False),
-    'death': (death, 1.50, False), 'jump': (jump, 0.70, False),
+    'death': (death, 1.50, False), 'jump': (jump, 0.70, False), 'ride': (ride, 2.0, True),
 }
 
 def build():

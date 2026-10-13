@@ -6,6 +6,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ModelLibrary, tryCreateGlbRig, animateGlbRig } from '../visual/ModelLibrary.js';
+import { createMount, updateMount, disposeMount } from '../visual/MountModel.js';
+import { MOUNTS } from '../data/mounts.js';
 import { refreshGlbGear } from '../visual/GlbEquipment.js';
 
 THREE.Cache.enabled = true;   // les textures partagées entre pièces ne sont téléchargées qu'une fois
@@ -69,6 +71,7 @@ let rig = null, wolf = null;
     const foeGltfs = await Promise.all(FOES.map((f) => load(`ennemis/ennemi_${f}.glb`)));
     const BEASTS = ['boar', 'bear', 'skitter', 'alpha'];
     const beastGltfs = await Promise.all(BEASTS.map((b) => load(`creatures/bete_${b}.glb`)));
+    const horseG = await load('montures/monture_cheval.glb'); ModelLibrary._register('monture_cheval.glb', horseG);
     const weaponGltfs = await Promise.all(WEAPONS.map((w) => load(`armes/${w}.glb`)));
     const [body, lodG, lod2G, wolfG, swordG, ...pcs] = await Promise.all([
       load('veilleur/veilleur_corps.glb'), load('veilleur/veilleur_lod1.glb'), load('veilleur/veilleur_lod2.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
@@ -94,7 +97,7 @@ let rig = null, wolf = null;
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
-      `1-6 : armure · 7 : arme (épée, dague, bâton, arc) · 8 : objet secondaire (bouclier, orbe, carquois, dague) — équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br><span id="st"></span>`;
+      `1-6 : armure · 7 : arme (épée, dague, bâton, arc) · 8 : objet secondaire (bouclier, orbe, carquois, dague) — équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br>M : monture suivante (cheval…) <span id="st"></span>`;
   } catch (e) { hud.textContent = 'Erreur de chargement : ' + (e && e.message); console.error(e); }
 })();
 
@@ -139,6 +142,15 @@ function spawnBeasts(gltfs) {
     r.root.position.set(-6 + i * 3, 0, 10); scene.add(r.root); beasts.push(r);
   });
 }
+// monture : mêmes appels que Player.js (createMount / updateMount, cavalier assis à mount.seat)
+let mountRig = null, mountIdx = -1;
+function toggleMount(idx) {
+  if (mountRig) { disposeMount(mountRig); mountRig = null; }
+  mountIdx = idx != null ? idx : (mountIdx + 1) % (MOUNTS.length + 1);
+  if (mountIdx >= MOUNTS.length) { mountIdx = -1; return; }
+  mountRig = createMount(MOUNTS[mountIdx]); scene.add(mountRig.group);
+}
+window.__mount = toggleMount;
 // foule de figurants en versions allégées (LOD 1 et 2), pour mesurer le coût d'une foule de joueurs distants
 const crowd = [];
 function spawnCrowd(n) {
@@ -158,6 +170,7 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Space') { e.preventDefault(); trigger('attack'); }
   if (e.code === 'KeyE') trigger('attack2'); if (e.code === 'KeyH') trigger('hit'); if (e.code === 'KeyX') trigger('death'); if (e.code === 'KeyR') trigger('revive');
   if (e.code === 'KeyL') spawnWolf();
+  if (e.code === 'KeyM') toggleMount();
   const d = /^Digit([1-8])$/.exec(e.code); if (d) toggleSlot(+d[1]);
 });
 addEventListener('keyup', (e) => keys.delete(e.code));
@@ -264,10 +277,11 @@ function step(dt, draw) {
     if (st.action) { st.actionT += dt; if (!st.hitDone && st.actionT > st.actionDur * 0.5) { st.hitDone = true; heroStrike(); } if (st.actionT >= st.actionDur) { st.action = null; st.actionT = 0; } }
     if (st.dead) st.actionT += dt;
     rig.root.position.set(st.x, st.y, st.z); rig.root.rotation.y = st.yaw;
+    if (mountRig) { mountRig.group.position.set(st.x, st.y, st.z); mountRig.group.rotation.y = st.yaw; updateMount(mountRig, dt, st.speed, false); rig.root.position.y += mountRig.seat; }
     for (const b of beasts) animateGlbRig(b, { speed: 0, grounded: true }, dt, 'creature');
     for (const f of foes) animateGlbRig(f, { speed: 0, grounded: true }, dt, 'humanoid');
     for (const c of crowd) animateGlbRig(c.rig, { speed: c.v, grounded: true }, dt, 'humanoid');
-    animateGlbRig(rig, { speed: st.speed, dead: st.dead, action: st.action, actionT: st.actionT, actionDur: st.actionDur, grounded: st.grounded, deadT: st.actionT }, dt, 'humanoid');
+    animateGlbRig(rig, { riding: !!mountRig, speed: mountRig ? 0 : st.speed, dead: st.dead, action: st.action, actionT: st.actionT, actionDur: st.actionDur, grounded: st.grounded, deadT: st.actionT }, dt, 'humanoid');
     stepWolf(dt);
     if (demo === 'attack' && !st.action && !st.dead) trigger('attack');
     const el = document.getElementById('st');

@@ -41,6 +41,7 @@ const CLIP_PATTERNS = {
   walk: [/^walk$/i, /walk/i, /jog/i],
   run: [/^run$/i, /run/i, /sprint/i, /gallop/i],
   jump: [/jump/i, /leap/i],
+  ride: [/^ride$/i, /sit/i, /mount/i, /saddle/i],
   hit: [/hit_?[ab]?$/i, /hitrec/i, /hurt/i, /react/i, /damage/i, /flinch/i, /get.?hit/i],
   death: [/death/i, /die/i, /dead/i, /defeat/i],
   interact: [/interact/i, /cheer/i, /wave/i, /pickup/i, /use/i, /spawn/i, /talk/i],
@@ -94,11 +95,12 @@ export const ModelLibrary = {
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
   },
 
-  gear: { armor: {}, weapons: {} },   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
+  gear: { armor: {}, weapons: {}, mounts: {} },   // mounts[kind] : montures GLB (cheval, griffon)   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
 
   _register(file, gltf) {
     const gm = (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {};
     if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot] = gltf; return; }
+    if (gm.type === 'mount' && gm.kind) { this.gear.mounts[gm.kind] = { gltf, meta: gm }; return; }
     if (gm.type === 'weapon' && gm.visual) { this.gear.weapons[gm.visual] = gltf; return; }
     let hasMesh = false;
     gltf.scene.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) hasMesh = true; });
@@ -262,6 +264,7 @@ export function animateGlbRig(rig, s, dt, kind = 'humanoid') {
   let want;
   if (dead) want = 'death';
   else if (acting) want = s.action;
+  else if (kind === 'humanoid' && s.riding && getAction(g, 'ride')) want = 'ride';   // en selle
   else if (kind === 'humanoid' && s.grounded === false && getAction(g, 'jump')) want = 'jump';
   else want = loco;
 

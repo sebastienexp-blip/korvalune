@@ -217,3 +217,16 @@ def skin(seed=11, tone=(0.42, 0.27, 0.20), warty=0.0):
     rough = np.clip(.58 + .12 * pore * .3 + .1 * bump, .4, .9)
     orm = np.stack([np.clip(.92 - .2 * bump, 0, 1), rough, np.zeros_like(rough)], -1)
     return srgb(col), to_normal(h, 3.0 + 3 * warty), srgb(orm), h
+
+
+def hair(seed=21, base=0.78):
+    """Poil court neutre et clair (à teinter à l'exécution : robe du cheval, plumage…)."""
+    rng = np.random.default_rng(seed)
+    S = SZ
+    streak = fbm(S, rng, octaves=((64, 1), (128, .7), (256, .5)), aniso=(1.0, 0.35))
+    low = fbm(S, rng, octaves=((3, 1), (7, .5)))
+    h = 0.5 + 0.03 * streak + 0.01 * low
+    col = np.ones((S, S, 3)) * base * (0.93 + 0.05 * norm01(streak)[..., None] + 0.03 * norm01(low)[..., None])
+    rough = np.clip(.72 + .08 * streak * .3, .5, .95)
+    orm = np.stack([np.clip(.95 - .05 * streak, 0, 1), rough, np.zeros_like(rough)], -1)
+    return srgb(col), to_normal(h, 3.0), srgb(orm), h

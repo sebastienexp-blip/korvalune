@@ -712,7 +712,7 @@ export class Player {
       updateMount(mr, dt, this.speed, this.flying);
       this.rig.root.position.y += mr.seat;
     }
-    animateHumanoid(this.rig, { speed: this.mount ? 0 : this.speed, grounded: this.mount ? true : this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch || !!this.mount }, dt);
+    animateHumanoid(this.rig, { speed: this.mount ? 0 : this.speed, grounded: this.mount ? true : this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch || !!this.mount, riding: !!this.mount }, dt);
   }
 
   serialize() {
