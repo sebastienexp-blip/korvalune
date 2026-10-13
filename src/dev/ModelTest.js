@@ -67,6 +67,8 @@ let rig = null, wolf = null;
     const WEAPONS = ['dague_du_veilleur', 'dague_gauche', 'baton_de_la_veille', 'arc_de_la_veille', 'ecu_de_la_veille', 'orbe_de_la_veille', 'carquois'];
     const FOES = ['bandit', 'elite', 'zealot', 'mage', 'archer', 'brute', 'troll', 'goblin'];
     const foeGltfs = await Promise.all(FOES.map((f) => load(`ennemis/ennemi_${f}.glb`)));
+    const BEASTS = ['boar', 'bear', 'skitter', 'alpha'];
+    const beastGltfs = await Promise.all(BEASTS.map((b) => load(`creatures/bete_${b}.glb`)));
     const weaponGltfs = await Promise.all(WEAPONS.map((w) => load(`armes/${w}.glb`)));
     const [body, lodG, lod2G, wolfG, swordG, ...pcs] = await Promise.all([
       load('veilleur/veilleur_corps.glb'), load('veilleur/veilleur_lod1.glb'), load('veilleur/veilleur_lod2.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
@@ -88,6 +90,7 @@ let rig = null, wolf = null;
     spawnWolf();
     spawnCrowd(12);
     spawnFoes(foeGltfs);
+    spawnBeasts(beastGltfs);
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
@@ -124,6 +127,17 @@ function spawnFoes(gltfs) {
   });
   const guard = tryCreateGlbRig('humanoid', { role: 'enemy:shield_guard', species: 'guard' });
   if (guard) { guard.root.position.set(9, 0, -9); scene.add(guard.root); foes.push(guard); }
+}
+// bêtes : mêmes appels que Enemy.js (rôle « enemy:… », espèce, échelle du monstre), animées comme des créatures
+const beasts = [];
+function spawnBeasts(gltfs) {
+  const names = ['boar', 'bear', 'skitter', 'alpha'], scale = { boar: 1.1, bear: 1.3, skitter: 0.55, alpha: 1.35 };
+  gltfs.forEach((g, i) => ModelLibrary._register(`bete_${names[i]}.glb`, g));
+  names.forEach((sp, i) => {
+    const r = tryCreateGlbRig('creature', { role: 'enemy:' + sp, species: sp, scale: scale[sp] });
+    if (!r) { console.warn('pas de modèle pour', sp); return; }
+    r.root.position.set(-6 + i * 3, 0, 10); scene.add(r.root); beasts.push(r);
+  });
 }
 // foule de figurants en versions allégées (LOD 1 et 2), pour mesurer le coût d'une foule de joueurs distants
 const crowd = [];
@@ -250,6 +264,7 @@ function step(dt, draw) {
     if (st.action) { st.actionT += dt; if (!st.hitDone && st.actionT > st.actionDur * 0.5) { st.hitDone = true; heroStrike(); } if (st.actionT >= st.actionDur) { st.action = null; st.actionT = 0; } }
     if (st.dead) st.actionT += dt;
     rig.root.position.set(st.x, st.y, st.z); rig.root.rotation.y = st.yaw;
+    for (const b of beasts) animateGlbRig(b, { speed: 0, grounded: true }, dt, 'creature');
     for (const f of foes) animateGlbRig(f, { speed: 0, grounded: true }, dt, 'humanoid');
     for (const c of crowd) animateGlbRig(c.rig, { speed: c.v, grounded: true }, dt, 'humanoid');
     animateGlbRig(rig, { speed: st.speed, dead: st.dead, action: st.action, actionT: st.actionT, actionDur: st.actionDur, grounded: st.grounded, deadT: st.actionT }, dt, 'humanoid');

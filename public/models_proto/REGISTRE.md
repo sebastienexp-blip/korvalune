@@ -23,3 +23,6 @@ Régénération : voir `tools/models/README.md`.
 
 ## Ennemis humanoïdes (Lot 3)
 Tous originaux, générés par `tools/models/build_foes.py` (aucune ressource tierce). Fichiers : `ennemis/ennemi_{bandit,elite,zealot,mage,archer,brute,troll,goblin}.glb`, textures de peau et d'os dans `ennemis/tex/`, textures d'acier/cuir/drap/argent partagées avec `veilleur/tex/`.
+
+## Bêtes (Lot 3)
+Originales, générées par `tools/models/build_beasts.py` : `creatures/bete_{boar,bear,skitter,alpha}.glb`, textures `creatures/tex/` (pelage et os). Le loup (`creatures/loup_des_cendres.glb`) a été régénéré avec les métadonnées d'espèce.

@@ -17,5 +17,5 @@ def materials(quick=False):
 
 if __name__ == '__main__':
     out = sys.argv[1]
-    st = write_glb(out, G.parts, G.SK, materials('--quick' in sys.argv), A.build())
+    st = write_glb(out, G.parts, G.SK, materials('--quick' in sys.argv), A.build(), extras={'korvalune': {'type': 'creature', 'species': 'wolf', 'skeleton': 'loup', 'note': 'Loup des Cendres'}})
     print(st, os.path.getsize(out))

@@ -127,8 +127,8 @@ export const ModelLibrary = {
     }
     { // ennemis humanoïdes livrés avec leur espèce dans les métadonnées du fichier (extras.korvalune.species)
       const sp = species && (SPECIES_ALIAS[species] || species);
-      const e = sp && this.characters.find((c) => c.meta && c.meta.species === sp);
-      if (e && kind === 'humanoid') return e;
+      const e = sp && this.characters.find((c) => c.meta && c.meta.species === sp && (c.meta.type === 'creature') === (kind === 'creature'));
+      if (e) return e;
     }
     const keyOf = (r) => ROLE_KEYWORDS[r] || ROLE_KEYWORDS[String(r).split(':')[0]];
     const lists = [keyOf(role), species && ROLE_KEYWORDS[`species:${species}`]].filter(Boolean);
