@@ -1,5 +1,7 @@
 // V10.10 — Modèles 3D simples (boîtes, léger pour mobile) des chevaux et griffons. Axe avant = +Z, origine au sol.
 import * as THREE from 'three';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { ModelLibrary } from './ModelLibrary.js';
 
 const mat = (c, o = {}) => new THREE.MeshLambertMaterial({ color: c, ...o });
 const box = (w, h, d, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); return o; };
@@ -50,7 +52,49 @@ function buildGriffon(g, def, P) {
   P.head = head; P.neck = neck; P.seat = 0.72;
 }
 
+// ---- V10.41 : montures en GLB (cheval, griffon) — si le fichier est présent dans ModelLibrary.gear.mounts, sinon rendu procédural ----
+function createGlbMount(def, entry) {
+  const group = new THREE.Group();
+  const inst = SkeletonUtils.clone(entry.gltf.scene);
+  group.add(inst);
+  const rec = entry.meta.recolor || {};              // nom de matériau → clé de couleur dans def.colors
+  inst.traverse((o) => {
+    if (!(o.isMesh || o.isSkinnedMesh)) return;
+    o.castShadow = true; o.frustumCulled = false;
+    const mats = (Array.isArray(o.material) ? o.material : [o.material]).map((m) => {
+      const c = m.clone();
+      const key = rec[m.name];
+      if (key && def.colors && def.colors[key] != null) c.color.set(def.colors[key]).multiplyScalar(entry.meta.recolorGain || 1);
+      return c;
+    });
+    o.material = mats.length === 1 ? mats[0] : mats;
+  });
+  const mixer = new THREE.AnimationMixer(inst);
+  const actions = {};
+  for (const c of entry.gltf.animations || []) actions[c.name.toLowerCase()] = mixer.clipAction(c);
+  return { group, parts: {}, def, t: Math.random() * 6, seat: entry.meta.seat ?? 0.7, glb: { mixer, actions, cur: null, kind: def.kind } };
+}
+
+function updateGlbMount(m, dt, speed, flying) {
+  const g = m.glb;
+  const want = flying ? (speed > 1.5 ? 'fly' : 'glide') : speed > 4.6 ? 'run' : speed > 0.4 ? 'walk' : 'idle';
+  const pick = (n) => g.actions[n] || (n === 'glide' ? g.actions.fly : null) || (n === 'run' ? g.actions.walk : null) || g.actions.idle || null;
+  const act = pick(want);
+  if (act && g.cur !== act) {
+    act.reset().play();
+    if (g.cur) g.cur.crossFadeTo(act, 0.25, false); else act.fadeIn(0.2);
+    g.cur = act;
+  }
+  if (g.cur) {   // la cadence suit la vitesse réelle
+    const k = want === 'walk' ? Math.min(1.6, Math.max(0.6, speed / 2.2)) : want === 'run' ? Math.min(1.5, Math.max(0.8, speed / 7)) : 1;
+    g.cur.timeScale = k;
+  }
+  g.mixer.update(dt);
+}
+
 export function createMount(def) {
+  const glbEntry = ModelLibrary.gear.mounts[def.kind];
+  if (glbEntry) { try { return createGlbMount(def, glbEntry); } catch (e) { console.warn('[V10.41] monture GLB ignorée', e); } }
   const group = new THREE.Group();
   const P = {};
   if (def.kind === 'griffon') buildGriffon(group, def, P); else buildHorse(group, def, P);
@@ -59,6 +103,7 @@ export function createMount(def) {
 
 // speed : vitesse au sol (m/s) ; flying : monture volante en vol
 export function updateMount(m, dt, speed = 0, flying = false) {
+  if (m.glb) return updateGlbMount(m, dt, speed, flying);
   const P = m.parts; m.t += dt;
   const moving = speed > 0.4, k = Math.min(1, speed / 7);
   if (P.legs) {
@@ -78,5 +123,10 @@ export function updateMount(m, dt, speed = 0, flying = false) {
 export function disposeMount(m) {
   if (!m) return;
   if (m.group.parent) m.group.parent.remove(m.group);
-  m.group.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
+  m.group.traverse((o) => {
+    if (!o.isMesh) return;
+    if (!m.glb) o.geometry.dispose();       // les géométries GLB sont partagées avec le cache
+    (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose());
+  });
+  if (m.glb) m.glb.mixer.stopAllAction();
 }

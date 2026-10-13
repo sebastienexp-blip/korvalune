@@ -16,6 +16,7 @@ import { normalizeLook } from '../data/looks.js';
 import { CLASSES, PRIMARY_STAT, CLASS_POWER, SKILLS, getClassSkillPool } from '../combat/Classes.js';
 import { getItem, RARITY, resolveItem } from '../inventory/Item.js';
 import { weaponFamily, canUseClassSkills, weaponHint, FAMILY_NAMES } from '../combat/WeaponRules.js';
+import { refreshGlbGear } from '../visual/GlbEquipment.js';
 
 const KEY_TO_AXIS = { KeyW: 1, KeyS: -1 };
 
@@ -277,6 +278,11 @@ export class Player {
   }
 
   refreshGearVisuals(equipment) {
+    if (this.rig.glbSkeleton) {          // corps GLB : équipement en pièces séparées
+      this._equipRef = equipment;
+      try { refreshGlbGear(this.rig, equipment.slots, resolveItem); } catch (e) { console.warn('[V10.41] équipement GLB', e); }
+      return;
+    }
     const ev = this.rig.equipVisuals;
     if (!ev) return;
     const tint = (mat, slotItem) => {
@@ -706,7 +712,7 @@ export class Player {
       updateMount(mr, dt, this.speed, this.flying);
       this.rig.root.position.y += mr.seat;
     }
-    animateHumanoid(this.rig, { speed: this.mount ? 0 : this.speed, grounded: this.mount ? true : this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch || !!this.mount }, dt);
+    animateHumanoid(this.rig, { speed: this.mount ? 0 : this.speed, grounded: this.mount ? true : this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch || !!this.mount, riding: !!this.mount }, dt);
   }
 
   serialize() {

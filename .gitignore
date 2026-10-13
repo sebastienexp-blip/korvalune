@@ -3,3 +3,4 @@
 /data
 *.zip
 /android
+tools/models/__pycache__/

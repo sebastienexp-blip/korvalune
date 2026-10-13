@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mulberry32 } from '../core/math.js';
 import { regionAt } from './Continent.js';
 import { makeLabel } from '../ui/Label.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 
 // V7.0 — Points d'intérêt du continent : repères visibles de loin, un ou deux par région,
 // avec une zone aplanie autour pour que les bâtiments tiennent bien sur le relief.
@@ -77,6 +78,11 @@ export function planLandmarks(world) {
   return out;
 }
 
+const LM_GLB = { windmill: ['lm_moulin', 'lm_moulin_helice'], menhirs: ['lm_menhirs'], farm: ['lm_ferme'], camp: ['lm_camp', 'lm_flamme'], altar: ['lm_autel', 'lm_autel_sang'],
+  fortress: ['lm_forteresse'], watchtower: ['lm_tour_guet', 'lm_tour_brulee', 'lm_flamme'], obelisk: ['lm_obelisque', 'lm_obelisque_coeur'], arch: ['lm_arche'],
+  fountain: ['lm_fontaine', 'lm_orbe'], temple: ['lm_temple'], maw: ['lm_gueule'], monolith: ['lm_monolithe', 'lm_rune'], ring: ['lm_anneau'] };
+const LM_ALL = [...new Set(Object.values(LM_GLB).flat())];
+
 export function buildLandmarks(world) {
   const root = new THREE.Group();
   world.group.add(root);
@@ -100,7 +106,47 @@ export function buildLandmarks(world) {
     const box = (x, z, hw, hd, h) => world.addBox(p.x + x, p.z + z, hw, hd, y - 1, y + h);
     const cyl = (r0, r1, h, seg = 8) => new THREE.CylinderGeometry(r0, r1, h, seg);
     const bx = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-    switch (p.kind) {
+    const useGlb = ModelLibrary.hasTown(LM_ALL) && !!ModelLibrary.nature.oldoak;
+    // V10.41 : repères GLB (pièces animées séparées : hélice, flammes, cœur d'obélisque, orbe, rune)
+    const G = (kind, x = 0, yy = 0, z = 0, ry = 0, opts = {}) => { const o = ModelLibrary.townInstance(kind, opts); o.position.set(x, yy, z); o.rotation.y = ry; g.add(o); return o; };
+    const colsOf = (kind) => { const m = ModelLibrary.townMeta(kind); for (const [x, z, r] of m.colliders || []) col(x, z, r); for (const [x, z, hw, hd, h] of m.boxes || []) box(x, z, hw, hd, h); };
+    const glbLandmark = () => {
+      switch (p.kind) {
+        case 'windmill': { G('lm_moulin'); const hub = G('lm_moulin_helice', 0, 8, 3.2); anim.push((t) => { hub.rotation.z = t * 0.4; }); col(0, 0, 3.4); break; }
+        case 'menhirs': G('lm_menhirs'); colsOf('lm_menhirs'); break;
+        case 'farm': G('lm_ferme'); colsOf('lm_ferme'); break;
+        case 'oldtree': {
+          const geo = ModelLibrary.natureGeometry('oldoak');
+          const mt = ModelLibrary.natureMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 }));
+          if (p.id === 'willow') mt.color.setRGB(0.62, 0.72, 0.5);
+          const o = new THREE.Mesh(geo, mt); o.castShadow = o.receiveShadow = true; o.rotation.y = (p.x * 0.37) % 6.28; g.add(o);
+          col(0, 0, 3); break;
+        }
+        case 'camp': { G('lm_camp'); const fl = G('lm_flamme'); anim.push((t) => { fl.scale.set(1, 0.85 + Math.sin(t * 9) * 0.2, 1); }); colsOf('lm_camp'); break; }
+        case 'altar': G(p.id === 'bloodaltar' ? 'lm_autel_sang' : 'lm_autel'); box(0, 0, 2, 1.1, 1.6); break;
+        case 'fortress': G('lm_forteresse'); colsOf('lm_forteresse'); break;
+        case 'watchtower': {
+          G(p.burnt ? 'lm_tour_brulee' : 'lm_tour_guet'); col(0, 0, 2.8);
+          if (p.burnt) { const fl = G('lm_flamme', 0, 8.9, 0); fl.scale.set(2, 2, 2); anim.push((t) => { fl.scale.set(2, 2 * (0.8 + Math.sin(t * 8) * 0.25), 2); }); }
+          break;
+        }
+        case 'obelisk': { G('lm_obelisque'); const o = G('lm_obelisque_coeur'); col(0, 0, 1.6); anim.push((t) => { o.rotation.y = t * 0.5; }); break; }
+        case 'arch': G('lm_arche'); col(-5, 0, 1.1); col(5, 0, 1.1); break;
+        case 'fountain': { G('lm_fontaine'); const orb = G('lm_orbe', 0, 4, 0); anim.push((t) => { orb.position.y = 4 + Math.sin(t * 1.6) * 0.3; orb.rotation.y = t; }); col(0, 0, 5); break; }
+        case 'temple': G('lm_temple'); colsOf('lm_temple'); break;
+        case 'maw': G('lm_gueule'); colsOf('lm_gueule'); break;
+        case 'monolith': {
+          G('lm_monolithe', 0, 0, 0, 0); box(0, 0, 2, 1.4, 18);
+          const rune = G('lm_rune', 0, 10, 0.85, 0.3, { ownGlow: true }); const rm = rune.children[0] && rune.children[0].material;
+          if (rm) anim.push((t) => { rm.color.setHSL(0.07, 1, 0.55 + Math.sin(t * 2) * 0.15); });
+          break;
+        }
+        case 'ring': G('lm_anneau'); colsOf('lm_anneau'); break;
+        default: break;
+      }
+    };
+    switch (useGlb && LM_GLB[p.kind] ? 'glb' : p.kind) {
+      case 'glb': glbLandmark(); break;
       case 'windmill': {
         add(cyl(2.4, 3.2, 8, 8), stone, 0, 4, 0); add(new THREE.ConeGeometry(3.4, 3, 8), roof, 0, 9.4, 0);
         const hub = new THREE.Group(); hub.position.set(0, 8, 3.2); g.add(hub);
@@ -209,16 +255,24 @@ function buildBorderGates(world, root, mat) {
       const g = new THREE.Group();
       g.position.set(x, world.heightAt(x, z), z);
       g.rotation.y = phi;
-      const add = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = true; g.add(o); return o; };
-      for (const sx of [-5.6, 5.6]) {
-        add(new THREE.BoxGeometry(1.8, 8, 1.8), stone, sx, 4, 0);
-        add(new THREE.BoxGeometry(2.4, 0.8, 2.4), dark, sx, 0.4, 0);
-        add(new THREE.BoxGeometry(2.4, 0.7, 2.4), dark, sx, 8.2, 0);
-        world.addCircle(x + Math.cos(phi) * sx, z - Math.sin(phi) * sx, 1.1);
+      const glbGate = ModelLibrary.hasTown(['lm_portique', 'lm_portique_banniere']);
+      if (glbGate) {
+        g.add(ModelLibrary.townInstance('lm_portique'));
+        const cl = ModelLibrary.townInstance('lm_portique_banniere', { matOverride: { cloth: { color: rb.color, emissive: rb.color, emissiveIntensity: 0.18 } } });
+        cl.position.set(0, 6.5, 0.05); g.add(cl);
+        for (const sx of [-5.6, 5.6]) world.addCircle(x + Math.cos(phi) * sx, z - Math.sin(phi) * sx, 1.1);
+      } else {
+        const add = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = true; g.add(o); return o; };
+        for (const sx of [-5.6, 5.6]) {
+          add(new THREE.BoxGeometry(1.8, 8, 1.8), stone, sx, 4, 0);
+          add(new THREE.BoxGeometry(2.4, 0.8, 2.4), dark, sx, 0.4, 0);
+          add(new THREE.BoxGeometry(2.4, 0.7, 2.4), dark, sx, 8.2, 0);
+          world.addCircle(x + Math.cos(phi) * sx, z - Math.sin(phi) * sx, 1.1);
+        }
+        add(new THREE.BoxGeometry(13.4, 1.3, 1.9), stone, 0, 8.4, 0);
+        const cloth = new THREE.Mesh(new THREE.PlaneGeometry(9.2, 2.6), new THREE.MeshStandardMaterial({ color: new THREE.Color(rb.color), roughness: 0.9, side: THREE.DoubleSide, emissive: new THREE.Color(rb.color), emissiveIntensity: 0.18 }));
+        cloth.position.set(0, 6.5, 0.05); g.add(cloth);
       }
-      add(new THREE.BoxGeometry(13.4, 1.3, 1.9), stone, 0, 8.4, 0);
-      const cloth = new THREE.Mesh(new THREE.PlaneGeometry(9.2, 2.6), new THREE.MeshStandardMaterial({ color: new THREE.Color(rb.color), roughness: 0.9, side: THREE.DoubleSide, emissive: new THREE.Color(rb.color), emissiveIntensity: 0.18 }));
-      cloth.position.set(0, 6.5, 0.05); g.add(cloth);
       try {
         const lb = makeLabel(`${rb.name} — niv. ${rb.levels[0]}-${rb.levels[1]}`, { color: rb.color, size: 40, width: 768, height: 96, scale: 7.5 });
         lb.position.set(0, 10.6, 0); g.add(lb);

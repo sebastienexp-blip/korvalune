@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { grassTuftGeometry, flowerGeometry } from './Foliage.js';
 import { addSway } from './Safe.js';
+import { ModelLibrary } from './ModelLibrary.js';
 import { fbm } from '../world/noise.js';
 import { CONFIG } from '../core/config.js';
 
@@ -25,7 +26,9 @@ export class GrassField {
     const total = cells * cells * density;
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: THREE.DoubleSide });
     addSway(mat, { amp: 0.14, height: 0.6, fadeR: this.R - 1, speed: 1.9 });
-    this.grass = new THREE.InstancedMesh(grassTuftGeometry(), mat, total);
+    const glbGrass = ModelLibrary.nature && ModelLibrary.nature.grass ? ModelLibrary.natureGeometry('grass') : null;
+    if (glbGrass) ModelLibrary.natureMaterial(mat);
+    this.grass = new THREE.InstancedMesh(glbGrass || grassTuftGeometry(), mat, total);
     this.grass.frustumCulled = false;
     this.grass.receiveShadow = false;
     this.grass.castShadow = false;
@@ -33,7 +36,9 @@ export class GrassField {
     // fleurs : 1 par cellule maximum, en prairies (bruit basse fréquence)
     const fmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide });
     addSway(fmat, { amp: 0.07, height: 0.35, fadeR: this.R - 1, speed: 2.2 });
-    this.flowers = new THREE.InstancedMesh(flowerGeometry(), fmat, cells * cells);
+    const glbFlower = ModelLibrary.nature && ModelLibrary.nature.flower ? ModelLibrary.natureGeometry('flower') : null;
+    if (glbFlower) ModelLibrary.natureMaterial(fmat);
+    this.flowers = new THREE.InstancedMesh(glbFlower || flowerGeometry(), fmat, cells * cells);
     this.flowers.frustumCulled = false;
     const col = new THREE.Color();
     this._flowerPalette = [0xffffff, 0xffd83a, 0xff6a8a, 0x9a7aff, 0xff9a3a, 0x6ab8ff].map((c) => col.set(c).clone());

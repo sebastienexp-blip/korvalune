@@ -4,6 +4,9 @@ import { scaledEnemyStats } from '../data/difficulty.js';
 import { tickStatus, vulnMult } from '../combat/Status.js';
 import { share } from '../network/NetShare.js';
 
+const BOSS_SPECIES = { guardian_ruins: 'gardien', spire_warden: 'gardien', sovereign_void: 'seigneur' };
+const BOSS_SPECIES_SET = new Set(Object.values(BOSS_SPECIES));
+
 // Boss à phases multiples. Les statistiques (PV/dégâts/défense/XP/or) sont
 // calculées à partir du niveau via computeEnemyStats (espèce "boss" : très
 // résistant et puissant par rapport à un ennemi normal du même niveau) —
@@ -30,7 +33,9 @@ export class Boss {
     this.yaw = 0;
     this.alive = true;
     const scale = opts.scale || 2.6;
-    this.rig = createCreature({ fur: opts.fur ?? 0x3a3f46, belly: opts.belly ?? 0x8f97a3, eye: opts.eye ?? 0xff3a3a, scale, bodyLen: 1.3, snout: 0.45, tusks: true, role: 'boss:' + (opts.id || 'boss'), species: 'bear', tint: opts.fur ?? null });
+    this.rig = createCreature({ fur: opts.fur ?? 0x3a3f46, belly: opts.belly ?? 0x8f97a3, eye: opts.eye ?? 0xff3a3a, scale, bodyLen: 1.3, snout: 0.45, tusks: true, role: 'boss:' + (opts.id || 'boss'), species: BOSS_SPECIES[opts.id] || 'bear', tint: opts.fur ?? null });
+    // modèles GLB de boss (humanoïdes massifs, livrés comme « créature ») : normalisés à 1 m, on les agrandit à taille de boss
+    if (this.rig.glb && this.rig.glb.entry.meta && BOSS_SPECIES_SET.has(this.rig.glb.entry.meta.species)) this.rig.root.scale.multiplyScalar(1.7);
     this.rig.root.position.copy(this.pos);
     scene.add(this.rig.root);
     this.rig.root.visible = false;

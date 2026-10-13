@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 import { mulberry32 } from '../core/math.js';
 import { stoneTexture, glowTexture, ringTexture, runeTexture, safeTexture } from '../visual/Textures.js';
 
@@ -170,10 +171,13 @@ export function buildRiftWorld(world, layout, theme) {
   const lavaPools = [];
   const buildStyled = () => {
     const half = C / 2, rr = (a, b) => a + rnd() * (b - a);
-    const rockGeo = track(new THREE.IcosahedronGeometry(1, 0));
+    // V10.42 — formes .glb (même repère unité que les primitives) ; matériaux et couleurs de thème inchangés ; repli = primitives
+    const gm = (kind, fb) => { try { return ModelLibrary.townMergedGeometry(kind) || fb; } catch { return fb; } };
+    const rockGeo = gm('biome_roche_fer', track(new THREE.IcosahedronGeometry(1, 0)));
     const boxGeo = track(new THREE.BoxGeometry(1, 1, 1));
-    const cylGeo = track(new THREE.CylinderGeometry(0.7, 1, 1, 7));
-    const coneGeo = track(new THREE.ConeGeometry(1, 1, 6));
+    const barkGeo = track(new THREE.CylinderGeometry(0.7, 1, 1, 7));
+    const cylGeo = gm('biome_colonne', barkGeo);
+    const coneGeo = gm('biome_glace', track(new THREE.ConeGeometry(1, 1, 6)));
     const sphGeo = track(new THREE.IcosahedronGeometry(1, 1));
     const treeMat = mk(style === 'graveyard' ? 0x2a2622 : 0x3d4a2a);
     const barkMat = mk(0x3a2a1e);
@@ -254,7 +258,7 @@ export function buildRiftWorld(world, layout, theme) {
       m.instanceMatrix.needsUpdate = true; group.add(m); styled.push(m); return m;
     };
     build(items.rock, rockGeo, wallMat); build(items.box, boxGeo, wallMat); build(items.cyl, cylGeo, trimMat);
-    build(items.cone, coneGeo, trimMat); build(items.bark, cylGeo, barkMat); build(items.canopy, sphGeo, treeMat); build(items.stele, boxGeo, trimMat);
+    build(items.cone, coneGeo, trimMat); build(items.bark, barkGeo, barkMat); build(items.canopy, sphGeo, treeMat); build(items.stele, boxGeo, trimMat);
     // flaques de lave : disques lumineux
     if (lavaPools.length) {
       const lavaMat = track(new THREE.MeshBasicMaterial({ color: 0xff5a1a, fog: true }));
@@ -357,7 +361,7 @@ export function buildRiftWorld(world, layout, theme) {
       crystalSpots.push({ x, z, s: 0.6 + rnd() * 1.1, r: rnd() * 6 });
     }
   }
-  const crystalGeo = track(new THREE.OctahedronGeometry(1, 0));
+  const crystalGeo = ModelLibrary.townMergedGeometry('biome_cristal') || track(new THREE.OctahedronGeometry(1, 0));
   const crystals = new THREE.InstancedMesh(crystalGeo, crystalMat, crystalSpots.length);
   crystalSpots.forEach((s, i) => {
     dummy.position.set(s.x, s.s * 1.1, s.z); dummy.scale.set(s.s * 0.55, s.s * 1.5, s.s * 0.55); dummy.rotation.set(0.15, s.r, 0.1); dummy.updateMatrix();

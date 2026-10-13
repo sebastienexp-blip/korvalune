@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Bibliothèque de modèles 3D (GLB) optionnels — V3.
 //
@@ -24,7 +25,7 @@ const ROLE_KEYWORDS = {
   'player:mage': ['mage', 'wizard', 'sorcer', 'witch', 'cleric'],
   'player:archer': ['ranger', 'archer', 'hunter', 'elf', 'rogue'],
   'player:assassin': ['rogue', 'assassin', 'thief', 'ninja', 'ranger'],
-  npc: ['villager', 'peasant', 'merchant', 'civilian', 'farmer', 'cleric', 'knight'],
+  npc: ['villageois', 'villager', 'peasant', 'merchant', 'civilian', 'farmer', 'cleric', 'knight'],
   'species:bandit': ['bandit', 'rogue', 'barbarian', 'goblin', 'orc', 'skeleton_minion', 'skeleton'],
   'species:elite': ['skeleton_warrior', 'warrior', 'knight', 'orc', 'barbarian', 'skeleton'],
   'species:brute': ['ogre', 'orc', 'golem', 'troll', 'brute', 'barbarian'],
@@ -41,6 +42,7 @@ const CLIP_PATTERNS = {
   walk: [/^walk$/i, /walk/i, /jog/i],
   run: [/^run$/i, /run/i, /sprint/i, /gallop/i],
   jump: [/jump/i, /leap/i],
+  ride: [/^ride$/i, /sit/i, /mount/i, /saddle/i],
   hit: [/hit_?[ab]?$/i, /hitrec/i, /hurt/i, /react/i, /damage/i, /flinch/i, /get.?hit/i],
   death: [/death/i, /die/i, /dead/i, /defeat/i],
   interact: [/interact/i, /cheer/i, /wave/i, /pickup/i, /use/i, /spawn/i, /talk/i],
@@ -65,6 +67,20 @@ export const ModelLibrary = {
     return this._promise;
   },
 
+  /** Textures de sol (détail + normales) livrées dans models/tex ; absentes → le monde garde sa texture dessinée par code. */
+  _loadTerrain(base, t) {
+    this.terrainTex = null;
+    if (!t || !t.detail) return;
+    const L = new THREE.TextureLoader();
+    const get = (u) => new Promise((res) => L.load(`${base}models/${u}`, res, undefined, () => res(null)));
+    this._terrainP = Promise.all([get(t.detail), t.normal ? get(t.normal) : null]).then(([detail, normal]) => {
+      if (!detail) return;
+      detail.colorSpace = THREE.SRGBColorSpace;
+      for (const x of [detail, normal]) if (x) { x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 4; }
+      this.terrainTex = { detail, normal };
+    }).catch(() => {});
+  },
+
   async _load(timeoutMs) {
     const base = (import.meta.env && import.meta.env.BASE_URL) || '/';
     let index;
@@ -74,42 +90,186 @@ export const ModelLibrary = {
       index = await r.json();
     } catch (e) { return; }
     this.mapping = index.mapping || {};
+    this._loadTerrain(base, index.terrain);
     const files = (index.files || []).filter((f) => /\.(glb|gltf)$/i.test(f));
     if (!files.length) return;
     const loader = new GLTFLoader();
-    const started = performance.now();
-    let i = 0;
+    // V10.42 — ordre de priorité (le décor et le héros d'abord, montures/boss en dernier) ; la coupure ne se déclenche que si plus
+    // aucun fichier n'aboutit pendant `stallMs` (réseau lent ≠ réseau bloqué), avec un plafond global `hardMs`.
+    const prio = (f) => /^(ville_|nature_)/.test(f) ? 0 : /veilleur|armure|casque|epaul|plastron|jambi|botte|gant/i.test(f) ? 1 : /^(ennemi_|bete_|loup)/.test(f) ? 2 : /^(boss_|monture_)/.test(f) ? 4 : 3;
+    files.sort((a, b) => prio(a) - prio(b) || a.localeCompare(b));
+    const stallMs = Math.max(timeoutMs * 0.6, 12000), hardMs = Math.max(timeoutMs * 4, 90000);
+    const started = performance.now(); let last = started, done = 0, i = 0;
+    const alive = () => { const n = performance.now(); return n - last < stallMs && n - started < hardMs; };
     const worker = async () => {
-      while (i < files.length && performance.now() - started < timeoutMs) {
+      while (i < files.length && alive()) {
         const file = files[i++];
         try {
           const gltf = await loader.loadAsync(`${base}models/${encodeURIComponent(file)}`);
           this._register(file, gltf);
         } catch (e) { console.warn('[V3] GLB ignoré :', file, e); }
+        last = performance.now(); done++;
+        if (this.onProgress) try { this.onProgress(done, files.length); } catch { /* affichage facultatif */ }
       }
     };
-    await Promise.all([worker(), worker(), worker()]);
+    await Promise.all([worker(), worker(), worker(), worker(), this._terrainP]);
+    if (done < files.length) console.warn(`[V3] chargement interrompu : ${done}/${files.length} modèles`);
     this.ready = this.characters.length > 0;
     this.count = this.characters.length;
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
   },
 
+  nature: {},
+  town: {},            // kit « ville » GLB (V10.41 Lot 6) : kind → gltf          // décor statique GLB (V10.41 Lot 5) : kind[_lo] → gltf
+  gear: { armor: {}, weapons: {}, mounts: {} },   // mounts[kind] : montures GLB (cheval, griffon)   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
+
+  /** Géométrie fusionnée (un seul maillage, attributs position/normal/uv/color) d'un décor GLB, ou null si absent. */
+  natureGeometry(kind, lod = 'hi') {
+    const key = lod === 'lo' && this.nature[kind + '_lo'] ? kind + '_lo' : kind;
+    const g = this.nature[key];
+    if (!g) return null;
+    this._natGeo ||= {};
+    if (this._natGeo[key]) return this._natGeo[key];
+    let mesh = null;
+    g.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
+    if (!mesh) return null;
+    const geo = mesh.geometry.clone();
+    const c = geo.getAttribute('color');
+    const n = geo.getAttribute('position').count;
+    const col = new Float32Array(n * 3).fill(1);
+    if (c) for (let i = 0; i < n; i++) { col[i * 3] = c.getX(i); col[i * 3 + 1] = c.getY(i); col[i * 3 + 2] = c.getZ(i); }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    this._natMap ||= mesh.material && mesh.material.map;
+    return (this._natGeo[key] = geo);
+  },
+
+  /** Prépare un matériau (vertexColors, éventuellement balancement) pour l'atlas de nature : texture, découpe des feuilles, normales de feuillage non retournées. */
+  natureMaterial(mat) {
+    if (!this._natMap) return mat;
+    mat.map = this._natMap; mat.alphaTest = 0.5; mat.side = THREE.DoubleSide; mat.vertexColors = true;
+    const prev = mat.onBeforeCompile, key = mat.customProgramCacheKey ? mat.customProgramCacheKey() : '';
+    mat.onBeforeCompile = (sh, r) => {
+      if (prev) prev(sh, r);
+      sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal *= faceDirection;');
+    };
+    mat.customProgramCacheKey = () => key + '_nat';
+    mat.needsUpdate = true;
+    return mat;
+  },
+
+  hasTown(kinds) { return kinds.every((k) => this.town[k]); },
+  townMeta(kind) { const g = this.town[kind]; return (g && g.asset && g.asset.extras && g.asset.extras.korvalune) || {}; },
+
+  _townPart(kind) {
+    this._townParts ||= {};
+    if (this._townParts[kind]) return this._townParts[kind];
+    const g = this.town[kind]; const parts = [];
+    if (g) g.scene.traverse((o) => { if (o.isMesh) parts.push({ geo: o.geometry, src: o.material, name: o.material.name }); });
+    return (this._townParts[kind] = parts);
+  },
+
+  /** Matériau partagé du kit (une seule copie des textures pour tous les fichiers) ; `window` = matériau de fenêtre du monde (nuit). */
+  townMaterial(name, src, windowMat) {
+    if (name === 'window' && windowMat) return windowMat;
+    if (name === 'glow') { this._townMats ||= {}; return (this._townMats.glow ||= new THREE.MeshBasicMaterial({ vertexColors: true })); }
+    this._townMats ||= {};
+    if (!this._townMats[name]) { const m = src.clone(); m.vertexColors = true; this._townMats[name] = m; }
+    return this._townMats[name];
+  },
+
+  _townGeo(kind, i, tint) {
+    const part = this._townPart(kind)[i];
+    const key = `${kind}|${i}|${tint ? [tint.wall, tint.roof, tint.trim].join(',') : ''}`;
+    this._townGeos ||= {};
+    if (this._townGeos[key]) return this._townGeos[key];
+    const geo = part.geo.clone();
+    const c = part.geo.getAttribute('color'), n = geo.getAttribute('position').count;
+    const out = new Float32Array(n * 3).fill(1);
+    const T = tint ? { wall: new THREE.Color(tint.wall), roof: new THREE.Color(tint.roof), trim: new THREE.Color(tint.trim ?? tint.roof) } : null;
+    if (c) {
+      for (let k = 0; k < n; k++) {
+        let r = c.getX(k), gg = c.getY(k), b = c.getZ(k);
+        if (T && c.itemSize === 4) {
+          const a = c.getW(k), t = Math.abs(a - 0.8) < 0.05 ? T.wall : Math.abs(a - 0.6) < 0.05 ? T.roof : Math.abs(a - 0.4) < 0.05 ? T.trim : null;
+          if (t) { r *= t.r; gg *= t.g; b *= t.b; }
+        }
+        out[k * 3] = r; out[k * 3 + 1] = gg; out[k * 3 + 2] = b;
+      }
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(out, 3));
+    geo.userData.shared = true;   // jamais libérée par les cosmétiques / décors qui la partagent
+    return (this._townGeos[key] = geo);
+  },
+
+  /** Forme seule d'un module (toutes ses parties fusionnées, sans couleurs de sommets) : pour les décors dont la teinte/matériau vient du code (donjons à thème). null si absent. */
+  townMergedGeometry(kind) {
+    if (!this.town[kind]) return null;
+    this._mergedGeo ||= {};
+    if (this._mergedGeo[kind]) return this._mergedGeo[kind];
+    const gs = this._townPart(kind).map((p) => { const g = p.geo.clone(); for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(a)) g.deleteAttribute(a); return g.index ? g.toNonIndexed() : g; });
+    const m = gs.length ? mergeGeometries(gs, false) : null;
+    return (this._mergedGeo[kind] = m);
+  },
+
+  /** Instance d'un module de la ville (Group) ; tint = { wall, roof, trim } (couleurs hex) pour les rôles de sommets. */
+  townInstance(kind, { tint = null, windowMat = null, shadow = true, ownGlow = false, matOverride = null } = {}) {
+    const grp = new THREE.Group();
+    this._townPart(kind).forEach((p, i) => {
+      let mat = this.townMaterial(p.name, p.src, windowMat);
+      if (ownGlow && p.name === 'glow') mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true });          // matériau propre : couleur/opacité animables
+      else if (matOverride && matOverride[p.name]) { mat = mat.clone(); const o = matOverride[p.name]; if (o.color !== undefined) mat.color.set(o.color); if (o.emissive !== undefined && mat.emissive) { mat.emissive.set(o.emissive); mat.emissiveIntensity = o.emissiveIntensity ?? 0.5; } }
+      const m = new THREE.Mesh(this._townGeo(kind, i, tint), mat);
+      m.castShadow = shadow && p.name !== 'window'; m.receiveShadow = true;
+      grp.add(m);
+    });
+    return grp;
+  },
+
+  /** Un InstancedMesh par matériau du module ; le même tableau de matrices s'applique à tous. */
+  townInstanced(kind, count, { windowMat = null, shadow = true, tint = null } = {}) {
+    return this._townPart(kind).map((p, i) => {
+      const im = new THREE.InstancedMesh(this._townGeo(kind, i, tint), this.townMaterial(p.name, p.src, windowMat), count);
+      im.castShadow = shadow && p.name !== 'window'; im.receiveShadow = true; im.frustumCulled = false;
+      return im;
+    });
+  },
+
   _register(file, gltf) {
+    const gm = (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {};
+    if (gm.type === 'armor' && gm.slot) { ((this.gear.armor[gm.skeleton || 'default']) ||= {})[gm.slot] = gltf; return; }
+    if (gm.type === 'mount' && gm.kind) { this.gear.mounts[gm.kind] = { gltf, meta: gm }; return; }
+    if (gm.type === 'nature' && gm.kind) { this.nature[gm.kind + (gm.lod === 'lo' ? '_lo' : '')] = gltf; return; }
+    if (gm.type === 'town' && gm.kind) { this.town[gm.kind] = gltf; return; }
+    if (gm.type === 'weapon' && gm.visual) { this.gear.weapons[gm.visual] = gltf; return; }
     let hasMesh = false;
     gltf.scene.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) hasMesh = true; });
     for (const c of gltf.animations || []) {
       const k = c.name.toLowerCase();
       if (!this.clips.has(k)) this.clips.set(k, c);
     }
-    if (hasMesh) this.characters.push({ file, key: file.toLowerCase().replace(/\.(glb|gltf)$/i, ''), scene: gltf.scene, clips: gltf.animations || [] });
+    if (hasMesh) this.characters.push({ file, key: file.toLowerCase().replace(/\.(glb|gltf)$/i, ''), scene: gltf.scene, clips: gltf.animations || [], meta: (gltf.asset && gltf.asset.extras && gltf.asset.extras.korvalune) || {} });
   },
 
   // Cherche l'entrée correspondant à un rôle ; renvoie null → modèle procédural
-  find(role, species, kind) {
+  find(role, species, kind, lod = 0) {
     if (!this.ready) return null;
     const byFile = (name) => this.characters.find((c) => c.file.toLowerCase() === String(name).toLowerCase());
+    if (lod) {   // version allégée : mapping « rôle@lod1 » ; sinon on retombe sur le modèle complet
+      const f = this.mapping[`${role}@lod${lod}`]; const e = f && byFile(f); if (e) return e;
+    }
+    const all = this.characters;
+    this.characters = all.filter((c) => !(c.meta && c.meta.lod));   // les LOD ne sont jamais choisis par mots-clés
+    try { return this._find(role, species, kind, byFile); } finally { this.characters = all; }
+  },
+
+  _find(role, species, kind, byFile) {
     for (const k of [role, species && `species:${species}`]) {
       if (k && this.mapping[k]) { const e = byFile(this.mapping[k]); if (e) return e; }
+    }
+    { // ennemis humanoïdes livrés avec leur espèce dans les métadonnées du fichier (extras.korvalune.species)
+      const sp = species && (SPECIES_ALIAS[species] || species);
+      const e = sp && this.characters.find((c) => c.meta && c.meta.species === sp && (c.meta.type === 'creature') === (kind === 'creature'));
+      if (e) return e;
     }
     const keyOf = (r) => ROLE_KEYWORDS[r] || ROLE_KEYWORDS[String(r).split(':')[0]];
     const lists = [keyOf(role), species && ROLE_KEYWORDS[`species:${species}`]].filter(Boolean);
@@ -120,7 +280,7 @@ export const ModelLibrary = {
       }
     }
     if (kind === 'humanoid' && /^(player|npc)/.test(role || '')) {
-      const pool = this.characters.filter((c) => !/wolf|boar|bear|dog|fox|spider|bat|rat|slime|dragon/.test(c.key));
+      const pool = this.characters.filter((c) => !(c.meta && c.meta.species) && !/wolf|boar|bear|dog|fox|spider|bat|rat|slime|dragon/.test(c.key));
       if (pool.length) return pool[hashStr(role) % pool.length];
     }
     return null;
@@ -143,12 +303,15 @@ export const ModelLibrary = {
   }
 };
 
+// espèces sans modèle propre : utilisent celui d'une espèce proche
+const SPECIES_ALIAS = { guard: 'elite' };
+
 const box = new THREE.Box3(), size = new THREE.Vector3();
 
 // Construit un rig compatible avec l'interface des rigs procéduraux.
 export function tryCreateGlbRig(kind, opts = {}) {
   const role = opts.role || '';
-  const entry = ModelLibrary.find(role, opts.species, kind);
+  const entry = ModelLibrary.find(role, opts.species, kind, opts.lod || 0);
   if (!entry) return null;
   const inst = SkeletonUtils.clone(entry.scene);
   const root = new THREE.Group();
@@ -158,7 +321,8 @@ export function tryCreateGlbRig(kind, opts = {}) {
   box.makeEmpty().setFromObject(inst);
   box.getSize(size);
   const target = kind === 'humanoid' ? 1.8 : 1.0;
-  const refH = kind === 'humanoid' ? size.y : Math.max(size.y, size.z * 0.6);
+  // un corps livré sans son équipement (pièces séparées) indique la hauteur de référence de l'ensemble complet
+  const refH = (entry.meta && entry.meta.refHeight) || (kind === 'humanoid' ? size.y : Math.max(size.y, size.z * 0.6));
   const k = refH > 1e-3 ? target / refH : 1;
   inst.scale.multiplyScalar(k);
   inst.position.y = -box.min.y * k;
@@ -181,13 +345,17 @@ export function tryCreateGlbRig(kind, opts = {}) {
   });
 
   const stub = () => ({ visible: false });
-  const head = new THREE.Object3D();
+  // points d'ancrage réels (cosmétiques : ailes dans le dos, couvre-chefs sur la tête), à la hauteur d'un humanoïde de 1,8 m
+  const head = new THREE.Object3D(); head.position.y = kind === 'humanoid' ? 1.7 : 0;
   root.add(head);
+  const torso = new THREE.Object3D(); torso.position.y = kind === 'humanoid' ? 1.0 : 0;
+  root.add(torso);
   const mixer = new THREE.AnimationMixer(inst);
   const rig = {
-    root, body: root, hips: stub(), torso: stub(), head,
+    root, body: root, hips: stub(), torso, head,
     mats, matRefs: { weapons: {} },
     equipVisuals: { weapons: {}, shield: stub(), helm: stub(), shoulders: [stub(), stub()], chest: stub(), cape: stub() },
+    glbSkeleton: (entry.meta && entry.meta.skeleton) || null,   // non nul → le corps accepte des pièces d'équipement GLB
     phase: 0, k: 0, t: 0, hurtT: 0, crouchK: 0,
     glb: { entry, mixer, role, actions: {}, state: null, action: null, prevHurt: 0, prevActionT: 0, flash: 0 }
   };
@@ -238,6 +406,7 @@ export function animateGlbRig(rig, s, dt, kind = 'humanoid') {
   let want;
   if (dead) want = 'death';
   else if (acting) want = s.action;
+  else if (kind === 'humanoid' && s.riding && getAction(g, 'ride')) want = 'ride';   // en selle
   else if (kind === 'humanoid' && s.grounded === false && getAction(g, 'jump')) want = 'jump';
   else want = loco;
 

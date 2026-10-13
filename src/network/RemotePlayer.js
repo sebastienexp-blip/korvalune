@@ -7,6 +7,7 @@ import { CLASSES } from '../combat/Classes.js';
 import { damp, lerpAngle } from '../core/math.js';
 import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
 import { CATALOG_BY_ID } from '../data/shopCatalog.js';
+import { giveClassGear } from '../visual/GlbEquipment.js';
 import { sanitizeAppearance } from '../data/looks.js';
 
 // Représentation visuelle d'un autre joueur connecté. La position réelle
@@ -20,6 +21,7 @@ export class RemotePlayer {
     this.classId = info.classId;
     this.app = info.app ? sanitizeAppearance(info.app) : null; // V10.12 : apparence choisie (création / barbier)
     this.rig = this._makeRig();
+    try { giveClassGear(this.rig, this.classId); } catch { /* équipement facultatif */ }
     this.pos = new THREE.Vector3(...info.pos);
     this.targetPos = this.pos.clone();
     this.yaw = info.yaw || 0;
@@ -42,7 +44,7 @@ export class RemotePlayer {
   _makeRig() {
     const cls = CLASSES[this.classId] || CLASSES.warrior, a = this.app;
     return createHumanoid({
-      cloth: cls.color, armor: cls.armor, shield: cls.shield, role: 'player:' + (this.classId || 'warrior'),
+      cloth: cls.color, armor: cls.armor, shield: cls.shield, role: 'player:' + (this.classId || 'warrior'), lod: 1,
       hair: a ? a.hairCol : 0x2c1f16, ...(a ? { eye: a.eyeCol, look: a } : {}), ...(a && a.skin != null ? { skin: a.skin } : {})
     });
   }
@@ -54,6 +56,7 @@ export class RemotePlayer {
     disposeCosmetics(old);
     for (const l of [this.label, this.titleLabel]) if (l) old.root.remove(l);
     this.rig = this._makeRig();
+    try { giveClassGear(this.rig, this.classId); } catch { /* équipement facultatif */ }
     this.rig.root.position.copy(old.root.position);
     this.rig.root.rotation.y = old.root.rotation.y;
     this.scene.add(this.rig.root);

@@ -3,6 +3,7 @@ import { CONFIG } from '../core/config.js';
 import { mulberry32 } from '../core/math.js';
 import { WORLD_TIERS } from './WorldTiers.js';
 import { regionAt, isLand } from './Continent.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 
 // V4.7 : coffres au trésor cachés dans le monde (positions fixes, générées
 // de façon déterministe). Ouverts une fois pour toutes (sauvegardés).
@@ -50,6 +51,16 @@ export class WorldChests {
 
   _mesh(x, z) {
     const g = new THREE.Group();
+    if (ModelLibrary.hasTown(['coffre_base', 'coffre_couvercle'])) {   // V10.41 : coffre GLB (couvercle articulé à la charnière)
+      const lid = ModelLibrary.townInstance('coffre_couvercle'); lid.position.set(0, 0.5, -0.3);
+      g.add(ModelLibrary.townInstance('coffre_base'), lid);
+      g.userData.lid = lid;
+      g.position.set(x, this.world.heightAt(x, z), z);
+      g.rotation.y = (x * 7.13 + z * 3.7) % (Math.PI * 2);
+      g.visible = false;
+      this.scene.add(g);
+      return g;
+    }
     const body = new THREE.Mesh(BODY, MAT_WOOD); body.position.y = 0.25;
     const lid = new THREE.Group(); lid.position.set(0, 0.5, -0.3);
     const lidMesh = new THREE.Mesh(LID, MAT_WOOD); lidMesh.position.set(0, 0.11, 0.3);

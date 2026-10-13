@@ -1,11 +1,15 @@
 import * as THREE from 'three';
 import { glowTexture, safeTexture } from '../visual/Textures.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 
 // V10.19 — Le Monolithe des Métamorphoses (statue interactive) et le décor de la forge. Léger : quelques maillages, aucune lumière dynamique.
 
 /** Statue : socle de pierre, stèle sombre gravée de runes lumineuses, cristal flottant. Retourne un « rig » compatible NPC. */
 export function buildMonolith() {
   const root = new THREE.Group();
+  if (ModelLibrary.hasTown(['statue_monolithe', 'statue_runes', 'statue_cristal', 'statue_anneau_a', 'statue_anneau_b'])) {
+    try { return buildMonolithGlb(root); } catch (e) { console.warn('[GLB] monolithe : repli procédural', e); root.clear(); }
+  }
   const stone = new THREE.MeshStandardMaterial({ color: 0x5a5d6b, roughness: 0.9 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x23242f, roughness: 0.6, metalness: 0.25 });
   const glowMat = new THREE.MeshBasicMaterial({ color: 0x8fe3ff, transparent: true, opacity: 0.9 });
@@ -47,11 +51,55 @@ export function buildMonolith() {
   };
 }
 
+function buildMonolithGlb(root) {
+  const T = (k) => ModelLibrary.townInstance(k, { ownGlow: true });
+  root.add(T('statue_monolithe'));
+  const runesG = T('statue_runes'); root.add(runesG);
+  const runeMats = []; runesG.traverse(o => { if (o.isMesh && o.material && !runeMats.includes(o.material)) runeMats.push(o.material); });
+  const crystal = T('statue_cristal'); crystal.position.y = 3.55; root.add(crystal);
+  const ring = T('statue_anneau_a'); ring.position.y = 3.55; ring.rotation.x = Math.PI / 2.4; root.add(ring);
+  const ring2 = T('statue_anneau_b'); ring2.position.y = 3.55; ring2.rotation.x = -Math.PI / 2.8; root.add(ring2);
+  let halo = null;
+  try {
+    const tex = safeTexture(glowTexture, 64);
+    if (tex) { halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0x6fd0ff, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.set(3.2, 3.2, 1); halo.position.set(0, 3.55, 0); root.add(halo); }
+  } catch { /* halo facultatif */ }
+  const head = new THREE.Object3D(); root.add(head);
+  let t = Math.random() * 10;
+  return {
+    root, head, lookScale: 1.55, isProp: true,
+    update(dt) {
+      t += dt;
+      crystal.rotation.y += dt * 0.9;
+      const y = 3.55 + Math.sin(t * 1.4) * 0.12;
+      crystal.position.y = ring.position.y = ring2.position.y = y;
+      ring.rotation.z += dt * 0.7; ring2.rotation.z -= dt * 0.5;
+      if (halo) { halo.position.y = y; halo.material.opacity = 0.45 + 0.2 * Math.sin(t * 2.2); }
+      runeMats.forEach((m, i) => { m.opacity = 0.55 + 0.4 * (0.5 + 0.5 * Math.sin(t * 1.6 + i * 0.9)); });
+    }
+  };
+}
+
 /** Décor de forge : enclume, brasier incandescent, râtelier d'outils. Posé à côté de la forgeronne. */
 export function buildForgeDecor(scene, world, x, z, rotY = 0) {
   const g = new THREE.Group();
   const y = world.heightAt(x, z);
   g.position.set(x, y, z); g.rotation.y = rotY;
+  if (ModelLibrary.hasTown(['forge_decor', 'forge_braises'])) {
+    try {
+      g.add(ModelLibrary.townInstance('forge_decor'));
+      const br = ModelLibrary.townInstance('forge_braises', { ownGlow: true, shadow: false }); br.position.set(-0.9, 0.88, 0); g.add(br);
+      const bm = []; br.traverse(o => { if (o.isMesh && o.material) bm.push(o.material); });
+      let glow = null;
+      try {
+        const tex = safeTexture(glowTexture, 64);
+        if (tex) { glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xff7a2a, transparent: true, opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending })); glow.scale.set(2.2, 2.2, 1); glow.position.set(-0.9, 1.1, 0); g.add(glow); }
+      } catch { /* facultatif */ }
+      scene.add(g);
+      let t = 0;
+      return { group: g, update(dt) { t += dt; const k = 0.8 + 0.2 * Math.sin(t * 9) * Math.sin(t * 3.1); bm.forEach(m => m.color.setRGB(1, k, 1)); if (glow) glow.material.opacity = 0.45 + 0.3 * k; } };
+    } catch (e) { console.warn('[GLB] forge : repli procédural', e); g.clear(); }
+  }
   const iron = new THREE.MeshStandardMaterial({ color: 0x2c2e36, roughness: 0.5, metalness: 0.7 });
   const wood = new THREE.MeshStandardMaterial({ color: 0x6b4a2b, roughness: 0.9 });
   const stone = new THREE.MeshStandardMaterial({ color: 0x6b6258, roughness: 0.95 });

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { spiralTexture, glowTexture, ringTexture, safeTexture } from '../visual/Textures.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 
 // Construit un portail (arche de pierre + voile lumineux tournant) à une
 // position donnée. Purement visuel + une zone de collision légère pour le
@@ -13,22 +14,25 @@ export function buildPortal(world, pos, color, label, opts = {}) {
   if (opts.scale) g.scale.setScalar(opts.scale);
   world.group.add(g);
 
-  const stone = new THREE.MeshStandardMaterial({ color: 0x5a5650, roughness: 0.95, flatShading: true });
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.8, 0.4, 10), stone);
-  base.position.y = 0.2;
-  base.castShadow = base.receiveShadow = true;
-  g.add(base);
+  if (ModelLibrary.hasTown(['portail_cadre'])) g.add(ModelLibrary.townInstance('portail_cadre'));   // V10.41 : cadre de pierre GLB
+  else {
+    const stone = new THREE.MeshStandardMaterial({ color: 0x5a5650, roughness: 0.95, flatShading: true });
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.8, 0.4, 10), stone);
+    base.position.y = 0.2;
+    base.castShadow = base.receiveShadow = true;
+    g.add(base);
 
-  for (const side of [-1, 1]) {
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 3.4, 8), stone);
-    pillar.position.set(side * 1.1, 1.9, 0);
-    pillar.castShadow = true;
-    g.add(pillar);
+    for (const side of [-1, 1]) {
+      const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 3.4, 8), stone);
+      pillar.position.set(side * 1.1, 1.9, 0);
+      pillar.castShadow = true;
+      g.add(pillar);
+    }
+    const top = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.26, 8, 16, Math.PI), stone);
+    top.position.y = 3.5;
+    top.rotation.z = Math.PI;
+    g.add(top);
   }
-  const top = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.26, 8, 16, Math.PI), stone);
-  top.position.y = 3.5;
-  top.rotation.z = Math.PI;
-  g.add(top);
 
   const veilMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
   const veil = new THREE.Mesh(new THREE.CircleGeometry(1.05, 24), veilMat);

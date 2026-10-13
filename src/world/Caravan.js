@@ -6,6 +6,7 @@ import { Enemy } from '../entities/Enemy.js';
 import enemiesData from '../data/enemies.json';
 import { computeEnemyStats } from '../data/enemyScaling.js';
 import { rollLootItem } from '../inventory/ItemGenerator.js';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 
 // V4.9 : événement « Caravane en danger ». Une caravane marchande traverse la
 // carte ; elle n'avance que si le joueur est proche et qu'aucun brigand ne
@@ -19,6 +20,7 @@ const CLOTH = new THREE.MeshStandardMaterial({ color: 0xd8c9a0, roughness: 0.95 
 const DARK = new THREE.MeshStandardMaterial({ color: 0x2a2018, roughness: 0.9 });
 
 function buildWagon() {
+  if (ModelLibrary.hasTown(['chariot'])) return ModelLibrary.townInstance('chariot');   // V10.41 : chariot GLB
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 1.3), WOOD); body.position.y = 0.85;
   const cover = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.95, 1.2), CLOTH); cover.position.set(-0.1, 1.55, 0);
