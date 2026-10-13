@@ -1,0 +1,15 @@
+KORVALUNE — VERSION PC
+
+Option 1, la plus simple (aucune installation) :
+  Double-cliquez sur Korvalune-Rapide.bat. Le jeu s'ouvre dans sa propre fenetre plein ecran (Edge ou Chrome).
+  Astuce : clic droit sur le fichier > Envoyer vers > Bureau (creer un raccourci) pour l'avoir sur le bureau.
+
+Option 2, vrai programme installable :
+  1. Installez Node.js (https://nodejs.org), version LTS.
+  2. Double-cliquez sur Creer-installateur.bat (quelques minutes, internet requis).
+  3. Lancez dist\Korvalune Setup.exe : il installe le jeu avec un raccourci sur le bureau.
+  Pour tester sans installer : ouvrez un terminal dans ce dossier, puis "npm install" et "npm start".
+
+Touches : F11 plein ecran, F5 recharger.
+Le jeu tourne depuis le site : les mises a jour arrivent toutes seules, vos personnages restent sauvegardes sur votre compte.
+Si l'ecran reste noir au demarrage, patientez : le serveur peut mettre une minute a se reveiller.
