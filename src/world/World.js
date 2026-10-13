@@ -662,30 +662,44 @@ export class World {
       m.castShadow = true; m.receiveShadow = true; m.computeBoundingSphere();
       this.group.add(m);
     };
+    // V10.42 — version GLB (unités identiques aux primitives : l'échelle/rotation/collision d'origine s'appliquent telles quelles) ; repli procédural sinon
+    const meshK = (kind, geo, mat, list, setup, collide = 0) => {
+      if (!list.length) return;
+      if (!ModelLibrary.hasTown([kind])) return mesh(geo, mat, list, setup, collide);
+      const ims = ModelLibrary.townInstanced(kind, list.length);
+      list.forEach((o, i) => {
+        dummy.position.set(o.x, o.y, o.z); dummy.rotation.set(0, o.r, 0); dummy.scale.setScalar(1);
+        setup(o, dummy); dummy.updateMatrix();
+        col.setScalar(0.85 + o.v * 0.3);
+        for (const im of ims) { im.setMatrixAt(i, dummy.matrix); im.setColorAt(i, col); }
+        if (collide) { const rr = Math.max(dummy.scale.x, dummy.scale.z) * 0.82; if (rr > 0.3) this.addCircle(o.x, o.z, rr); }
+      });
+      for (const im of ims) { im.receiveShadow = true; im.computeBoundingSphere(); this.group.add(im); }
+    };
     const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true, ...extra });
     const cyl = new THREE.CylinderGeometry(0.75, 1, 1, 7), cone = new THREE.ConeGeometry(1, 1, 5), octa = new THREE.OctahedronGeometry(1, 0), dode = new THREE.DodecahedronGeometry(1, 0);
     // Néant : piliers de basalte fracturés + débris en lévitation
-    mesh(cyl, std(0x2b2530), pick('void', 55), (o, d) => { const h = 5 + o.v * 15; o.cs = 1; d.position.y = o.y + h / 2 - 0.5; d.scale.set(1.6 + o.v * 1.4, h, 1.6 + o.v * 1.4); d.rotation.z = (o.v - 0.5) * 0.12; }, 1.9);
-    mesh(dode, std(0x3a3140, { emissive: 0x5a2a10, emissiveIntensity: 0.6 }), pick('void', 45, 0.5), (o, d) => { d.position.y = o.y + 5 + o.v * 9; const s = 0.8 + o.v * 1.8; d.scale.set(s * 1.3, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); });
+    meshK('biome_basalte', cyl, std(0x2b2530), pick('void', 55), (o, d) => { const h = 5 + o.v * 15; o.cs = 1; d.position.y = o.y + h / 2 - 0.5; d.scale.set(1.6 + o.v * 1.4, h, 1.6 + o.v * 1.4); d.rotation.z = (o.v - 0.5) * 0.12; }, 1.9);
+    meshK('biome_debris', dode, std(0x3a3140, { emissive: 0x5a2a10, emissiveIntensity: 0.6 }), pick('void', 45, 0.5), (o, d) => { d.position.y = o.y + 5 + o.v * 9; const s = 0.8 + o.v * 1.8; d.scale.set(s * 1.3, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); });
     // Abysses : éclats d'obsidienne
-    mesh(cone, std(0x1c1618, { emissive: 0x4a1208, emissiveIntensity: 0.5 }), pick('abyss', 130, 0.5), (o, d) => { const h = 2 + o.v * 7; d.position.y = o.y + h / 2 - 0.3; d.scale.set(0.7 + o.v * 1.1, h, 0.7 + o.v * 1.1); d.rotation.z = (o.v - 0.5) * 0.35; }, 0.8);
+    meshK('biome_obsidienne', cone, std(0x1c1618, { emissive: 0x4a1208, emissiveIntensity: 0.5 }), pick('abyss', 130, 0.5), (o, d) => { const h = 2 + o.v * 7; d.position.y = o.y + h / 2 - 0.3; d.scale.set(0.7 + o.v * 1.1, h, 0.7 + o.v * 1.1); d.rotation.z = (o.v - 0.5) * 0.35; }, 0.8);
     // Terres corrompues : cristaux violets
-    mesh(octa, std(0x7d3fc0, { emissive: 0x6a2bb0, emissiveIntensity: 0.9, roughness: 0.4 }), pick('corrupt', 100, 0.5), (o, d) => { const h = 1.6 + o.v * 4.2; d.position.y = o.y + h * 0.9; d.scale.set(0.5 + o.v * 0.5, h, 0.5 + o.v * 0.5); d.rotation.z = (o.v - 0.5) * 0.5; }, 0.6);
+    meshK('biome_cristal', octa, std(0x7d3fc0, { emissive: 0x6a2bb0, emissiveIntensity: 0.9, roughness: 0.4 }), pick('corrupt', 100, 0.5), (o, d) => { const h = 1.6 + o.v * 4.2; d.position.y = o.y + h * 0.9; d.scale.set(0.5 + o.v * 0.5, h, 0.5 + o.v * 0.5); d.rotation.z = (o.v - 0.5) * 0.5; }, 0.6);
     // Royaume céleste : colonnes de marbre (certaines brisées)
-    mesh(cyl, std(0xeee6d2, { roughness: 0.6 }), pick('celeste', 70, 0.55), (o, d) => { const h = o.v < 0.4 ? 1.2 + o.v * 3 : 5 + o.v * 4; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.55, h, 0.55); }, 0.7);
+    meshK('biome_colonne', cyl, std(0xeee6d2, { roughness: 0.6 }), pick('celeste', 70, 0.55), (o, d) => { const h = o.v < 0.4 ? 1.2 + o.v * 3 : 5 + o.v * 4; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.55, h, 0.55); }, 0.7);
     // Montagnes de fer : gros blocs
-    mesh(dode, std(0x6b6a66), pick('mount', 70, 0.5), (o, d) => { const s = 1.5 + o.v * 3.2; d.position.y = o.y + s * 0.3; d.scale.set(s * 1.2, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); }, 1.3);
+    meshK('biome_roche_fer', dode, std(0x6b6a66), pick('mount', 70, 0.5), (o, d) => { const s = 1.5 + o.v * 3.2; d.position.y = o.y + s * 0.3; d.scale.set(s * 1.2, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); }, 1.3);
     // V8.0 — Désert d'Ambre : cactus et rochers de grès
     const sandstone = std(0xb98e52), cactusM = std(0x4f7a3a);
-    mesh(cyl, cactusM, pick('desert', 95, 0.6), (o, d) => { const h = 1.6 + o.v * 2.6; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.4 + o.v * 0.12, h, 0.4 + o.v * 0.12); }, 0.55);
-    mesh(dode, sandstone, pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = o.y + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
+    meshK('biome_cactus', cyl, cactusM, pick('desert', 95, 0.6), (o, d) => { const h = 1.6 + o.v * 2.6; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.4 + o.v * 0.12, h, 0.4 + o.v * 0.12); }, 0.55);
+    meshK('biome_roche_gres', dode, sandstone, pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = o.y + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
     // Marais de Brume : souches pourries, roseaux géants et feux follets
-    mesh(cyl, std(0x3b2f22), pick('swamp', 85, 0.6), (o, d) => { const h = 0.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.15; d.scale.set(0.5 + o.v * 0.4, h, 0.5 + o.v * 0.4); d.rotation.z = (o.v - 0.5) * 0.3; }, 0.6);
-    mesh(cone, std(0x4d6a2c), pick('swamp', 160, 0.55), (o, d) => { const h = 1.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.3, h, 0.3); }, 0);
+    meshK('biome_souche', cyl, std(0x3b2f22), pick('swamp', 85, 0.6), (o, d) => { const h = 0.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.15; d.scale.set(0.5 + o.v * 0.4, h, 0.5 + o.v * 0.4); d.rotation.z = (o.v - 0.5) * 0.3; }, 0.6);
+    meshK('biome_roseau', cone, std(0x4d6a2c), pick('swamp', 160, 0.55), (o, d) => { const h = 1.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.3, h, 0.3); }, 0);
     mesh(octa, new THREE.MeshBasicMaterial({ color: 0x9dffb0 }), pick('swamp', 40, 0.6), (o, d) => { d.position.y = o.y + 1.4 + o.v * 1.4; d.scale.setScalar(0.16 + o.v * 0.08); });
     // Toundra de Givre : pointes de glace et rochers enneigés
-    mesh(cone, std(0xbfe6f5, { emissive: 0x4a7a90, emissiveIntensity: 0.45, roughness: 0.3 }), pick('tundra', 110, 0.55), (o, d) => { const h = 1.5 + o.v * 5; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.5 + o.v * 0.7, h, 0.5 + o.v * 0.7); d.rotation.z = (o.v - 0.5) * 0.25; }, 0.6);
-    mesh(dode, std(0xe6eef2), pick('tundra', 70, 0.55), (o, d) => { const s2 = 1.2 + o.v * 2.8; d.position.y = o.y + s2 * 0.3; d.scale.set(s2 * 1.2, s2 * 0.8, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.1);
+    meshK('biome_glace', cone, std(0xbfe6f5, { emissive: 0x4a7a90, emissiveIntensity: 0.45, roughness: 0.3 }), pick('tundra', 110, 0.55), (o, d) => { const h = 1.5 + o.v * 5; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.5 + o.v * 0.7, h, 0.5 + o.v * 0.7); d.rotation.z = (o.v - 0.5) * 0.25; }, 0.6);
+    meshK('biome_roche_neige', dode, std(0xe6eef2), pick('tundra', 70, 0.55), (o, d) => { const s2 = 1.2 + o.v * 2.8; d.position.y = o.y + s2 * 0.3; d.scale.set(s2 * 1.2, s2 * 0.8, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.1);
   }
 
   // Herbe et fleurs dynamiques autour du joueur (appelé par Game après build())

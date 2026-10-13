@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from glbkit import *
-import town_geo as G, town_geo2 as G2, lm_geo as LM, town_tex as TT
+import biome_geo as BG, town_geo as G, town_geo2 as G2, lm_geo as LM, town_tex as TT
 
 def materials():
     out = {}
@@ -60,6 +60,7 @@ def catalog():
                    ('portail_cadre', LM.portal_frame), ('chariot', LM.wagon), ('forge_decor', LM.forge_decor), ('forge_braises', LM.forge_coals),
                    ('statue_monolithe', LM.monolith_statue), ('statue_runes', LM.monolith_runes), ('statue_cristal', LM.monolith_crystal), ('statue_anneau_a', lambda: LM.monolith_ring(.65)), ('statue_anneau_b', lambda: LM.monolith_ring(.85))):
         items[nm] = fn()
+    items.update(BG.catalog())
     return items
 
 if __name__ == '__main__':
