@@ -127,3 +127,9 @@ Chaque lot : test des systèmes (combat, collisions, quêtes, inventaire, montur
 
 ## Lot 6 (V10.41)
 Convertis : maisons, ville, quartiers, repères, ruines, portails, chariot, forge, statue du monolithe. Restent procéduraux : Halloween, décor barbier, fleurs, props de biomes, boss, effets de sorts, terrain, cinématique. Pas de LOD automatique par distance.
+
+## État de la migration .glb (V10.42) — avant activation
+**Fait (modèles originaux générés par script, repli procédural conservé partout)** : héros (Veilleur + armures/armes modulaires), ennemis humanoïdes, bêtes, boss (gardien de pierre, seigneur du Néant), habitants (3 corps), montures (cheval, griffon), nature (arbres + niveau de détail par distance, buissons, rochers, herbe, fleurs), ville (maisons, remparts, tours, étals, établis, fontaine, puits, coffres…), repères, ruines, portails, chariot, forge, monolithe, décors de régions (basalte, cristaux, colonnes, cactus, glace…), décors de spires (formes), citadelle de la cinématique, texture de sol (détail + normales).
+**Resté procédural** : effets de sorts/particules/auras (sprites), halos et lumières, eau, ciel/lune/aurores, décor d'Halloween, décor du barbier, dalles/murs/arbres/torches des spires, cosmétiques (cercles, traînées, ailes), objets au sol, flèches, coiffures, PNJ monolithe (cristal animé en code).
+**Non vérifié** : performance et mémoire sur téléphone réel ; multijoueur (serveur indisponible ici) ; build Vite de production ; salles décorées des spires à l'écran ; boss à l'écran dans le jeu ; rendu final avec toutes les armures sur tous les types d'ennemis.
+**Activation** : `python3 tools/models/package_models.py public/models_proto public/models` puis commit de `public/models` (≈24 Mo de .glb + ≈7 Mo de textures). Retour arrière : supprimer `public/models` (le jeu retombe sur le procédural).
