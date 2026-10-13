@@ -1350,6 +1350,7 @@ export class Game {
     this.audio.resume();
     this.audio.setVolume(this.settings.volume / 100);
     this.audio.setMix({ music: this.settings.musicVol / 100, sfx: this.settings.sfxVol / 100, ui: this.settings.uiVol / 100, ambience: this.settings.ambVol / 100 });
+    this.audio.setMusicContext({ menu: false });   // on entre dans le monde : la musique de menu laisse place aux ambiances
     this.audio.startMusic();
     this._camQuat = new THREE.Quaternion();
     this._raycaster = new THREE.Raycaster();

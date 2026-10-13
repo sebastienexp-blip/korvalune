@@ -1,4 +1,4 @@
-// V10.40 — Lecteur de musique : vraies pistes MP3 (domaine public, voir public/audio/registry.json).
+// V10.43 — Lecteur de musique : 5 pistes MP3 fournies par le propriétaire du projet (voir public/audio/registry.json).
 // - lecture en flux (élément <audio>) : une seule piste est en mémoire, très léger sur mobile ;
 // - deux voies avec fondu enchaîné : aucune coupure, ni à la fin d'un morceau (on enchaîne sur une autre piste
 //   de la même ambiance), ni au changement d'ambiance (combat, boss, ville, donjon…) ;
@@ -8,24 +8,25 @@ import { audioUrl } from './SoundBank.js';
 
 // ambiance → pistes (noms de fichiers de public/audio/music, sans .mp3)
 export const PLAYLISTS = {
-  town: ['dancing-at-the-inn', 'new-hero-in-town', 'village-tarantella', 'magic-in-the-garden', 'infinite-peace', 'wisdom-in-the-sun'],
-  day: ['heroic-adventure', 'lonely-mountain', 'rulers-of-our-lands', 'adventure', 'the-vikings', 'northur'],
-  night: ['forest-night', 'night-vigil', 'night-in-the-castle', 'mysterious-lights', 'landra-s-dream'],
-  combat: ['battle-ready', 'beginning-of-conflict', 'night-attack', 'behind-enemy-lines', 'honor-bound', 'brothers-unite', 'guerilla-tactics', 'strength-of-the-titans'],
-  boss: ['epic-boss-battle', 'black-knight', 'evil-incoming', 'the-enemy', 'kings-trailer', 'release-the-hybrids'],
-  dungeon: ['dark-hallway', 'horror-suspense', 'the-abyss', 'consecrated-ground', 'horror-mytery', 'ancient-rite', 'nightmare', 'footsteps-in-the-attic'],
-  halloween: ['halloween-theme-1', 'witch-waltz', 'creepy-hallow', 'fright-night-twist', 'goodnightmare'],
-  desert: ['the-desert', 'desert-conflict', 'lonely-mountain'],
-  tundra: ['ice-and-snow', 'winter', 'the-ice-giants', 'cold-journey', 'nordic-wist'],
-  swamp: ['creepy-hallow', 'horror-mytery', 'night-vigil'],
-  corrupt: ['the-land-of-the-dead', 'dawn-of-the-apocalypse', 'cursed-intro', 'the-abyss'],
-  celeste: ['novus-initium', 'the-crown', 'wisdom-in-the-sun', 'magic-in-the-garden'],
-  abyss: ['the-land-of-the-dead', 'dawn-of-the-apocalypse', 'the-abyss', 'evil-incoming'],
-  void: ['cursed-intro', 'the-abyss', 'nightmare', 'dawn-of-the-apocalypse', 'ancient-rite'],
-  cinematic: ['overture']
+  menu: ['the-cathedrals-cold-breath'],
+  cinematic: ['crown-of-fallen-kings'],
+  combat: ['iron-against-bone', 'steel-against-stone'],
+  boss: ['crown-of-fallen-kings', 'iron-against-bone'],
+  town: ['grave-of-crowns', 'the-cathedrals-cold-breath'],
+  day: ['grave-of-crowns', 'the-cathedrals-cold-breath', 'crown-of-fallen-kings'],
+  night: ['the-cathedrals-cold-breath', 'grave-of-crowns'],
+  dungeon: ['the-cathedrals-cold-breath', 'grave-of-crowns'],
+  halloween: ['the-cathedrals-cold-breath', 'grave-of-crowns'],
+  desert: ['grave-of-crowns', 'crown-of-fallen-kings'],
+  tundra: ['the-cathedrals-cold-breath', 'grave-of-crowns'],
+  swamp: ['the-cathedrals-cold-breath', 'grave-of-crowns'],
+  corrupt: ['the-cathedrals-cold-breath', 'crown-of-fallen-kings'],
+  celeste: ['grave-of-crowns', 'the-cathedrals-cold-breath'],
+  abyss: ['the-cathedrals-cold-breath', 'crown-of-fallen-kings'],
+  void: ['the-cathedrals-cold-breath', 'grave-of-crowns', 'crown-of-fallen-kings']
 };
 // changements appliqués tout de suite (fondu rapide) ; les autres attendent la fin du morceau en cours
-const URGENT = new Set(['combat', 'boss', 'dungeon', 'town', 'halloween', 'cinematic']);
+const URGENT = new Set(['combat', 'boss', 'dungeon', 'town', 'halloween', 'cinematic', 'menu']);
 export const STINGERS = { victory: 'stinger-victory', defeat: 'stinger-defeat' };
 
 export class MusicPlayer {
@@ -75,7 +76,7 @@ export class MusicPlayer {
     const now = performance.now();
     if (key !== this.want) { this.want = key; this.wantSince = now; }
     if (this.key === key && this.cur >= 0) return;
-    if (this.cur < 0 || key === 'combat' || key === 'boss' || key === 'cinematic') this._switch(key, key === 'cinematic' ? 1.5 : 2);
+    if (this.cur < 0 || key === 'combat' || key === 'boss' || key === 'cinematic' || this.key === 'menu') this._switch(key, key === 'cinematic' ? 1.5 : 2);
   }
 
   _switch(key, fade = 3) {

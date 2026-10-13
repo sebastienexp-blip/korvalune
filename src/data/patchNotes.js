@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.43', title: 'Un monde en 3D et une nouvelle bande-son',
+    items: [
+      '🏰 Le monde passe en modèles 3D : ville, décors, habitants, ennemis, boss, montures et arbres ont un nouveau look plus sombre et réaliste.',
+      '👑 Tout ce qui est cosmétique est en 3D : ailes (ange, démon, cristal), couronnes, cornes, oreilles, chapeau de sorcière et 13 familiers animés.',
+      '🎵 Nouvelle bande-son : cinq morceaux originaux pour le menu, l’exploration, les combats et les boss.',
+      '📱 Au premier lancement, une barre de progression s’affiche pendant le chargement des modèles.'
+    ]
+  },
+  {
     version: '10.40', title: 'Une vraie bande-son',
     items: [
       '🎵 Fini la musique synthétisée : le jeu joue maintenant de vraies musiques (59 morceaux) — villes et villages, exploration de jour et de nuit, combats, boss, failles et donjons sombres, Halloween, chaque région du continent. Plusieurs morceaux par ambiance, enchaînés en fondu, sans coupure.',

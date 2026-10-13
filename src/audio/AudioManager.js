@@ -52,7 +52,7 @@ export class AudioManager {
     this.env = { night: 0, town: false, rain: 0, snow: false, region: 'prairie', rift: false, hall: false };
     this.mood = 'day';
     this._combatUntil = 0;
-    this._ctxMusic = { boss: false, cinematic: false };
+    this._ctxMusic = { boss: false, cinematic: false, menu: true };
     this._lp = { x: 0, y: 0, z: 0 };
     this.room = 'open';
     this.beds = {};
@@ -377,6 +377,7 @@ export class AudioManager {
   _decideMood() {
     const E = this.env, C = this._ctxMusic, region = E.region || 'prairie';
     if (C.cinematic) return 'cinematic';
+    if (C.menu) return 'menu';   // écran-titre / création de personnage, avant l'entrée dans le monde
     if (C.boss && (this._combat() || E.rift)) return 'boss';
     if (this._combat()) return 'combat';
     if (E.rift || E.hall) return 'dungeon';
