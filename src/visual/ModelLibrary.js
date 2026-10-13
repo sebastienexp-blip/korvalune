@@ -179,7 +179,13 @@ export const ModelLibrary = {
 
   _townGeo(kind, i, tint) {
     const part = this._townPart(kind)[i];
-    const key = `${kind}|${i}|${tint ? [tint.wall, tint.roof, tint.trim].join(',') : ''}`;
+    if (!part.roles) {   // rôles de sommets réellement utilisés : la clé du cache ne dépend que des teintes qui comptent (évite de cloner la géométrie à chaque changement de couleur)
+      const ca = part.geo.getAttribute('color'); const r = { wall: false, roof: false, trim: false };
+      if (ca && ca.itemSize === 4) for (let k = 0; k < ca.count; k++) { const a = ca.getW(k); if (Math.abs(a - 0.8) < 0.05) r.wall = true; else if (Math.abs(a - 0.6) < 0.05) r.roof = true; else if (Math.abs(a - 0.4) < 0.05) r.trim = true; }
+      part.roles = r;
+    }
+    const R = part.roles;
+    const key = `${kind}|${i}|${tint ? [R.wall ? tint.wall : '', R.roof ? tint.roof : '', R.trim ? (tint.trim ?? tint.roof) : ''].join(',') : ''}`;
     this._townGeos ||= {};
     if (this._townGeos[key]) return this._townGeos[key];
     const geo = part.geo.clone();
@@ -263,6 +269,10 @@ export const ModelLibrary = {
   },
 
   _find(role, species, kind, byFile) {
+    if (/^player/.test(role || '')) {   // V10.43 : joueurs = corps humain nu (la tête et l'équipement s'ajoutent par-dessus)
+      const body = byFile('veilleur_corps.glb');
+      if (body && body.meta && body.meta.humanHead) return body;
+    }
     for (const k of [role, species && `species:${species}`]) {
       if (k && this.mapping[k]) { const e = byFile(this.mapping[k]); if (e) return e; }
     }
@@ -280,7 +290,7 @@ export const ModelLibrary = {
       }
     }
     if (kind === 'humanoid' && /^(player|npc)/.test(role || '')) {
-      const pool = this.characters.filter((c) => !(c.meta && c.meta.species) && !/wolf|boar|bear|dog|fox|spider|bat|rat|slime|dragon/.test(c.key));
+      const pool = this.characters.filter((c) => !(c.meta && (c.meta.species || c.meta.humanHead || c.meta.slot)) && !/wolf|boar|bear|dog|fox|spider|bat|rat|slime|dragon/.test(c.key));
       if (pool.length) return pool[hashStr(role) % pool.length];
     }
     return null;
@@ -355,6 +365,7 @@ export function tryCreateGlbRig(kind, opts = {}) {
     root, body: root, hips: stub(), torso, head,
     mats, matRefs: { weapons: {} },
     equipVisuals: { weapons: {}, shield: stub(), helm: stub(), shoulders: [stub(), stub()], chest: stub(), cape: stub() },
+    glbInst: inst, glbK: k,
     glbSkeleton: (entry.meta && entry.meta.skeleton) || null,   // non nul → le corps accepte des pièces d'équipement GLB
     phase: 0, k: 0, t: 0, hurtT: 0, crouchK: 0,
     glb: { entry, mixer, role, actions: {}, state: null, action: null, prevHurt: 0, prevActionT: 0, flash: 0 }

@@ -11,19 +11,19 @@
 // réutilisent la silhouette la plus proche (ex: hache/masse/lance → sword).
 export const WEAPON_BASES = {
   sword: { name: 'Épée', icon: '⚔️', visual: 'sword', primary: 'atk', base: 3, perLevel: 2.2 },
-  axe: { name: 'Hache', icon: '🪓', visual: 'sword', primary: 'atk', base: 4, perLevel: 2.4 },
-  mace: { name: 'Masse', icon: '🔨', visual: 'sword', primary: 'atk', base: 4, perLevel: 2.3 },
-  spear: { name: 'Lance', icon: '🔱', visual: 'sword', primary: 'atk', base: 3, perLevel: 2.5 },
+  axe: { name: 'Hache', icon: '🪓', visual: 'sword', model: 'axe', primary: 'atk', base: 4, perLevel: 2.4 },
+  mace: { name: 'Masse', icon: '🔨', visual: 'sword', model: 'mace', primary: 'atk', base: 4, perLevel: 2.3 },
+  spear: { name: 'Lance', icon: '🔱', visual: 'sword', model: 'spear', primary: 'atk', base: 3, perLevel: 2.5 },
   dagger: { name: 'Poignard', icon: '🔪', visual: 'dagger', primary: 'atk', base: 2, perLevel: 1.8, bonusCrit: 0.01 },
   bow: { name: 'Arc', icon: '🏹', visual: 'bow', primary: 'atk', base: 2, perLevel: 2.0, bonusCrit: 0.006 },
   staff: { name: 'Bâton', icon: '🪄', visual: 'staff', primary: 'atk', base: 2, perLevel: 2.1, bonusStat: 'int' },
-  wand: { name: 'Orbe magique', icon: '🔮', visual: 'staff', primary: 'atk', base: 2, perLevel: 1.9, bonusStat: 'int' },
+  wand: { name: 'Orbe magique', icon: '🔮', visual: 'staff', model: 'wand', primary: 'atk', base: 2, perLevel: 1.9, bonusStat: 'int' },
   // V4.4 : nouvelles familles d'armes
-  halberd: { name: 'Hallebarde', icon: '⚔️', visual: 'sword', primary: 'atk', base: 4, perLevel: 2.6 },
-  scimitar: { name: 'Cimeterre', icon: '🗡️', visual: 'sword', primary: 'atk', base: 3, perLevel: 2.3, bonusCrit: 0.006 },
-  warhammer: { name: 'Marteau de guerre', icon: '🔨', visual: 'sword', primary: 'atk', base: 5, perLevel: 2.5 },
-  crossbow: { name: 'Arbalète', icon: '🏹', visual: 'bow', primary: 'atk', base: 3, perLevel: 2.1, bonusCrit: 0.01 },
-  tome: { name: 'Grimoire', icon: '📖', visual: 'staff', primary: 'atk', base: 2, perLevel: 2.0, bonusStat: 'int' }
+  halberd: { name: 'Hallebarde', icon: '⚔️', visual: 'sword', model: 'halberd', primary: 'atk', base: 4, perLevel: 2.6 },
+  scimitar: { name: 'Cimeterre', icon: '🗡️', visual: 'sword', model: 'scimitar', primary: 'atk', base: 3, perLevel: 2.3, bonusCrit: 0.006 },
+  warhammer: { name: 'Marteau de guerre', icon: '🔨', visual: 'sword', model: 'warhammer', primary: 'atk', base: 5, perLevel: 2.5 },
+  crossbow: { name: 'Arbalète', icon: '🏹', visual: 'bow', model: 'crossbow', primary: 'atk', base: 3, perLevel: 2.1, bonusCrit: 0.01 },
+  tome: { name: 'Grimoire', icon: '📖', visual: 'staff', model: 'tome', primary: 'atk', base: 2, perLevel: 2.0, bonusStat: 'int' }
 };
 
 export const ARMOR_BASES = {

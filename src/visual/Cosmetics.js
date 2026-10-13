@@ -1,6 +1,7 @@
 // V10.1 — Rendu des cosmétiques de la boutique (cercle au sol, traînée, ailes). L'aura d'arme passe par WeaponAura.js.
 // Tout est en matériaux additifs / sprites : aucune lumière dynamique, léger pour le mobile.
 import * as THREE from 'three';
+import { tintHeadSkin } from './HumanHead.js';
 import { glowTexture, safeTexture } from './Textures.js';
 import { CATALOG_BY_ID } from '../data/shopCatalog.js';
 import { ModelLibrary } from './ModelLibrary.js';
@@ -225,6 +226,7 @@ function restoreSkin(rig) {
       if (e.base !== undefined) m.userData.__base = e.base;
       if (e.em != null && m.emissive) { m.emissive.setHex(e.em); m.emissiveIntensity = e.emI; }
       m.opacity = e.op; m.transparent = e.tr; m.depthWrite = e.dw; m.needsUpdate = true;
+      if (rig.headSkinMats && rig.headSkinMats.includes(m)) m.color.setRGB(1, 1, 1);
     }
     rig.skinSaved = null;
   }
@@ -244,7 +246,7 @@ function applySkin(rig, fx) {
     m.color.setHex(hex); if (m.userData) m.userData.__base = hex;
     if (glow != null && m.emissive) { m.emissive.setHex(glow); m.emissiveIntensity = 0.65; }
   };
-  if (fx.tone != null) paint(sm.skin, fx.tone, fx.glow);
+  if (fx.tone != null) { paint(sm.skin, fx.tone, fx.glow); if (rig.headSkinMats) { for (const m of rig.headSkinMats) saveMat(rig, m); tintHeadSkin(rig, fx.tone); } }
   if (fx.cloth != null) { paint(sm.cloth, fx.cloth, fx.glow); paint(sm.clothDark, new THREE.Color(fx.cloth).multiplyScalar(0.7).getHex(), fx.glow); }
   if (fx.steel != null) for (const m of [sm.steel, rig.matRefs?.chest, rig.matRefs?.helm, rig.matRefs?.shoulders]) paint(m, fx.steel, fx.glow);
   if (fx.ghost) {
@@ -270,6 +272,7 @@ function buildHeadgear(rig, kind) {
     if (kind === 'pumpkin') for (const ch of head.children) { if (ch.visible) { ch.visible = false; hidden.push(ch); } }
     const m = add(ModelLibrary.townInstance(gk, { shadow: true }));
     m.traverse((o) => { o.frustumCulled = false; });
+    if (rig.humanHead) { m.scale.set(0.8, 0.86, 0.8); m.position.y += 0.012; }   // tête modélisée : un peu plus petite que la tête historique
     if (kind === 'pumpkin') { m.position.y = 0.03; if (rig.glb) m.scale.setScalar(1.15); }
     rig.skinHead = { added, hidden }; return;
   }

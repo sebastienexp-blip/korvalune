@@ -3,6 +3,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from glbkit import *
 import weapons_geo as W, textures as T
 import build_sword as BS
+import weapons_geo2 as W2
 
 def qx(deg): h = math.radians(deg) / 2; return [round(math.sin(h), 6), 0, 0, round(math.cos(h), 6)]
 def qy(deg): h = math.radians(deg) / 2; return [0, round(math.sin(h), 6), 0, round(math.cos(h), 6)]
@@ -25,6 +26,15 @@ ITEMS = {
   'arc_de_la_veille':   (W.bow,    'bow',       'Arc',        'Hand_L',          qx(20),  HAND_L, 'main gauche, corde vers l\'archer'),
   'ecu_de_la_veille':   (W.shield, 'shield',    'Bouclier',   'LowerArm_L',      qy(50),  [0.038, -0.134, 0.12], 'sanglé à l\'avant-bras gauche, face vers l\'avant-extérieur'),
   'orbe_de_la_veille':  (W.orb,    'orb',       'Orbe',       'Hand_L',          [0, 0, 0, 1], [0.017, -0.01, 0.05], 'cristal tenu dans la main gauche'),
+  'hache':      (W2.axe,      'axe',      'Hache',      'Socket_Weapon_R', qx(50), [0, 0, 0], 'main droite'),
+  'masse':      (W2.mace,     'mace',     'Masse',      'Socket_Weapon_R', qx(50), [0, 0, 0], 'main droite'),
+  'marteau':    (W2.warhammer,'warhammer','Marteau',    'Socket_Weapon_R', qx(50), [0, 0, 0], 'main droite'),
+  'lance':      (W2.spear,    'spear',    'Lance',      'Socket_Weapon_R', qx(55),  [0, 0, 0], 'main droite, inclinée'),
+  'hallebarde': (W2.halberd,  'halberd',  'Hallebarde', 'Socket_Weapon_R', qx(55),  [0, 0, 0], 'main droite, inclinée'),
+  'cimeterre':  (W2.scimitar, 'scimitar', 'Cimeterre',  'Socket_Weapon_R', SWORD_Q, [0, 0, 0], 'main droite'),
+  'arbalete':   (W2.crossbow, 'crossbow', 'Arbalete',   'Hand_L',          qx(20),  HAND_L, 'main gauche'),
+  'grimoire':   (W2.tome,     'tome',     'Grimoire',   'Hand_L',          [0, 0, 0, 1], HAND_L, 'main gauche'),
+  'baguette':   (W2.wand,     'wand',     'Baguette',   'Socket_Weapon_R', SWORD_Q, [0, 0, 0], 'main droite'),
   'carquois':           (W.quiver, 'quiver',    'Carquois',   'Socket_Back',     qz(20),  [-0.11, -0.12, -0.06], 'dans le dos, penché vers l\'épaule droite'),
 }
 

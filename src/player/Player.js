@@ -281,6 +281,7 @@ export class Player {
     if (this.rig.glbSkeleton) {          // corps GLB : équipement en pièces séparées
       this._equipRef = equipment;
       try { refreshGlbGear(this.rig, equipment.slots, resolveItem); } catch (e) { console.warn('[V10.41] équipement GLB', e); }
+      if (this.rig.humanHead) this.rig.humanHead.visible = !(this.rig.glbGear && this.rig.glbGear.pieces.casque);   // le casque remplace visage et coiffure
       return;
     }
     const ev = this.rig.equipVisuals;

@@ -7,7 +7,8 @@ import { createHumanoidLegacy } from './HumanoidLegacy.js';
 import { createBow } from './Bow.js';
 import { createStaff } from './Staff.js';
 import { tryCreateGlbRig, animateGlbRig } from '../visual/ModelLibrary.js';
-import { normalizeLook, bodyFactors, byId, FACE_SHAPES, EYE_STYLES, NOSE_STYLES, hairStyleOf } from '../data/looks.js';
+import { normalizeLook, defaultLook, bodyFactors, byId, FACE_SHAPES, EYE_STYLES, NOSE_STYLES, hairStyleOf } from '../data/looks.js';
+import { buildModeledHead, HEAD_FACE_SCALE } from '../visual/HumanHead.js';
 import { buildHair, buildFacialHair } from '../visual/HairStyles.js';
 
 let _glowTex;
@@ -24,11 +25,59 @@ const glowTex = () => (_glowTex === undefined ? (_glowTex = safeTexture(glowText
 // gardent l'apparence par défaut (equipVisible, true sauf indication contraire).
 export function createHumanoid(opts = {}) {
   if (opts.role) {
-    try { const glb = tryCreateGlbRig('humanoid', opts); if (glb) return glb; } catch (e) { console.warn('[V3] modèle GLB ignoré (humanoïde)', e); }
+    try {
+      const glb = tryCreateGlbRig('humanoid', opts);
+      if (glb) {
+        if (glb.glb.entry.meta && glb.glb.entry.meta.humanHead) { try { dressGlbHuman(glb, opts); } catch (e) { console.warn('[V10.43] tête du personnage', e); } }
+        return glb;
+      }
+    } catch (e) { console.warn('[V3] modèle GLB ignoré (humanoïde)', e); }
   }
   try { return createHumanoidV25(opts); } catch (e) {
     console.warn('[V2.5] modèle humanoïde classique utilisé', e);
     return createHumanoidLegacy(opts);
+  }
+}
+
+// V10.43 — Corps humain en modèle 3D (.glb) : couleurs (teint, tunique), silhouette (taille, corpulence) et tête personnalisable
+// (visage, yeux, cheveux, barbe) réutilisée du générateur de tête existant, posée sur l'os « Head » du squelette.
+const HEAD_OFF = [0, 0.112, 0.035];
+function dressGlbHuman(rig, opts) {
+  const look = opts.look ? normalizeLook(opts.look) : null;
+  const byName = (n) => rig.mats.find((m) => m.name === n);
+  const skinMat = byName('skin'), tunic = byName('tunic'), trousers = byName('trousers');
+  const o = { skin: 0xd9a98b, hair: 0x3b2a20, cloth: 0x2f4a7a, ...opts };
+  if (skinMat) skinMat.color.setHex(o.skin);
+  if (tunic) tunic.color.setHex(o.cloth);
+  if (trousers) trousers.color.set(o.cloth).multiplyScalar(0.55);
+  for (const m of [skinMat, tunic, trousers]) if (m) m.userData.__base = m.color.getHex();
+  const mh = buildModeledHead({ skin: o.skin, hair: o.hair, eye: o.eye ?? 0x3f78b0, look: opts.look || defaultLook('homme'), race: opts.race });
+  let head;
+  if (mh) {                                            // V10.44 : visage, yeux, cheveux, barbe = modèles 3D
+    head = new THREE.Group(); head.name = 'Head_model';
+    mh.group.scale.setScalar(HEAD_FACE_SCALE); head.add(mh.group);
+    rig.humanHead = mh.group; rig.headSkinMats = mh.skinMats; rig.headSkinBase = o.skin;
+    rig.customHair = mh.hair; rig.beard = mh.beard; rig.look = mh.look; rig.hairBulky = !!(look && hairStyleOf(look.hair).bulky);
+  } else {                                             // repli : tête procédurale
+    const proc = createHumanoidV25({ ...opts, role: undefined, equipVisible: false, shield: false });   // ne sert qu'à fabriquer la tête
+    head = proc.head; head.parent && head.parent.remove(head);
+    head.traverse((c) => { if (c.isMesh && c.material === proc.skinMats.skin && skinMat) c.material = skinMat; });
+    rig.customHair = proc.customHair; rig.beard = proc.beard; rig.look = proc.look; rig.hairBulky = proc.hairBulky;
+  }
+  const bone = rig.root.getObjectByName('Head');
+  head.position.set(0, HEAD_OFF[1], HEAD_OFF[2]); head.scale.setScalar(0.8);
+  (bone || rig.root).add(head);
+  rig.head = head;
+  rig.skinMats = { skin: skinMat, cloth: tunic, clothDark: trousers, steel: null };
+  // silhouette : même facteurs que le modèle procédural (taille, corpulence, épaules)
+  if (look) {
+    const f = bodyFactors(look), inst = rig.glbInst, k = rig.glbK;
+    const gx = f.girth * (0.55 + 0.45 * f.shoulders), gz = f.girth, minY = inst.position.y / (k || 1);
+    inst.scale.set(k * f.scale * gx, k * f.scale, k * f.scale * gz);
+    inst.position.y = minY * k * f.scale;
+    const hm = 0.8 * Math.pow(f.scale, -0.45) * (f.female ? 0.97 : 1);   // la tête grandit moins vite que le corps ; on annule l'élargissement du buste
+    head.scale.set(hm / gx, hm, hm / gz);
+    rig.lookScale = f.scale;
   }
 }
 

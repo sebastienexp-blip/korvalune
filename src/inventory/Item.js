@@ -4,6 +4,7 @@ import { fixLegacyAffix } from '../data/affixPool.js';
 import { SET_RARITY, SETS } from '../data/sets.js';
 import { BUILDS, buildMods } from '../data/builds.js';
 import { durOf, durMaxOf, activeLitany, socketBonus } from '../data/crafting.js';
+import { WEAPON_BASES } from '../data/itemBases.js';
 
 export const ITEMS = Object.fromEntries(itemDefs.map((d) => [d.id, d]));
 
@@ -32,7 +33,7 @@ export function resolveItem(slot) {
     if (g.affixes) for (const a of g.affixes) fixLegacyAffix(a, g.itemLevel, rarity);
     return {
       setId: g.setId || null, setDef: g.setId ? SETS[g.setId] : null,
-      key: g.uid, name: g.name, icon: g.icon, type: g.type, slot: g.slot, visual: (g.tmog && g.tmog.v) || g.visual, tint: (g.tmog && g.tmog.c) || null,
+      key: g.uid, name: g.name, icon: g.icon, type: g.type, slot: g.slot, visual: (g.tmog && g.tmog.v) || g.visual, model: (g.tmog && g.tmog.v) ? null : (g.type === 'weapon' && WEAPON_BASES[g.baseKey]?.model) || null, tint: (g.tmog && g.tmog.c) || null,
       // V10.19 : emplacements / runes, usure
       sockets: g.sockets || 0, gems: g.gems || [], socketBonus: g.sockets ? socketBonus(g) : null, litany: g.sockets ? activeLitany(g) : null,
       dur: durOf(g), durMax: durMaxOf(g), broken: durOf(g) <= 0, ench: g.ench || 0,

@@ -93,7 +93,7 @@ export function refreshGlbGear(rig, slots, resolveItem) {
     st[field + 'Key'] = key;
   };
   const mv = slots.mainhand && resolveItem(slots.mainhand);
-  setHeld('weapon', mv && mv.visual && lib.weapons[mv.visual] ? mv.visual : null);
+  setHeld('weapon', mv ? (mv.model && lib.weapons[mv.model] ? mv.model : (mv.visual && lib.weapons[mv.visual] ? mv.visual : null)) : null);
   const ov = slots.offhand && resolveItem(slots.offhand);          // objet secondaire : bouclier par défaut, ou orbe / carquois / dague
   const ok = ov ? (ov.visual || 'shield') : null;
   setHeld('off', ok && lib.weapons[ok] ? ok : null);
