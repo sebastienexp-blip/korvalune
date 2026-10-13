@@ -72,6 +72,7 @@ let rig = null, wolf = null;
     const BEASTS = ['boar', 'bear', 'skitter', 'alpha'];
     const beastGltfs = await Promise.all(BEASTS.map((b) => load(`creatures/bete_${b}.glb`)));
     const horseG = await load('montures/monture_cheval.glb'); ModelLibrary._register('monture_cheval.glb', horseG);
+    const gryG = await load('montures/monture_griffon.glb'); ModelLibrary._register('monture_griffon.glb', gryG);
     const weaponGltfs = await Promise.all(WEAPONS.map((w) => load(`armes/${w}.glb`)));
     const [body, lodG, lod2G, wolfG, swordG, ...pcs] = await Promise.all([
       load('veilleur/veilleur_corps.glb'), load('veilleur/veilleur_lod1.glb'), load('veilleur/veilleur_lod2.glb'), load('creatures/loup_des_cendres.glb'), load('armes/lame_de_la_veille.glb'),
@@ -97,7 +98,7 @@ let rig = null, wolf = null;
     window.__rig = rig; window.__ready = true;
     hud.innerHTML = `<b>Veilleur de Corvalune</b> (corps animé + 6 pièces d'armure + épée) contre un <b>Loup des Cendres</b>.<br>` +
       `ZQSD : marcher · Maj : courir · Espace : attaque · E : attaque 2 · H : coup reçu · X : mort · R : relever<br>` +
-      `1-6 : armure · 7 : arme (épée, dague, bâton, arc) · 8 : objet secondaire (bouclier, orbe, carquois, dague) — équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br>M : monture suivante (cheval…) <span id="st"></span>`;
+      `1-6 : armure · 7 : arme (épée, dague, bâton, arc) · 8 : objet secondaire (bouclier, orbe, carquois, dague) — équipement via le vrai branchement du jeu (appui : teinte suivante, puis retrait) — casque, épaules, torse, gants, jambes, cape, épée · L : nouveau loup<br>M : monture suivante (3 chevaux, 2 griffons) · F : voler (griffon) <span id="st"></span>`;
   } catch (e) { hud.textContent = 'Erreur de chargement : ' + (e && e.message); console.error(e); }
 })();
 
@@ -143,9 +144,10 @@ function spawnBeasts(gltfs) {
   });
 }
 // monture : mêmes appels que Player.js (createMount / updateMount, cavalier assis à mount.seat)
-let mountRig = null, mountIdx = -1;
+let mountRig = null, mountIdx = -1, flying = false, lift = 0;
 function toggleMount(idx) {
   if (mountRig) { disposeMount(mountRig); mountRig = null; }
+  flying = false; lift = 0;
   mountIdx = idx != null ? idx : (mountIdx + 1) % (MOUNTS.length + 1);
   if (mountIdx >= MOUNTS.length) { mountIdx = -1; return; }
   mountRig = createMount(MOUNTS[mountIdx]); scene.add(mountRig.group);
@@ -171,6 +173,7 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyE') trigger('attack2'); if (e.code === 'KeyH') trigger('hit'); if (e.code === 'KeyX') trigger('death'); if (e.code === 'KeyR') trigger('revive');
   if (e.code === 'KeyL') spawnWolf();
   if (e.code === 'KeyM') toggleMount();
+  if (e.code === 'KeyF' && mountRig && mountRig.def.fly) flying = !flying;
   const d = /^Digit([1-8])$/.exec(e.code); if (d) toggleSlot(+d[1]);
 });
 addEventListener('keyup', (e) => keys.delete(e.code));
@@ -277,7 +280,7 @@ function step(dt, draw) {
     if (st.action) { st.actionT += dt; if (!st.hitDone && st.actionT > st.actionDur * 0.5) { st.hitDone = true; heroStrike(); } if (st.actionT >= st.actionDur) { st.action = null; st.actionT = 0; } }
     if (st.dead) st.actionT += dt;
     rig.root.position.set(st.x, st.y, st.z); rig.root.rotation.y = st.yaw;
-    if (mountRig) { mountRig.group.position.set(st.x, st.y, st.z); mountRig.group.rotation.y = st.yaw; updateMount(mountRig, dt, st.speed, false); rig.root.position.y += mountRig.seat; }
+    if (mountRig) { lift += ((flying ? 3.0 : 0) - lift) * Math.min(1, dt * 2); mountRig.group.position.set(st.x, st.y + lift, st.z); mountRig.group.rotation.y = st.yaw; updateMount(mountRig, dt, st.speed + (flying ? 3 : 0), flying); rig.root.position.y += mountRig.seat + lift; }
     for (const b of beasts) animateGlbRig(b, { speed: 0, grounded: true }, dt, 'creature');
     for (const f of foes) animateGlbRig(f, { speed: 0, grounded: true }, dt, 'humanoid');
     for (const c of crowd) animateGlbRig(c.rig, { speed: c.v, grounded: true }, dt, 'humanoid');

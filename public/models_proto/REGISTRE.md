@@ -26,3 +26,6 @@ Tous originaux, générés par `tools/models/build_foes.py` (aucune ressource ti
 
 ## Bêtes (Lot 3)
 Originales, générées par `tools/models/build_beasts.py` : `creatures/bete_{boar,bear,skitter,alpha}.glb`, textures `creatures/tex/` (pelage et os). Le loup (`creatures/loup_des_cendres.glb`) a été régénéré avec les métadonnées d'espèce.
+
+## Montures (Lot 4)
+Originales : `montures/monture_cheval.glb` (14 780 tri, 29 os) et `montures/monture_griffon.glb` (17 416 tri, 35 os), textures `montures/tex/` (poil neutre teintable, cuir, drap, argent). Générées par `tools/models/build_horse.py` et `build_griffon.py`. Le héros embarque l'animation `ride`.
