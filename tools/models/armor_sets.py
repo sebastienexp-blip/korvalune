@@ -23,6 +23,7 @@ def build(style):
     if style == 'cuir':
         # --- casque : capuche de cuir, queue dans la nuque, bord renforcé
         add('casque', 'capuche', sh(hood, 'Head', a0=0.11, a1=0.89, t_lo=0.0, t_hi=1.0, offset=0.014, thick=0.010, bevel=0.01, na=40, nt=22, dome=0.004, tile=0.3), leather)
+        add('casque', 'capuche_front', sh(hood, 'Head', a0=-0.125, a1=0.125, t_lo=0.74, t_hi=1.0, offset=0.016, thick=0.010, bevel=0.01, na=20, nt=10, dome=0.004, tile=0.3), leather)
         add('casque', 'capuche_pli', sh(hood, 'Head', a0=0.30, a1=0.70, t_lo=0.0, t_hi=0.28, offset=0.030, thick=0.009, bevel=0.01, na=26, nt=8, tile=0.3), leather)
         add('casque', 'capuche_bord', sh(hood, 'Head', a0=0.09, a1=0.12, t_lo=0.02, t_hi=0.96, offset=0.018, thick=0.008, bevel=0.004, na=4, nt=22, tile=0.1), 'trim', both=False)
         add('casque', 'capuche_bord_R', sh(hood, 'Head', a0=0.88, a1=0.91, t_lo=0.02, t_hi=0.96, offset=0.018, thick=0.008, bevel=0.004, na=4, nt=22, tile=0.1), 'trim')
@@ -60,6 +61,7 @@ def build(style):
     else:  # tissu
         cl = 'cloth'
         add('casque', 'capuche', sh(hood, 'Head', a0=0.11, a1=0.89, t_lo=0.0, t_hi=1.0, offset=0.016, thick=0.007, bevel=0.01, na=40, nt=22, dome=0.006, tile=0.3), cl)
+        add('casque', 'capuche_front', sh(hood, 'Head', a0=-0.125, a1=0.125, t_lo=0.74, t_hi=1.0, offset=0.016, thick=0.007, bevel=0.01, na=20, nt=10, dome=0.004, tile=0.3), cl)
         add('casque', 'capuche_pli', sh(hood, 'Head', a0=0.28, a1=0.72, t_lo=0.0, t_hi=0.34, offset=0.032, thick=0.007, bevel=0.01, na=26, nt=8, tile=0.3), cl)
         pth = G.smoothpath([(0, 1.82, 0.0), (0, 1.88, -0.03), (0, 1.915, -0.08), (0, 1.925, -0.135)], 10)
         pt = G.Loft(pth, prof([(0, .060), (.5, .036), (1, .006)], 10), prof([(0, .060), (.5, .036), (1, .006)], 10), p=2.0, segs=14, cap1=2, tile=0.2, ref=(0, 0, 1))
@@ -104,7 +106,9 @@ if __name__ == '__main__':
     tex = os.path.join(out, 'tex')
     for style in ('cuir', 'tissu'):
         groups = {}
-        for slot, n, m, mat in build(style): groups.setdefault(slot, []).append((n, m, mat))
+        for slot, n, m, mat in build(style):
+            if slot == 'casque': continue   # pas de capuche : le visage et la coiffure restent visibles
+            groups.setdefault(slot, []).append((n, m, mat))
         for slot, parts in groups.items():
             used = {p[2] for p in parts}
             ms = [m for m in mats if m.name in used]

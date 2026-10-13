@@ -74,7 +74,7 @@ export function refreshGlbGear(rig, slots, resolveItem) {
   const want = {};                                    // pièce → objet équipé qui la demande
   for (const [slot, pcs] of Object.entries(SLOT_TO_PIECES)) {
     if (!slots[slot]) continue;
-    for (const p of pcs) if (!want[p]) want[p] = slots[slot];
+    for (const p of pcs) if (!want[p] && !(p === 'casque' && rig.armorStyle)) want[p] = slots[slot];   // cuir / tissu : pas de casque, le visage et la coiffure restent visibles
   }
   for (const [p, cur] of Object.entries(st.pieces)) {          // retire ce qui n'est plus porté
     if (!want[p]) { detach(cur.meshes); delete st.pieces[p]; }
