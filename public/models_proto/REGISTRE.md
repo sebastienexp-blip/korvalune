@@ -75,3 +75,14 @@ Générés par `tools/models/cosmetics_geo.py` (ailes, couvre-chefs) et `cosmeti
 - **Restent procéduraux (par nature)** : anneaux au sol, auras, traînées de particules, titres (effets/texte) ; familiers translucides (gelée, feu follet, fantôme) et halo de la fée.
 - Correction : sur un héros en modèle .glb, `rig.torso` / `rig.head` n'étaient que des leurres → ailes et couvre-chefs ne pouvaient pas s'attacher. Désormais de vrais points d'ancrage (torse y=1,0 ; tête y=1,7) ; `applySkin` pose les couvre-chefs 3D même sans recoloration (la recoloration des tenues reste réservée au corps procédural).
 - Test : solo, ailes ange/démon/cristal + renard/dragonneau/licorne + couronne/tenues en jeu, aucune erreur console. Non testé sur téléphone réel.
+
+## Corps, visage, coiffures (V10.44)
+- `veilleur/veilleur_corps.glb` : corps humain nu (tronc, bras, jambes, mains, pieds) sur le squelette du Veilleur, utilisé par toutes les classes et toutes les races (teinte de peau par couleur de sommet). Généré par `tools/models/build_body.py`.
+- `visage/` (≈66 fichiers, `tools/models/head_geo.py`, `hair_geo.py`, `build_head.py`) : 12 têtes (homme/femme × 6 formes), 10 jeux d'yeux, 10 nez, lèvres, sourcils, oreilles humaine/elfe/orque, crocs d'orque, 22 coiffures, 5 barbes. Tout est modélisé ; le jeu ne fait qu'assembler les modules (`src/visual/HumanHead.js`) et les teinter par rôle de sommet (peau, cheveux, iris).
+- Casque de plates : remplace visage et coiffure. Capuche (cuir / tissu) : le visage reste visible, la coiffure est masquée.
+
+## Armes (V10.44)
+Neuf armes de plus (`tools/models/weapons_geo2.py`) : hache, masse, marteau de guerre, lance, hallebarde, cimeterre, arbalète, grimoire, baguette. Le champ `model` de `WEAPON_BASES` choisit le modèle ; `visual` reste le repli (épée/arc/bâton).
+
+## Armures cuir et tissu (V10.44)
+`tools/models/armor_sets.py` : `veilleur_<emplacement>__cuir.glb` (archer, assassin : capuche, épaulières de cuir bouilli, gilet et bandoulière, brassards lacés, bottes) et `__tissu.glb` (mage : capuche pointue à diadème, mantelet, robe longue, manches, bottines). Cinq emplacements chacun ; la cape est commune. Style choisi par classe dans `GlbEquipment.ARMOR_STYLE` ; guerrier et paladin gardent les plates.
