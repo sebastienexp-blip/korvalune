@@ -110,6 +110,9 @@ V = {
   'archer':  dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=0.94, jaw=.4, brow=.25, nose=.55, eye=True, hood=True, base_cloth='linen'), skin=(0.46, 0.30, 0.22), weapon=('bow', 'L'), quiver=True, scale=(0.96, 1.01, 0.96)),
   'brute':   dict(keep=r'^(ceinture|boucle|epaule0|epaule_cap)(_R)?$', head=dict(w=1.12, h=0.95, d=1.1, jaw=.95, brow=.95, nose=.4, tusk=0.7, ears=0.15, k=0.95), skin=(0.40, 0.25, 0.18), weapon=('club', 'R', 1.0), scale=(1.30, 0.98, 1.22), warty=0.4),
   'troll':   dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.05, h=0.9, d=1.1, jaw=1.0, brow=1.0, nose=.8, tusk=1.3, ears=0.35, ear_pt=-0.3, eye=True, k=0.9), skin=(0.22, 0.27, 0.19), weapon=('club', 'R', 1.4), scale=(1.45, 1.0, 1.35), warty=1.0),
+  # V10.42 — boss (type « creature » côté jeu : ils passent par createCreature)
+  'gardien': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.12, h=1.0, d=1.12, jaw=1.25, brow=1.5, nose=.25, tusk=0.0, ears=0.0, eye=True, k=0.9), skin=(0.30, 0.31, 0.32), weapon=('club', 'R', 1.9), scale=(1.75, 1.2, 1.65), warty=1.0, boss=True),
+  'seigneur': dict(keep=ELITE, head=dict(w=1.0, h=1.05, jaw=.8, brow=1.0, nose=.5, ears=.5, ear_pt=1.0, tusk=.5, eye=True, hood=True, k=1.0), skin=(0.14, 0.10, 0.19), weapon=('sword', 'R'), shield=True, scale=(1.35, 1.3, 1.35), decimate=0.07, boss=True),
   'goblin':  dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.1, h=1.0, d=1.1, jaw=.5, brow=.6, nose=1.0, ears=1.0, ear_pt=1.0, tusk=.4, eye=True, k=1.55), skin=(0.16, 0.30, 0.10), weapon=('dagger', 'R'), scale=(0.92, 0.95, 0.92), warty=0.6),
 }
 
@@ -128,7 +131,7 @@ def build(name):
             if name in ('zealot', 'mage') and n.startswith(('torse', 'jambe', 'bras')): mat = 'cloth'
             if name == 'elite' and n.startswith(('torse', 'jambe')): mat = 'linen'
             parts.append((n, m.copy(), mat))
-    if name in ('brute', 'troll', 'goblin'):
+    if name in ('brute', 'troll', 'goblin', 'gardien'):
         parts = [(n, m, 'hide' if (n.startswith(('torse', 'jambe', 'bras')) ) else mat) for n, m, mat in parts]
         parts.append(('pagne', kilt(), 'leather'))
     if v['head']: parts += head(**v['head'])
@@ -156,6 +159,6 @@ def build(name):
     sc = np.array([sx, sy, sz])
     for n, m, mat in parts: m.V = m.V * sc
     SK = copy.deepcopy(G.SK); SK.pos = [p * sc for p in SK.pos]
-    eyec = {'zealot': (0.9, 0.2, 0.15), 'mage': (0.35, 0.5, 1.0), 'troll': (1.0, 0.55, 0.1), 'goblin': (1.0, 0.9, 0.15), 'brute': (0.9, 0.5, 0.2)}.get(name, (0.35, 0.3, 0.2))
+    eyec = {'zealot': (0.9, 0.2, 0.15), 'mage': (0.35, 0.5, 1.0), 'troll': (1.0, 0.55, 0.1), 'goblin': (1.0, 0.9, 0.15), 'brute': (0.9, 0.5, 0.2), 'gardien': (1.0, 0.62, 0.15), 'seigneur': (0.75, 0.25, 1.0)}.get(name, (0.35, 0.3, 0.2))
     hmax = max(float(m.V[:, 1].max()) for _, m, _ in parts)
     return parts, SK, dict(scale=sc, refHeight=round(hmax, 3), skin=v['skin'], warty=v.get('warty', 0.0), eye=eyec, decimate=v.get('decimate', 0))

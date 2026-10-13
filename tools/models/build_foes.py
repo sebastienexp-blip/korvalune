@@ -49,8 +49,8 @@ if __name__ == '__main__':
             for b, c in a['channels'].items():
                 ch[b] = {'rot': c.get('rot'), 'pos': None if c.get('pos') is None else np.asarray(c['pos']) * sc}
             anims[an] = {**a, 'channels': ch}
-        extras = {'korvalune': {'type': 'body', 'skeleton': 'veilleur_foe_' + name, 'species': name, 'refHeight': meta['refHeight'], 'note': 'ennemi humanoïde ; squelette du Veilleur mis à l\'échelle, armes cuites dans le maillage'}}
-        fn = os.path.join(out, f'ennemi_{name}.glb')
+        extras = {'korvalune': {'type': 'creature' if F.V[name].get('boss') else 'body', 'skeleton': 'veilleur_foe_' + name, 'species': name, 'refHeight': meta['refHeight'], 'note': 'ennemi humanoïde ; squelette du Veilleur mis à l\'échelle, armes cuites dans le maillage'}}
+        fn = os.path.join(out, f'{"boss" if F.V[name].get("boss") else "ennemi"}_{name}.glb')
         write_glb(fn, parts, SK, used, anims, extras=extras, mesh_name=name, tex_dir=os.path.join(out, 'tex'))
         for pre in ('steel_', 'leather_', 'cloth_', 'trim_'): patch_uris(fn, 'tex/' + pre, '../veilleur/tex/' + pre)
         print(name, sum(len(m.F) for _, m, _ in parts), 'tri', os.path.getsize(fn) // 1024, 'Ko')

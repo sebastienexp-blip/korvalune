@@ -37,3 +37,8 @@ Pin, chêne (vert / clair / automne), bouleau, buisson : variantes `_lo` (≈ 2�
 ## Lot 6 — Repères, ruines, portails, forge, monolithe (V10.41)
 Modèles créés par script (glbkit), originaux, sans asset tiers : `lm_*` (moulin, menhirs, ferme, camp, flamme, autels, forteresse, tours, obélisque, arche, fontaine, temple, gueule, monolithe, rune, anneau, portiques), `ruine_*` (murs, gravats, pilier, piédestal), `portail_cadre`, `chariot`, `forge_decor`, `forge_braises`, `statue_*` (monolithe, runes, cristal, anneaux).
 Intégration : Landmarks, DungeonRuins, Portals, Caravan, Monolith ; repli procédural conservé. Testé en solo (aucune erreur console). Non testé sur téléphone réel.
+
+## Lot 7a/7b — Décors de biomes et boss (V10.42)
+- `ville/ville_biome_*.glb` (12 modules, 3–288 tri) : basalte, débris, obsidienne, cristal, colonne, roches (fer/grès/neige), cactus, souche, roseau, glace. Générés par `tools/models/biome_geo.py` ; mêmes unités que les primitives procédurales, donc échelle/collision inchangées.
+- `ennemis/boss_gardien.glb` (9 677 tri, golem de pierre) et `ennemis/boss_seigneur.glb` (24 598 tri, seigneur en armure) : squelette du Veilleur, animations idle/marche/attaque/mort ; déclarés « creature » pour passer par `createCreature`. Utilisés par Gardien des Ruines + gardien de la Flèche (gardien) et Souverain du Néant (seigneur).
+Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le visualiseur ; le chemin GLB est confirmé (échelle ×4,4, aucune erreur).
