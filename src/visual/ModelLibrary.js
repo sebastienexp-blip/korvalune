@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Bibliothèque de modèles 3D (GLB) optionnels — V3.
 //
@@ -197,6 +198,16 @@ export const ModelLibrary = {
     }
     geo.setAttribute('color', new THREE.BufferAttribute(out, 3));
     return (this._townGeos[key] = geo);
+  },
+
+  /** Forme seule d'un module (toutes ses parties fusionnées, sans couleurs de sommets) : pour les décors dont la teinte/matériau vient du code (donjons à thème). null si absent. */
+  townMergedGeometry(kind) {
+    if (!this.town[kind]) return null;
+    this._mergedGeo ||= {};
+    if (this._mergedGeo[kind]) return this._mergedGeo[kind];
+    const gs = this._townPart(kind).map((p) => { const g = p.geo.clone(); for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(a)) g.deleteAttribute(a); return g.index ? g.toNonIndexed() : g; });
+    const m = gs.length ? mergeGeometries(gs, false) : null;
+    return (this._mergedGeo[kind] = m);
   },
 
   /** Instance d'un module de la ville (Group) ; tint = { wall, roof, trim } (couleurs hex) pour les rôles de sommets. */

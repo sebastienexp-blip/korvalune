@@ -63,3 +63,6 @@ Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le vis
 
 ## Autres joueurs (V10.42)
 Leur équipement n'est pas transmis par le réseau : avec un corps .glb ils recevaient aucune arme. `giveClassGear` leur pose l'arme (et l'objet secondaire) par défaut de leur classe (épée+écu, bâton+orbe, arc+carquois, dagues). Les corps de foule (LOD 1) n'ont que le support d'arme main droite : l'objet secondaire peut manquer. Non testé en multijoueur (serveur indisponible ici) ; syntaxe vérifiée seulement.
+
+## Donjons des Spires (V10.42)
+`RiftLayout` : rochers, colonnes, stalagmites/pointes et cristaux utilisent les formes `biome_roche_fer`, `biome_colonne`, `biome_glace`, `biome_cristal` (fusionnées, sans couleurs de sommets via `ModelLibrary.townMergedGeometry`) ; matériaux, textures de pierre, couleurs de thème et effacement par tramage inchangés. Sols (dalles), murs-boîtes, arbres/tombes, torches, estrade et flaques de lave restent des primitives. Test : entrée dans une spire (salle de départ, sans décor) sans erreur ; les salles à décor n'ont pas été visitées à l'écran.
