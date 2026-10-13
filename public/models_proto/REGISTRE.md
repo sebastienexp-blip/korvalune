@@ -57,3 +57,6 @@ Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le vis
 
 ## Sol (V10.42)
 `terrain/terrain_detail.jpg` (1024², grain/cailloux/brins carrelable) + `terrain_normal.png` (512²), générés par `tools/models/terrain_tex.py` ; déclarés dans `index.json` (`terrain`) par l'outil d'empaquetage. Le terrain les utilise à la place de la texture dessinée par code (relief éclairé via normales). Teinte globale par couleurs de sommets inchangée. Légèrement plus sombre que l'ancien rendu → luminosité ajustée (×1,9), à valider sur téléphone.
+
+## Cinématique d'introduction (V10.42)
+`ville/ville_intro_citadelle.glb` (1 998 tri : île flottante, donjon, 5 tours, enceinte, fenêtres allumées) et `ville_intro_rocher.glb` (132 tri, 9 instances en orbite). Remplacent l'île/tours dessinés par code ; lune, aurores, failles, cristal et faisceaux restent générés par code (effets). Test : cinématique jouée en entier dans le jeu avec les modèles, aucune erreur.

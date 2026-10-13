@@ -112,3 +112,61 @@ def catalog():
     return {'biome_basalte': basalt(), 'biome_debris': float_rock(), 'biome_obsidienne': obsidian(), 'biome_cristal': crystal(), 'biome_colonne': column(),
             'biome_roche_fer': rock_iron(), 'biome_roche_gres': rock_sand(), 'biome_roche_neige': rock_snow(), 'biome_cactus': cactus(),
             'biome_souche': stump(), 'biome_roseau': reed(), 'biome_glace': ice()}
+
+# ------------------------------------------------------------------------------------------------ cinématique d'introduction
+def _rh(x, z, seed=7):
+    s = np.sin(x * 127.1 + z * 311.7 + seed * 74.7) * 43758.5453; return s - np.floor(s)
+
+def _hnoise(x, z, seed=7):
+    """Bruit de valeur lissé (même principe que celui de la cinématique)."""
+    xi, zi = np.floor(x), np.floor(z); xf, zf = x - xi, z - zi
+    u = xf * xf * (3 - 2 * xf); v = zf * zf * (3 - 2 * zf)
+    a = _rh(xi, zi, seed) * (1 - u) + _rh(xi + 1, zi, seed) * u
+    b = _rh(xi, zi + 1, seed) * (1 - u) + _rh(xi + 1, zi + 1, seed) * u
+    return a * (1 - v) + b * v
+
+def intro_citadel():
+    """Île flottante (pointe vers le bas) + donjon central, 5 tours, enceinte, fenêtres allumées. Origine = centre de l'île (le jeu la pose à y = -38)."""
+    k = Kit(); rng = np.random.default_rng(5)
+    s = sphere(40.0, 'pierre', (1, 1, 1), seg=30, rings=20)
+    key = np.round(s.V, 3); _, inv = np.unique(key, axis=0, return_inverse=True); inv = inv.reshape(-1)
+    V = s.V.copy()
+    for i in range(len(V)):
+        x, y, z = V[i]
+        n = float(_hnoise(x * .08 + 5, z * .08 + y * .05))
+        if y > 0: y *= .16
+        else:
+            kk = 1 + (-y / 40) * 1.6; y *= 2.1; x /= kk; z /= kk
+        f = .84 + n * .34; x *= f; z *= f; y += (n - .5) * 6
+        V[i] = (x, y, z)
+    # soude les coutures (même position d'origine → même point déformé)
+    acc = np.zeros((inv.max() + 1, 3)); cnt = np.zeros(inv.max() + 1)
+    np.add.at(acc, inv, V); np.add.at(cnt, inv, 1); V = (acc / cnt[:, None])[inv]
+    tri = V[s.F]; n_ = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]); ok = np.linalg.norm(n_, axis=1) > 1e-9
+    F = s.F[ok]; tri = tri[ok]; n_ = n_[ok] / np.linalg.norm(n_[ok], axis=1, keepdims=True)
+    flip = (n_ * tri.mean(1)).sum(1) < 0; n_[flip] *= -1
+    isl = _mk(tri.reshape(-1, 3), s.UV[F].reshape(-1, 2) * 4, np.repeat(n_, 3, axis=0), np.arange(len(F) * 3).reshape(-1, 3), (1, 1, 1), 1.0)
+    isl.F[flip] = isl.F[flip][:, ::-1]
+    top = isl.V[:, 1] > -2
+    shade = np.repeat(.6 + .4 * rng.random(len(F)), 3)
+    isl.C[:, 0] = np.where(top, .50, .52) * shade; isl.C[:, 1] = np.where(top, .58, .50) * shade; isl.C[:, 2] = np.where(top, .64, .82) * shade
+    k.add('plaster', isl)
+    STONE_ = (0.62, 0.68, 0.95); ROOF_ = (0.30, 0.33, 0.68)
+    def tower(x, z, r, h, rh):
+        k.add('pierre', cyl(r, r * .85, h, 9, 'pierre', STONE_, M=T_((x, 6, z))))
+        k.add('tuile', cyl(r * 1.25, .01, rh, 9, 'tuile', ROOF_, M=T_((x, 6 + h, z)), caps=(True, False)))
+        for j in range(6):
+            a = rng.random() * 6.28; yy = 8 + rng.random() * (h - 5)
+            k.add('glow', box((.9, 1.5, .5), 'glow', (1.0, .84, .5), M=T_((x + np.cos(a) * r * .9, yy, z + np.sin(a) * r * .9), ry=-a + np.pi / 2)))
+    tower(0, 0, 6.5, 34, 20)
+    for i in range(5):
+        a = i / 5 * np.pi * 2 + .3; tower(np.cos(a) * 22, np.sin(a) * 22, 3.2, 12 + (i % 2) * 7, 8 + i % 3 * 2)
+    k.add('pierre', cyl(24, 23, 5, 24, 'pierre', (0.55, 0.60, 0.88), M=T_((0, 6, 0)), caps=(False, False)))
+    return k, {}
+
+def intro_rock():
+    k = Kit(); k.add('pierre', rock(77, (0.5, 0.53, 0.8), .3, 1.0)); return k, {}
+
+_old_catalog = catalog
+def catalog():
+    d = _old_catalog(); d['intro_citadelle'] = intro_citadel(); d['intro_rocher'] = intro_rock(); return d

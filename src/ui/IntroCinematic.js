@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 
 // V10.32 — Cinématique de lancement : un petit film en 3D joué avant l'écran principal.
 // Deux lunes, aurores, citadelle flottante et Cœur d'Éther qui se fracture. Musique et sons synthétisés (aucun fichier à charger).
@@ -299,6 +300,10 @@ export class IntroCinematic {
 
   _buildCitadel(noise) {
     const scene = this.scene, g = this.citadel = new THREE.Group(); g.position.copy(CITADEL).add(new THREE.Vector3(0, -38, 0));
+    // V10.42 — citadelle fournie en GLB (île, donjon, tours, enceinte, fenêtres) ; sinon version dessinée par code
+    const glbCit = ModelLibrary.hasTown(['intro_citadelle', 'intro_rocher']);
+    if (glbCit) g.add(ModelLibrary.townInstance('intro_citadelle', { shadow: false }));
+    else {
     // île : icosaèdre déformé, pointe vers le bas
     const ig = this._track(new THREE.IcosahedronGeometry(40, 3)), p = ig.attributes.position, c = new Float32Array(p.count * 3);
     for (let i = 0; i < p.count; i++) {
@@ -325,10 +330,12 @@ export class IntroCinematic {
     for (let i = 0; i < 26; i++) { const a = Math.random() * 6.28, r = Math.random() < 0.5 ? 6.6 : 22, y = 10 + Math.random() * 28; wp.push(Math.cos(a) * r * 1.02, y, Math.sin(a) * r * 1.02); }
     const wg = this._track(new THREE.BufferGeometry()); wg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(wp), 3));
     g.add(new THREE.Points(wg, this._track(new THREE.PointsMaterial({ size: 3.2, sizeAttenuation: false, color: 0xffd98a, blending: THREE.AdditiveBlending, depthWrite: false }))));
+    }
     // rochers qui flottent autour
     this.rocks = [];
     for (let i = 0; i < 9; i++) {
-      const rk = new THREE.Mesh(this._track(new THREE.IcosahedronGeometry(2 + Math.random() * 4.5, 1)), this._track(new THREE.MeshLambertMaterial({ color: 0x6a74b0, emissive: 0x12183c, flatShading: true })));
+      const rk = glbCit ? ModelLibrary.townInstance('intro_rocher', { shadow: false }) : new THREE.Mesh(this._track(new THREE.IcosahedronGeometry(2 + Math.random() * 4.5, 1)), this._track(new THREE.MeshLambertMaterial({ color: 0x6a74b0, emissive: 0x12183c, flatShading: true })));
+      if (glbCit) rk.scale.setScalar(2 + Math.random() * 4.5);
       rk.userData = { a: Math.random() * 6.28, r: 52 + Math.random() * 30, y: -10 + Math.random() * 40, s: 0.06 + Math.random() * 0.1 }; g.add(rk); this.rocks.push(rk);
     }
     // Cœur d'Éther

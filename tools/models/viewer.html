@@ -11,7 +11,7 @@ r.setSize(W, H); r.setPixelRatio(1); r.shadowMap.enabled = true; r.toneMapping =
 document.body.appendChild(r.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x262431);
 scene.fog = new THREE.Fog(0x262431, +q.get("fogn") || 8, +q.get("fogf") || 20);
-const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 200);
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 3000);
 // éclairage : clair de lune + contre-jour chaud + environnement
 const pm = new THREE.PMREMGenerator(r);
 const env = new THREE.Scene(); env.background = new THREE.Color(0x30304a);
