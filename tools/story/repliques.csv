@@ -4,6 +4,11 @@ pro_c1_02;cinématique c1;nessa;Atma;"Personne ne l’avait jamais vue bouger. P
 pro_c1_03;cinématique c1;veilleur;Eric;"Qui… a touché… l’Éclat ?";public/voices/pro_c1_03.mp3
 pro_c1_04;cinématique c1;veilleur;Eric;"Le ciel saigne encore. Je le sens. Approche, porteur. Le temps nous est compté.";public/voices/pro_c1_04.mp3
 pro_c1_05;cinématique c1;nessa;Atma;"C’est ainsi qu’un voyageur sans nom devint le dernier espoir du monde. Sur le moment, il avait surtout faim.";public/voices/pro_c1_05.mp3
+a1_c3_01;cinématique c3;veilleur;Eric;"Là. Je la reconnais. La première des cinq spires.";public/voices/a1_c3_01.mp3
+a1_c3_02;cinématique c3;veilleur;Eric;"Chacune garde un éclat du Cœur. Prends celui-ci, porteur : il te donnera plus qu’il ne te coûtera.";public/voices/a1_c3_02.mp3
+a1_c3_03;cinématique c3;nessa;Atma;"Il ne le savait pas encore, mais la forêt venait de le remarquer.";public/voices/a1_c3_03.mp3
+a1_c4_01;cinématique c4;nessa;Atma;"Premier éclat, premier gardien tombé. Le monde commença à retenir son souffle.";public/voices/a1_c4_01.mp3
+a1_c4_02;cinématique c4;nessa;Atma;"Mais d’autres spires s’allumaient déjà.";public/voices/a1_c4_02.mp3
 pro_c2_01;cinématique c2;nessa;Atma;"Ainsi s’achève le premier chapitre.";public/voices/pro_c2_01.mp3
 pro_c2_02;cinématique c2;nessa;Atma;"Le suivant sera moins ensoleillé.";public/voices/pro_c2_02.mp3
 pro_vaelis_01;story_p1/talk;vaelis;Douce;"Ah, te voilà. Le Monolithe a frémi toute la nuit, et je n’ai pas fermé l’œil. Aucune tisane ne tient face à une pierre qui s’éveille.";public/voices/pro_vaelis_01.mp3
@@ -13,6 +18,14 @@ pro_rhoda_01;story_p2/rhoda_a;rhoda;Romain / femme ferme;"Alors c’est toi, le 
 pro_rhoda_02;story_p2/rhoda_a;rhoda;Romain / femme ferme;"Des bandits profitent du désordre pour piller les caravanes. Chasses-en cinq, et prouve-moi que ton éclat sert à autre chose qu’à briller.";public/voices/pro_rhoda_02.mp3
 pro_rhoda_03;story_p2/rhoda_b;rhoda;Romain / femme ferme;"Cinq de moins. Tu tiens mieux ton épée que ta langue, et c’est un compliment.";public/voices/pro_rhoda_03.mp3
 pro_rhoda_04;story_p2/rhoda_b;rhoda;Romain / femme ferme;"Va trouver Halvar, à la porte sud. Il a des choses à te dire sur le Veilleur, et sur la forêt qui s’étend au-delà.";public/voices/pro_rhoda_04.mp3
+a1_ysmer_01;story_a1_1/ysmer;ysmer;Thomas;"Ah, un porteur d’éclat ! Je garde les portails, mais cette nuit ils bourdonnent tout seuls. Même les clés sont nerveuses.";public/voices/a1_ysmer_01.mp3
+a1_ysmer_02;story_a1_1/ysmer;ysmer;Thomas;"La Forêt des Ombres s’étend au-delà de la ville. Les arbres y murmurent, et ce n’est pas pour dire bonjour.";public/voices/a1_ysmer_02.mp3
+a1_ysmer_03;story_a1_1/ysmer;ysmer;Thomas;"Une spire ancienne se dresse tout au fond. Si elle s’est éveillée, il faut la voir de tes yeux. Méfie-toi des ours : ils sont de mauvaise humeur.";public/voices/a1_ysmer_03.mp3
+a1_vaelis_01;story_a1_2/vaelis;vaelis;Douce;"Une spire ! Et cet éclat dans ta main s’est mis à chanter. Je n’ai rien entendu de pareil depuis ma formation.";public/voices/a1_vaelis_01.mp3
+a1_vaelis_02;story_a1_2/vaelis;vaelis;Douce;"Chaque spire garde un morceau du Cœur d’Éther, et des gardiens que l’ombre a retournés. Pour avancer, il faudra en vaincre un.";public/voices/a1_vaelis_02.mp3
+a1_vaelis_03;story_a1_2/vaelis;vaelis;Douce;"Cherche un Gardien corrompu, dans les failles. Et emporte des potions. Beaucoup de potions.";public/voices/a1_vaelis_03.mp3
+a1_rhoda_01;story_a1_3/rhoda;rhoda;Romain / femme ferme;"Un Gardien corrompu, abattu par un seul voyageur. Mes soldats voudront une démonstration. Je leur dirai que j’étais là.";public/voices/a1_rhoda_01.mp3
+a1_rhoda_02;story_a1_3/rhoda;rhoda;Romain / femme ferme;"Plus sérieusement : tu as rouvert une porte que personne n’osait toucher. Repose-toi. La suite sera moins aimable.";public/voices/a1_rhoda_02.mp3
 pro_halvar_01;story_p3/halvar;halvar;Paul K;"Ah, le porteur ! Rhoda m’a prévenu. Tu as l’air plus solide qu’hier.";public/voices/pro_halvar_01.mp3
 pro_halvar_02;story_p3/halvar;halvar;Paul K;"Ma grand-mère disait toujours : la pierre s’éveillera quand le ciel se fendra. Je croyais à une histoire pour endormir les enfants.";public/voices/pro_halvar_02.mp3
-pro_halvar_03;story_p3/halvar;halvar;Paul K;"Les Ombres gagnent la forêt, à l’est. Va. Et reviens entier : j’ai déjà assez de papiers à remplir.";public/voices/pro_halvar_03.mp3
+pro_halvar_03;story_p3/halvar;halvar;Paul K;"Les Ombres gagnent la grande forêt. Va. Et reviens entier : j’ai déjà assez de papiers à remplir.";public/voices/pro_halvar_03.mp3

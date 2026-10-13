@@ -1,5 +1,5 @@
 Voix off du mode histoire
 =========================
-Un fichier par réplique : public/voices/<id>.mp3   (la liste des id est dans tools/story/repliques_prologue.csv)
+Un fichier par réplique : public/voices/<id>.mp3   (la liste des id est dans tools/story/repliques.csv)
 Après avoir ajouté des .mp3, ajoutez leur id (sans .mp3) dans public/voices/index.json, par exemple ["pro_c1_01","pro_c1_02"].
 Réplique sans fichier = voix du navigateur, puis texte seul.

@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.47', title: 'Mode histoire : Acte I, Les Ombres',
+    items: [
+      '🌲 Acte I : après le prologue, Ysmer t’envoie dans la Forêt des Ombres. Trois quêtes jusqu’au premier Gardien corrompu.',
+      '🗼 Une spire violette se dresse dans la forêt : approche-toi pour déclencher une nouvelle cinématique.',
+      '🗣️ Nouveaux dialogues avec Ysmer, Vaelis et Rhoda. Vaelis te parle d’abord de l’histoire avant de proposer ses services.',
+      '🎬 Le bouton « Passer » des cinématiques passe en haut à droite pour ne plus gêner les sous-titres.'
+    ]
+  },
+  {
     version: '10.46', title: 'Mode histoire : le prologue',
     items: [
       '📖 Nouveau : le mode histoire commence ! Après ta première chasse aux loups, le Monolithe s’éveille. Prologue en trois quêtes avec la Mystique Vaelis, la Capitaine Rhoda et le garde Halvar.',

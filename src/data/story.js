@@ -13,7 +13,8 @@ export const SPEAKERS = {
   veilleur: { name: 'Le Veilleur de pierre', voice: 'Eric', pitch: 0.55, rate: 0.82 },
   halvar: { name: 'Garde Halvar', voice: 'Paul K', pitch: 0.8, rate: 0.98 },
   rhoda: { name: 'Capitaine Rhoda', voice: 'Romain / femme ferme', pitch: 1.0, rate: 1.05 },
-  vaelis: { name: 'Mystique Vaelis', voice: 'Douce', pitch: 1.15, rate: 0.9 }
+  vaelis: { name: 'Mystique Vaelis', voice: 'Douce', pitch: 1.15, rate: 0.9 },
+  ysmer: { name: 'Gardien des portails Ysmer', voice: 'Thomas', pitch: 0.9, rate: 1.0 }
 };
 
 // ---------------------------------------------------------------- Répliques (id → texte)
@@ -27,6 +28,17 @@ export const STORY_LINES = {
     L('pro_c1_03', 'veilleur', 'Qui… a touché… l’Éclat ?'),
     L('pro_c1_04', 'veilleur', 'Le ciel saigne encore. Je le sens. Approche, porteur. Le temps nous est compté.'),
     L('pro_c1_05', 'nessa', 'C’est ainsi qu’un voyageur sans nom devint le dernier espoir du monde. Sur le moment, il avait surtout faim.')
+  ],
+  // Cinématique 3 — la première spire
+  c3: [
+    L('a1_c3_01', 'veilleur', 'Là. Je la reconnais. La première des cinq spires.'),
+    L('a1_c3_02', 'veilleur', 'Chacune garde un éclat du Cœur. Prends celui-ci, porteur : il te donnera plus qu’il ne te coûtera.'),
+    L('a1_c3_03', 'nessa', 'Il ne le savait pas encore, mais la forêt venait de le remarquer.')
+  ],
+  // Cinématique 4 — fin de l'acte I
+  c4: [
+    L('a1_c4_01', 'nessa', 'Premier éclat, premier gardien tombé. Le monde commença à retenir son souffle.'),
+    L('a1_c4_02', 'nessa', 'Mais d’autres spires s’allumaient déjà.')
   ],
   // Cinématique 2 — fin du prologue
   c2: [
@@ -54,11 +66,31 @@ export const STORY_TALKS = {
       L('pro_rhoda_04', 'rhoda', 'Va trouver Halvar, à la porte sud. Il a des choses à te dire sur le Veilleur, et sur la forêt qui s’étend au-delà.')
     ]
   },
+  story_a1_1: {
+    ysmer: [
+      L('a1_ysmer_01', 'ysmer', 'Ah, un porteur d’éclat ! Je garde les portails, mais cette nuit ils bourdonnent tout seuls. Même les clés sont nerveuses.'),
+      L('a1_ysmer_02', 'ysmer', 'La Forêt des Ombres s’étend au-delà de la ville. Les arbres y murmurent, et ce n’est pas pour dire bonjour.'),
+      L('a1_ysmer_03', 'ysmer', 'Une spire ancienne se dresse tout au fond. Si elle s’est éveillée, il faut la voir de tes yeux. Méfie-toi des ours : ils sont de mauvaise humeur.')
+    ]
+  },
+  story_a1_2: {
+    vaelis: [
+      L('a1_vaelis_01', 'vaelis', 'Une spire ! Et cet éclat dans ta main s’est mis à chanter. Je n’ai rien entendu de pareil depuis ma formation.'),
+      L('a1_vaelis_02', 'vaelis', 'Chaque spire garde un morceau du Cœur d’Éther, et des gardiens que l’ombre a retournés. Pour avancer, il faudra en vaincre un.'),
+      L('a1_vaelis_03', 'vaelis', 'Cherche un Gardien corrompu, dans les failles. Et emporte des potions. Beaucoup de potions.')
+    ]
+  },
+  story_a1_3: {
+    rhoda: [
+      L('a1_rhoda_01', 'rhoda', 'Un Gardien corrompu, abattu par un seul voyageur. Mes soldats voudront une démonstration. Je leur dirai que j’étais là.'),
+      L('a1_rhoda_02', 'rhoda', 'Plus sérieusement : tu as rouvert une porte que personne n’osait toucher. Repose-toi. La suite sera moins aimable.')
+    ]
+  },
   story_p3: {
     halvar: [
       L('pro_halvar_01', 'halvar', 'Ah, le porteur ! Rhoda m’a prévenu. Tu as l’air plus solide qu’hier.'),
       L('pro_halvar_02', 'halvar', 'Ma grand-mère disait toujours : la pierre s’éveillera quand le ciel se fendra. Je croyais à une histoire pour endormir les enfants.'),
-      L('pro_halvar_03', 'halvar', 'Les Ombres gagnent la forêt, à l’est. Va. Et reviens entier : j’ai déjà assez de papiers à remplir.')
+      L('pro_halvar_03', 'halvar', 'Les Ombres gagnent la grande forêt. Va. Et reviens entier : j’ai déjà assez de papiers à remplir.')
     ]
   }
 };
@@ -79,7 +111,7 @@ export const STORY_QUESTS = [
       { id: 'rhoda_b', text: 'Retourner voir la Capitaine Rhoda', type: 'talk', target: 'captain' }
     ],
     reward: reward(6, 0.8) },
-  { id: 'story_p3', name: 'Prologue : Ce que disent les anciens', level: 3, story: true,
+  { id: 'story_p3', name: 'Prologue : Ce que disent les anciens', level: 3, story: true, next: 'story_a1_1',
     steps: [
       { id: 'halvar', text: 'Parler au garde Halvar, à la porte sud', type: 'talk', target: 'guard' },
       { id: 'end', text: 'Le prologue est terminé', type: 'auto' }
@@ -87,12 +119,50 @@ export const STORY_QUESTS = [
     reward: reward(8, 1) }
 ];
 
+const ev = (id, text, target) => ({ id, text, type: 'event', target });
+STORY_QUESTS.push(
+  { id: 'story_a1_1', name: 'Acte I : Les Ombres', level: 10, story: true, next: 'story_a1_2',
+    steps: [
+      { id: 'ysmer', text: 'Parler au Gardien des portails Ysmer', type: 'talk', target: 'portalkeeper' },
+      ev('forest', 'Se rendre dans la Forêt des Ombres', 'region_forest'),
+      { id: 'kill', text: 'Tuer 6 ours des forêts', type: 'kill', target: 'bear', need: 6 }
+    ],
+    reward: reward(12, 1) },
+  { id: 'story_a1_2', name: 'Acte I : La première spire', level: 14, story: true, next: 'story_a1_3',
+    steps: [
+      ev('spire', 'Trouver la spire dans la Forêt des Ombres (elle brille de violet)', 'spire_1'),
+      { id: 'vaelis', text: 'Raconter ta découverte à la Mystique Vaelis', type: 'talk', target: 'mystic' }
+    ],
+    reward: reward(16, 1.2) },
+  { id: 'story_a1_3', name: 'Acte I : Le Gardien corrompu', level: 22, story: true,
+    steps: [
+      { id: 'kill', text: 'Vaincre un Gardien corrompu (il rôde dans les failles)', type: 'kill', target: 'warden_corrupted', need: 1 },
+      { id: 'rhoda', text: 'Retourner voir la Capitaine Rhoda', type: 'talk', target: 'captain' },
+      { id: 'end', text: 'L’acte I est terminé', type: 'auto' }
+    ],
+    reward: reward(26, 1.6) }
+);
+
 export const STORY_FIRST = 'story_p1';
 export const STORY_START_AFTER = 'commencement'; // la quête d'accueil de Halvar
 
 // Cinématique 1 : caméra autour du Monolithe (coordonnées relatives à sa position)
 // Chaque plan : durée minimale `dur`, position/regard de départ et d'arrivée, et les répliques dites pendant le plan.
 export const CINEMATICS = {
+  c3: {
+    title: 'La première spire', at: 'spire',
+    shots: [
+      { dur: 6, from: { p: [22, 20, 24], l: [0, 9, 0] }, to: { p: [12, 12, 14], l: [0, 12, 0] }, say: [0], fx: 'dusk' },
+      { dur: 7, from: { p: [-7, 5, 9], l: [0, 13, 0] }, to: { p: [-4, 8, 6], l: [0, 15, 0] }, say: [1], fx: 'pulse' },
+      { dur: 5, from: { p: [-26, 30, 34], l: [0, 6, 0] }, to: { p: [-36, 38, 50], l: [0, 8, 0] }, say: [2], fx: 'glow' }
+    ]
+  },
+  c4: {
+    title: 'Acte I', card: ['ACTE I TERMINÉ', 'Acte II : Les Archives, à suivre…'],
+    shots: [
+      { dur: 6, from: { p: [28, 22, 34], l: [0, 6, 0] }, to: { p: [38, 32, 52], l: [0, 10, 0] }, say: [0, 1], fx: 'dusk' }
+    ]
+  },
   c1: {
     title: 'L’Éveil',
     shots: [
