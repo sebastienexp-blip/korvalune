@@ -4,7 +4,7 @@ import numpy as np
 from glbkit import Mesh, concat
 
 ROLE_FIXED, ROLE_WALL, ROLE_ROOF, ROLE_TRIM = 1.0, 0.8, 0.6, 0.4
-TILE = {'plaster': 3.0, 'tuile': 2.0, 'pierre': 3.0, 'bois': 1.5, 'cloth': 1.0, 'metal': 2.0, 'window': 1.0, 'glow': 1.0, 'water': 4.0}
+TILE = {'plaster': 3.0, 'tuile': 2.0, 'pierre': 3.0, 'bois': 1.5, 'cloth': 1.0, 'metal': 2.0, 'window': 1.0, 'glow': 1.0, 'water': 4.0, 'flat': 1.0}
 
 def T_(t=(0, 0, 0), ry=0.0, rx=0.0, rz=0.0, s=1.0):
     def R(ax, a):

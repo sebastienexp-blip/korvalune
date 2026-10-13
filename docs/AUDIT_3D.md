@@ -133,3 +133,6 @@ Convertis : maisons, ville, quartiers, repères, ruines, portails, chariot, forg
 **Resté procédural** : effets de sorts/particules/auras (sprites), halos et lumières, eau, ciel/lune/aurores, décor d'Halloween, décor du barbier, dalles/murs/arbres/torches des spires, cosmétiques (cercles, traînées, ailes), objets au sol, flèches, coiffures, PNJ monolithe (cristal animé en code).
 **Non vérifié** : performance et mémoire sur téléphone réel ; multijoueur (serveur indisponible ici) ; build Vite de production ; salles décorées des spires à l'écran ; boss à l'écran dans le jeu ; rendu final avec toutes les armures sur tous les types d'ennemis.
 **Activation** : `python3 tools/models/package_models.py public/models_proto public/models` puis commit de `public/models` (≈24 Mo de .glb + ≈7 Mo de textures). Retour arrière : supprimer `public/models` (le jeu retombe sur le procédural).
+
+## Cosmétiques de la boutique en 3D (V10.43)
+Ailes (3 formes teintées), couvre-chefs (7), familiers (13 espèces) sont désormais des modèles .glb générés (`cosmetics_geo.py`, `cosmetics_pets.py`) avec repli procédural. Effets (anneaux, auras, traînées), titres et familiers translucides restent générés en code. Détails : `public/models_proto/REGISTRE.md` § « Cosmétiques de la boutique ».

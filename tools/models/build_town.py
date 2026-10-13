@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from glbkit import *
-import biome_geo as BG, town_geo as G, town_geo2 as G2, lm_geo as LM, town_tex as TT
+import cosmetics_geo as CG, biome_geo as BG, town_geo as G, town_geo2 as G2, lm_geo as LM, town_tex as TT
 
 def materials():
     out = {}
@@ -11,6 +11,7 @@ def materials():
     out['metal'] = Material('metal', factor=(1, 1, 1, 1), metal=0.7, rough=0.45)
     out['window'] = Material('window', factor=(0.23, 0.17, 0.09, 1), metal=0.0, rough=0.6, emissive=(1.0, 0.69, 0.31))
     out['glow'] = Material('glow', factor=(1, 1, 1, 1), metal=0.0, rough=0.5, emissive=(0.12, 0.12, 0.12))
+    out['flat'] = Material('flat', factor=(1, 1, 1, 1), metal=0.0, rough=0.7, double_sided=True)
     out['water'] = Material('water', factor=(0.18, 0.44, 0.6, 1), metal=0.2, rough=0.1)
     return out
 
@@ -61,6 +62,7 @@ def catalog():
                    ('statue_monolithe', LM.monolith_statue), ('statue_runes', LM.monolith_runes), ('statue_cristal', LM.monolith_crystal), ('statue_anneau_a', lambda: LM.monolith_ring(.65)), ('statue_anneau_b', lambda: LM.monolith_ring(.85))):
         items[nm] = fn()
     items.update(BG.catalog())
+    items.update(CG.catalog())
     return items
 
 if __name__ == '__main__':
