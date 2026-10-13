@@ -54,3 +54,6 @@ Non vu à l'écran dans le vrai jeu (hors champ du test) : seulement dans le vis
 - `nature/nature_fleur.glb` (62 tri) : fleur de prairie, utilisée par GrassField (teinte par instance).
 - `ennemis/pnj_villageois_{a,b,c}.glb` (~8–10 k tri) : trois corps d'habitants (tunique, robe, tunique) sans arme, cheveux bruns/gris/blonds, sur le squelette du Veilleur. Test en jeu : les 28 PNJ à pied utilisent ces modèles (hors monolithe, resté procédural). Vêtements en couleur unie (pas de texture de tissu), visages simples ; chaque PNJ n'a pas d'apparence propre à son métier.
 - Non converti : décor du barbier (enseigne à texte canvas + poteau animé par texture), Halloween (sculpté en code).
+
+## Sol (V10.42)
+`terrain/terrain_detail.jpg` (1024², grain/cailloux/brins carrelable) + `terrain_normal.png` (512²), générés par `tools/models/terrain_tex.py` ; déclarés dans `index.json` (`terrain`) par l'outil d'empaquetage. Le terrain les utilise à la place de la texture dessinée par code (relief éclairé via normales). Teinte globale par couleurs de sommets inchangée. Légèrement plus sombre que l'ancien rendu → luminosité ajustée (×1,9), à valider sur téléphone.

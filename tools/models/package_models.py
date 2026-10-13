@@ -41,7 +41,13 @@ def main(src, out, only=None):
             for im in j.get('images', []):
                 if 'uri' in im and not os.path.exists(os.path.join(out, im['uri'])): missing.append((f, im['uri']))
             open(os.path.join(out, f), 'wb').write(data); total += len(data)
-    json.dump({'files': sorted(seen), 'mapping': {}}, open(os.path.join(out, 'index.json'), 'w'))
+    idx = {'files': sorted(seen), 'mapping': {}}
+    tdir = os.path.join(src, 'terrain')
+    if os.path.isdir(tdir) and (not only or 'terrain' in only):
+        for f in os.listdir(tdir):
+            if f.endswith(('.jpg', '.png')): shutil.copy(os.path.join(tdir, f), os.path.join(out, 'tex', f))
+        idx['terrain'] = {'detail': 'tex/terrain_detail.jpg', 'normal': 'tex/terrain_normal.png'}
+    json.dump(idx, open(os.path.join(out, 'index.json'), 'w'))
     tsz = sum(os.path.getsize(os.path.join(out, 'tex', f)) for f in os.listdir(os.path.join(out, 'tex')))
     print(f'{len(seen)} GLB ({total // 1024} Ko) + {len(os.listdir(os.path.join(out, "tex")))} textures ({tsz // 1024} Ko) -> {out}')
     if missing: raise SystemExit(f'textures manquantes : {missing[:5]} (+{len(missing)})')

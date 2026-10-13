@@ -295,11 +295,13 @@ export class World {
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
     if (v25) {
-      const detail = safeTexture(groundDetailTexture);
+      const TT = ModelLibrary.terrainTex;   // V10.42 : texture de sol fournie (grain + normales) ; sinon texture dessinée par code
+      const detail = TT ? TT.detail : safeTexture(groundDetailTexture);
       if (detail) {
-        detail.repeat.set(size / 4, size / 4);
+        detail.repeat.set(size / (TT ? 6 : 4), size / (TT ? 6 : 4));
         mat.map = detail;
-        mat.color.setScalar(1.25);
+        if (TT && TT.normal) { TT.normal.repeat.copy(detail.repeat); mat.normalMap = TT.normal; mat.normalScale.set(0.9, 0.9); }
+        mat.color.setScalar(TT ? 1.9 : 1.25);
         if (!isSafeMode()) {
           // 2e échantillonnage à grande échelle : casse la répétition du détail
           mat.onBeforeCompile = (shader) => {

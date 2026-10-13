@@ -66,6 +66,20 @@ export const ModelLibrary = {
     return this._promise;
   },
 
+  /** Textures de sol (détail + normales) livrées dans models/tex ; absentes → le monde garde sa texture dessinée par code. */
+  _loadTerrain(base, t) {
+    this.terrainTex = null;
+    if (!t || !t.detail) return;
+    const L = new THREE.TextureLoader();
+    const get = (u) => new Promise((res) => L.load(`${base}models/${u}`, res, undefined, () => res(null)));
+    this._terrainP = Promise.all([get(t.detail), t.normal ? get(t.normal) : null]).then(([detail, normal]) => {
+      if (!detail) return;
+      detail.colorSpace = THREE.SRGBColorSpace;
+      for (const x of [detail, normal]) if (x) { x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 4; }
+      this.terrainTex = { detail, normal };
+    }).catch(() => {});
+  },
+
   async _load(timeoutMs) {
     const base = (import.meta.env && import.meta.env.BASE_URL) || '/';
     let index;
@@ -75,6 +89,7 @@ export const ModelLibrary = {
       index = await r.json();
     } catch (e) { return; }
     this.mapping = index.mapping || {};
+    this._loadTerrain(base, index.terrain);
     const files = (index.files || []).filter((f) => /\.(glb|gltf)$/i.test(f));
     if (!files.length) return;
     const loader = new GLTFLoader();
@@ -96,7 +111,7 @@ export const ModelLibrary = {
         if (this.onProgress) try { this.onProgress(done, files.length); } catch { /* affichage facultatif */ }
       }
     };
-    await Promise.all([worker(), worker(), worker(), worker()]);
+    await Promise.all([worker(), worker(), worker(), worker(), this._terrainP]);
     if (done < files.length) console.warn(`[V3] chargement interrompu : ${done}/${files.length} modèles`);
     this.ready = this.characters.length > 0;
     this.count = this.characters.length;
