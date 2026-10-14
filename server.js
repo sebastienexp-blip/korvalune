@@ -225,6 +225,8 @@ const loginExtras = (ws, acc, key) => { // message du jour, boost en cours, rép
   const m = getMotd(); if (m) { send(ws, { t: 'system', text: '📜 ' + m }); send(ws, { t: 'banner', kind: 'message', icon: '📜', text: m, secs: 8 }); }
   const b = worldBoost(); if (b) send(ws, { t: 'world:boost', ...b, left: b.until - Date.now() });
 };
+// compte d'un jeton valide ; refuse les jetons émis avant un changement de mot de passe, et les comptes bloqués
+const tokenAccount = (token) => { const k = resolveAccount(verifyToken(SECRET, token) || ''); const a = k && accounts[k]; if (!a || a.ban || tokenIssuedAt(token) < (a.revokedAt || 0)) return null; return k; };
 const banText = (acc) => `Compte suspendu${acc.ban?.reason ? ' : ' + acc.ban.reason : ''}. Contacte le créateur du jeu.`;
 const supNotify = (acc) => ((acc.supportUnread | 0) > 0 ? { t: 'system', text: `📩 Tu as ${acc.supportUnread} réponse(s) de l’administrateur : Compte → Contacter l’administrateur.` } : null);
 const accView = (acc) => { ensureChars(acc); return { chars: acc.chars, bank: acc.sharedBank, save: acc.chars.find(Boolean) || null }; };
@@ -648,7 +650,7 @@ wss.on('connection', (ws, req) => {
       return;
     }
     if (msg.t === 'delchar') {
-      const username = resolveAccount(verifyToken(SECRET, msg.token) || '');
+      const username = tokenAccount(msg.token);
       if (!username) return;
       const acc = ensureChars(accounts[username]);
       const slot = Number.isInteger(msg.slot) && msg.slot >= 0 && msg.slot < MAX_CHARS ? msg.slot : -1;
@@ -657,7 +659,7 @@ wss.on('connection', (ws, req) => {
       return;
     }
     if (msg.t === 'save') {
-      const username = resolveAccount(verifyToken(SECRET, msg.token) || '');
+      const username = tokenAccount(msg.token);
       if (!username) { send(ws, { t: 'saveAck', ok: false, error: 'Session expirée — reconnecte-toi.' }); return; }
       if (!saveLimiter.allow()) { send(ws, { t: 'saveAck', ok: true }); return; } // trop rapproché : la prochaine sauvegarde (instantané complet) rattrapera
       const acc = ensureChars(accounts[username]);
@@ -868,7 +870,7 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:announce') {
           const text = sanitize(msg.text, 200).trim();
           if (text.length < 3) { ar(false, 'Message trop court.'); return; }
-          sendEveryone({ t: 'system', text: '📢 ' + text }); bannerAll({ kind: 'announce', icon: '📢', text, secs: Math.min(30, Math.max(4, Math.floor(Number(msg.secs) || 8))) }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${players.size} joueur(s) connecté(s).`); return;
+          sendEveryone({ t: 'system', text: '📢 ' + text }); bannerAll({ kind: 'announce', icon: '📢', text, secs: Math.min(30, Math.max(4, Math.floor(Number(msg.secs) || 8))) }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${wss.clients.size} joueur(s) connecté(s).`); return;
         }
         const [k, a] = target();
         if (!k) { ar(false, 'Compte introuvable.'); return; }
@@ -1196,3 +1198,16 @@ wss.on('connection', (ws, req) => {
 
   ws.on('error', () => {});
 });
+
+// V10.65 — robustesse : une erreur isolée ne doit jamais couper le jeu pour tout le monde, et un redémarrage (mise à jour Render) enregistre d'abord les comptes.
+process.on('uncaughtException', (e) => console.error('[Korvalune] erreur non interceptée :', e && e.stack || e));
+process.on('unhandledRejection', (e) => console.error('[Korvalune] promesse rejetée :', e && e.stack || e));
+let stopping = false;
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, async () => {
+    if (stopping) return; stopping = true;
+    console.log(`[Korvalune] ${sig} : enregistrement des comptes avant l'arrêt…`);
+    try { await persistAccounts(accounts); } catch { /* déjà journalisé */ }
+    process.exit(0);
+  });
+}

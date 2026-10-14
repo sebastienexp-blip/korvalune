@@ -6,7 +6,7 @@ import { HALF } from './TownMap.js';
 
 const MAX_ALIVE = 40, LIFETIME = 10 * 60 * 1000;
 export class AdminSpawns {
-  constructor(game) { this.g = game; this.list = []; this._eid = 700000; setInterval(() => this._sweep(), 2500); }
+  constructor(game) { this.g = game; this.list = []; this.pending = []; this._eid = 700000; setInterval(() => this._sweep(), 2500); }
   _inTown(x, z) { return Math.abs(x) < HALF + 10 && Math.abs(z) < HALF + 10; }
   spawn({ enemy, count, label, boss }) {
     const g = this.g, p = g.player, w = g.world, def = enemiesData[enemy];
@@ -29,6 +29,11 @@ export class AdminSpawns {
         break;
       }
     }
+    if (!made && !alive && this._inTown(p.pos.x, p.pos.z)) { // en ville : l'invasion attend que le joueur sorte (5 min max)
+      this.pending.push({ enemy, count, label, boss, t: Date.now() });
+      g.banner?.show({ kind: 'alert', icon: '⚠️', text: 'Une invasion approche !', sub: 'Sors de la ville pour affronter les monstres.', secs: 7 });
+      return 0;
+    }
     if (made) {
       g.banner?.show({ kind: 'event', icon: boss ? '👑' : '⚔️', text: boss ? `${label || def.name} est apparu !` : `Invasion : ${label || def.name} !`, sub: `${made} monstre${made > 1 ? 's' : ''} autour de toi — bats-les !`, secs: 7 });
       g.audio?.play?.('combatStart'); this._chip();
@@ -47,6 +52,9 @@ export class AdminSpawns {
   }
   _sweep() {
     const now = Date.now();
+    const pl = this.g.player;
+    this.pending = this.pending.filter((m) => now - m.t < 300000);
+    if (this.pending.length && pl && !pl.dead && this.g.hud._curScreen === 'game-ui' && !this._inTown(pl.pos.x, pl.pos.z)) this.spawn(this.pending.shift());
     this.list = this.list.filter((e) => {
       if (e.state === 5 && !e._diedAt) e._diedAt = now;
       if ((e._diedAt && now - e._diedAt > 8000) || now - e._born > LIFETIME) { this._remove(e); return false; }

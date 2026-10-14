@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.65', title: 'Audit et fiabilité',
+    items: [
+      '📢 Correction : les annonces du créateur s’affichent bien à l’écran.',
+      '⚔️ Les invasions attendent que tu sortes de la ville avant d’apparaître.',
+      '🔐 Après un changement de mot de passe, les anciens appareils sont déconnectés.',
+      '🛡️ Le serveur est plus robuste : une erreur isolée ne le coupe plus, et tes données sont enregistrées avant chaque mise à jour.'
+    ]
+  },
+  {
     version: '10.64', title: 'Annonces en jeu',
     items: [
       '📢 Les annonces et pastilles d’événements s’affichent uniquement en jeu, en haut au milieu de l’écran. Une annonce reçue pendant que tu es dans un menu s’affiche dès que tu reprends la partie.'

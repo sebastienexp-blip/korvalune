@@ -20,6 +20,8 @@ function modelsIndex() {
         res.end(build());
       });
     },
+    // les modèles « proto » ne servent qu'à la page de test de développement : inutile de les livrer (≈ 45 Mo)
+    closeBundle() { try { fs.rmSync(path.resolve('dist/models_proto'), { recursive: true, force: true }); } catch (e) { /* ignoré */ } },
     generateBundle() { this.emitFile({ type: 'asset', fileName: 'models/index.json', source: build() }); }
   };
 }

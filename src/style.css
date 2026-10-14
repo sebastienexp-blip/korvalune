@@ -1429,3 +1429,5 @@ svg.ico-eq.ghost { opacity: 0.3; filter: grayscale(0.55); }
 .ev-chip{padding:4px 12px;font-size:13px}.ev-chip .ev-ico{font-size:20px}
 @media(max-width:900px){.event-chips{top:8px!important;bottom:auto!important;right:auto!important}.big-banner{top:64px!important}}
 .event-chips{width:max-content}
+/* V10.65 : apparition immédiate (pas de transition à l'entrée), fondu seulement à la sortie */
+.big-banner.show{opacity:1!important;transform:translate(-50%,0)!important;transition:none!important}

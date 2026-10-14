@@ -32,7 +32,7 @@ export function persistAccounts(accounts) {
     // écriture atomique (fichier temporaire puis renommage) + une copie de secours de la version précédente
     .then(async () => {
       const tmp = FILE + '.tmp';
-      await fs.writeFile(tmp, JSON.stringify(accounts, null, 2), 'utf8');
+      await fs.writeFile(tmp, JSON.stringify(accounts), 'utf8');
       try { await fs.copyFile(FILE, FILE + '.bak'); } catch { /* première écriture */ }
       await fs.rename(tmp, FILE);
     })
