@@ -5,10 +5,12 @@ const URL_JEU = process.env.KORVALUNE_URL || 'https://legends-of-aetheria-mxaq.o
 function creer() {
   const win = new BrowserWindow({
     width: 1280, height: 720, backgroundColor: '#0b0a10', title: 'Korvalune', autoHideMenuBar: true,
-    webPreferences: { contextIsolation: true, backgroundThrottling: false }
+    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true, devTools: false, backgroundThrottling: false }
   });
   Menu.setApplicationMenu(null); win.removeMenu();   // pas de menu : Ctrl+W, Ctrl+R, F3, F5, Ctrl+F, Alt, etc. ne sont plus interceptés, ils arrivent au jeu
   win.webContents.on('context-menu', (e) => e.preventDefault());
+  const origine = new URL(URL_JEU).origin;
+  win.webContents.on('will-navigate', (e, url) => { if (new URL(url).origin !== origine) { e.preventDefault(); shell.openExternal(url); } });   // l'appli ne quitte jamais le site du jeu
   win.loadURL(URL_JEU);
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' }; });   // liens externes → navigateur
   win.webContents.on('before-input-event', (e, i) => {
