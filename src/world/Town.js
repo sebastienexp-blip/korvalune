@@ -75,7 +75,9 @@ export function buildTown(world) {
   // Coffre de banque (stockage partagé, pages multiples) près du puits.
   const [bx, bz] = POS.bank, by = world.heightAt(bx, bz);
   const bankGroup = new THREE.Group();
-  bankGroup.position.set(bx, by + 0.42, bz);
+  const BANK_S = 2.5;   // V10.53 : le coffre de Korvalune est 2,5 fois plus grand
+  bankGroup.position.set(bx, by + 0.42 * BANK_S, bz);
+  bankGroup.scale.setScalar(BANK_S);
   g.add(bankGroup);
   let bLid;
   if (ModelLibrary.hasTown(['coffre_base', 'coffre_couvercle'])) {
@@ -91,16 +93,17 @@ export function buildTown(world) {
     const bTrim = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.07, 0.78), bankTrim);
     bTrim.position.y = 0.62; bankGroup.add(bTrim);
   }
-  const bGlow = new THREE.PointLight(0x6ab0ff, 1.1, 5, 2);
+  const bGlow = new THREE.PointLight(0x6ab0ff, 1.1, 5 * BANK_S, 2);
   bGlow.position.y = 0.9; bankGroup.add(bGlow);
-  add(new THREE.CylinderGeometry(1.5, 1.7, 0.1, 16), stone, bx, by + 0.05, bz);
-  world.addBox(bx, bz, 0.9, 0.7, by - 1, by + 1.3);
+  // socle : posé bien au-dessus du sol de la place (0,16 m) pour éviter le scintillement de surfaces superposées (z-fighting)
+  add(new THREE.CylinderGeometry(1.5 * BANK_S, 1.7 * BANK_S, 0.3, 24), stone, bx, by + 0.08, bz);
+  world.addBox(bx, bz, 0.9 * BANK_S, 0.7 * BANK_S, by - 1, by + 1.3 * BANK_S);
 
   try { buildCityLayout(world, g, T, stone, wood, add); } catch (e) { console.warn('[V10.39] ville : mise en page ignorée', e); }
   try { buildDistricts(world, g, T, stone, wood, add); } catch (e) { console.warn('[V10.39] ville : quartiers ignorés', e); }
   if (V) { try { decorateTown(world, g, T, stone, wood, add); } catch (e) { console.warn('[V2.5] décor du village ignoré', e); } }
 
-  world.spots.bank = new THREE.Vector3(bx, by, bz + 1.6);
+  world.spots.bank = new THREE.Vector3(bx, by, bz + 1.6 * BANK_S);
   return { bankPos: new THREE.Vector3(bx, by, bz), bankChest: { group: bankGroup, lid: bLid } };
 }
 

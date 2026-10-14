@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.53', title: 'Un grand coffre',
+    items: [
+      '📦 Le coffre de Korvalune est 2,5 fois plus grand, sur un socle de pierre plus large.',
+      '✨ Correction de la texture qui tremblait sous le coffre.'
+    ]
+  },
+  {
     version: '10.52', title: 'Cinématiques : son et stabilité',
     items: [
       '🎬 Pendant une cinématique, la musique et les ambiances baissent nettement pour qu’on entende bien la voix.',

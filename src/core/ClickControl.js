@@ -88,7 +88,7 @@ export class ClickControl {
     for (const n of g.npcs) if (near(n.pos, 2.2)) return n.pos;
     for (const p of g.portals || []) if (near(p.pos, 2.6)) return p.pos;
     if (g.tp) { for (const f of g.tp.fields) if (near({ x: f.x, z: f.z }, 2.6)) return { x: f.x, z: f.z }; if (g.tp.town && near(g.tp.town.pos, 2.6)) return g.tp.town.pos; }
-    const bp = g.world.town?.bankPos; if (near(bp, 2.4)) return bp;
+    const bp = g.world.town?.bankPos; if (near(bp, 4.4)) return bp;
     const wc = g.worldChests?.nearest(new THREE.Vector3(P.x, 0, P.z), 2.2); if (wc) return { x: wc.x, z: wc.z };
     if (!g.rift?.active && g.riftStatue && near(g.riftStatue.pos, 3.2)) return g.riftStatue.pos;
     return null;

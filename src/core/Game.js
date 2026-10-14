@@ -3024,7 +3024,7 @@ export class Game {
     if (this.dungeon?.chest && !this.dungeon.chest.opened && this.player.pos.distanceTo(this.dungeon.pos) < 3.5) {
       return this._openChest();
     }
-    if (this.world.town?.bankPos && this.player.pos.distanceTo(this.world.town.bankPos) < 3.2) {
+    if (this.world.town?.bankPos && this.player.pos.distanceTo(this.world.town.bankPos) < 5.2) {
       return this._openBank();
     }
     if (this.tp?.tryInteract()) return;
