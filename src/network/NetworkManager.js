@@ -115,7 +115,7 @@ export class NetworkManager {
       case 'pass:msg': this.bus.emit('net:passMsg', msg); break;
       case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
       case 'acct:passOk': this.token = msg.token; try { localStorage.setItem('aetheria.session', msg.token); } catch { /* ignoré */ } break;
-      case 'acct:recoverInfo': case 'acct:recoverResult': case 'acct:sec': case 'acct:code': case 'acct:msg': this.bus.emit('net:acct', msg); break;
+      case 'acct:recoverInfo': case 'acct:recoverResult': case 'acct:sec': case 'acct:code': case 'acct:msg': case 'support': case 'support:msg': this.bus.emit('net:acct', msg); break;
       case 'shop:donList': this.bus.emit('net:donList', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;
       case 'playerLook': this.bus.emit('net:playerLook', msg); break;

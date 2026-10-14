@@ -8,9 +8,9 @@ input{width:100%}button{background:#7c5cd6;border:0;font-weight:600;cursor:point
 .row{background:#201c2e;border:1px solid #3d3552;border-radius:12px;padding:12px;margin:10px 0}
 .row b{color:#ffd77a}.btns{display:flex;gap:6px;flex-wrap:wrap}.btns button,.btns input{flex:1;min-width:110px;width:auto}
 #msg{color:#ffd77a;min-height:1.4em;white-space:pre-wrap;word-break:break-word}small{color:#a89fc0}
-nav{display:flex;gap:6px;margin:10px 0}nav button{flex:1;background:#2a2542}nav button.on{background:#7c5cd6}
+nav{display:flex;gap:6px;margin:10px 0}nav button{flex:1;padding:11px 4px;background:#2a2542}nav button.on{background:#7c5cd6}
 .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:#34304a;margin-left:4px}.tag.bad{background:#7a2e3a}.tag.good{background:#2e6a45}
-.hidden{display:none}
+.hidden{display:none}textarea{width:100%;box-sizing:border-box;font:inherit;padding:10px;border-radius:10px;border:1px solid #6b5d8a;background:#201c2e;color:#efe9da}.bub{padding:8px 10px;border-radius:10px;background:#2a2542;margin:6px 0;white-space:pre-wrap;word-break:break-word}.bub.adm{background:#4a3a7a;margin-left:30px}.bub small{color:#b9aed6}.tag.new{background:#b8862b}
 </style></head><body>
 <h1>Espace créateur</h1>
 <div id="login">
@@ -18,8 +18,9 @@ nav{display:flex;gap:6px;margin:10px 0}nav button{flex:1;background:#2a2542}nav 
 <button id="go" style="width:100%">Se connecter</button></div>
 <div id="msg"></div>
 <div id="app" class="hidden">
-<nav><button data-tab="dons" class="on">Dons</button><button data-tab="comptes">Comptes</button><button data-tab="annonce">Annonce</button><button data-tab="journal">Journal</button></nav>
+<nav><button data-tab="dons" class="on">Dons</button><button data-tab="messages" id="tabMsg">Messages</button><button data-tab="comptes">Comptes</button><button data-tab="annonce">Annonce</button><button data-tab="journal">Journal</button></nav>
 <div id="dons"></div>
+<div id="messages" class="hidden"><div id="inbox"></div><div id="thread"></div></div>
 <div id="comptes" class="hidden"><div id="stats"></div><input id="q" placeholder="Rechercher un compte…"><div id="clist"></div></div>
 <div id="annonce" class="hidden"><p>Message affiché à tous les joueurs connectés :</p><input id="ann" maxlength="200" placeholder="Ex. : Maintenance dans 10 minutes"><button id="annGo" style="width:100%">Envoyer à tous</button></div>
 <div id="journal" class="hidden"></div>

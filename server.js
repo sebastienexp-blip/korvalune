@@ -25,6 +25,7 @@ import { loadAccounts, persistAccounts, hashPassword, verifyPassword, sanitizeUs
 import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, tokenIssuedAt, KeyedLimiter } from './server/security.js';
 import { QUESTIONS, secView, setQuestion, setEmail, makeRecoveryCode, checkRecovery } from './server/recovery.js';
+import { addMessage as supAdd, playerView as supView, markRead as supRead, threadView as supThread, inbox as supInbox } from './server/support.js';
 import { adminLog, readLog, searchAccounts, summary as accSummary, resetPassword, giveLunes } from './server/accountAdmin.js';
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
@@ -214,6 +215,7 @@ function ensureChars(acc) {
   return acc;
 }
 const banText = (acc) => `Compte suspendu${acc.ban?.reason ? ' : ' + acc.ban.reason : ''}. Contacte le créateur du jeu.`;
+const supNotify = (acc) => ((acc.supportUnread | 0) > 0 ? { t: 'system', text: `📩 Tu as ${acc.supportUnread} réponse(s) de l’administrateur : Compte → Contacter l’administrateur.` } : null);
 const accView = (acc) => { ensureChars(acc); return { chars: acc.chars, bank: acc.sharedBank, save: acc.chars.find(Boolean) || null }; };
 
 // V10.51 — ANTI-TRICHE
@@ -479,6 +481,7 @@ wss.on('connection', (ws, req) => {
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
   const authLimiter = new RateLimiter(5, 10000);
+  const supLimiter = new RateLimiter(6, 10000);
   const saveLimiter = new RateLimiter(5, 20000); // V10.51 : au plus 5 sauvegardes / 20 s (l'autosave est de 60 s)
 
   ws.on('message', (raw) => {
@@ -494,7 +497,7 @@ wss.on('connection', (ws, req) => {
       if (accounts[key].ban) { send(ws, { t: 'authResult', ok: false, error: banText(accounts[key]) }); return; }
       setAuth(key);
       send(ws, { t: 'authResult', ok: true, token: msg.token, username: key, ...accView(accounts[key]), resumed: true });
-      pushShop(); pushSettings();
+      pushShop(); pushSettings(); { const n = supNotify(accounts[key]); if (n) send(ws, n); }
       return;
     }
     if (msg.t === 'register' || msg.t === 'login') {
@@ -536,7 +539,7 @@ wss.on('connection', (ws, req) => {
         const token = makeToken(SECRET, key);
         setAuth(key);
         send(ws, { t: 'authResult', ok: true, token, username: key, ...accView(accounts[key]) });
-        pushShop(); pushSettings();
+        pushShop(); pushSettings(); { const n = supNotify(accounts[key]); if (n) send(ws, n); }
       })().catch((e) => { console.error('[Korvalune] auth :', e.message); fail('Erreur serveur.'); });
       return;
     }
@@ -772,6 +775,23 @@ wss.on('connection', (ws, req) => {
       })().catch((e) => { console.error('[Korvalune] sécurité compte :', e.message); am(false, 'Erreur serveur.'); });
       return;
     }
+    // --- Contacter l'administrateur (V10.58) ---
+    if (msg.t === 'support:get' || msg.t === 'support:send') {
+      const k = authUsername && resolveAccount(authUsername);
+      if (!k) { send(ws, { t: 'support:msg', ok: false, text: 'Connecte-toi à ton compte.' }); return; }
+      if (!supLimiter.allow()) { send(ws, { t: 'support:msg', ok: false, text: 'Doucement : patiente quelques secondes.' }); return; }
+      const a = accounts[k];
+      if (msg.t === 'support:send') {
+        if (a.support && a.support.filter((m) => m.f === 'p' && Date.now() - m.at < 3600e3).length >= 10) { send(ws, { t: 'support:msg', ok: false, text: 'Tu as déjà envoyé beaucoup de messages : attends la réponse de l\u2019administrateur.' }); return; }
+        const r = supAdd(a, 'p', msg.text);
+        if (!r.ok) { send(ws, { t: 'support:msg', ok: false, text: r.error }); return; }
+        persistAccounts(accounts); console.log(`[Korvalune] message à l'admin de ${k}`);
+        send(ws, { t: 'support:msg', ok: true, text: 'Message envoyé ✔ Tu auras une réponse ici.' });
+      } else supRead(a);
+      if (msg.t === 'support:get') persistAccounts(accounts);
+      send(ws, { t: 'support', ...supView(a), unread: 0 });
+      return;
+    }
     // --- Administration (créateur uniquement, V10.57) ---
     if (msg.t.startsWith('adm:')) {
       const me = authUsername && resolveAccount(authUsername);
@@ -782,6 +802,7 @@ wss.on('connection', (ws, req) => {
       const target = () => { const k = resolveAccount(sanitizeUsername(msg.account)); return k ? [k, accounts[k]] : [null, null]; };
       (async () => {
         if (msg.t === 'adm:list') { send(ws, { t: 'adm:list', ...searchAccounts(accounts, msg.q, online), onlineAccounts: acctWs.size, players: players.size, accounts: Object.keys(accounts).length }); return; }
+        if (msg.t === 'adm:inbox') { send(ws, { t: 'adm:inbox', ...supInbox(accounts) }); return; }
         if (msg.t === 'adm:log') { send(ws, { t: 'adm:log', list: await readLog(40) }); return; }
         if (msg.t === 'adm:announce') {
           const text = sanitize(msg.text, 200).trim();
@@ -812,6 +833,13 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:kick') {
           for (const w of [...(acctWs.get(k) || [])]) { send(w, { t: 'system', text: 'Tu as été déconnecté par le créateur.' }); try { w.close(1000, 'kick'); } catch { /* ignoré */ } }
           await adminLog(me, 'déconnecté', k); ar(true, `${k} déconnecté.`); row(); return;
+        }
+        if (msg.t === 'adm:thread') { send(ws, { t: 'adm:thread', account: k, msgs: supThread(a) }); return; }
+        if (msg.t === 'adm:reply') {
+          const r = supAdd(a, 'a', msg.text); if (!r.ok) { ar(false, r.error); return; }
+          await persistAccounts(accounts); await adminLog(me, 'réponse support', k);
+          for (const w of acctWs.get(k) || []) { send(w, { t: 'support', ...supView(a) }); const n = supNotify(a); if (n) send(w, n); }
+          send(ws, { t: 'adm:thread', account: k, msgs: supThread(a) }); ar(true, `Réponse envoyée à ${k}.`); return;
         }
         if (msg.t === 'adm:info') { row(); return; }
       })().catch((e) => { console.error('[Korvalune] admin :', e.message); ar(false, 'Erreur serveur.'); });

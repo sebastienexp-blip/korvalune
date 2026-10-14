@@ -1403,3 +1403,5 @@ svg.ico-eq.ghost { opacity: 0.3; filter: grayscale(0.55); }
 .sec-card label{font-size:13px;color:#b9aed6}.sec-hint{margin:0;font-size:14px;color:#cfc6e6}.sec-msg{margin:0;min-height:1.2em;color:#ff9a8a;font-size:14px}.sec-msg.ok{color:#9be3a8}
 .sec-btns{display:flex;gap:8px;flex-wrap:wrap}.sec-btns button{flex:1}.sec-code{font:700 26px/1.2 monospace;letter-spacing:2px;text-align:center;background:#2a2342;padding:14px;border-radius:10px;margin:6px 0;user-select:all}
 .sec-card details{margin-top:6px}.sec-card details input,.sec-card details button{margin-top:6px;width:100%}
+.sup-thread{max-height:38vh;overflow:auto;display:flex;flex-direction:column;gap:6px}.sup-m{padding:8px 10px;border-radius:10px;background:#2a2342;font-size:14px;align-self:flex-start;max-width:90%;white-space:pre-wrap;word-break:break-word}.sup-m.me{align-self:flex-end;background:#4a3a7a}.sup-m small{color:#b9aed6}
+.sec-card textarea{padding:10px;border-radius:8px;border:1px solid #6b5d8a;background:#2a2342;color:#efe9da;font:inherit;width:100%;box-sizing:border-box;resize:vertical}

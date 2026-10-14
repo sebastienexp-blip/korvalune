@@ -151,7 +151,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.57 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.58 — Korvalune</div>
         </div>
       </div>
 
@@ -162,6 +162,7 @@ export class HUD {
           <p>Connecté en tant que <b id="account-name-display"></b>.</p>
           <div class="menu-buttons">
             <button data-act="account-security">🔐 Sécurité du compte</button>
+            <button data-act="account-support">✉️ Contacter l’administrateur</button>
             <button data-act="account-logout">Se déconnecter</button>
             <button data-act="account-back">Retour</button>
           </div>

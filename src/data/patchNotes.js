@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.58', title: 'Contacter l’administrateur',
+    items: [
+      '✉️ Nouveau : écris à l’administrateur depuis Compte → Contacter l’administrateur. Sa réponse apparaît au même endroit.'
+    ]
+  },
+  {
     version: '10.57', title: 'Comptes protégés',
     items: [
       '🔐 Nouveau : « Sécurité du compte » (menu Compte) — choisis une question secrète et génère un code de secours.',

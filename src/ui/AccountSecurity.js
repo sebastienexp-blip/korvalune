@@ -43,6 +43,22 @@ export class AccountSecurity {
     this.el.querySelector('#sec-method').addEventListener('change', upd); upd();
   }
 
+  // ----- Contacter l'administrateur -----
+  openSupport() {
+    this.mode = 'support'; this._show('<h3>Contacter l’administrateur</h3><p class="sec-hint">Chargement…</p>');
+    this.net.sendRaw({ t: 'support:get' });
+  }
+  _supportForm(m) {
+    const fmt = (t) => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const thread = (m.msgs || []).map((x) => `<div class="sup-m ${x.me ? 'me' : 'adm'}"><small>${x.me ? 'Toi' : 'Administrateur'} · ${fmt(x.at)}</small><br>${esc(x.text)}</div>`).join('') || '<p class="sec-hint">Pose ta question, signale un problème ou un bug : l’administrateur te répondra ici.</p>';
+    const prev = this.el.querySelector('#sup-text')?.value || '';
+    this._show(`<h3>Contacter l’administrateur</h3><div class="sup-thread">${thread}</div>
+      <textarea id="sup-text" maxlength="600" rows="3" placeholder="Ton message…">${esc(prev)}</textarea>
+      <p class="sec-msg"></p>
+      <div class="sec-btns"><button class="btn-primary" data-s="sup-send">Envoyer</button><button data-s="close">Fermer</button></div>`);
+    const th = this.el.querySelector('.sup-thread'); th.scrollTop = th.scrollHeight;
+  }
+
   // ----- Sécurité du compte (connecté) -----
   openSecurity() {
     this.mode = 'security'; this._show('<h3>Sécurité du compte</h3><p class="sec-hint">Chargement…</p>');
@@ -76,6 +92,7 @@ export class AccountSecurity {
       if (np.length < 8) return this._msg('Mot de passe trop court (8 caractères minimum).');
       this.net.sendRaw({ t: 'acct:recover', username: this.info.username, method: this.v('sec-method'), secret, newPassword: np }); return;
     }
+    if (a === 'sup-send') { const t = (this.el.querySelector('#sup-text')?.value || '').trim(); if (t.length < 2) return this._msg('Écris ton message.'); this.net.sendRaw({ t: 'support:send', text: t }); return; }
     if (a === 'sec-save') {
       const pw = this.v('sec-pw'); if (!pw) return this._msg('Entre ton mot de passe actuel.');
       const o = { t: 'acct:secSet', password: pw, question: this.v('sec-qsel'), answer: this.v('sec-ans'), email: this.v('sec-mail') };
@@ -102,5 +119,10 @@ export class AccountSecurity {
       this._show(`<h3>Ton code de secours</h3><p class="sec-code">${esc(m.code)}</p><p class="sec-hint">Note-le (papier, capture d’écran) : il ne sera <b>plus jamais affiché</b>. Il sert une seule fois à changer ton mot de passe. Un nouveau code remplace l’ancien.</p><div class="sec-btns"><button class="btn-primary" data-s="sec-back">J’ai noté mon code</button></div>`);
       this.el.querySelector('[data-s="sec-back"]').onclick = () => this.openSecurity();
     } else if (m.t === 'acct:msg') this._msg(m.text, m.ok);
+    else if (m.t === 'support' && this.mode === 'support') {
+      const keep = this.el.querySelector('.sec-msg')?.textContent || ''; const sent = keep.startsWith('Message envoy');
+      if (sent) { const ta = this.el.querySelector('#sup-text'); if (ta) ta.value = ''; }
+      this._supportForm(m); if (sent) this._msg(keep, true);
+    } else if (m.t === 'support:msg' && this.mode === 'support') this._msg(m.text, m.ok);
   }
 }
