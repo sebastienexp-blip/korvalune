@@ -218,10 +218,11 @@ function ensureChars(acc) {
 }
 const ENEMY_LIST = (() => { try { const d = JSON.parse(readFileSync(new URL('./src/data/enemies.json', import.meta.url), 'utf8')); return Object.entries(d).map(([id, e]) => ({ id, name: e.name || id, boss: !!e.boss })); } catch { return []; } })();
 const ENEMY_IDS = new Set(ENEMY_LIST.map((e) => e.id));
+const bannerAll = (b) => broadcastAll({ t: 'banner', ...b });
 const loginExtras = (ws, acc, key) => { // message du jour, boost en cours, réponses de l'admin
   const n = supNotify(acc); if (n) send(ws, n);
-  const m = getMotd(); if (m) send(ws, { t: 'system', text: '📜 ' + m });
-  const b = worldBoost(); if (b) send(ws, { t: 'world:boost', ...b });
+  const m = getMotd(); if (m) { send(ws, { t: 'system', text: '📜 ' + m }); send(ws, { t: 'banner', kind: 'message', icon: '📜', text: m, secs: 8 }); }
+  const b = worldBoost(); if (b) send(ws, { t: 'world:boost', ...b, left: b.until - Date.now() });
 };
 const banText = (acc) => `Compte suspendu${acc.ban?.reason ? ' : ' + acc.ban.reason : ''}. Contacte le créateur du jeu.`;
 const supNotify = (acc) => ((acc.supportUnread | 0) > 0 ? { t: 'system', text: `📩 Tu as ${acc.supportUnread} réponse(s) de l’administrateur : Compte → Contacter l’administrateur.` } : null);
@@ -821,13 +822,13 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:motd') { await setMotd(msg.text); await adminLog(me, 'message du jour', '-', getMotd()); ar(true, getMotd() ? 'Message du jour enregistré (affiché à chaque connexion).' : 'Message du jour retiré.'); send(ws, admState()); return; }
         if (msg.t === 'adm:maint') {
           await setMaint(msg.on, msg.text); await adminLog(me, msg.on ? 'maintenance activée' : 'maintenance terminée', '-', msg.text || '');
-          if (msg.on) broadcastAll({ t: 'system', text: '🛠️ Maintenance : ' + (maintCfg().text || 'le jeu va être indisponible un moment.') });
+          if (msg.on) { broadcastAll({ t: 'system', text: '🛠️ Maintenance : ' + (maintCfg().text || 'le jeu va être indisponible un moment.') }); bannerAll({ kind: 'alert', icon: '🛠️', text: 'Maintenance', sub: maintCfg().text || 'Le jeu va être indisponible un moment.', secs: 12 }); }
           ar(true, msg.on ? 'Maintenance activée : seuls les créateurs peuvent se connecter.' : 'Maintenance terminée : le jeu est ouvert.'); send(ws, admState()); return;
         }
         if (msg.t === 'adm:boost') {
-          if (msg.off) { await stopBoost(); broadcastAll({ t: 'world:boost', xp: 1, drop: 1, until: 0 }); await adminLog(me, 'boost arrêté', '-'); ar(true, 'Boost arrêté.'); send(ws, admState()); return; }
+          if (msg.off) { await stopBoost(); broadcastAll({ t: 'world:boost', xp: 1, drop: 1, left: 0 }); await adminLog(me, 'boost arrêté', '-'); ar(true, 'Boost arrêté.'); send(ws, admState()); return; }
           const r = setBoost(msg.xp, msg.drop, msg.minutes, msg.label); if (!r.ok) { ar(false, r.error); return; }
-          broadcastAll({ t: 'world:boost', ...r.boost }); broadcastAll({ t: 'system', text: `✨ ${r.boost.label} : XP ×${r.boost.xp}, butin ×${r.boost.drop} pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min !` });
+          broadcastAll({ t: 'world:boost', ...r.boost, left: r.boost.until - Date.now() }); bannerAll({ kind: 'event', icon: '✨', text: r.boost.label, sub: `XP ×${r.boost.xp} · Butin ×${r.boost.drop} · pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min`, secs: 10 }); broadcastAll({ t: 'system', text: `✨ ${r.boost.label} : XP ×${r.boost.xp}, butin ×${r.boost.drop} pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min !` });
           await adminLog(me, 'boost', '-', `XP×${r.boost.xp} butin×${r.boost.drop} ${msg.minutes} min`); ar(true, 'Boost lancé pour tous les joueurs.'); send(ws, admState()); return;
         }
         if (msg.t === 'adm:spawn') {
@@ -845,7 +846,7 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:giftAll') {
           const l = Math.floor(Number(msg.lunes)); if (!(l >= 1 && l <= 5000)) { ar(false, 'Cadeau : entre 1 et 5 000 Lunes par joueur.'); return; }
           const names = new Set(); for (const [k] of acctWs) names.add(k);
-          for (const k of names) { const a = accounts[k]; if (!a) continue; ensureShop(a).gems += l; for (const w of acctWs.get(k) || []) { send(w, shopView(a)); send(w, { t: 'system', text: `🎁 Cadeau du créateur : +${l} Lunes !${msg.text ? ' ' + sanitize(msg.text, 80) : ''}` }); } }
+          for (const k of names) { const a = accounts[k]; if (!a) continue; ensureShop(a).gems += l; for (const w of acctWs.get(k) || []) { send(w, shopView(a)); send(w, { t: 'system', text: `🎁 Cadeau du créateur : +${l} Lunes !${msg.text ? ' ' + sanitize(msg.text, 80) : ''}` }); send(w, { t: 'banner', kind: 'event', icon: '🎁', text: `+${l} Lunes offertes !`, sub: msg.text ? sanitize(msg.text, 80) : 'Cadeau du créateur', secs: 8 }); } }
           await persistAccounts(accounts); await adminLog(me, 'cadeau à tous les connectés', `${names.size} comptes`, `+${l} Lunes`); ar(true, `+${l} Lunes offertes à ${names.size} joueur(s) connecté(s).`); return;
         }
         if (msg.t === 'adm:codes') { send(ws, { t: 'adm:codes', list: codeList() }); return; }
@@ -853,7 +854,7 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:codeOff') { stopCode(msg.code); await adminLog(me, 'code cadeau désactivé', String(msg.code)); send(ws, { t: 'adm:codes', list: codeList() }); ar(true, 'Code désactivé.'); return; }
         if (msg.t === 'adm:whisper' || msg.t === 'adm:mute') {
           const [k2, a2] = target(); if (!k2) { ar(false, 'Compte introuvable.'); return; }
-          if (msg.t === 'adm:whisper') { const tx = sanitize(msg.text, 200).trim(); if (tx.length < 2) { ar(false, 'Message trop court.'); return; } const ws2 = acctWs.get(k2); if (!ws2) { ar(false, 'Ce joueur n\u2019est pas en ligne.'); return; } for (const w of ws2) send(w, { t: 'system', text: '📣 Message du créateur : ' + tx }); await adminLog(me, 'message privé', k2, tx); ar(true, `Message envoyé à ${k2}.`); return; }
+          if (msg.t === 'adm:whisper') { const tx = sanitize(msg.text, 200).trim(); if (tx.length < 2) { ar(false, 'Message trop court.'); return; } const ws2 = acctWs.get(k2); if (!ws2) { ar(false, 'Ce joueur n\u2019est pas en ligne.'); return; } for (const w of ws2) { send(w, { t: 'system', text: '📣 Message du créateur : ' + tx }); send(w, { t: 'banner', kind: 'message', icon: '📣', text: tx, sub: 'Message du créateur', secs: 10 }); } await adminLog(me, 'message privé', k2, tx); ar(true, `Message envoyé à ${k2}.`); return; }
           if (isOwnerKey(k2)) { ar(false, 'Impossible de faire taire un créateur.'); return; }
           const mins = Math.min(7 * 1440, Math.max(0, Math.floor(Number(msg.minutes) || 0)));
           if (mins) a2.mutedUntil = Date.now() + mins * 60000; else delete a2.mutedUntil;
@@ -866,7 +867,7 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:announce') {
           const text = sanitize(msg.text, 200).trim();
           if (text.length < 3) { ar(false, 'Message trop court.'); return; }
-          broadcastAll({ t: 'system', text: '📢 ' + text }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${players.size} joueur(s) connecté(s).`); return;
+          broadcastAll({ t: 'system', text: '📢 ' + text }); bannerAll({ kind: 'announce', icon: '📢', text, secs: Math.min(30, Math.max(4, Math.floor(Number(msg.secs) || 8))) }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${players.size} joueur(s) connecté(s).`); return;
         }
         const [k, a] = target();
         if (!k) { ar(false, 'Compte introuvable.'); return; }

@@ -1,4 +1,5 @@
 import { setWorldBoost, wbInfo } from '../data/worldBoost.js';
+import { Banner } from '../ui/Banner.js';
 import { AdminSpawns } from '../world/AdminSpawns.js';
 import { AccountSecurity } from '../ui/AccountSecurity.js';
 import { GroundGPS } from '../world/GroundGPS.js';
@@ -119,6 +120,7 @@ export class Game {
     if (typeof saved.shadows !== 'boolean') this.settings.shadows = CONFIG.quality[this.settings.quality].shadows;
     this._resScale = 1; this._lowN = 0; this._highN = 0; this._adaptCool = 0;
     this.hud = new HUD(root, this.bus, this);
+    this.banner = new Banner(root, this);
     this.hud.onSellMany = (entries) => this._sellEntries(entries); // V10.21
     this.hud.onPotionSelect = (kind, id) => this._selectPotion(kind, id); // V10.22
     const unlock = () => {
@@ -952,7 +954,8 @@ export class Game {
     b.on('net:gr', (msg) => this.gw.onRelay(msg));
     b.on('net:chat', (msg) => this.hud.appendChat({ channel: msg.channel, from: msg.from, text: msg.text }));
     b.on('net:whisper', (msg) => this.hud.appendChat({ channel: 'general', whisper: true, from: msg.from, to: msg.to, text: msg.text, self: msg.self }));
-    b.on('net:worldBoost', (m) => { setWorldBoost(m); const i = wbInfo(); if (i) this.hud.notify(`✨ ${i.label} : XP ×${i.xp}, butin ×${i.drop}`, 'boss'); });
+    b.on('net:worldBoost', (m) => { setWorldBoost(m); this.banner?._tickChips(); });
+    b.on('net:banner', (m) => this.banner?.show(m));
     b.on('net:worldSpawn', (m) => { if (!this.player || !this.world || this.hud._curScreen !== 'game-ui') return; (this._adminSpawns ??= new AdminSpawns(this)).spawn(m); });
     b.on('net:system', (msg) => this.hud.appendChat({ channel: 'general', system: true, text: msg.text }));
     b.on('net:who', (players) => this.hud.appendChat({ channel: 'general', system: true, text: `En ligne (${players.length}) : ${players.map((p) => `${p.name} (Nv.${p.level})`).join(', ') || '—'}` }));

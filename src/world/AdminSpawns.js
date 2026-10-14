@@ -29,8 +29,16 @@ export class AdminSpawns {
         break;
       }
     }
-    if (made) { g.hud.notify(`⚔ ${made}× ${label || def.name} apparaissent !`, 'boss'); g.audio?.play?.('combatStart'); }
+    if (made) {
+      g.banner?.show({ kind: 'event', icon: boss ? '👑' : '⚔️', text: boss ? `${label || def.name} est apparu !` : `Invasion : ${label || def.name} !`, sub: `${made} monstre${made > 1 ? 's' : ''} autour de toi — bats-les !`, secs: 7 });
+      g.audio?.play?.('combatStart'); this._chip();
+    }
     return made;
+  }
+  _chip() {
+    const alive = this.list.filter((e) => e.state !== 5).length;
+    const born = this.list.reduce((m, e) => Math.min(m, e._born), Date.now());
+    this.g.banner?.setChip('inv', alive ? { icon: '⚔️', label: `Invasion : ${alive} restant${alive > 1 ? 's' : ''}`, until: born + LIFETIME } : null);
   }
   _remove(e) {
     const g = this.g, i = g.enemies.indexOf(e); if (i >= 0) g.enemies.splice(i, 1);
@@ -44,5 +52,6 @@ export class AdminSpawns {
       if ((e._diedAt && now - e._diedAt > 8000) || now - e._born > LIFETIME) { this._remove(e); return false; }
       return true;
     });
+    this._chip();
   }
 }

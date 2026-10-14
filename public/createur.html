@@ -24,7 +24,7 @@ nav{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}nav button{flex:1 1 30%;pa
 <div id="comptes" class="hidden"><div id="stats"></div><input id="q" placeholder="Rechercher un compte…"><div id="clist"></div></div>
 <div id="joueurs" class="hidden"><div id="olist"></div></div>
 <div id="events" class="hidden">
- <div class="row"><b>📢 Annonce à tous</b><input id="ann" maxlength="200" placeholder="Ex. : Maintenance dans 10 minutes"><button id="annGo" style="width:100%">Envoyer à tous</button></div>
+ <div class="row"><b>📢 Annonce à tous</b><input id="ann" maxlength="200" placeholder="Ex. : Maintenance dans 10 minutes"><select id="annsecs" style="width:100%"><option value="5">Affichée 5 secondes</option><option value="8" selected>Affichée 8 secondes</option><option value="15">Affichée 15 secondes</option><option value="30">Affichée 30 secondes</option></select><button id="annGo" style="width:100%">Envoyer à tous</button></div>
  <div class="row"><b>✨ Boost mondial</b><small id="boostState"></small>
   <div class="btns"><select id="bxp"><option value="1">XP ×1</option><option value="1.5">XP ×1,5</option><option value="2" selected>XP ×2</option><option value="3">XP ×3</option></select>
   <select id="bdrop"><option value="1">Butin ×1</option><option value="1.5">Butin ×1,5</option><option value="2" selected>Butin ×2</option><option value="3">Butin ×3</option></select>

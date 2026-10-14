@@ -73,7 +73,7 @@ $('cGo').onclick=()=>S({t:'adm:codeNew',code:$('ccode').value,lunes:Number($('cl
 $('mOn').onclick=()=>{if(confirm('Activer la maintenance ? Plus personne (sauf toi) ne pourra se connecter.'))S({t:'adm:maint',on:true,text:$('mtext').value})};
 $('mOff').onclick=()=>S({t:'adm:maint',on:false});
 $('motdGo').onclick=()=>S({t:'adm:motd',text:$('motd').value});$('motdOff').onclick=()=>{$('motd').value='';S({t:'adm:motd',text:''})};
-$('annGo').onclick=()=>{const text=$('ann').value.trim();if(text.length<3)return;if(confirm('Envoyer à tous les joueurs connectés ?')){S({t:'adm:announce',text});$('ann').value=''}};
+$('annGo').onclick=()=>{const text=$('ann').value.trim();if(text.length<3)return;if(confirm('Envoyer à tous les joueurs connectés ?')){S({t:'adm:announce',text,secs:Number($('annsecs').value)});$('ann').value=''}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-do]');if(!b)return;const a=b.dataset.a,d=b.dataset.do;
  if(d==='open'){S({t:'adm:thread',account:a});return}
  if(d==='don'){const ok=!!b.dataset.ok;if(!confirm(ok?'Tu as bien reçu '+b.dataset.m+' € sur PayPal ?':'Refuser cette demande ?'))return;S({t:'shop:donResolve',id:b.dataset.id,account:a,ok,amount:ok?Number(b.dataset.m):undefined})}
