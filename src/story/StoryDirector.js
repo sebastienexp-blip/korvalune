@@ -70,12 +70,25 @@ export class StoryDirector {
       const sp = this._spire.position;
       if (Math.hypot(sp.x - g.player.pos.x, sp.z - g.player.pos.z) < 22) this.play('c3').then(() => g.bus.emit('tut', 'spire_1'));
     }
-    // cinématique 1 : quand le joueur s'approche du Monolithe pendant l'étape « cine » de story_p1
-    const q = g.quests?.active.get('story_p1');
-    if (q && g.quests.currentStep(q)?.id === 'cine' && !g.dialogueOpen && !g.modalOpen) {
+    // cinématique 1 : un rappel quand le joueur arrive près de la pierre d'éclat (le déclencheur est l'interaction : voir touchStone)
+    if (this.stoneStep() && !g.dialogueOpen && !g.modalOpen) {
       const m = this._monolith();
-      if (m && Math.hypot(m.x - g.player.pos.x, m.z - g.player.pos.z) < 26) this.play('c1').then(() => g.bus.emit('tut', 'cine_c1'));
+      if (m && Math.hypot(m.x - g.player.pos.x, m.z - g.player.pos.z) < 6 && !this._stoneHint) { this._stoneHint = true; g.hud.notify('✨ La pierre vibre… touchez-la (touche d’interaction)', 'quest'); }
     }
+  }
+
+  // vrai tant que l'étape « toucher la pierre d'éclat » est en cours
+  stoneStep() {
+    const q = this.game.quests?.active.get('story_p1');
+    return !!(q && this.game.quests.currentStep(q)?.id === 'cine' && !this.playing);
+  }
+
+  // appelé par Game quand le joueur interagit avec le Monolithe : lance la première cinématique si l'étape est en cours
+  touchStone() {
+    if (!this.stoneStep()) return false;
+    const g = this.game;
+    this.play('c1').then(() => g.bus.emit('tut', 'cine_c1'));
+    return true;
   }
 
   // émet region_<id> quand le joueur est dans la région visée par l'étape en cours d'une quête d'histoire

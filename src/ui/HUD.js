@@ -12,6 +12,7 @@ import { rarityGlow } from '../data/rarities.js';
 import { PRIMARY_STAT } from '../combat/Classes.js';
 import { countSets, describeBonus } from '../data/sets.js';
 import { SLOTS, SLOT_LABELS } from '../inventory/Equipment.js';
+import { emptySlotIcon } from './ItemIcons.js';
 import { CATALOG, CATEGORIES, CATALOG_BY_ID, COSMETIC_SLOTS } from '../data/shopCatalog.js';
 import { PATCH_NOTES, LATEST_VERSION } from '../data/patchNotes.js';
 import { MultiSell } from './MultiSell.js';
@@ -145,7 +146,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.48 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.49 — Korvalune</div>
         </div>
       </div>
 
@@ -970,7 +971,6 @@ export class HUD {
     const box = this.q(sel);
     if (!box || !equipment) return;
     box.innerHTML = '';
-    const ICONS = { head: '⛑️', shoulders: '🧥', chest: '🛡️', gloves: '🧤', legs: '👖', boots: '🥾', cape: '🧣', mainhand: '⚔️', offhand: '🛡', ring: '💍', necklace: '📿' };
     for (const s of SLOTS) {
       const item = equipment.slots[s];
       const cell = document.createElement('button');
@@ -986,7 +986,7 @@ export class HUD {
       } else {
         cell.classList.add('eq-empty');
         cell.title = `${SLOT_LABELS[s]} : vide`;
-        cell.innerHTML = `<span class="inv-icon">${ICONS[s] || '·'}</span><span class="eq-tag">${SLOT_LABELS[s]}</span>`;
+        cell.innerHTML = `<span class="inv-icon">${emptySlotIcon(s)}</span><span class="eq-tag">${SLOT_LABELS[s]}</span>`;
       }
       box.appendChild(cell);
     }

@@ -33,7 +33,7 @@ export const ARMOR_BASES = {
   legs: { name: 'Pantalon', icon: '👖', slot: 'legs', base: 1, perLevel: 1.0, hpBase: 4, hpPerLevel: 1.2 },
   boots: { name: 'Bottes', icon: '🥾', slot: 'boots', base: 1, perLevel: 0.7, hpBase: 2, hpPerLevel: 0.7 },
   // V4.4 : épaules et cape (emplacements qui n'avaient encore aucun butin)
-  pauldrons: { name: 'Épaulières', icon: '🧥', slot: 'shoulders', base: 1, perLevel: 0.8, hpBase: 3, hpPerLevel: 0.9 },
+  pauldrons: { name: 'Épaulières', icon: '🦺', slot: 'shoulders', base: 1, perLevel: 0.8, hpBase: 3, hpPerLevel: 0.9 },
   cloak: { name: 'Cape', icon: '🧣', slot: 'cape', base: 1, perLevel: 0.5, hpBase: 4, hpPerLevel: 1.0 }
 };
 

@@ -3033,6 +3033,7 @@ export class Game {
     }
     for (const n of this.npcs) {
       if (n.pos.distanceTo(this.player.pos) < 3.2) {
+        if (n.id === 'monolith' && this.story?.touchStone()) return; /* V10.49 : la pierre d'éclat lance la 1re cinématique */
         if (this.story?.talkLines(n.id)) return this._talkTo(n); /* V10.46 : l'histoire passe avant les services (ex. Vaelis) */
         return n.def.workshop ? this._openWorkshop(n) : n.def.halloween ? this._openHalloween(n) : n.def.stable ? this._openStable(n) : n.def.barber ? this._openBarber(n) : n.def.shop ? this._openShop(n) : this._talkTo(n);
       }

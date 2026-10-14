@@ -1,0 +1,55 @@
+// V10.48 — Icônes d'équipement : un jeu unique de pictogrammes dessinés (acier, cuir, or), à la place d'emojis qui ne correspondaient pas
+// (une tunique pour les épaulières, un bouclier pour le torse, un arc pour le carquois…). Même style partout : inventaire, équipement,
+// boutiques, atelier. Les emplacements vides affichent la même silhouette, estompée. Les textes (notifications, étiquettes 3D) gardent un emoji.
+const S = '#b4bfce', S2 = '#6c7788', D = '#232833', L = '#9a6a3c', L2 = '#5f3d20', G = '#e6bb62', R = '#b9473d', B = '#58a0e6', W = '#f4f1e8';
+const WD = '#b98550';
+const st = '';
+const svg = (body, cls = '') => `<svg class="ico-eq ${cls}" viewBox="0 0 32 32" aria-hidden="true">${body}</svg>`;
+const p = (d, fill, extra = '') => `<path d="${d}" fill="${fill}" ${extra.includes('stroke="') ? '' : `stroke="${D}" `}${extra.includes('stroke-width') ? '' : 'stroke-width="1.3" '}stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
+const hl = (d) => `<path d="${d}" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>`;
+
+export const EQUIP_SVG = {
+  // ---- armures
+  helm: svg(p('M6 19C6 10.5 10.200 5 16 5s10 5.500 10 14v7h-5l-1.500-3h-7L11 26H6z', S) + `<rect x="9" y="15.500" width="14" height="3.400" rx="1.300" fill="${D}"/>` + p('M15 12.500h2v11h-2z', S2, 'stroke-width="0.8"') + p('M16 2.200c2.400 1.600 3.400 3.600 3.400 5.500h-6.800c0-1.900 1-3.900 3.400-5.500z', R) + hl('M9.500 12c1-3 3.200-5 6-5.300')),
+  pauldrons: svg(p('M3 23C3 13 7.500 8 13.500 8c1.700 0 3 .5 4 1.300L15 25z', S) + p('M29 23C29 13 24.500 8 18.500 8c-1.700 0-3 .5-4 1.300L17 25z', S) + p('M4 21.500c3-1.500 6.500-1.800 10.500-.8M28 21.500c-3-1.500-6.500-1.800-10.500-.8', 'none', 'stroke-width="1"') + `<circle cx="9" cy="14" r="1.200" fill="${G}"/><circle cx="23" cy="14" r="1.200" fill="${G}"/>` + p('M13 8.500c1 2 1 4 .5 6M19 8.500c-1 2-1 4-.5 6', 'none', 'stroke-width="1"') + hl('M6 16c1-3 3-5.500 6-6.500')),
+  chest: svg(p('M10 5l-6 4 2.500 7 3.500-1.500V28h12V14.500L26 16l2.500-7-6-4-3.500 3h-6z', S) + p('M16 8v20', 'none', 'stroke-width="1.100"') + p('M10 15.500c2 1.500 4 2 6 2s4-.5 6-2', 'none', 'stroke-width="1"') + `<circle cx="16" cy="13" r="1.500" fill="${G}" stroke="${D}" stroke-width=".8"/>` + p('M10 23h12', 'none', 'stroke-width="1"') + hl('M7 10l2.500-2')),
+  gloves: svg(p('M9 27V20L7 14.500c-.500-1.500 1-2.500 2-1.500l2 2.500V6c0-1.600 2.500-1.600 2.500 0v7.500V4.500c0-1.600 2.600-1.600 2.600 0V13.500V5.500c0-1.600 2.600-1.600 2.600 0V15l.5-5c0-1.500 2.500-1.300 2.500.2L23 20.500V27z', L) + p('M9 22.500h14v5H9z', S) + `<circle cx="12" cy="25" r=".8" fill="${G}"/><circle cx="16" cy="25" r=".8" fill="${G}"/><circle cx="20" cy="25" r=".8" fill="${G}"/>` + hl('M13 7v5')),
+  legs: svg(p('M8 4h16l2.500 24H18l-2-13-2 13H5.500z', S) + p('M8 8.500h16', 'none', 'stroke-width="1"') + `<rect x="8" y="4" width="16" height="3" fill="${L}" stroke="${D}" stroke-width="1.3" stroke-linejoin="round"/><rect x="14.500" y="3.800" width="3" height="3.400" fill="${G}" stroke="${D}" stroke-width=".8"/>` + p('M8.500 18.500c1.500.8 3 .8 4.500 0M19 18.500c1.500.8 3 .8 4.500 0', 'none', 'stroke-width="1"') + hl('M9.500 10l-1.500 12')),
+  boots: svg(p('M10 4h10v13l8 4.500V28H8V4z', L) + p('M8 24h20v4H8z', L2) + p('M10 4h10v5H10z', S) + p('M10 11h10', 'none', 'stroke-width="1"') + `<rect x="9" y="8.500" width="12" height="1.800" fill="${G}" stroke="${D}" stroke-width=".7"/>` + hl('M12 12v8')),
+  cloak: svg(p('M10 4h12l5.500 23c-4-2-7.500-3-11.500-3S8.500 25 4.500 27z', R) + p('M9 4c2 3 4.500 4 7 4s5-1 7-4', S2) + `<circle cx="16" cy="8" r="2" fill="${G}" stroke="${D}" stroke-width=".9"/>` + p('M12 12c-.500 5-1.500 9-4 13M20 12c.500 5 1.500 9 4 13M16 11v12', 'none', 'stroke-width=".9" opacity=".6"') + hl('M12 6l-5 18')),
+  ring: svg(`<circle cx="16" cy="19" r="8" fill="none" stroke="${D}" stroke-width="5"/><circle cx="16" cy="19" r="8" fill="none" stroke="${G}" stroke-width="3"/>` + p('M16 3.500l4.500 4-4.500 5-4.500-5z', B) + p('M11.500 7.500h9M16 3.500v9', 'none', 'stroke-width=".8"') + hl('M9.500 21c.500 2 2 3.500 4 4.200')),
+  necklace: svg(p('M5 5c0 12 4.500 16 11 16s11-4 11-16', 'none', `stroke-width="2.600" stroke="${D}"`) + `<path d="M5 5c0 12 4.500 16 11 16s11-4 11-16" fill="none" stroke="${G}" stroke-width="1.300" stroke-dasharray="2.200 1.400" stroke-linecap="round"/>` + p('M16 21l-4 4.500 4 4.500 4-4.500z', R) + hl('M14.500 24.500l1.500-1.500')),
+  // ---- armes
+  sword: svg(p('M25.500 3.500l3 3L15 21l-4.500 1 1-4.500z', S) + p('M9 20.500l3.500 3.500', 'none', `stroke="${G}" stroke-width="3"`) + p('M10.500 22.500L6 27', 'none', `stroke="${WD}" stroke-width="3"`) + `<circle cx="5" cy="28" r="1.800" fill="${G}" stroke="${D}" stroke-width=".9"/>` + hl('M14 17.500L26 5.500')),
+  axe: svg(p('M7 28L22 6', 'none', `stroke="${WD}" stroke-width="3"`) + p('M18 5c5-2.500 9 0 10 4-3-.500-5 1-7 4 .500-3-.500-5-3-6z', S) + p('M18 5c-1.500 1-2.500 3-2 6', 'none', 'stroke-width="1"') + hl('M20 6c3-.500 5 .500 6 2.500')),
+  mace: svg(p('M8 28L20 13', 'none', `stroke="${WD}" stroke-width="3"`) + `<circle cx="22" cy="10" r="6.500" fill="${S}" stroke="${D}" stroke-width="1.3" stroke-linejoin="round"/>` + [[22, 3], [29, 10], [22, 17], [15.500, 10], [27, 5], [27, 15], [17, 5], [17, 15]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.300" fill="${S2}" stroke="${D}" stroke-width=".7"/>`).join('') + hl('M19 8c1-1.500 2.500-2 4-1.500')),
+  spear: svg(p('M6 28L24 9', 'none', `stroke="${WD}" stroke-width="2.600"`) + p('M22 12l-2-2 3-7 7 1-1 7-7 1z', S, 'transform="rotate(0)"') + p('M20 13l-3 3', 'none', `stroke="${G}" stroke-width="2.600"`) + hl('M24 6l2 2')),
+  dagger: svg(p('M24 4l4 4-11 12-4 .500 .500-4z', S) + p('M11 18l4 4', 'none', `stroke="${G}" stroke-width="3"`) + p('M13 20.500l-5 5.500', 'none', `stroke="${WD}" stroke-width="3.200"`) + hl('M16 16l9-9')),
+  bow: svg(p('M10 3c14 4 14 22 0 26', 'none', `stroke="${L}" stroke-width="3.200"`) + p('M10 3c14 4 14 22 0 26', 'none', `stroke="${D}" stroke-width=".8"`) + p('M10 3v26', 'none', `stroke="${W}" stroke-width=".9"`) + p('M6 16h18', 'none', `stroke="${S2}" stroke-width="1.400"`) + p('M24 16l-4-2.500v5z', S) + p('M6 16l-2-2M6 16l-2 2', 'none', `stroke="${R}" stroke-width="1.300"`)),
+  staff: svg(p('M8 28L21 12', 'none', `stroke="${WD}" stroke-width="3"`) + p('M22 4.500c3 .500 5 3 4.500 6-.500 2.500-2.500 3.500-4.500 3.500', 'none', `stroke="${G}" stroke-width="2.200"`) + `<circle cx="21" cy="9.500" r="3.300" fill="${B}" stroke="${D}" stroke-width="1.3" stroke-linejoin="round"/><circle cx="20" cy="8.500" r="1" fill="#fff" opacity=".7"/>`),
+  wand: svg(p('M10 29V21', 'none', `stroke="${L2}" stroke-width="4"`) + p('M7 21h6l-1 3H8z', G) + `<circle cx="16" cy="12" r="8.500" fill="${B}" stroke="${D}" stroke-width="1.3" stroke-linejoin="round"/>` + hl('M10.500 9c1-2.500 3-4 5.500-4.200') + `<path d="M12 14c2 2 5 2.500 8 .500" fill="none" stroke="#fff" stroke-width=".9" opacity=".45"/>`),
+  halberd: svg(p('M7 29L22 5', 'none', `stroke="${WD}" stroke-width="2.600"`) + p('M20 4l3-2 2 3-1 2z', S) + p('M22 9c4-1 7 1 7 5-3-1-5 0-7 2l-2-5z', S) + p('M19 12l-2.500 4', 'none', `stroke="${G}" stroke-width="2.600"`) + hl('M24 11c2 0 3 .600 3.500 1.800')),
+  scimitar: svg(p('M25 3c4 7-1 15-10 19l-3-4c5-3 8-8 6-13z', S) + p('M11 19l4 3', 'none', `stroke="${G}" stroke-width="3"`) + p('M12.500 21.500L8 27', 'none', `stroke="${L2}" stroke-width="3.200"`) + hl('M22 7c1 4-1 8-6 11')),
+  warhammer: svg(p('M8 29L21 9', 'none', `stroke="${WD}" stroke-width="3"`) + p('M13 7l9-4 6 8-9 4z', S) + p('M16 9l8 4', 'none', 'stroke-width="1"') + `<path d="M26 4.500l3 4" stroke="${S2}" stroke-width="2.600" stroke-linecap="round"/>` + hl('M15 8l6-2.500')),
+  crossbow: svg(p('M4 11c8-5 16-5 24 0', 'none', `stroke="${L}" stroke-width="3.200"`) + p('M4 11c8-5 16-5 24 0', 'none', `stroke="${D}" stroke-width=".8"`) + p('M4 11l12 5 12-5', 'none', `stroke="${W}" stroke-width=".9"`) + p('M13 13h6v9l-3 6-3-6z', L2) + p('M16 4v18', 'none', `stroke="${S2}" stroke-width="1.500"`) + p('M16 3l-2.500 3.500h5z', S)),
+  tome: svg(p('M5 5h16a3 3 0 0 1 3 3v19H8a3 3 0 0 1-3-3z', R) + p('M24 8c2 0 3 1 3 3v14c0 1.500-1 2.500-3 2.500', W) + p('M24 27.500H8', 'none', 'stroke-width="1"') + `<circle cx="14.500" cy="14" r="4" fill="none" stroke="${G}" stroke-width="1.400"/><path d="M14.500 10.500v7M11 14h7" stroke="${G}" stroke-width="1.100"/>` + p('M9 5v22', 'none', `stroke="${D}" stroke-width=".9" opacity=".6"`)),
+  // ---- objets secondaires
+  shield: svg(p('M16 3l11 4v9c0 7-5 11-11 13C10 27 5 23 5 16V7z', S) + p('M16 3v26', 'none', 'stroke-width="1"') + p('M5 14h22', 'none', 'stroke-width="1"') + p('M16 3l11 4v7H16z', R) + `<circle cx="16" cy="14" r="2.400" fill="${G}" stroke="${D}" stroke-width=".9"/>` + hl('M8 9v6')),
+  orb: svg(`<ellipse cx="16" cy="27" rx="8" ry="2.200" fill="${D}" opacity=".5"/>` + p('M10 26l2-4h8l2 4z', G) + `<circle cx="16" cy="14" r="9.500" fill="${B}" stroke="${D}" stroke-width="1.3" stroke-linejoin="round"/><circle cx="16" cy="14" r="9.500" fill="none" stroke="#fff" stroke-width=".8" opacity=".25"/>` + hl('M10 11c1-3 3.500-5 6.500-5.200') + `<path d="M12 17c2 2.500 6 2.500 9 .300" fill="none" stroke="#fff" stroke-width=".9" opacity=".4"/>`),
+  quiver: svg(`<g transform="rotate(22 16 16)">` + p('M11.500 11h9l-1.600 17.500a2.200 2.200 0 0 1-2.200 2h-1.400a2.200 2.200 0 0 1-2.200-2z', L) + `<rect x="10.500" y="9.500" width="11" height="3" rx="1" fill="${G}" stroke="${D}" stroke-width="1.3" stroke-linejoin="round"/>` + p('M13 9.500V3.500M16 9.500V2M19 9.500V3.500', 'none', `stroke="${W}" stroke-width="1.500"`) + p('M13 4.500l-1.800-2.500h3.600zM16 3l-1.800-2.500h3.600zM19 4.500l-1.800-2.500h3.600z', R) + p('M12.500 17h7M13 22h6', 'none', `stroke="${L2}" stroke-width="1"`) + `</g>`),
+  offdagger: svg(`<g transform="translate(32 0) scale(-1 1)">` + p('M24 4l4 4-11 12-4 .500 .500-4z', S) + p('M11 18l4 4', 'none', `stroke="${G}" stroke-width="3"`) + p('M13 20.500l-5 5.500', 'none', `stroke="${WD}" stroke-width="3.200"`) + hl('M16 16l9-9') + `</g>`)
+};
+
+// emplacement → silhouette
+export const SLOT_ICON_KEY = { head: 'helm', shoulders: 'pauldrons', chest: 'chest', gloves: 'gloves', legs: 'legs', boots: 'boots', cape: 'cloak', ring: 'ring', necklace: 'necklace', mainhand: 'sword', offhand: 'shield' };
+
+// objet résolu (ou brut) → clé d'icône. Générés : famille de base ; statiques : emplacement / silhouette.
+export function equipIconKey({ type, slot, baseKey, visual }) {
+  if (slot === 'mainhand') return (baseKey && EQUIP_SVG[baseKey] && baseKey) || (visual && EQUIP_SVG[visual] && visual) || 'sword';
+  if (slot === 'offhand') return (visual && EQUIP_SVG[visual] && visual) || 'shield';
+  if (baseKey && EQUIP_SVG[baseKey === 'cloak' ? 'cloak' : baseKey]) return baseKey;
+  return SLOT_ICON_KEY[slot] || null;
+}
+export const equipIconHtml = (item) => { const k = equipIconKey(item); return k ? EQUIP_SVG[k] : null; };
+// silhouette estompée d'un emplacement vide
+export const emptySlotIcon = (slot) => { const k = SLOT_ICON_KEY[slot]; return k ? EQUIP_SVG[k].replace('class="ico-eq ', 'class="ico-eq ghost ') : '·'; };

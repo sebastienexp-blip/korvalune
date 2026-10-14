@@ -181,7 +181,7 @@
   {
     "id": "shoulders_common",
     "name": "Épaulières usées",
-    "icon": "🎽",
+    "icon": "🦺",
     "type": "armor",
     "slot": "shoulders",
     "rarity": "commun",
@@ -196,7 +196,7 @@
   {
     "id": "shoulders_rare",
     "name": "Épaulières du Gardien",
-    "icon": "🎽",
+    "icon": "🦺",
     "type": "armor",
     "slot": "shoulders",
     "rarity": "rare",

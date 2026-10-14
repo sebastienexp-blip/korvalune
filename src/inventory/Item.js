@@ -4,7 +4,8 @@ import { fixLegacyAffix } from '../data/affixPool.js';
 import { SET_RARITY, SETS } from '../data/sets.js';
 import { BUILDS, buildMods } from '../data/builds.js';
 import { durOf, durMaxOf, activeLitany, socketBonus } from '../data/crafting.js';
-import { WEAPON_BASES, QUIVER_SVG } from '../data/itemBases.js';
+import { WEAPON_BASES } from '../data/itemBases.js';
+import { equipIconHtml } from '../ui/ItemIcons.js';
 
 export const ITEMS = Object.fromEntries(itemDefs.map((d) => [d.id, d]));
 
@@ -33,7 +34,7 @@ export function resolveItem(slot) {
     if (g.affixes) for (const a of g.affixes) fixLegacyAffix(a, g.itemLevel, rarity);
     return {
       setId: g.setId || null, setDef: g.setId ? SETS[g.setId] : null,
-      key: g.uid, name: g.name, icon: g.icon, iconHtml: g.slot === 'offhand' && g.visual === 'quiver' ? QUIVER_SVG : null, type: g.type, slot: g.slot, visual: (g.tmog && g.tmog.v) || g.visual, model: (g.tmog && g.tmog.v) ? null : (g.type === 'weapon' && WEAPON_BASES[g.baseKey]?.model) || null, tint: (g.tmog && g.tmog.c) || null,
+      key: g.uid, name: g.name, icon: g.icon, iconHtml: equipIconHtml({ slot: g.slot, baseKey: g.baseKey, visual: g.visual }), type: g.type, slot: g.slot, visual: (g.tmog && g.tmog.v) || g.visual, model: (g.tmog && g.tmog.v) ? null : (g.type === 'weapon' && WEAPON_BASES[g.baseKey]?.model) || null, tint: (g.tmog && g.tmog.c) || null,
       // V10.19 : emplacements / runes, usure
       sockets: g.sockets || 0, gems: g.gems || [], socketBonus: g.sockets ? socketBonus(g) : null, litany: g.sockets ? activeLitany(g) : null,
       dur: durOf(g), durMax: durMaxOf(g), broken: durOf(g) <= 0, ench: g.ench || 0,
@@ -48,7 +49,7 @@ export function resolveItem(slot) {
   if (!def) return null;
   const rarity = getRarity(def.rarity);
   return {
-    key: def.id, name: def.name, icon: def.icon, type: def.type, slot: def.slot, visual: def.visual || null,
+    key: def.id, name: def.name, icon: def.icon, iconHtml: (def.type === 'weapon' || def.type === 'armor') && def.id !== 'guardian_core' ? equipIconHtml({ slot: def.slot, visual: def.visual }) : null, type: def.type, slot: def.slot, visual: def.visual || null,
     rarity: rarity.id, rarityInfo: rarity, itemLevel: null, levelReq: def.levelReq || 1,
     stats: def.stats || {}, affixes: [], effects: [],
     value: def.value, desc: def.desc, stackable: !!def.stackable, maxStack: def.maxStack, isGenerated: false, defId: def.id

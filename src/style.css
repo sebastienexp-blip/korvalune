@@ -1366,3 +1366,11 @@ svg.ico-q { width: 1.15em; height: 1.15em; display: inline-block; vertical-align
 #emote-panel .em-btn small { font-size: 10px; line-height: 1.1; text-align: center; }
 #emote-panel .em-btn:hover, #emote-panel .em-btn:focus-visible { background: rgba(226, 184, 102, 0.28); outline: none; }
 #emote-panel .em-hint { margin-top: 8px; font-size: 10px; opacity: 0.7; }
+
+/* V10.48 — icônes d'équipement dessinées (remplacent les emojis) */
+svg.ico-eq { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; }
+.inv-icon svg.ico-eq { width: 34px; height: 34px; display: block; margin: 0 auto; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
+.ws-ic svg.ico-eq, .equip-row .inv-icon svg.ico-eq { width: 30px; height: 30px; }
+#is-icon svg.ico-eq { width: 44px; height: 44px; }
+svg.ico-eq.ghost { opacity: 0.3; filter: grayscale(0.55); }
+.inv-icon svg.ico-eq.ghost { filter: grayscale(0.55); }

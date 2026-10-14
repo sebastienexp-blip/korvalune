@@ -44,9 +44,9 @@ export const DISCOVERY_QUESTS = [
     reward: reward(10, 1) },
   { id: 'decouv_monolithe', name: 'Le cristal qui répond', level: 20, discovery: true, startLevel: 20,
     steps: [
-      ev('mono', 'Approchez-vous du Monolithe des Métamorphoses, sur l’avenue centrale', 'monolith'),
+      ev('mono', 'Touchez le Monolithe des Métamorphoses, sur sa place au sud-ouest de la ville ({k:interact} à côté)', 'monolith'),
       ev('cube', 'Utilisez-le : refonte, élévation, fusion de runes ou distillation de matériaux', 'cube'),
-      ev('myst', 'Rendez visite à Vaelis, la mystique (à l’est du puits)', 'mystic'),
+      ev('myst', 'Rendez visite à Vaelis, la mystique (à l’ouest de la ville, près de l’établi d’enchantement)', 'mystic'),
       ev('ench', 'Faites enchanter une propriété d’un de vos objets', 'enchant')
     ],
     reward: reward(22, 1.2) },

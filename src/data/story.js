@@ -100,8 +100,8 @@ export const STORY_TALKS = {
 export const STORY_QUESTS = [
   { id: 'story_p1', name: 'Prologue : L’Éveil', level: 1, story: true, next: 'story_p2',
     steps: [
-      { id: 'cine', text: 'Approcher du Monolithe des Métamorphoses, sur sa place', type: 'event', target: 'cine_c1' },
-      { id: 'talk', text: 'Parler à la Mystique Vaelis', type: 'talk', target: 'mystic' }
+      { id: 'cine', text: 'Toucher la pierre d’éclat : le Monolithe des Métamorphoses, sur sa place ({k:interact} à côté de lui)', type: 'event', target: 'cine_c1' },
+      { id: 'talk', text: 'Parler à la Mystique Vaelis, à l’ouest de la ville', type: 'talk', target: 'mystic' }
     ],
     reward: reward(2, 0.5) },
   { id: 'story_p2', name: 'Prologue : Un éclat dans la main', level: 2, story: true, next: 'story_p3',
@@ -144,7 +144,7 @@ STORY_QUESTS.push(
 );
 
 export const STORY_FIRST = 'story_p1';
-export const STORY_START_AFTER = 'commencement'; // la quête d'accueil de Halvar
+export const STORY_START_AFTER = 'tuto_1'; // V10.49 : l'histoire démarre dès la première initiation terminée (avant : fin de « Le commencement »)
 
 // Cinématique 1 : caméra autour du Monolithe (coordonnées relatives à sa position)
 // Chaque plan : durée minimale `dur`, position/regard de départ et d'arrivée, et les répliques dites pendant le plan.
