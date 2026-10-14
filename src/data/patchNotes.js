@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.50', title: 'Télécharger Korvalune',
+    items: [
+      '📲 L’écran d’accueil propose deux liens propres : « Android — Télécharger l’application (APK) » et « Windows — Télécharger l’installation ». Un lien reste grisé (« Bientôt disponible ») tant que son fichier n’est pas publié.'
+    ]
+  },
+  {
     version: '10.49', title: 'Icônes d’équipement et départ de l’histoire',
     items: [
       '🛡️ Icônes d’équipement refaites : chaque emplacement (casque, épaulières, plastron, gants, jambières, bottes, cape, bague, collier, arme, objet secondaire) a maintenant une icône dessinée qui correspond à la pièce. Les emplacements vides montrent la silhouette de ce qu’ils attendent.',

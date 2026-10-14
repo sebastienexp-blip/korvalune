@@ -1374,3 +1374,13 @@ svg.ico-eq { width: 1em; height: 1em; display: inline-block; vertical-align: -0.
 #is-icon svg.ico-eq { width: 44px; height: 44px; }
 svg.ico-eq.ghost { opacity: 0.3; filter: grayscale(0.55); }
 .inv-icon svg.ico-eq.ghost { filter: grayscale(0.55); }
+
+/* V10.50 — liens de téléchargement de l'écran d'accueil */
+.dl-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.dl-row[hidden] { display: none; }
+.dl-btn { display: flex; flex-direction: column; gap: 1px; padding: 9px 14px; min-width: 150px; border-radius: 10px; border: 1px solid rgba(226, 184, 102, 0.5); background: linear-gradient(180deg, rgba(60, 50, 30, 0.55), rgba(24, 20, 12, 0.7)); color: #f4e9cf; text-decoration: none; text-align: left; transition: border-color .15s, transform .15s; }
+.dl-btn b { font-family: var(--serif); font-size: 15px; letter-spacing: 0.02em; }
+.dl-btn small { font-size: 12px; opacity: 0.8; }
+.dl-btn:hover:not(.off), .dl-btn:focus-visible { border-color: #e2b866; transform: translateY(-1px); outline: none; }
+.dl-btn.off { opacity: 0.5; cursor: default; }
+@media (max-height: 430px), (max-width: 700px) { .dl-btn { min-width: 0; padding: 6px 10px; } .dl-btn small { display: none; } }

@@ -133,6 +133,10 @@ export class HUD {
           <div class="title-logo"><span>Korvalune</span></div>
           <p class="mm-tag">Un monde ouvert à explorer, seul ou à plusieurs.</p>
           ${hwBanner()}
+          <div class="dl-row" id="mm-downloads" hidden>
+            <a class="dl-btn" id="dl-apk" href="/telechargements/Korvalune.apk" download="Korvalune.apk"><b>Android</b><small>Télécharger l’application (APK)</small></a>
+            <a class="dl-btn" id="dl-win" href="/telechargements/Korvalune-Installation.exe" download="Korvalune-Installation.exe"><b>Windows</b><small>Télécharger l’installation</small></a>
+          </div>
         </div>
         <div class="mm-right">
           <div id="account-status">Mode invité</div>
@@ -146,7 +150,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.49 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.50 — Korvalune</div>
         </div>
       </div>
 
@@ -574,6 +578,7 @@ export class HUD {
         <button data-act="respawn">Revenir à Korvalune</button>
       </div>
     `;
+    try { this._initDownloads(); } catch (e) { /* liens facultatifs */ }
   }
 
   _bindEvents() {
@@ -624,6 +629,22 @@ export class HUD {
   }
 
   // V10.36 : emoji (PC) + pictogramme vectoriel (mobile) côte à côte ; la classe .touch-on choisit lequel s'affiche
+  // V10.50 : liens de téléchargement (APK Android, installation Windows) sur l'écran d'accueil.
+  // Masqués dans l'application elle-même ; un lien dont le fichier n'est pas encore publié est grisé (« Bientôt disponible »).
+  _initDownloads() {
+    const box = this.q('#mm-downloads'); if (!box) return;
+    const inApp = !!(window.Capacitor?.isNativePlatform?.() || /Electron/i.test(navigator.userAgent));
+    if (inApp) return;
+    box.hidden = false;
+    for (const [id, label] of [['#dl-apk', 'Android'], ['#dl-win', 'Windows']]) {
+      const a = this.q(id); if (!a) continue;
+      fetch(a.getAttribute('href'), { method: 'HEAD' }).then((r) => {
+        const ok = r.ok && !/text\/html/i.test(r.headers.get('content-type') || '');
+        if (!ok) { a.classList.add('off'); a.removeAttribute('href'); a.removeAttribute('download'); a.setAttribute('aria-disabled', 'true'); a.querySelector('small').textContent = 'Bientôt disponible'; }
+      }).catch(() => { /* hors ligne : on laisse le lien */ });
+    }
+  }
+
   _decorateIcons() {
     if (this._iconsDone) return;
     this._iconsDone = true;
