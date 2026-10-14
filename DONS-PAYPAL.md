@@ -1,9 +1,18 @@
-# Dons PayPal (V10.54)
+# Dons PayPal (V10.55)
 
-1. Sur paypal.com : créez un bouton « Faire un don » (Outils → Boutons PayPal → Donner) ou activez votre lien PayPal.me.
-2. Copiez l'adresse du bouton/lien (https://www.paypal.com/donate/?hosted_button_id=… ou https://paypal.me/votrenom).
-3. Dans Render : Environment → ajoutez `PAYPAL_DONATE_URL` = cette adresse, puis redéployez.
-4. Le bloc « Soutenir Korvalune » apparaît dans la Boutique des Lunes. Sans variable, rien ne s'affiche.
+**Principe** : le jeu n'a aucun accès à PayPal. Il affiche le lien de réception du créateur (par défaut le QR « Recevoir des paiements »
+configuré dans `server/donations.js`, surchargeable par la variable `PAYPAL_DONATE_URL`). Le donateur donne sur PayPal, puis déclare son
+don dans la Boutique des Lunes ; le créateur vérifie la réception sur PayPal et valide dans le jeu : les Lunes de remerciement sont créditées.
 
-Le jeu n'accède jamais à PayPal et ne reçoit aucune confirmation : un don ne donne pas de Lunes automatiquement.
-Seules les adresses https paypal.com / paypal.me sont acceptées. Le code Stripe reste en place mais inactif (aucune clé = aucun achat).
+**Barème** (`src/data/donations.js`) : 100 Lunes par euro, +10 % dès 5 €, +20 % dès 10 €, +30 % dès 25 € (de 1 € à 200 €).
+Les Lunes n'ont aucun effet en combat (apparence et confort seulement).
+
+## Mise en route (une seule fois)
+Dans Render → Environment, ajouter `OWNER_ACCOUNTS` = le nom de votre compte de jeu (plusieurs : séparés par des virgules), puis redéployer.
+Connecté avec ce compte, la Boutique des Lunes affiche en plus « Dons à valider » : montant déclaré (modifiable si le montant reçu diffère),
+boutons **Valider** (crédite) et **Refuser**. Une demande ne peut être traitée qu'une fois.
+
+## Sécurité
+- Seul un compte listé dans `OWNER_ACCOUNTS` peut valider (vérifié par le serveur, pas par le jeu).
+- Un joueur ne peut avoir que 3 demandes en attente ; montants de 1 à 200 € ; les Lunes sont calculées par le serveur.
+- Aucune donnée bancaire dans le jeu. Seules les adresses https paypal.com / paypal.me sont acceptées pour le lien.

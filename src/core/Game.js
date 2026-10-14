@@ -273,7 +273,6 @@ export class Game {
   }
 
   async _boot() {
-    try { const q = new URLSearchParams(location.search); if (q.has('paid')) { this._paidReturn = q.get('paid'); history.replaceState(null, '', location.pathname); } } catch { /* ignoré */ } // retour de la page de paiement Stripe
     this.net.connect();
     this.hud.setLoading(0.02, 'Chargement des modèles 3D…');
     ModelLibrary.onProgress = (d, n) => this.hud.setLoading(0.02 + 0.01 * (d / n), `Chargement des modèles 3D… ${d}/${n}`);
@@ -951,12 +950,8 @@ export class Game {
     b.on('net:group', (msg) => { this.group = msg.members || []; this.gw.onGroup(msg); this._renderSocial(); });
     // V10.1 — boutique des Lunes (état fourni par le serveur : le client ne décide de rien)
     b.on('net:shop', (msg) => {
-      if (this._paidReturn) {
-        const ok = this._paidReturn === '1'; this._paidReturn = null;
-        this.hud.notify(ok ? 'Paiement reçu : tes Lunes arrivent dans quelques secondes…' : 'Paiement annulé : rien n\u2019a été débité.', ok ? 'quest' : 'info');
-        if (ok) { setTimeout(() => this.net.shopGet(), 4000); setTimeout(() => this.net.shopGet(), 12000); }
-      }
       this._shop = msg;
+      if (msg.owner && !this._donAsked) { this._donAsked = true; this.net.donAdmin(); } // créateur : charge la liste des dons à valider
       this._growBank();
       if (this.player) this.player.setCosmetics(this._shopCos());
       this._renderLune();
@@ -979,6 +974,7 @@ export class Game {
         this.audio.setMix({ music: m.musicVol / 100, sfx: m.sfxVol / 100, ui: m.uiVol / 100, ambience: m.ambVol / 100 });
       } catch (e) { console.warn('[V10.7] réglages du compte', e); }
     });
+    b.on('net:donList', (msg) => { this._donAdmin = msg.list || []; this._renderLune(); });
     b.on('net:shopMsg', (msg) => { if (msg.ok && /quotidienne/.test(msg.text || '')) this._tut('lunedaily'); this._luneMsg = { ok: msg.ok, text: msg.text }; if (msg.text) this.hud.notify(msg.text, msg.ok ? 'quest' : 'info'); this._renderLune(); });
     b.on('net:playerCos', (msg) => { this.remotePlayers.get(msg.id)?.setCos(msg.cos); });
     b.on('ui:close-lune', () => this._closeLune());
@@ -1062,7 +1058,6 @@ export class Game {
     this.bus.on('enemyKilled', (e) => { this.bus.emit('passEvent', e?.def?.boss || e?.isBoss ? 'boss' : e?.champion ? 'elite' : 'kill'); if (e?.def?.hw && this.net.loggedIn) this.net.eventKill(e.def.id); if (e?.def?.hw) this._tut('hwkill'); if (getDifficulty().id >= 1) this._tut('diffkill'); });
     this.bus.on('ui:close-barber', () => this._closeModal());
     this.root.querySelector('#barber-pay').addEventListener('click', () => this._barberPay());
-    this.root.querySelector('#lune-screen').addEventListener('change', (e) => { if (e.target && e.target.id === 'lune-consent') this._luneConsent = !!e.target.checked; });
     this.root.querySelector('#lune-screen').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-la]');
       if (!btn || btn.disabled) return;
@@ -1070,11 +1065,17 @@ export class Game {
       switch (btn.dataset.la) {
         case 'tab': this._luneTab = v; this._luneMsg = null; break;
         case 'daily': this.net.shopDaily(); return;
-        case 'pay': {
-          if (!this._luneConsent) { this._luneMsg = { ok: false, text: 'Coche d\u2019abord la case d\u2019acceptation des conditions de vente.' }; this._renderLune(); return; }
-          btn.disabled = true;
-          this.net.startCheckout(v, true).then((url) => { window.location.assign(url); }).catch((err) => { this._luneMsg = { ok: false, text: err.message }; this._renderLune(); });
-          return;
+        case 'donate': { // V10.55 : le donateur déclare son don (le créateur le vérifie sur PayPal, puis valide)
+          const amount = parseFloat(String(this.root.querySelector('#don-amount')?.value || '').replace(',', '.'));
+          const note = this.root.querySelector('#don-note')?.value || '';
+          if (!Number.isFinite(amount)) { this._luneMsg = { ok: false, text: 'Indique le montant de ton don en euros.' }; break; }
+          this.net.donateRequest(amount, note); return;
+        }
+        case 'donList': this.net.donAdmin(); return;
+        case 'donOk': case 'donNo': {
+          const row = btn.closest('[data-don]'); if (!row) return;
+          const amt = row.querySelector('.don-amt')?.value;
+          this.net.donResolve(row.dataset.don, row.dataset.acc, btn.dataset.la === 'donOk', amt); return;
         }
         case 'buy': this.net.shopBuy(v); return;
         case 'equip': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = null; this._equipCos(it.cat, v); } return; }
@@ -1582,7 +1583,7 @@ export class Game {
 
   _renderLune() {
     if (this.hud.q('#lune-screen').classList.contains('hidden')) return;
-    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, consent: !!this._luneConsent, canTry: !!this.player && !this._luneReturn });
+    this.hud.renderLune({ shop: this._shop, tab: this._luneTab || 'aura', preview: this._preview, msg: this._luneMsg, donAdmin: this._donAdmin, canTry: !!this.player && !this._luneReturn });
   }
 
   // ---------- Écurie et montures (V10.10) ----------

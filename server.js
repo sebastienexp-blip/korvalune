@@ -28,7 +28,7 @@ import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
 import { sanitizeGeneratedItem, sanitizeItemSlots, sanitizeCubePowers, itemKey } from './server/itemValidate.js';
-import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
+import { requestDonation, pendingDonations, resolveDonation, isOwnerKey } from './server/donations.js';
 import { passView, addEvents as passEvents, claim as passClaim, claimAll as passClaimAll, missionClaim as passMission, buyPremium as passBuyPremium, buyTier as passBuyTier } from './server/pass.js';
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
 import { CATALOG_BY_ID as COSMETICS_BY_ID } from './src/data/shopCatalog.js';
@@ -40,7 +40,7 @@ import { MAX_DIFFICULTY } from './src/data/difficulty.js';
 import { cleanRanks, setSkillTable } from './src/combat/SkillRanks.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 setSkillTable(Object.fromEntries(JSON.parse(readFileSync(new URL('./src/data/skills.json', import.meta.url), 'utf8')).map((s) => [s.id, s])));
-import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
+import { setOwnerLookup, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
 const MAX_GROUP_SIZE = 5;
@@ -60,7 +60,10 @@ const accounts = await loadAccounts();
 const SECRET = await loadSecret(DATA_DIR);
 // index insensible à la casse : « Bob » et « bob » sont le même compte (anti-usurpation)
 const lcIndex = new Map(Object.keys(accounts).map((k) => [k.toLowerCase(), k]));
-const resolveAccount = (name) => lcIndex.get(String(name).toLowerCase()) ?? null;
+const keyOf = new WeakMap(); // objet de compte -> nom de compte (pour savoir si c'est le créateur)
+for (const [k, a] of Object.entries(accounts)) keyOf.set(a, k);
+const resolveAccount = (name) => { const k = lcIndex.get(String(name).toLowerCase()) ?? null; if (k && accounts[k]) keyOf.set(accounts[k], k); return k; };
+setOwnerLookup((acc) => isOwnerKey(keyOf.get(acc)));
 const regLimiter = new KeyedLimiter(4, 10 * 60 * 1000);     // créations de compte par IP
 const loginLimiter = new KeyedLimiter(15, 60 * 1000);       // tentatives de connexion par IP
 const failLimiter = new KeyedLimiter(6, 5 * 60 * 1000);     // échecs par compte (verrouillage 5 min)
@@ -85,8 +88,7 @@ beat.unref?.();
 /** @type {Map<string, Player>} */
 const players = new Map();
 
-// ---- V10.2 : API paiements (Stripe Checkout) ----
-const checkoutLimiter = new KeyedLimiter(8, 10 * 60 * 1000); // créations de sessions de paiement par IP
+// ---- API HTTP (V10.55 : plus aucun paiement par carte ; les dons passent par PayPal, voir server/donations.js) ----
 const readBody = (req, max = 65536) => new Promise((resolve, reject) => {
   let n = 0; const ch = [];
   req.on('data', (c) => { n += c.length; if (n > max) { reject(new Error('corps trop grand')); req.destroy(); } else ch.push(c); });
@@ -96,36 +98,6 @@ const readBody = (req, max = 65536) => new Promise((resolve, reject) => {
 const jsonOut = (res, base, code, obj) => { const b = Buffer.from(JSON.stringify(obj)); res.writeHead(code, { ...base, 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': b.length }); res.end(b); };
 async function handleApi(req, res, base) {
   let url; try { url = new URL(req.url, 'http://x'); } catch { return jsonOut(res, base, 400, { error: 'requête invalide' }); }
-  if (req.method === 'POST' && url.pathname === '/api/checkout') {
-    if (!payEnabled()) return jsonOut(res, base, 503, { error: 'Les paiements ne sont pas activés.' });
-    if (!checkoutLimiter.hit(ipOf(req))) return jsonOut(res, base, 429, { error: 'Trop de tentatives, réessaie dans quelques minutes.' });
-    let body; try { body = JSON.parse(await readBody(req, 4096)); } catch { return jsonOut(res, base, 400, { error: 'requête invalide' }); }
-    const key = resolveAccount(verifyToken(SECRET, body?.token) || '');
-    if (!key) return jsonOut(res, base, 401, { error: 'Session expirée — reconnecte-toi.' });
-    if (body.consent !== true) return jsonOut(res, base, 400, { error: 'Tu dois accepter les conditions de vente et la livraison immédiate.' });
-    if (!PACK_BY_ID[typeof body.pack === 'string' ? body.pack : '']) return jsonOut(res, base, 400, { error: 'Pack inconnu.' });
-    try { const r = await createCheckout({ account: key, packId: body.pack, consentAt: new Date().toISOString() }); return jsonOut(res, base, 200, { url: r.url }); }
-    catch (e) { console.error('[Korvalune] checkout :', e.message); return jsonOut(res, base, 502, { error: 'Le service de paiement est indisponible, réessaie plus tard.' }); }
-  }
-  if (req.method === 'POST' && url.pathname === '/api/stripe-webhook') {
-    if (!payEnabled()) return jsonOut(res, base, 503, { error: 'désactivé' });
-    let raw; try { raw = await readBody(req); } catch { return jsonOut(res, base, 400, { error: 'corps invalide' }); }
-    if (!verifySignature(raw, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET)) return jsonOut(res, base, 400, { error: 'signature invalide' });
-    let ev; try { ev = JSON.parse(raw); } catch { return jsonOut(res, base, 400, { error: 'JSON invalide' }); }
-    if (ev?.type === 'checkout.session.completed' || ev?.type === 'checkout.session.async_payment_succeeded') {
-      const session = ev.data?.object;
-      const key = resolveAccount(String(session?.metadata?.account || ''));
-      if (!key) { console.error('[Korvalune] paiement reçu pour un compte introuvable :', session?.id); return jsonOut(res, base, 200, { received: true, ignored: 'compte introuvable' }); }
-      const acc = ensureChars(accounts[key]);
-      const r = creditPayment(acc, session);
-      if (r.ok && !r.duplicate) {
-        await persistAccounts(accounts); // sauvegardé AVANT de répondre 200 à Stripe
-        console.log(`[Korvalune] paiement crédité : ${key} +${r.lunes} Lunes (${session.id})`);
-        for (const w of acctWs.get(key) || []) { send(w, shopView(acc)); send(w, { t: 'shop:msg', ok: true, text: `Merci ! +${r.lunes} Lunes ajoutées à ton compte.` }); }
-      } else if (!r.ok) console.warn('[Korvalune] paiement non crédité :', r.reason, session?.id);
-    }
-    return jsonOut(res, base, 200, { received: true });
-  }
   return jsonOut(res, base, 404, { error: 'introuvable' });
 }
 /** @type {Map<string, Set<string>>} groupId -> Set<playerId> */
@@ -748,6 +720,32 @@ wss.on('connection', (ws, req) => {
       const acc = ensureChars(accounts[key]);
       const reply = (r, okText) => { send(ws, { t: 'shop:msg', ok: !!r.ok, text: r.ok ? okText : r.error }); send(ws, shopView(acc)); };
       if (msg.t === 'shop:get') { send(ws, shopView(acc)); return; }
+      // V10.55 — dons PayPal : le donateur déclare son don, le créateur (OWNER_ACCOUNTS) le valide après l'avoir reçu sur PayPal
+      if (msg.t === 'shop:donate') {
+        const r = requestDonation(acc, msg.amount, msg.note);
+        if (r.ok) { persistAccounts(accounts); console.log(`[Korvalune] don déclaré : ${key} ${msg.amount} €`); }
+        reply(r, `Merci ! Ton don de ${Number(msg.amount)} € est signalé au créateur : dès qu'il l'a reçu, tu recevras ${r.lunes} Lunes de remerciement.`);
+        return;
+      }
+      if (msg.t === 'shop:donAdmin') {
+        if (!isOwnerKey(key)) { send(ws, { t: 'shop:msg', ok: false, text: 'Réservé au créateur.' }); return; }
+        send(ws, { t: 'shop:donList', list: pendingDonations(accounts) });
+        return;
+      }
+      if (msg.t === 'shop:donResolve') {
+        if (!isOwnerKey(key)) { send(ws, { t: 'shop:msg', ok: false, text: 'Réservé au créateur.' }); return; }
+        const tk = resolveAccount(sanitizeUsername(msg.account));
+        if (!tk) { send(ws, { t: 'shop:msg', ok: false, text: 'Compte introuvable.' }); return; }
+        const tacc = ensureChars(accounts[tk]);
+        const r = resolveDonation(tacc, String(msg.id || ''), msg.ok === true, msg.amount);
+        if (r.ok) {
+          persistAccounts(accounts); console.log(`[Korvalune] don ${r.refused ? 'refusé' : 'validé'} : ${tk}${r.refused ? '' : ` +${r.lunes} Lunes (${r.amount} €)`} par ${key}`);
+          for (const w of acctWs.get(tk) || []) { send(w, shopView(tacc)); send(w, { t: 'shop:msg', ok: !r.refused, text: r.refused ? 'Ton don n\u2019a pas pu être confirmé : contacte le créateur si c\u2019est une erreur.' : `Merci pour ton don ! +${r.lunes} Lunes de remerciement ont été ajoutées.` }); }
+        }
+        send(ws, { t: 'shop:msg', ok: !!r.ok, text: r.ok ? (r.refused ? 'Demande refusée.' : `Validé : +${r.lunes} Lunes pour ${tk}.`) : r.error });
+        send(ws, { t: 'shop:donList', list: pendingDonations(accounts) });
+        return;
+      }
       if (msg.t === 'shop:buy') { const r = shopBuy(acc, msg.id); if (r.ok) persistAccounts(accounts); reply(r, r.ok ? `Acheté : ${r.item.name}` : ''); return; }
       if (msg.t === 'shop:equip') { const r = shopEquip(acc, msg.slot, msg.id ?? null); if (r.ok) { persistAccounts(accounts); for (const p of players.values()) if (p.account === key) { p.cos = publicCos(acc); broadcastAll({ t: 'playerCos', id: p.id, cos: p.cos }, p.id); } } reply(r, msg.id ? 'Équipé.' : 'Retiré.'); return; }
       if (msg.t === 'shop:daily') { const r = claimDaily(acc); if (r.ok) persistAccounts(accounts); reply(r, r.ok ? `+${r.amount} Lunes : récompense quotidienne !` : ''); return; }

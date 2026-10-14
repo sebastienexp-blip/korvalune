@@ -894,13 +894,10 @@ Dites-moi ce qui vous intéresse et on continue.
 - Les pages `public/legal/*.html` gardent des champs jaunes `[À COMPLÉTER]` pour vos informations personnelles (nom, SIRET, adresse, e-mail, médiateur…) : je ne peux pas les inventer. **À faire relire avant d'ouvrir les paiements.**
 - Case de consentement du paiement mise à jour (lien vers les CGV, « ni échangeables ni remboursables »).
 
-## V10.2 — Paiements préparés (désactivés par défaut)
+## V10.2 → V10.55 — Paiements : Stripe supprimé, dons PayPal
 
-- **Achat de Lunes par carte** via Stripe Checkout (page de paiement hébergée par Stripe : le jeu ne voit jamais la carte). Section « Acheter des Lunes » dans la boutique 🌙, visible **uniquement** si le serveur a `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` et `PUBLIC_URL`.
-- Crédit **uniquement** par webhook signé, vérification pack/devise/montant, idempotent, journal par compte, consentement exprès (case obligatoire) avec renoncement au droit de rétractation.
-- Modèles de **CGV, confidentialité et mentions légales** dans `public/legal/` (champs jaunes à compléter, à faire relire).
-- **Guide complet** : `STRIPE.md`. Prix des packs = exemples dans `server/payments.js`.
-- Testé avec un faux serveur Stripe local et des événements signés simulés ; **pas** avec un vrai compte Stripe.
+- Le paiement par carte (Stripe) et les CGV ont été **supprimés** (V10.55). Les Lunes ne s'achètent plus.
+- **Dons PayPal** : voir `DONS-PAYPAL.md` et `server/donations.js`. Le donateur déclare son don dans le jeu, le créateur (compte listé dans `OWNER_ACCOUNTS`) le valide, les Lunes de remerciement sont créditées (barème dans `src/data/donations.js`).
 
 ## V10.1 — Boutique des Lunes (cosmétiques + confort, sans argent réel)
 
@@ -1118,7 +1115,7 @@ Un événement saisonnier (du 9 octobre au 1er novembre 2026 ; boutique de Jack 
 - **Anti-triche** : le client ne signale que des événements (monstre, champion, boss, coffre, quête, atelier, spire) regroupés par lot toutes les 8 s ; le serveur borne le rythme selon le temps écoulé et plafonne l'XP de jeu par jour (hors missions).
 - **Saisons** : 56 jours, enchaînées automatiquement depuis le 1er octobre 2026 (UTC). Nouvelle saison = progression remise à zéro ; cosmétiques conservés.
 - **Règle de conception** : seulement de l'apparence, des Lunes et du confort — jamais de puissance de combat. Les cosmétiques du pass ne sont jamais en vente.
-- Paiement : le premium s'achète avec des Lunes (qui s'achètent via Stripe, toujours en mode test tant que les clés live ne sont pas configurées).
+- Paiement : le premium s'achète avec des Lunes (obtenues en jouant, ou en remerciement d'un don).
 
 ## V10.22 — Potions permanentes, mode vertical, compétences spectaculaires
 

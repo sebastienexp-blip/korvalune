@@ -113,6 +113,7 @@ export class NetworkManager {
       case 'pass': this.bus.emit('net:pass', msg); break;
       case 'pass:msg': this.bus.emit('net:passMsg', msg); break;
       case 'shop:msg': this.bus.emit('net:shopMsg', msg); break;
+      case 'shop:donList': this.bus.emit('net:donList', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;
       case 'playerLook': this.bus.emit('net:playerLook', msg); break;
       case 'charsUpdate': this.bus.emit('net:chars', msg); break;
@@ -190,13 +191,10 @@ export class NetworkManager {
   passPremium() { this._send({ t: 'pass:premium' }); }
   passTier() { this._send({ t: 'pass:tier' }); }
   shopDaily() { this._send({ t: 'shop:daily' }); }
-  // V10.2 : crée une session de paiement Stripe ; renvoie l'adresse de la page de paiement (le jeu ne touche jamais la carte)
-  async startCheckout(pack, consent) {
-    const r = await fetch(this.apiBase + '/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: this.token, pack, consent: consent === true }) });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || !j.url) throw new Error(j.error || 'Paiement indisponible.');
-    return j.url;
-  }
+  // V10.55 : dons PayPal — déclarer un don, et (créateur) lister / valider / refuser les demandes
+  donateRequest(amount, note) { this._send({ t: 'shop:donate', amount, note }); }
+  donAdmin() { this._send({ t: 'shop:donAdmin' }); }
+  donResolve(id, account, ok, amount) { this._send({ t: 'shop:donResolve', id, account, ok, amount }); }
 
   // ---------- Comptes (ÉTAPE 6) ----------
   register(username, password) { this._send({ t: 'register', username, password }); }
