@@ -1,0 +1,5 @@
+Installateur Windows de Korvalune (code source Go, aucune dépendance).
+Recompiler (depuis Linux, macOS ou Windows avec Go installé) :
+  GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-H windowsgui -s -w" -o ../../public/telechargements/Korvalune-Installation.exe .
+Le programme télécharge Electron (officiel, GitHub), installe dans %LOCALAPPDATA%\Programs\Korvalune, crée les raccourcis
+et un Desinstaller.exe. L'application ouvre le jeu en ligne (voir app/main.js).
