@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.54', title: 'Soutenir le jeu',
+    items: [
+      '💛 La Boutique des Lunes propose désormais un don libre par PayPal pour soutenir Korvalune (sans contrepartie en jeu). Les Lunes ne s’achètent plus.'
+    ]
+  },
+  {
     version: '10.53', title: 'Un grand coffre',
     items: [
       '📦 Le coffre de Korvalune est 2,5 fois plus grand, sur un socle de pierre plus large.',

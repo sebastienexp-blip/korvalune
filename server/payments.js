@@ -13,6 +13,17 @@ export const PACKS = [
 export const PACK_BY_ID = Object.assign(Object.create(null), Object.fromEntries(PACKS.map((p) => [p.id, p])));
 
 const env = () => process.env;
+// V10.54 — Dons PayPal : le jeu n'a AUCUN accès à PayPal. Il affiche seulement un lien de don que vous créez sur paypal.com
+// (bouton « Faire un don » ou lien PayPal.me) et que vous placez dans la variable d'environnement PAYPAL_DONATE_URL (Render).
+// Seules les adresses https://www.paypal.com/… , https://paypal.com/… et https://www.paypal.me/… sont acceptées.
+export function donateUrl() {
+  const raw = String(env().PAYPAL_DONATE_URL || '').trim();
+  try {
+    const u = new URL(raw);
+    const ok = u.protocol === 'https:' && ['www.paypal.com', 'paypal.com', 'paypal.me', 'www.paypal.me'].includes(u.hostname);
+    return ok ? u.toString() : null;
+  } catch { return null; }
+}
 export const payEnabled = () => !!(env().STRIPE_SECRET_KEY && env().STRIPE_WEBHOOK_SECRET && env().PUBLIC_URL);
 export const apiBase = () => env().STRIPE_API_BASE || 'https://api.stripe.com'; // surchargeable pour les tests
 export const publicUrl = () => String(env().PUBLIC_URL || '').replace(/\/+$/, '');

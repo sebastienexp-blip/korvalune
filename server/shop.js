@@ -1,7 +1,7 @@
 // V10.1 — Boutique des Lunes côté serveur : SEULE source de vérité pour le solde, les achats et l'équipement.
 // Le client ne peut jamais décider qu'il possède un objet : il envoie une demande, le serveur valide et répond.
 import { CATALOG_BY_ID, COSMETIC_SLOTS, LUNES } from '../src/data/shopCatalog.js';
-import { PACK_BY_ID, payView } from './payments.js';
+import { PACK_BY_ID, payView, donateUrl } from './payments.js';
 
 const today = () => new Date().toISOString().slice(0, 10); // jour UTC
 
@@ -44,7 +44,7 @@ export function publicCos(acc) {
 
 export function shopView(acc) {
   const s = ensureShop(acc);
-  return { t: 'shop', gems: s.gems, owned: s.owned, eq: { ...s.eq }, bankTabs: bankTabsOf(acc), dailyReady: s.daily !== today(), dailyAmount: LUNES.daily, pay: payView() };
+  return { t: 'shop', gems: s.gems, owned: s.owned, eq: { ...s.eq }, bankTabs: bankTabsOf(acc), dailyReady: s.daily !== today(), dailyAmount: LUNES.daily, pay: payView(), donate: donateUrl() };
 }
 
 // -> { ok, error? }

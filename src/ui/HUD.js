@@ -150,7 +150,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.53 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.54 — Korvalune</div>
         </div>
       </div>
 
@@ -1336,7 +1336,12 @@ export class HUD {
     tabs.innerHTML = CATEGORIES.map((c) => `<button class="lune-tab${c.id === d.tab ? ' on' : ''}" data-la="tab" data-v="${c.id}">${c.icon} ${esc(c.label)}</button>`).join('');
     // V10.2 : achat de Lunes par carte (affiché seulement si le serveur a les paiements activés — voir STRIPE.md)
     const payEl = this.q('#lune-pay');
-    if (sh.pay && sh.pay.enabled) {
+    if (sh.donate) { // V10.54 : don libre par PayPal (aucune contrepartie, aucune donnée de paiement dans le jeu)
+      payEl.innerHTML = '<h3>Soutenir Korvalune</h3>' +
+        '<p class="menu-hint">Korvalune est gratuit et développé avec passion. Si le jeu vous plaît, vous pouvez faire un don libre : merci du fond du cœur ! Un don est un geste de soutien : il ne donne ni Lunes, ni objet, ni avantage en jeu.</p>' +
+        `<a class="soc-btn lune-donate" href="${esc(sh.donate)}" target="_blank" rel="noopener noreferrer">Faire un don avec PayPal</a>` +
+        '<p class="menu-hint">Le don se fait sur le site de PayPal : le jeu ne voit jamais vos informations de paiement.</p>';
+    } else if (sh.pay && sh.pay.enabled) {
       const eur = (c) => (c / 100).toFixed(2).replace('.', ',') + ' €';
       payEl.innerHTML = `<h3>Acheter des Lunes</h3>${sh.pay.test ? '<p class="lune-test">Mode test : aucun vrai paiement n\u2019est effectué (carte de test 4242 4242 4242 4242).</p>' : ''}` +
         sh.pay.packs.map((p) => `<div class="soc-row lune-item"><div class="soc-name"><b>${esc(p.label)}</b><small>${p.lunes} Lunes · ${eur(p.cents)}</small></div><div class="lune-btns"><button class="soc-btn lune-buy" data-la="pay" data-v="${esc(p.id)}">Payer ${eur(p.cents)}</button></div></div>`).join('') +
