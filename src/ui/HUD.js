@@ -151,7 +151,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.59 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.60 — Korvalune</div>
         </div>
       </div>
 
@@ -1332,8 +1332,8 @@ export class HUD {
   renderLune(d) {
     const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const sh = d.shop;
-    const head = this.q('#lune-head'), tabs = this.q('#lune-tabs'), list = this.q('#lune-list'), msg = this.q('#lune-msg');
-    if (!sh) { head.innerHTML = ''; tabs.innerHTML = ''; msg.textContent = ''; list.innerHTML = '<p class="menu-hint">Chargement de la boutique… Si rien n\u2019apparaît, connecte-toi à ton compte (menu principal → Compte).</p>'; return; }
+    const head = this.q('#lune-head'), tabs = this.q('#lune-tabs'), list = this.q('#lune-list'), msg = this.q('#lune-msg'), payEl = this.q('#lune-pay');
+    if (!sh) { head.innerHTML = ''; tabs.innerHTML = ''; payEl.innerHTML = ''; msg.textContent = ''; list.innerHTML = '<p class="menu-hint">Chargement de la boutique… Si rien n\u2019apparaît, connecte-toi à ton compte (menu principal → Compte).</p>'; return; }
     head.innerHTML = `<div class="lune-bal"><span class="lune-gem">🌙</span><b>${sh.gems}</b><small>Lunes</small></div>` +
       `<button class="soc-btn" data-la="daily"${sh.dailyReady ? '' : ' disabled'}>${sh.dailyReady ? `Récompense du jour : +${sh.dailyAmount}` : 'Récompense du jour récupérée'}</button>`;
     msg.className = d.msg ? (d.msg.ok ? 'lune-ok' : 'lune-ko') : '';
@@ -1351,7 +1351,7 @@ export class HUD {
         '<ol class="don-steps"><li>Faites votre don sur PayPal :</li></ol>' +
         `<a class="soc-btn lune-donate" href="${esc(sh.don.url)}" target="_blank" rel="noopener noreferrer">Faire un don avec PayPal</a>` +
         '<ol class="don-steps" start="2"><li>Revenez ici et signalez-le (le créateur vérifie la réception, puis vos Lunes arrivent) :</li></ol>' +
-        `<div class="don-form"><input id="don-amount" type="number" inputmode="decimal" min="${DON_MIN}" max="${DON_MAX}" step="0.5" placeholder="Montant (€)" aria-label="Montant du don en euros"><input id="don-note" type="text" maxlength="60" placeholder="Nom PayPal (facultatif)" aria-label="Nom PayPal"><button class="soc-btn" data-la="donate">J’ai fait mon don</button></div>` +
+        `<div class="don-form"><input id="don-amount" type="number" inputmode="decimal" min="${DON_MIN}" max="${DON_MAX}" step="0.5" placeholder="Montant €" aria-label="Montant du don en euros"><input id="don-note" type="text" maxlength="60" placeholder="Nom PayPal (facultatif)" aria-label="Nom PayPal"><button class="soc-btn" data-la="donate">J’ai fait mon don</button></div>` +
         '<p class="menu-hint">Les Lunes de remerciement ne sont créditées qu’après vérification : elles n’ont aucune valeur monétaire, ni échange ni remboursement. Le jeu ne voit jamais vos informations de paiement.</p>';
       if (sh.don.mine.length) h += '<div class="don-mine">' + sh.don.mine.map((m) => `<div>${when(m.at)} · ${eur(m.amount)} · ${STATUS[m.status] || ''}${m.status === 'done' ? ` (+${m.lunes} 🌙)` : ''}</div>`).join('') + '</div>';
       if (sh.owner) { // panneau du créateur : demandes à valider

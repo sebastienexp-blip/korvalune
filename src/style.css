@@ -1405,3 +1405,4 @@ svg.ico-eq.ghost { opacity: 0.3; filter: grayscale(0.55); }
 .sec-card details{margin-top:6px}.sec-card details input,.sec-card details button{margin-top:6px;width:100%}
 .sup-thread{max-height:38vh;overflow:auto;display:flex;flex-direction:column;gap:6px}.sup-m{padding:8px 10px;border-radius:10px;background:#2a2342;font-size:14px;align-self:flex-start;max-width:90%;white-space:pre-wrap;word-break:break-word}.sup-m.me{align-self:flex-end;background:#4a3a7a}.sup-m small{color:#b9aed6}
 .sec-card textarea{padding:10px;border-radius:8px;border:1px solid #6b5d8a;background:#2a2342;color:#efe9da;font:inherit;width:100%;box-sizing:border-box;resize:vertical}
+.don-form #don-amount{min-width:120px;flex:0 0 120px}
