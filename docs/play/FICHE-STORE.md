@@ -19,9 +19,9 @@ Korvalune est gratuit, sans publicité, et mis à jour régulièrement. Une conn
 **Contact développeur** : e-mail à fournir par le créateur (obligatoire dans la console). **Site** : https://legends-of-aetheria-mxaq.onrender.com/
 
 ## Réponses aux formulaires
-- **Application sans publicité** : oui. **Achats intégrés** : oui (cosmétiques et passe avec monnaie du jeu « Lunes » ; pas d'achat d'argent réel dans l'appli Android). À confirmer dans la console selon la rubrique « Contient des achats intégrés ».
+- **Application sans publicité** : oui. **Achats intégrés** : non (aucun achat d'argent réel dans l'appli Android ; les Lunes se gagnent en jouant). Les dons PayPal sont masqués dans l'appli.
 - **Public cible** : 13 ans et plus (ne pas viser les enfants).
-- **Classification du contenu (questionnaire IARC)** : violence fantastique (combat contre des monstres, sans sang réaliste), interaction entre utilisateurs : oui (chat, messages entre amis), partage de position : non, achats de monnaie réelle : non dans l'appli. Résultat attendu : PEGI 12 environ.
+- **Classification du contenu (questionnaire IARC)** : violence fantastique (combat contre des monstres, sans sang réaliste), interaction entre utilisateurs : oui (chat, messages entre amis), partage de position : non, achats de monnaie réelle : non. Résultat attendu : PEGI 12 environ.
 - **Compte requis pour jouer** : oui → fournir les identifiants d'un compte de test aux relecteurs Google (créer un compte « test » dédié ; ne pas le publier ici).
 - **Suppression de compte** : lien `https://legends-of-aetheria-mxaq.onrender.com/legal/suppression-compte.html`.
 
