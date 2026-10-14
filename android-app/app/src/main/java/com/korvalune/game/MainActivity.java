@@ -37,6 +37,8 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        // Le jeu reconnaît l'application Android grâce à ce marqueur (les dons PayPal y sont masqués, règle Google Play).
+        s.setUserAgentString(s.getUserAgentString() + " KorvaluneApp/" + BuildConfig.VERSION_NAME);
         s.setUseWideViewPort(true);
         s.setLoadWithOverviewMode(true);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);

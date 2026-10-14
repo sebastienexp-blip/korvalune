@@ -638,7 +638,7 @@ export class HUD {
   // Masqués dans l'application elle-même ; un lien dont le fichier n'est pas encore publié est grisé (« Bientôt disponible »).
   _initDownloads() {
     const box = this.q('#mm-downloads'); if (!box) return;
-    const inApp = !!(window.Capacitor?.isNativePlatform?.() || /Electron/i.test(navigator.userAgent));
+    const inApp = !!(window.Capacitor?.isNativePlatform?.() || /Electron|KorvaluneApp/i.test(navigator.userAgent));
     if (inApp) return;
     box.hidden = false;
     for (const [id, label] of [['#dl-apk', 'Android'], ['#dl-win', 'Windows']]) {
@@ -1340,7 +1340,9 @@ export class HUD {
     msg.textContent = d.msg ? d.msg.text : 'Les Lunes sont rares : récompense du jour et prime tous les 5 niveaux. Aucun objet de la boutique ne donne de puissance au combat.';
     tabs.innerHTML = CATEGORIES.map((c) => `<button class="lune-tab${c.id === d.tab ? ' on' : ''}" data-la="tab" data-v="${c.id}">${c.icon} ${esc(c.label)}</button>`).join('');
     // V10.55 : dons PayPal. Le don se fait sur PayPal (le jeu ne voit rien) ; le donateur le déclare ici, le créateur le valide et les Lunes de remerciement arrivent.
-    if (sh.don) {
+    // Google Play : pas d'appel aux dons PayPal dans l'application Android (récompenser un paiement externe par de la monnaie virtuelle est interdit). Le créateur garde l'outil de validation.
+    const noDon = /KorvaluneApp/i.test(navigator.userAgent) && !sh.owner;
+    if (sh.don && !noDon) {
       const eur = (n) => String(n).replace('.', ',') + ' €';
       const when = (iso) => { try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }); } catch { return ''; } };
       const STATUS = { pending: '⏳ en attente de vérification', done: '✅ validé', refused: '❌ non confirmé' };

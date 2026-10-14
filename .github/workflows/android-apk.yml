@@ -21,7 +21,8 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.11.1'
+      - uses: android-actions/setup-android@v3
       - name: Construire l'APK
         working-directory: android-app
         run: gradle --no-daemon assembleDebug
@@ -38,3 +39,39 @@ jobs:
           gh release delete apk-latest --yes --cleanup-tag || true
           gh release create apk-latest Korvalune.apk --title "Korvalune — APK Android" \
             --notes "APK à installer sur Android. Ouvre le jeu en ligne : https://legends-of-aetheria-mxaq.onrender.com/"
+
+  play-aab:
+    # Paquet signé pour le Play Store (.aab). Lancé à la main : onglet Actions → « Construire l'APK Android » → Run workflow.
+    # Nécessite les 4 secrets du dépôt décrits dans PLAY-STORE.md (étape 3). Sans eux, le travail est simplement ignoré.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      KORVALUNE_KEYSTORE_B64: ${{ secrets.KORVALUNE_KEYSTORE_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - uses: android-actions/setup-android@v3
+      - name: Construire l'AAB signé
+        if: env.KORVALUNE_KEYSTORE_B64 != ''
+        working-directory: android-app
+        env:
+          KORVALUNE_STORE_PASSWORD: ${{ secrets.KORVALUNE_STORE_PASSWORD }}
+          KORVALUNE_KEY_ALIAS: ${{ secrets.KORVALUNE_KEY_ALIAS }}
+          KORVALUNE_KEY_PASSWORD: ${{ secrets.KORVALUNE_KEY_PASSWORD }}
+        run: |
+          echo "$KORVALUNE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/korvalune.jks"
+          export KORVALUNE_KEYSTORE="$RUNNER_TEMP/korvalune.jks"
+          gradle --no-daemon bundleRelease
+          rm -f "$RUNNER_TEMP/korvalune.jks"
+      - name: Garder le paquet
+        if: env.KORVALUNE_KEYSTORE_B64 != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: Korvalune-playstore-aab
+          path: android-app/app/build/outputs/bundle/release/app-release.aab
