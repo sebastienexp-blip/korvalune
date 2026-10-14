@@ -14,7 +14,8 @@ export function donateUrl() {
     return u.protocol === 'https:' && ['www.paypal.com', 'paypal.com', 'paypal.me', 'www.paypal.me'].includes(u.hostname) ? u.toString() : DEFAULT_DONATE_URL;
   } catch { return DEFAULT_DONATE_URL; }
 }
-export const ownerSet = () => new Set(String(env().OWNER_ACCOUNTS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
+// Le créateur du jeu (« sebrakon ») est toujours reconnu ; OWNER_ACCOUNTS permet d'en ajouter d'autres.
+export const ownerSet = () => new Set(('sebrakon,' + String(env().OWNER_ACCOUNTS || '')).split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
 export const isOwnerKey = (key) => ownerSet().has(String(key || '').toLowerCase());
 
 const MAX_PENDING = 3, MAX_HISTORY = 60;
