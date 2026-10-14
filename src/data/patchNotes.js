@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.57', title: 'Comptes protégés',
+    items: [
+      '🔐 Nouveau : « Sécurité du compte » (menu Compte) — choisis une question secrète et génère un code de secours.',
+      '🔑 Mot de passe oublié ? Sur l’écran de connexion, récupère ton compte avec ta réponse secrète ou ton code de secours.'
+    ]
+  },
+  {
     version: '10.56', title: 'Coulisses',
     items: [
       '🛠️ Petites améliorations en coulisses pour le suivi des dons.'

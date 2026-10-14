@@ -151,7 +151,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.56 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.57 — Korvalune</div>
         </div>
       </div>
 
@@ -161,6 +161,7 @@ export class HUD {
         <div id="account-logged-in" class="hidden">
           <p>Connecté en tant que <b id="account-name-display"></b>.</p>
           <div class="menu-buttons">
+            <button data-act="account-security">🔐 Sécurité du compte</button>
             <button data-act="account-logout">Se déconnecter</button>
             <button data-act="account-back">Retour</button>
           </div>
@@ -174,6 +175,7 @@ export class HUD {
           <div class="cc-row"><label>Mot de passe</label><input id="acc-password" type="password" maxlength="64" autocomplete="current-password" /></div>
           <p id="account-error"></p>
           <button id="account-submit" class="btn-primary">Se connecter</button>
+          <button class="news-link" data-act="account-forgot">Mot de passe oublié ?</button>
           <p class="menu-hint" id="account-hint">Un compte permet de retrouver votre personnage depuis n'importe quel appareil.<br>Facultatif : vous pouvez toujours jouer en invité (sauvegarde locale sur l'appareil).</p>
         </div>
         <button data-act="account-back">Retour</button>

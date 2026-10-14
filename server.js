@@ -23,7 +23,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadAccounts, persistAccounts, hashPassword, verifyPassword, sanitizeUsername, DATA_DIR } from './server/store.js';
 import { createWebServer } from './server/web.js';
-import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/security.js';
+import { loadSecret, makeToken, verifyToken, tokenIssuedAt, KeyedLimiter } from './server/security.js';
+import { QUESTIONS, secView, setQuestion, setEmail, makeRecoveryCode, checkRecovery } from './server/recovery.js';
+import { adminLog, readLog, searchAccounts, summary as accSummary, resetPassword, giveLunes } from './server/accountAdmin.js';
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
@@ -66,6 +68,7 @@ const resolveAccount = (name) => { const k = lcIndex.get(String(name).toLowerCas
 setOwnerLookup((acc) => isOwnerKey(keyOf.get(acc)));
 const regLimiter = new KeyedLimiter(4, 10 * 60 * 1000);     // créations de compte par IP
 const loginLimiter = new KeyedLimiter(15, 60 * 1000);       // tentatives de connexion par IP
+const recLimiter = new KeyedLimiter(5, 15 * 60 * 1000);     // V10.57 : échecs de récupération par compte (verrouillage 15 min)
 const failLimiter = new KeyedLimiter(6, 5 * 60 * 1000);     // échecs par compte (verrouillage 5 min)
 const connsPerIp = new Map();
 
@@ -210,6 +213,7 @@ function ensureChars(acc) {
   acc.chars.length = MAX_CHARS;
   return acc;
 }
+const banText = (acc) => `Compte suspendu${acc.ban?.reason ? ' : ' + acc.ban.reason : ''}. Contacte le créateur du jeu.`;
 const accView = (acc) => { ensureChars(acc); return { chars: acc.chars, bank: acc.sharedBank, save: acc.chars.find(Boolean) || null }; };
 
 // V10.51 — ANTI-TRICHE
@@ -486,7 +490,8 @@ wss.on('connection', (ws, req) => {
     if (msg.t === 'resume') { // reconnexion automatique avec le jeton enregistré dans le navigateur
       const u = verifyToken(SECRET, msg.token);
       const key = u && resolveAccount(u);
-      if (!key) { send(ws, { t: 'authResult', ok: false, error: '', silent: true }); return; }
+      if (!key || tokenIssuedAt(msg.token) < (accounts[key].revokedAt || 0)) { send(ws, { t: 'authResult', ok: false, error: '', silent: true }); return; }
+      if (accounts[key].ban) { send(ws, { t: 'authResult', ok: false, error: banText(accounts[key]) }); return; }
       setAuth(key);
       send(ws, { t: 'authResult', ok: true, token: msg.token, username: key, ...accView(accounts[key]), resumed: true });
       pushShop(); pushSettings();
@@ -527,6 +532,7 @@ wss.on('connection', (ws, req) => {
           }
           failLimiter.reset(lock);
         }
+        if (accounts[key].ban) { fail(banText(accounts[key])); return; }
         const token = makeToken(SECRET, key);
         setAuth(key);
         send(ws, { t: 'authResult', ok: true, token, username: key, ...accView(accounts[key]) });
@@ -709,6 +715,106 @@ wss.on('connection', (ws, req) => {
       if (msg.t === 'pass:mission') { const r = passMission(acc, msg.id); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `+${r.xp} XP de pass` : r.error); push(); return; }
       if (msg.t === 'pass:premium') { const r = passBuyPremium(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? 'Pass premium débloqué ! Récupère tes récompenses.' : r.error); push(); return; }
       if (msg.t === 'pass:tier') { const r = passBuyTier(acc); if (r.ok) persistAccounts(accounts); note(r.ok, r.ok ? `Palier ${r.tier} atteint !` : r.error); push(); return; }
+      return;
+    }
+
+    // --- Récupération de compte (V10.57) ---
+    if (msg.t === 'acct:recoverInfo' || msg.t === 'acct:recover') {
+      const rf = (text, extra = {}) => send(ws, { t: 'acct:recoverResult', ok: false, text, ...extra });
+      if (!authLimiter.allow() || !loginLimiter.hit(ip)) { rf('Trop de tentatives, réessaie dans un instant.'); return; }
+      const k = resolveAccount(sanitizeUsername(msg.username));
+      const a = k && accounts[k];
+      if (msg.t === 'acct:recoverInfo') {
+        send(ws, { t: 'acct:recoverInfo', username: k || sanitizeUsername(msg.username), hasQuestion: !!a?.sec?.a, question: a?.sec?.a ? a.sec.q : '', hasCode: !!a?.sec?.c });
+        return;
+      }
+      (async () => {
+        const lock = 'rec:' + (k ? k.toLowerCase() : 'x:' + sanitizeUsername(msg.username).toLowerCase());
+        if (recLimiter.count(lock) >= recLimiter.max) { rf('Trop d’échecs : récupération bloquée 15 minutes.'); return; }
+        const method = msg.method === 'code' ? 'code' : 'question';
+        const np = String(msg.newPassword || '');
+        if (np.length < MIN_PASSWORD_LEN) { rf(`Nouveau mot de passe trop court (${MIN_PASSWORD_LEN} caractères minimum).`); return; }
+        const ok = a ? await checkRecovery(a, method, msg.secret) : (await hashPassword('x'), false);
+        if (!ok) { recLimiter.hit(lock); rf(method === 'code' ? 'Code de secours incorrect.' : 'Réponse incorrecte.'); return; }
+        if (a.ban) { rf(banText(a)); return; }
+        a.passwordHash = await hashPassword(np); a.revokedAt = Date.now();
+        if (method === 'code' && a.sec) delete a.sec.c; // un code de secours ne sert qu’une fois
+        recLimiter.reset(lock); failLimiter.reset(k.toLowerCase());
+        await persistAccounts(accounts);
+        console.log(`[Korvalune] mot de passe récupéré : ${k} (${method})`);
+        send(ws, { t: 'acct:recoverResult', ok: true, text: 'Mot de passe changé ! Tu peux te connecter.' + (method === 'code' ? ' Ton code de secours est maintenant utilisé : génères-en un nouveau dans « Sécurité du compte ».' : '') });
+      })().catch((e) => { console.error('[Korvalune] récupération :', e.message); rf('Erreur serveur.'); });
+      return;
+    }
+    // --- Sécurité du compte (connecté) ---
+    if (msg.t.startsWith('acct:')) {
+      const akey = authUsername && resolveAccount(authUsername);
+      const am = (ok, text) => send(ws, { t: 'acct:msg', ok, text });
+      if (!akey) { am(false, 'Connecte-toi à ton compte.'); return; }
+      if (!passLimiter.allow()) return;
+      const aacc = accounts[akey];
+      if (msg.t === 'acct:secInfo') { send(ws, { t: 'acct:sec', ...secView(aacc), questions: QUESTIONS }); return; }
+      (async () => {
+        if (!(await verifyPassword(String(msg.password || ''), aacc.passwordHash))) { failLimiter.hit(akey.toLowerCase()); am(false, 'Mot de passe actuel incorrect.'); return; }
+        if (msg.t === 'acct:secSet') {
+          if (msg.answer) { const r = await setQuestion(aacc, msg.question, msg.answer); if (!r.ok) { am(false, r.error); return; } }
+          if (typeof msg.email === 'string') { const r = setEmail(aacc, msg.email); if (!r.ok) { am(false, r.error); return; } }
+          await persistAccounts(accounts); am(true, 'Sécurité du compte enregistrée.'); send(ws, { t: 'acct:sec', ...secView(aacc), questions: QUESTIONS });
+        } else if (msg.t === 'acct:genCode') {
+          const code = await makeRecoveryCode(aacc); await persistAccounts(accounts);
+          send(ws, { t: 'acct:code', code }); send(ws, { t: 'acct:sec', ...secView(aacc), questions: QUESTIONS });
+        } else if (msg.t === 'acct:passChange') {
+          const np = String(msg.newPassword || '');
+          if (np.length < MIN_PASSWORD_LEN) { am(false, `Nouveau mot de passe trop court (${MIN_PASSWORD_LEN} caractères minimum).`); return; }
+          aacc.passwordHash = await hashPassword(np); aacc.revokedAt = Date.now(); await persistAccounts(accounts);
+          send(ws, { t: 'acct:passOk', token: makeToken(SECRET, akey) }); am(true, 'Mot de passe changé. Tes autres appareils devront se reconnecter.');
+        }
+      })().catch((e) => { console.error('[Korvalune] sécurité compte :', e.message); am(false, 'Erreur serveur.'); });
+      return;
+    }
+    // --- Administration (créateur uniquement, V10.57) ---
+    if (msg.t.startsWith('adm:')) {
+      const me = authUsername && resolveAccount(authUsername);
+      const ar = (ok, text, extra = {}) => send(ws, { t: 'adm:res', ok, text, ...extra });
+      if (!me || !isOwnerKey(me)) { ar(false, 'Réservé au créateur.'); return; }
+      if (!shopLimiter.allow()) return;
+      const online = (k) => acctWs.has(k);
+      const target = () => { const k = resolveAccount(sanitizeUsername(msg.account)); return k ? [k, accounts[k]] : [null, null]; };
+      (async () => {
+        if (msg.t === 'adm:list') { send(ws, { t: 'adm:list', ...searchAccounts(accounts, msg.q, online), onlineAccounts: acctWs.size, players: players.size, accounts: Object.keys(accounts).length }); return; }
+        if (msg.t === 'adm:log') { send(ws, { t: 'adm:log', list: await readLog(40) }); return; }
+        if (msg.t === 'adm:announce') {
+          const text = sanitize(msg.text, 200).trim();
+          if (text.length < 3) { ar(false, 'Message trop court.'); return; }
+          broadcastAll({ t: 'system', text: '📢 ' + text }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${players.size} joueur(s) connecté(s).`); return;
+        }
+        const [k, a] = target();
+        if (!k) { ar(false, 'Compte introuvable.'); return; }
+        const row = () => send(ws, { t: 'adm:row', row: accSummary(k, a, online(k)) });
+        if (msg.t === 'adm:reset') {
+          const temp = await resetPassword(a); await persistAccounts(accounts); await adminLog(me, 'mot de passe réinitialisé', k);
+          for (const w of acctWs.get(k) || []) send(w, { t: 'system', text: 'Ton mot de passe a été réinitialisé par le créateur : reconnecte-toi.' });
+          ar(true, `Mot de passe temporaire de ${k} : ${temp} — donne-le au joueur, il pourra le changer dans « Sécurité du compte ».`, { temp }); row(); return;
+        }
+        if (msg.t === 'adm:lunes') {
+          const r = giveLunes(a, msg.delta); if (!r.ok) { ar(false, r.error); return; }
+          await persistAccounts(accounts); await adminLog(me, 'Lunes', k, `${r.delta > 0 ? '+' : ''}${r.delta} → ${r.gems}`);
+          for (const w of acctWs.get(k) || []) send(w, shopView(a));
+          ar(true, `${k} : ${r.delta > 0 ? '+' : ''}${r.delta} Lunes (total ${r.gems}).`); row(); return;
+        }
+        if (msg.t === 'adm:ban') {
+          if (isOwnerKey(k)) { ar(false, 'Impossible de bloquer un compte créateur.'); return; }
+          if (msg.on) { a.ban = { reason: sanitize(msg.reason, 80).trim(), at: Date.now() }; for (const w of [...(acctWs.get(k) || [])]) { send(w, { t: 'system', text: banText(a) }); try { w.close(1008, 'suspendu'); } catch { /* ignoré */ } } }
+          else delete a.ban;
+          await persistAccounts(accounts); await adminLog(me, msg.on ? 'compte bloqué' : 'compte débloqué', k, a.ban?.reason || '');
+          ar(true, msg.on ? `${k} est bloqué et déconnecté.` : `${k} est débloqué.`); row(); return;
+        }
+        if (msg.t === 'adm:kick') {
+          for (const w of [...(acctWs.get(k) || [])]) { send(w, { t: 'system', text: 'Tu as été déconnecté par le créateur.' }); try { w.close(1000, 'kick'); } catch { /* ignoré */ } }
+          await adminLog(me, 'déconnecté', k); ar(true, `${k} déconnecté.`); row(); return;
+        }
+        if (msg.t === 'adm:info') { row(); return; }
+      })().catch((e) => { console.error('[Korvalune] admin :', e.message); ar(false, 'Erreur serveur.'); });
       return;
     }
 

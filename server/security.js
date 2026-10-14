@@ -43,3 +43,8 @@ export class KeyedLimiter {
   count(key) { const e = this.map.get(key); return e && Date.now() - e.t0 < this.windowMs ? e.n : 0; }
   reset(key) { this.map.delete(key); }
 }
+
+// date d'émission d'un jeton (pour révoquer les anciennes sessions après un changement de mot de passe)
+export function tokenIssuedAt(token, ttlMs = 14 * 24 * 3600 * 1000) {
+  try { const d = JSON.parse(Buffer.from(String(token).split('.')[0], 'base64url').toString('utf8')); return Number(d.e) - ttlMs; } catch { return 0; }
+}

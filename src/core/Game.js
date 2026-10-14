@@ -1,3 +1,4 @@
+import { AccountSecurity } from '../ui/AccountSecurity.js';
 import { GroundGPS } from '../world/GroundGPS.js';
 import * as THREE from 'three';
 import { CONFIG } from './config.js';
@@ -739,6 +740,8 @@ export class Game {
     b.on('net:chars', (msg) => { this._serverChars = msg.chars || []; this._serverBank = msg.bank || []; this._refreshContinueButton(); if (this.hud._curScreen === 'char-select') this._openCharSelect(); });
     b.on('ui:lune', () => this._openLune(this.hud._curScreen === 'pause-menu' ? 'pause-menu' : 'main-menu'));
     b.on('ui:account', () => { this.hud.showScreen('account-screen'); this.hud.setAccountError(''); });
+    b.on('ui:account-forgot', () => { this._sec ??= new AccountSecurity(this.root, this.net, this.bus); this._sec.openRecover(this.root.querySelector('#acc-username')?.value || ''); });
+    b.on('ui:account-security', () => { this._sec ??= new AccountSecurity(this.root, this.net, this.bus); this._sec.openSecurity(); });
     b.on('ui:account-back', () => this.hud.showScreen('main-menu'));
     // V10.3 — page « Nouveautés » (menu principal + page de connexion) ; pastille « Nouveau » tant que la dernière version n'a pas été vue
     {
