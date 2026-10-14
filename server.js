@@ -27,7 +27,7 @@ import { loadSecret, makeToken, verifyToken, KeyedLimiter } from './server/secur
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
 import { RateLimiter } from './server/rateLimit.js';
-import { sanitizeGeneratedItem, sanitizeItemSlots, sanitizeCubePowers } from './server/itemValidate.js';
+import { sanitizeGeneratedItem, sanitizeItemSlots, sanitizeCubePowers, itemKey } from './server/itemValidate.js';
 import { createCheckout, verifySignature, payEnabled, PACK_BY_ID } from './server/payments.js';
 import { passView, addEvents as passEvents, claim as passClaim, claimAll as passClaimAll, missionClaim as passMission, buyPremium as passBuyPremium, buyTier as passBuyTier } from './server/pass.js';
 import { ensureEvent, eventView, collect as evCollect, kill as evKill, daily as evDaily, buy as evBuy, top as evTop } from './server/event.js';
@@ -38,7 +38,7 @@ import { cleanZenith } from './src/data/zenith.js';
 import { riftBoard } from './server/riftBoard.js';
 import { MAX_DIFFICULTY } from './src/data/difficulty.js';
 import { cleanRanks, setSkillTable } from './src/combat/SkillRanks.js';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 setSkillTable(Object.fromEntries(JSON.parse(readFileSync(new URL('./src/data/skills.json', import.meta.url), 'utf8')).map((s) => [s.id, s])));
 import { creditPayment, ensureShop, shopView, buy as shopBuy, equip as shopEquip, claimDaily, levelReward, publicCos, bankCapOf } from './server/shop.js';
 
@@ -240,9 +240,53 @@ function ensureChars(acc) {
 }
 const accView = (acc) => { ensureChars(acc); return { chars: acc.chars, bank: acc.sharedBank, save: acc.chars.find(Boolean) || null }; };
 
-function sanitizeSave(prev, incoming, elapsedMs) {
+// V10.51 — ANTI-TRICHE
+// 1) « Budgets » de progression par personnage (jetons qui se rechargent avec le temps réel) : spammer les sauvegardes ne
+//    rapporte rien de plus que d'attendre. 2) Registre des objets générés : un objet appartient à UN compte ; il ne change de
+//    propriétaire que par un échange validé par le serveur, donc dupliquer un objet (échange non retiré, sauvegarde rejouée) échoue.
+const BUDGET = { coinRate: 4000, coinBurst: 4000 * 60, soldRate: 6e5, soldBurst: 3e6, lvRate: 3, lvBurst: 10 };
+function refillBudget(b, now) {
+  const dt = b.at ? Math.max(0, Math.min(1440, (now - b.at) / 60000)) : 1e9; // première fois : plein
+  b.at = now;
+  b.coin = Math.min(BUDGET.coinBurst, (b.coin ?? BUDGET.coinBurst) + dt * BUDGET.coinRate);
+  b.sold = Math.min(BUDGET.soldBurst, (b.sold ?? BUDGET.soldBurst) + dt * BUDGET.soldRate);
+  b.lv = Math.min(BUDGET.lvBurst, (b.lv ?? BUDGET.lvBurst) + dt * BUDGET.lvRate);
+  return b;
+}
+const itemOwner = new Map(); // clé d'objet → compte propriétaire
+// Les propriétaires issus d'échanges sont conservés sur disque : après un redémarrage, ils l'emportent sur les anciennes sauvegardes.
+const TRANSFER_FILE = path.join(DATA_DIR, 'item-owners.json');
+let transfers = {};
+try { transfers = JSON.parse(readFileSync(TRANSFER_FILE, 'utf8')) || {}; } catch { transfers = {}; }
+for (const [k, u] of Object.entries(transfers)) itemOwner.set(k, u);
+function noteTransfer(key, username) {
+  itemOwner.set(key, username); transfers[key] = username;
+  const ks = Object.keys(transfers); if (ks.length > 30000) for (const old of ks.slice(0, ks.length - 30000)) delete transfers[old];
+}
+function saveTransfers() { try { writeFileSync(TRANSFER_FILE, JSON.stringify(transfers)); } catch (e) { console.error('[Korvalune] item-owners.json :', e.message); } }
+function registerOwned(username, slots) {
+  for (const s of slots || []) if (s?.gen?.uid && !itemOwner.has(itemKey(s.gen))) itemOwner.set(itemKey(s.gen), username);
+}
+for (const [u, a] of Object.entries(accounts)) { // reconstruit le registre au démarrage (premier arrivé, premier servi)
+  const lists = [a.sharedBank, ...(Array.isArray(a.chars) ? a.chars.map((c) => c && [...(c.inventory || []), ...Object.values(c.equipment || {})]) : [])];
+  for (const l of lists) registerOwned(u, l);
+}
+// retire d'une sauvegarde les objets déjà possédés par un autre compte (copie ou objet échangé puis gardé)
+function stripForeignItems(username, slots) {
+  if (!Array.isArray(slots)) return slots;
+  return slots.map((s) => {
+    if (!s?.gen?.uid) return s;
+    const k = itemKey(s.gen), o = itemOwner.get(k);
+    if (!o) { itemOwner.set(k, username); return s; }
+    return o === username ? s : null;
+  });
+}
+
+function sanitizeSave(prev, incoming, elapsedMs, budget) {
   if (!incoming || typeof incoming !== 'object') return null;
-  const elapsedMin = Math.max(1, elapsedMs / 60000);
+  const elapsedMin = Math.max(0.2, Math.min(elapsedMs / 60000, 1440)); // temps réel (plancher 12 s) : plus de gain « minimum 1 minute » par sauvegarde
+  const bud = refillBudget(budget || {}, Date.now());
+  if (!prev) { bud.coin = Math.min(bud.coin, 5000); bud.sold = Math.min(bud.sold, 50000); } // nouveau personnage : pas de réserve de départ
   const clean = {};
 
   clean.name = sanitize(incoming.name, MAX_NAME_LEN) || 'Aventurier';
@@ -256,7 +300,9 @@ function sanitizeSave(prev, incoming, elapsedMs) {
 
   const prevLevel = prev?.level || 1;
   const wantLevel = Number.isFinite(incoming.level) ? Math.floor(incoming.level) : prevLevel;
-  clean.level = Math.max(prevLevel, Math.min(wantLevel, prevLevel + 10, 200)); // jamais de retour en arrière, +10 niveaux max par sauvegarde
+  const lvGain = Math.max(0, Math.min(wantLevel - prevLevel, Math.floor(bud.lv), 200 - prevLevel)); // jamais de retour en arrière ; gain de niveaux limité par le budget (3 niveaux/min, rafale de 10)
+  bud.lv -= lvGain;
+  clean.level = prevLevel + lvGain;
 
   clean.xp = Number.isFinite(incoming.xp) ? Math.max(0, Math.floor(incoming.xp)) : 0;
   clean.statPoints = Number.isFinite(incoming.statPoints) ? Math.max(0, Math.min(1100, Math.floor(incoming.statPoints))) : (prev?.statPoints ?? 0);
@@ -267,15 +313,25 @@ function sanitizeSave(prev, incoming, elapsedMs) {
   // de gains par minute : le client tient un compteur cumulé `soldTotal` (monotone), seule la hausse est acceptée.
   const prevSold = Math.max(0, Math.floor(prev?.soldTotal ?? 0));
   const wantSold = Number.isFinite(incoming.soldTotal) ? Math.max(prevSold, Math.floor(incoming.soldTotal)) : prevSold;
-  const saleAllow = Math.min(wantSold - prevSold, 50000000);
+  const saleAllow = Math.max(0, Math.min(wantSold - prevSold, Math.floor(bud.sold)));
+  bud.sold -= saleAllow;
   clean.soldTotal = prevSold + saleAllow;
-  const coinCap = prevCoins + Math.ceil(4000 * elapsedMin) + saleAllow; // plafond généreux mais fini
-  clean.coins = Math.max(0, Math.min(wantCoins, coinCap, 99999999));
+  const coinGain = Math.max(0, wantCoins - prevCoins - saleAllow);
+  const coinOk = Math.min(coinGain, Math.floor(bud.coin));
+  bud.coin -= coinOk;
+  clean.coins = Math.max(0, Math.min(wantCoins < prevCoins ? wantCoins : prevCoins + coinOk + saleAllow, 99999999));
 
   clean.stats = {};
   for (const k of ['str', 'agi', 'int', 'vit', 'spi', 'luck']) {
     const v = incoming.stats?.[k];
     clean.stats[k] = Number.isFinite(v) ? Math.max(0, Math.min(999, Math.floor(v))) : (prev?.stats?.[k] ?? 5);
+  }
+  { // points de caractéristiques : jamais plus que ceux gagnés (5 par niveau + marge pour le Zénith et les récompenses)
+    const spent = Object.values(clean.stats).reduce((a, b2) => a + b2, 0) - 30;
+    if (spent + clean.statPoints > 5 * (clean.level - 1) + 60 + 6 * ((Number(incoming.zenith?.lvl) || 0) | 0)) {
+      clean.stats = {}; for (const k of ['str', 'agi', 'int', 'vit', 'spi', 'luck']) clean.stats[k] = prev?.stats?.[k] ?? 5;
+      clean.statPoints = prev?.statPoints ?? 0;
+    }
   }
   clean.hp = Number.isFinite(incoming.hp) ? Math.max(0, incoming.hp) : (prev?.hp ?? 100);
   clean.mana = Number.isFinite(incoming.mana) ? Math.max(0, incoming.mana) : (prev?.mana ?? 50);
@@ -447,6 +503,7 @@ wss.on('connection', (ws, req) => {
   const moveLimiter = new RateLimiter(20, 1000);
   const chatLimiter = new RateLimiter(6, 1000);
   const authLimiter = new RateLimiter(5, 10000);
+  const saveLimiter = new RateLimiter(5, 20000); // V10.51 : au plus 5 sauvegardes / 20 s (l'autosave est de 60 s)
 
   ws.on('message', (raw) => {
     let msg;
@@ -607,14 +664,20 @@ wss.on('connection', (ws, req) => {
     if (msg.t === 'save') {
       const username = resolveAccount(verifyToken(SECRET, msg.token) || '');
       if (!username) { send(ws, { t: 'saveAck', ok: false, error: 'Session expirée — reconnecte-toi.' }); return; }
+      if (!saveLimiter.allow()) { send(ws, { t: 'saveAck', ok: true }); return; } // trop rapproché : la prochaine sauvegarde (instantané complet) rattrapera
       const acc = ensureChars(accounts[username]);
       const slot = Number.isInteger(msg.slot) && msg.slot >= 0 && msg.slot < MAX_CHARS ? msg.slot : 0;
       const prevChar = acc.chars[slot];
       const elapsed = Date.now() - (acc.charSaveAt[slot] || 0);
-      const clean = sanitizeSave(prevChar, msg.data, elapsed);
+      if (!acc.budget || typeof acc.budget !== 'object') acc.budget = {};
+      if (!acc.budget[slot] || typeof acc.budget[slot] !== 'object') acc.budget[slot] = {};
+      const clean = sanitizeSave(prevChar, msg.data, elapsed, acc.budget[slot]);
       if (!clean) { send(ws, { t: 'saveAck', ok: false, error: 'Données de sauvegarde invalides.' }); return; }
+      // V10.51 : un objet ne peut appartenir qu'à un seul compte (anti-duplication)
+      clean.inventory = stripForeignItems(username, clean.inventory);
+      for (const [sl, it] of Object.entries(clean.equipment || {})) if (it?.gen && !stripForeignItems(username, [it])[0]) delete clean.equipment[sl];
       // le coffre est partagé par tous les personnages du compte
-      const bank = sanitizeItemSlots(msg.data?.bank, bankCapOf(acc), sanitize);
+      const bank = stripForeignItems(username, sanitizeItemSlots(msg.data?.bank, bankCapOf(acc), sanitize));
       if (bank) acc.sharedBank = bank;
       delete clean.bank;
       acc.chars[slot] = clean;
@@ -814,7 +877,8 @@ wss.on('connection', (ws, req) => {
       if (!other) { endTrade(player.id, 'L\u2019autre joueur est parti : échange annulé.'); return; }
       if (msg.t === 'trade:offer') {
         if (tr.phase !== 'edit') return;
-        const items = (noCosmetics(sanitizeItemSlots(Array.isArray(msg.items) ? msg.items.slice(0, TRADE_MAX_ITEMS) : [], TRADE_MAX_ITEMS, sanitize)) || []).filter(Boolean);
+        const items = (noCosmetics(sanitizeItemSlots(Array.isArray(msg.items) ? msg.items.slice(0, TRADE_MAX_ITEMS) : [], TRADE_MAX_ITEMS, sanitize)) || []).filter(Boolean)
+          .filter((it) => { const o = it.gen && itemOwner.get(itemKey(it.gen)); return !o || o === player.account; }); // V10.51 : on n'offre pas l'objet d'un autre compte
         tr.off[me] = items; tr.ok = { a: false, b: false }; tr.t = Date.now();
         pushTrade(tr);
         return;
@@ -835,6 +899,14 @@ wss.on('connection', (ws, req) => {
         if (!msg.ok) { endTrade(player.id, 'Échange impossible (objet manquant ou inventaire plein) : rien n\u2019a été échangé.'); return; }
         tr.ack[me] = true;
         if (tr.ack.a && tr.ack.b) {
+          { // V10.51 : le serveur change le propriétaire des objets échangés (l'ancien propriétaire perd la copie à sa prochaine sauvegarde)
+            const pa = players.get(tr.a), pb = players.get(tr.b);
+            if (pa?.account && pb?.account) {
+              for (const it of tr.off.a) if (it.gen) noteTransfer(itemKey(it.gen), pb.account);
+              for (const it of tr.off.b) if (it.gen) noteTransfer(itemKey(it.gen), pa.account);
+              saveTransfers();
+            }
+          }
           for (const s of ['a', 'b']) { const p = players.get(tr[s]); if (p) send(p.ws, { t: 'trade:final', give: tr.off[s], get: tr.off[s === 'a' ? 'b' : 'a'] }); }
           console.log(`[Korvalune] échange : ${players.get(tr.a)?.name} (${tr.off.a.length}) <-> ${players.get(tr.b)?.name} (${tr.off.b.length})`);
           trades.delete(tid); tradeOf.delete(tr.a); tradeOf.delete(tr.b);

@@ -10,12 +10,43 @@ import { ITEM_EFFECTS } from '../src/data/itemEffectPool.js';
 import { SETS } from '../src/data/sets.js';
 import { cleanSkillBoosts } from '../src/combat/SkillRanks.js';
 import { BUILDS, BUILD_TIER, buildProc } from '../src/data/builds.js';
+import { WEAPON_BASES, ARMOR_BASES, OFFHAND_BASES, ACCESSORY_BASES, ACCESSORY_STAT_POOL } from '../src/data/itemBases.js';
 import { SOCKET_CAP, RUNE_BY_ID, durMaxOf, MAX_ENCH, TMOG_COLORS } from '../src/data/crafting.js';
 
 const AFFIX_BY_KEY = Object.fromEntries(AFFIX_POOL.map((a) => [a.key, a]));
 const EFFECT_BY_ID = Object.fromEntries(ITEM_EFFECTS.map((e) => [e.id, e]));
 const VALID_SLOTS = new Set(['head', 'shoulders', 'chest', 'gloves', 'legs', 'boots', 'cape', 'mainhand', 'offhand', 'ring', 'necklace']);
 const VALID_STAT_KEYS = new Set(['atk', 'def', 'hp', 'mana', 'crit', 'str', 'agi', 'int', 'vit', 'spi', 'luck']);
+
+
+// V10.51 — Anti-triche : plafonds de statistiques d'un objet généré. Le générateur est déterministe pour les statistiques
+// de base (niveau d'objet × rareté), donc on connaît le maximum légitime : tout ce qui le dépasse est ramené au plafond.
+// Marge de 30 % (+2) pour les anciennes versions du générateur et les arrondis.
+const TOL = 1.3;
+const lim = (v) => Math.ceil(v * TOL) + 2;
+function baseStatCaps(category, baseKey, L, mult) {
+  const caps = {};
+  const put = (k, v) => { caps[k] = Math.max(caps[k] || 0, lim(v)); };
+  const one = (b, cat) => {
+    if (cat === 'weapon') {
+      put('atk', (b.base + L * b.perLevel) * mult);
+      if (b.bonusCrit) caps.crit = Math.max(caps.crit || 0, Math.min(0.5, b.bonusCrit * mult * TOL + 0.01));
+      if (b.bonusStat) put(b.bonusStat, L * 0.15 * mult);
+    } else if (cat === 'armor') {
+      put('def', (b.base + L * b.perLevel) * mult); put('hp', (b.hpBase + L * b.hpPerLevel) * mult);
+    } else if (cat === 'offhand') {
+      for (const st of ['atk', 'def', 'hp', 'int', 'agi', 'mana']) if (b[st]) put(st, (b[st][0] + L * b[st][1]) * mult);
+      if (b.crit) caps.crit = Math.max(caps.crit || 0, Math.min(0.5, b.crit * mult * TOL + 0.01));
+    }
+  };
+  const TABLE = { weapon: WEAPON_BASES, armor: ARMOR_BASES, offhand: OFFHAND_BASES };
+  if (category === 'accessory') { for (const k of ACCESSORY_STAT_POOL) put(k, (1 + L * 0.2) * mult); return caps; }
+  const tbl = TABLE[category];
+  if (!tbl) return caps;
+  if (tbl[baseKey]) one(tbl[baseKey], category); else for (const b of Object.values(tbl)) one(b, category); // base inconnue : on prend le meilleur cas de la catégorie
+  return caps;
+}
+export function itemKey(g) { return `${g.uid}|${g.name}|${g.itemLevel}|${g.rarityTier}`; }
 
 function clampNum(v, min, max, fallback = min) {
   const n = Number(v);
@@ -47,13 +78,19 @@ export function sanitizeGeneratedItem(gen) {
     }
   }
 
+  { // plafonds de statistiques (anti-triche) : clés inconnues retirées, valeurs ramenées au maximum légitime
+    const category = ['weapon', 'armor', 'accessory', 'offhand'].includes(gen.category) ? gen.category : (type === 'weapon' ? 'weapon' : 'armor');
+    const caps = baseStatCaps(category, str(gen.baseKey, 20), itemLevel, rarity.statMult);
+    for (const k of Object.keys(stats)) { if (caps[k] === undefined) delete stats[k]; else stats[k] = Math.min(stats[k], caps[k]); }
+  }
   const maxAffixes = rarity.maxAffixes;
   const affixes = Array.isArray(gen.affixes)
     ? gen.affixes.slice(0, maxAffixes).map((a) => {
         const def = a && AFFIX_BY_KEY[a.key];
         if (!def) return null;
         // Les affixes en % croissent avec l'itemLevel et la rareté (valeurs > 1 légitimes, ~4 max)
-        const bound = def.kind === 'percent' ? 8 : 9999;
+        // maximum légitime : borne haute du tirage × (1 + niveau × 0,035) × multiplicateur de rareté (+30 %)
+        const bound = Math.max(def.decimals ? 0.5 : 1, def.max * (1 + itemLevel * 0.035) * rarity.statMult * TOL + (def.kind === 'percent' ? 0.01 : 1));
         return { key: def.key, kind: def.kind, label: def.label, value: clampNum(a.value, -bound, bound, 0) };
       }).filter(Boolean)
     : [];

@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.51', title: 'Sécurité renforcée',
+    items: [
+      '🛡️ Le serveur vérifie davantage les sauvegardes : progression (niveaux, or, ventes), caractéristiques et statistiques des objets. Les valeurs impossibles sont ramenées à la normale.',
+      '🔁 Les échanges sont protégés contre la duplication d’objets : un objet n’appartient qu’à un seul compte à la fois.'
+    ]
+  },
+  {
     version: '10.50', title: 'Télécharger Korvalune',
     items: [
       '📲 L’écran d’accueil propose deux liens propres : « Android — Télécharger l’application (APK) » et « Windows — Télécharger l’installation ». Un lien reste grisé (« Bientôt disponible ») tant que son fichier n’est pas publié.'
