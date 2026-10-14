@@ -4,7 +4,7 @@
 configuré dans `server/donations.js`, surchargeable par la variable `PAYPAL_DONATE_URL`). Le donateur donne sur PayPal, puis déclare son
 don dans la Boutique des Lunes ; le créateur vérifie la réception sur PayPal et valide dans le jeu : les Lunes de remerciement sont créditées.
 
-**Barème** (`src/data/donations.js`) : 100 Lunes par euro, +10 % dès 5 €, +20 % dès 10 €, +30 % dès 25 € (de 1 € à 200 €).
+**Barème** (`src/data/donations.js`) : 100 Lunes par euro, +20 % dès 5 € (600), +50 % dès 10 € (1 500), +60 % dès 25 € (4 000) (de 1 € à 200 €).
 Les Lunes n'ont aucun effet en combat (apparence et confort seulement).
 
 ## Mise en route (une seule fois)

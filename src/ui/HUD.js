@@ -1347,7 +1347,7 @@ export class HUD {
       let h = '<h3>Soutenir Korvalune</h3>' +
         '<p class="menu-hint">Korvalune est gratuit et développé avec passion. Un don est libre et volontaire : merci du fond du cœur ! En remerciement, le créateur vous offre des Lunes (aucune puissance en combat, uniquement de l’apparence).</p>' +
         '<div class="don-tiers">' + DON_EXAMPLES.map((e) => `<span><b>${eur(e)}</b> → ${thanksLunes(e)} 🌙</span>`).join('') + '</div>' +
-        `<p class="menu-hint">Barème : ${DON_PER_EURO} Lunes par euro, +10 % dès 5 €, +20 % dès 10 €, +30 % dès 25 €.</p>` +
+        `<p class="menu-hint">Barème : ${DON_PER_EURO} Lunes par euro, avec un bonus dès 5 € (+20 %), dès 10 € (+50 %) et dès 25 € (+60 %).</p>` +
         '<ol class="don-steps"><li>Faites votre don sur PayPal :</li></ol>' +
         `<a class="soc-btn lune-donate" href="${esc(sh.don.url)}" target="_blank" rel="noopener noreferrer">Faire un don avec PayPal</a>` +
         '<ol class="don-steps" start="2"><li>Revenez ici et signalez-le (le créateur vérifie la réception, puis vos Lunes arrivent) :</li></ol>' +

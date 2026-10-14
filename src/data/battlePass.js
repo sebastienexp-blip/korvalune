@@ -7,7 +7,7 @@ export const PASS = {
   xpPerTier: 1500,           // XP du pass nécessaire pour monter d'un palier
   seasonDays: 56,            // durée d'une saison
   epoch: Date.UTC(2026, 9, 1), // début de la saison 1 (1er octobre 2026, UTC)
-  premiumPrice: 400,         // Lunes pour débloquer la voie premium (rétroactif : tout ce qui est déjà atteint se récupère)
+  premiumPrice: 500,         // Lunes pour débloquer la voie premium (rétroactif : tout ce qui est déjà atteint se récupère)
   tierPrice: 40,             // Lunes pour acheter un palier d'un coup
   dayXpCap: 1800,            // plafond d'XP « de jeu » (hors missions) par jour
   killXp: 8, eliteXp: 35, bossXp: 250, chestXp: 40, questXp: 150, craftXp: 20, riftXp: 120
