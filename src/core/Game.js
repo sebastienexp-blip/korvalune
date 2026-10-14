@@ -1089,7 +1089,7 @@ export class Game {
         case 'buy': this.net.shopBuy(v); return;
         case 'equip': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = null; this._equipCos(it.cat, v); } return; }
         case 'unequip': this._preview = null; this.net.shopEquip(v, null); return;
-        case 'try': { const it = CATALOG_BY_ID[v]; if (it) { this._preview = this._preview?.id === v ? null : { slot: it.cat, id: v }; this.player?.setCosmetics(this._shopCos()); } break; }
+        case 'try': return; // V10.62 : l'essai est retiré (acheter puis équiper)
         default: return;
       }
       this._renderLune();

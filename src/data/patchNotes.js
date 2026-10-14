@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.62', title: 'Boutique simplifiée',
+    items: [
+      '🛍️ Boutique des Lunes : le bouton « Essayer » est retiré. On achète, puis on équipe.'
+    ]
+  },
+  {
     version: '10.61', title: 'Dons plus généreux',
     items: [
       '💛 Plus on donne, plus le bonus de Lunes grandit : 1 € = 100, 10 € = 1 500, 50 € = 8 500 Lunes.',

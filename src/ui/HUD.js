@@ -151,7 +151,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.61 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.62 — Korvalune</div>
         </div>
       </div>
 
@@ -1364,11 +1364,10 @@ export class HUD {
     list.innerHTML = items.map((it) => {
       const owned = sh.owned.includes(it.id);
       const eqd = it.cat !== 'perk' && sh.eq[it.cat] === it.id;
-      const prev = d.preview && d.preview.id === it.id;
+      
       const locked = it.requires && !sh.owned.includes(it.requires);
       const btns = [];
       if (it.cat !== 'perk') {
-        if (d.canTry !== false) btns.push(`<button class="soc-btn" data-la="try" data-v="${it.id}">${prev ? 'Aperçu en cours' : 'Essayer'}</button>`);
         if (owned) btns.push(eqd ? `<button class="soc-btn" data-la="unequip" data-v="${it.cat}">Retirer</button>` : `<button class="soc-btn lune-go" data-la="equip" data-v="${it.id}">Équiper</button>`);
       }
       if (!owned && it.unlock) btns.push(`<button class="soc-btn lune-buy" disabled>🔒 Se débloque au niveau ${it.unlock.level}</button>`);
