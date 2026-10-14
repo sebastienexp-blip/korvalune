@@ -27,7 +27,7 @@ export class StoryDirector {
     setTimeout(() => this._ensureStarted(), 5000);
   }
 
-  dispose() { for (const off of this._offs) off(); this._offs = []; this.skip(); this._closeDom(); if (this._spire) { this.game.scene.remove(this._spire); this._spire = null; } }
+  dispose() { for (const off of this._offs) off(); this._offs = []; this.game.audio?.cinemaMix?.(false); this.skip(); this._closeDom(); if (this._spire) { this.game.scene.remove(this._spire); this._spire = null; } }
 
   static get quests() { return STORY_QUESTS; }
 
@@ -147,6 +147,7 @@ export class StoryDirector {
     this._buildDom(cin);
     this._base = base;
     this._addLight(base);
+    g.audio?.cinemaMix?.(true);
     g.audio?.play('levelup');
     await wait(900);
     for (const shot of cin.shots) {
@@ -192,9 +193,12 @@ export class StoryDirector {
   _applyCamera(dt) {
     const s = this._shot, cam = this.game.camera;
     this._shotT += dt;
+    if (!Number.isFinite(dt) || dt < 0) return;
     const k = smooth(this._shotT / this._shotDur);
-    cam.position.lerpVectors(s.fromP, s.toP, k);
     const look = new THREE.Vector3().lerpVectors(s.fromL, s.toL, k);
+    const pos = new THREE.Vector3().lerpVectors(s.fromP, s.toP, k);
+    if (![look.x, look.y, look.z, pos.x, pos.y, pos.z].every(Number.isFinite) || pos.distanceToSquared(look) < 0.01) return; // jamais de caméra dégénérée
+    cam.position.copy(pos);
     cam.lookAt(look);
     if (this._light) {
       const t = performance.now() / 1000;
@@ -211,6 +215,7 @@ export class StoryDirector {
 
   _finish() {
     const g = this.game;
+    g.audio?.cinemaMix?.(false);
     this.voice.stop();
     this._shot = null;
     if (this._light) { g.scene.remove(this._light); this._light.dispose?.(); this._light = null; }

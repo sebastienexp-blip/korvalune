@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.52', title: 'Cinématiques : son et stabilité',
+    items: [
+      '🎬 Pendant une cinématique, la musique et les ambiances baissent nettement pour qu’on entende bien la voix.',
+      '🔧 Correction d’une erreur audio qui pouvait arrêter le jeu pendant la cinématique de l’acte I.'
+    ]
+  },
+  {
     version: '10.51', title: 'Sécurité renforcée',
     items: [
       '🛡️ Le serveur vérifie davantage les sauvegardes : progression (niveaux, or, ventes), caractéristiques et statistiques des objets. Les valeurs impossibles sont ramenées à la normale.',

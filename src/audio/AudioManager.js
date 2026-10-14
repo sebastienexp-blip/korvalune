@@ -23,6 +23,21 @@ const MAX_SAME = { step: 2, 'step-grass': 2, 'step-dirt': 2, 'step-stone': 2, 's
 const MAX_VOICES = 40;
 const UI_SOUNDS = new Set(['click', 'open', 'close', 'select', 'confirm', 'quest', 'zone', 'coin', 'equip', 'error', 'denied', 'legendary', 'absolute', 'page', 'trade', 'buy', 'levelup']);
 const SENDS = { sfx: 0.2, ui: 0.05, ambience: 0.2, music: 0.25 };
+// V10.52 — Garde-fou global : une valeur non finie (NaN, Infinity) donnée à un paramètre audio lève une exception qui arrêtait
+// tout le jeu (« Failed to set the 'value' property on 'AudioParam' »). On l'ignore (une seule alerte en console avec la pile d'appels).
+(function guardAudioParams() {
+  if (typeof AudioParam === 'undefined' || AudioParam.prototype.__korvaGuard) return;
+  let warned = 0;
+  const warn = (what, v) => { if (warned++ < 3) console.warn('[audio] valeur non finie ignorée :', what, v, new Error().stack); };
+  const d = Object.getOwnPropertyDescriptor(AudioParam.prototype, 'value');
+  if (d && d.set) Object.defineProperty(AudioParam.prototype, 'value', { configurable: true, enumerable: d.enumerable, get: d.get, set(v) { if (!Number.isFinite(v)) { warn('value', v); return; } d.set.call(this, v); } });
+  for (const m of ['setValueAtTime', 'linearRampToValueAtTime', 'exponentialRampToValueAtTime', 'setTargetAtTime']) {
+    const o = AudioParam.prototype[m]; if (typeof o !== 'function') continue;
+    AudioParam.prototype[m] = function (...a) { if (!a.every((x) => typeof x !== 'number' || Number.isFinite(x))) { warn(m, a); return this; } return o.apply(this, a); };
+  }
+  AudioParam.prototype.__korvaGuard = true;
+})();
+
 const BUS_LEVEL = { sfx: 2.0, ui: 2.0, ambience: 1.0, music: 1.0 };
 
 // sons chargés dès la première interaction (le reste est chargé à la demande puis en tâche de fond)
@@ -163,9 +178,15 @@ export class AudioManager {
     if (!this.ctx || !this.buses.music) return;
     const t = this.ctx.currentTime;
     for (const n of ['music', 'ambience']) {
-      const base = BUS_LEVEL[n] * (this.mix[n] ?? 1), g = this.buses[n].gain;
+      const base = BUS_LEVEL[n] * (this.mix[n] ?? 1) * (this._cine?.[n] ?? 1), g = this.buses[n].gain;
       g.cancelScheduledValues(t); g.setTargetAtTime(base * amount, t, 0.04); g.setTargetAtTime(base, t + hold, 0.5);
     }
+  }
+
+  // V10.52 : pendant une cinématique parlée, la musique et les ambiances baissent pour laisser entendre la voix
+  cinemaMix(on) {
+    this._cine = on ? { music: 0.16, ambience: 0.3, sfx: 0.6 } : null;
+    this._applyMix(false);
   }
 
   _applyMix(instant) {
@@ -173,7 +194,7 @@ export class AudioManager {
     const now = this.ctx.currentTime;
     for (const name of Object.keys(this.buses)) {
       const user = this.mix[name] ?? this.mix.sfx;
-      const v = BUS_LEVEL[name] * user;
+      const v = BUS_LEVEL[name] * user * (this._cine?.[name] ?? 1);
       if (instant) this.buses[name].gain.value = v; else this.buses[name].gain.setTargetAtTime(v, now, 0.05);
     }
   }
@@ -201,6 +222,8 @@ export class AudioManager {
   // ------------------------------------------------------------------ spatialisation
   setListener(pos, fwd) {
     if (!this.ctx) return;
+    // V10.52 : valeurs non finies (caméra dirigée, matrice dégénérée) : on garde la dernière position valide au lieu de planter
+    if (![pos.x, pos.y, pos.z, fwd.x, fwd.y, fwd.z].every(Number.isFinite)) return;
     this._lp.x = pos.x; this._lp.y = pos.y; this._lp.z = pos.z;
     const l = this.ctx.listener;
     if (l.positionX) {
