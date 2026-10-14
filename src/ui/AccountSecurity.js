@@ -9,6 +9,7 @@ export class AccountSecurity {
     root.appendChild(this.el);
     this.el.addEventListener('click', (e) => this._click(e));
     bus.on('net:acct', (m) => this._onMsg(m));
+    bus.on('net:shopMsg', (m) => this._onMsg({ ...m, t: 'shop:msg' }));
   }
   get open() { return !this.el.classList.contains('hidden'); }
   close() { this.el.classList.add('hidden'); this.el.innerHTML = ''; this.mode = null; }
@@ -41,6 +42,14 @@ export class AccountSecurity {
       <div class="sec-btns"><button class="btn-primary" data-s="rec-go">Changer le mot de passe</button><button data-s="close">Annuler</button></div>`);
     const upd = () => { const q = this.el.querySelector('#sec-q'); const code = this.v('sec-method') === 'code'; q.textContent = code ? 'Code de secours (format XXXX-XXXX-XXXX)' : m.question; this.el.querySelector('#sec-secret').placeholder = code ? 'XXXX-XXXX-XXXX' : 'Ta réponse'; };
     this.el.querySelector('#sec-method').addEventListener('change', upd); upd();
+  }
+
+  // ----- Code cadeau -----
+  openCode() {
+    this.mode = 'code';
+    this._show(`<h3>Code cadeau</h3><p class="sec-hint">Tu as reçu un code de l’équipe ? Entre-le ici pour gagner des Lunes.</p>
+      <input id="sec-gift" maxlength="24" placeholder="CODE" autocomplete="off" style="text-transform:uppercase">
+      <p class="sec-msg"></p><div class="sec-btns"><button class="btn-primary" data-s="gift-go">Valider</button><button data-s="close">Fermer</button></div>`);
   }
 
   // ----- Contacter l'administrateur -----
@@ -92,6 +101,7 @@ export class AccountSecurity {
       if (np.length < 8) return this._msg('Mot de passe trop court (8 caractères minimum).');
       this.net.sendRaw({ t: 'acct:recover', username: this.info.username, method: this.v('sec-method'), secret, newPassword: np }); return;
     }
+    if (a === 'gift-go') { const c = this.v('sec-gift'); if (c.length < 4) return this._msg('Entre ton code.'); this.net.sendRaw({ t: 'shop:code', code: c }); return; }
     if (a === 'sup-send') { const t = (this.el.querySelector('#sup-text')?.value || '').trim(); if (t.length < 2) return this._msg('Écris ton message.'); this.net.sendRaw({ t: 'support:send', text: t }); return; }
     if (a === 'sec-save') {
       const pw = this.v('sec-pw'); if (!pw) return this._msg('Entre ton mot de passe actuel.');

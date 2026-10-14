@@ -26,6 +26,7 @@ import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, tokenIssuedAt, KeyedLimiter } from './server/security.js';
 import { QUESTIONS, secView, setQuestion, setEmail, makeRecoveryCode, checkRecovery } from './server/recovery.js';
 import { addMessage as supAdd, playerView as supView, markRead as supRead, threadView as supThread, inbox as supInbox } from './server/support.js';
+import { getMotd, setMotd, maint as maintCfg, setMaint, boost as worldBoost, setBoost, stopBoost, createCode, codeList, stopCode, redeem as redeemCode } from './server/adminTools.js';
 import { adminLog, readLog, searchAccounts, summary as accSummary, resetPassword, giveLunes } from './server/accountAdmin.js';
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
@@ -69,6 +70,7 @@ const resolveAccount = (name) => { const k = lcIndex.get(String(name).toLowerCas
 setOwnerLookup((acc) => isOwnerKey(keyOf.get(acc)));
 const regLimiter = new KeyedLimiter(4, 10 * 60 * 1000);     // créations de compte par IP
 const loginLimiter = new KeyedLimiter(15, 60 * 1000);       // tentatives de connexion par IP
+const codeLimiter = new KeyedLimiter(8, 10 * 60 * 1000);
 const recLimiter = new KeyedLimiter(5, 15 * 60 * 1000);     // V10.57 : échecs de récupération par compte (verrouillage 15 min)
 const failLimiter = new KeyedLimiter(6, 5 * 60 * 1000);     // échecs par compte (verrouillage 5 min)
 const connsPerIp = new Map();
@@ -214,6 +216,13 @@ function ensureChars(acc) {
   acc.chars.length = MAX_CHARS;
   return acc;
 }
+const ENEMY_LIST = (() => { try { const d = JSON.parse(readFileSync(new URL('./src/data/enemies.json', import.meta.url), 'utf8')); return Object.entries(d).map(([id, e]) => ({ id, name: e.name || id, boss: !!e.boss })); } catch { return []; } })();
+const ENEMY_IDS = new Set(ENEMY_LIST.map((e) => e.id));
+const loginExtras = (ws, acc, key) => { // message du jour, boost en cours, réponses de l'admin
+  const n = supNotify(acc); if (n) send(ws, n);
+  const m = getMotd(); if (m) send(ws, { t: 'system', text: '📜 ' + m });
+  const b = worldBoost(); if (b) send(ws, { t: 'world:boost', ...b });
+};
 const banText = (acc) => `Compte suspendu${acc.ban?.reason ? ' : ' + acc.ban.reason : ''}. Contacte le créateur du jeu.`;
 const supNotify = (acc) => ((acc.supportUnread | 0) > 0 ? { t: 'system', text: `📩 Tu as ${acc.supportUnread} réponse(s) de l’administrateur : Compte → Contacter l’administrateur.` } : null);
 const accView = (acc) => { ensureChars(acc); return { chars: acc.chars, bank: acc.sharedBank, save: acc.chars.find(Boolean) || null }; };
@@ -447,6 +456,7 @@ function disbandOrLeave(playerId) {
   }
 }
 
+const admState = () => ({ t: 'adm:state', motd: getMotd(), maint: maintCfg(), boost: worldBoost(), uptime: Math.round(process.uptime()), memMb: Math.round(process.memoryUsage().rss / 1048576), accounts: Object.keys(accounts).length, online: acctWs.size, players: players.size, enemies: ENEMY_LIST });
 wss.on('connection', (ws, req) => {
   const ip = ipOf(req);
   const nConn = (connsPerIp.get(ip) || 0) + 1;
@@ -495,9 +505,10 @@ wss.on('connection', (ws, req) => {
       const key = u && resolveAccount(u);
       if (!key || tokenIssuedAt(msg.token) < (accounts[key].revokedAt || 0)) { send(ws, { t: 'authResult', ok: false, error: '', silent: true }); return; }
       if (accounts[key].ban) { send(ws, { t: 'authResult', ok: false, error: banText(accounts[key]) }); return; }
+      if (maintCfg().on && !isOwnerKey(key)) { send(ws, { t: 'authResult', ok: false, error: '🛠️ ' + (maintCfg().text || 'Maintenance en cours, reviens bientôt.') }); return; }
       setAuth(key);
       send(ws, { t: 'authResult', ok: true, token: msg.token, username: key, ...accView(accounts[key]), resumed: true });
-      pushShop(); pushSettings(); { const n = supNotify(accounts[key]); if (n) send(ws, n); }
+      pushShop(); pushSettings(); loginExtras(ws, accounts[key], key);
       return;
     }
     if (msg.t === 'register' || msg.t === 'login') {
@@ -536,10 +547,11 @@ wss.on('connection', (ws, req) => {
           failLimiter.reset(lock);
         }
         if (accounts[key].ban) { fail(banText(accounts[key])); return; }
+        if (maintCfg().on && !isOwnerKey(key)) { fail('🛠️ ' + (maintCfg().text || 'Maintenance en cours, reviens bientôt.')); return; }
         const token = makeToken(SECRET, key);
         setAuth(key);
         send(ws, { t: 'authResult', ok: true, token, username: key, ...accView(accounts[key]) });
-        pushShop(); pushSettings(); { const n = supNotify(accounts[key]); if (n) send(ws, n); }
+        pushShop(); pushSettings(); loginExtras(ws, accounts[key], key);
       })().catch((e) => { console.error('[Korvalune] auth :', e.message); fail('Erreur serveur.'); });
       return;
     }
@@ -802,6 +814,53 @@ wss.on('connection', (ws, req) => {
       const target = () => { const k = resolveAccount(sanitizeUsername(msg.account)); return k ? [k, accounts[k]] : [null, null]; };
       (async () => {
         if (msg.t === 'adm:list') { send(ws, { t: 'adm:list', ...searchAccounts(accounts, msg.q, online), onlineAccounts: acctWs.size, players: players.size, accounts: Object.keys(accounts).length }); return; }
+        if (msg.t === 'adm:state') { send(ws, admState()); return; }
+        if (msg.t === 'adm:online') {
+          send(ws, { t: 'adm:online', list: [...players.values()].map((p) => ({ name: p.name, account: p.account || '', level: p.level, classId: p.classId, muted: !!(p.account && accounts[p.account]?.mutedUntil > Date.now()) })) }); return;
+        }
+        if (msg.t === 'adm:motd') { await setMotd(msg.text); await adminLog(me, 'message du jour', '-', getMotd()); ar(true, getMotd() ? 'Message du jour enregistré (affiché à chaque connexion).' : 'Message du jour retiré.'); send(ws, admState()); return; }
+        if (msg.t === 'adm:maint') {
+          await setMaint(msg.on, msg.text); await adminLog(me, msg.on ? 'maintenance activée' : 'maintenance terminée', '-', msg.text || '');
+          if (msg.on) broadcastAll({ t: 'system', text: '🛠️ Maintenance : ' + (maintCfg().text || 'le jeu va être indisponible un moment.') });
+          ar(true, msg.on ? 'Maintenance activée : seuls les créateurs peuvent se connecter.' : 'Maintenance terminée : le jeu est ouvert.'); send(ws, admState()); return;
+        }
+        if (msg.t === 'adm:boost') {
+          if (msg.off) { await stopBoost(); broadcastAll({ t: 'world:boost', xp: 1, drop: 1, until: 0 }); await adminLog(me, 'boost arrêté', '-'); ar(true, 'Boost arrêté.'); send(ws, admState()); return; }
+          const r = setBoost(msg.xp, msg.drop, msg.minutes, msg.label); if (!r.ok) { ar(false, r.error); return; }
+          broadcastAll({ t: 'world:boost', ...r.boost }); broadcastAll({ t: 'system', text: `✨ ${r.boost.label} : XP ×${r.boost.xp}, butin ×${r.boost.drop} pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min !` });
+          await adminLog(me, 'boost', '-', `XP×${r.boost.xp} butin×${r.boost.drop} ${msg.minutes} min`); ar(true, 'Boost lancé pour tous les joueurs.'); send(ws, admState()); return;
+        }
+        if (msg.t === 'adm:spawn') {
+          const id = String(msg.enemy || ''); if (!ENEMY_IDS.has(id)) { ar(false, 'Monstre inconnu.'); return; }
+          const count = Math.min(30, Math.max(1, Math.floor(Number(msg.count) || 1)));
+          let targets;
+          if (msg.target && msg.target !== '*') { const tk = resolveAccount(sanitizeUsername(msg.target)); targets = tk ? [...(acctWs.get(tk) || [])] : []; if (!targets.length) { ar(false, 'Ce joueur n\u2019est pas en ligne.'); return; } }
+          else targets = [...players.values()].map((p) => p.ws);
+          if (!targets.length) { ar(false, 'Personne n\u2019est en ligne.'); return; }
+          const label = sanitize(msg.label, 50).trim();
+          for (const w of new Set(targets)) send(w, { t: 'world:spawn', enemy: id, count, label, boss: !!msg.boss });
+          await adminLog(me, 'invasion', msg.target && msg.target !== '*' ? msg.target : 'tous', `${count}× ${id}`);
+          ar(true, `${count}× ${ENEMY_LIST.find((e) => e.id === id)?.name || id} envoyé(s) chez ${new Set(targets).size} joueur(s).`); return;
+        }
+        if (msg.t === 'adm:giftAll') {
+          const l = Math.floor(Number(msg.lunes)); if (!(l >= 1 && l <= 5000)) { ar(false, 'Cadeau : entre 1 et 5 000 Lunes par joueur.'); return; }
+          const names = new Set(); for (const [k] of acctWs) names.add(k);
+          for (const k of names) { const a = accounts[k]; if (!a) continue; ensureShop(a).gems += l; for (const w of acctWs.get(k) || []) { send(w, shopView(a)); send(w, { t: 'system', text: `🎁 Cadeau du créateur : +${l} Lunes !${msg.text ? ' ' + sanitize(msg.text, 80) : ''}` }); } }
+          await persistAccounts(accounts); await adminLog(me, 'cadeau à tous les connectés', `${names.size} comptes`, `+${l} Lunes`); ar(true, `+${l} Lunes offertes à ${names.size} joueur(s) connecté(s).`); return;
+        }
+        if (msg.t === 'adm:codes') { send(ws, { t: 'adm:codes', list: codeList() }); return; }
+        if (msg.t === 'adm:codeNew') { const r = createCode(msg.code, msg.lunes, msg.uses, msg.days); ar(r.ok, r.ok ? `Code ${r.code} créé.` : r.error); if (r.ok) { await adminLog(me, 'code cadeau créé', r.code, `${msg.lunes} Lunes ×${msg.uses}`); send(ws, { t: 'adm:codes', list: codeList() }); } return; }
+        if (msg.t === 'adm:codeOff') { stopCode(msg.code); await adminLog(me, 'code cadeau désactivé', String(msg.code)); send(ws, { t: 'adm:codes', list: codeList() }); ar(true, 'Code désactivé.'); return; }
+        if (msg.t === 'adm:whisper' || msg.t === 'adm:mute') {
+          const [k2, a2] = target(); if (!k2) { ar(false, 'Compte introuvable.'); return; }
+          if (msg.t === 'adm:whisper') { const tx = sanitize(msg.text, 200).trim(); if (tx.length < 2) { ar(false, 'Message trop court.'); return; } const ws2 = acctWs.get(k2); if (!ws2) { ar(false, 'Ce joueur n\u2019est pas en ligne.'); return; } for (const w of ws2) send(w, { t: 'system', text: '📣 Message du créateur : ' + tx }); await adminLog(me, 'message privé', k2, tx); ar(true, `Message envoyé à ${k2}.`); return; }
+          if (isOwnerKey(k2)) { ar(false, 'Impossible de faire taire un créateur.'); return; }
+          const mins = Math.min(7 * 1440, Math.max(0, Math.floor(Number(msg.minutes) || 0)));
+          if (mins) a2.mutedUntil = Date.now() + mins * 60000; else delete a2.mutedUntil;
+          await persistAccounts(accounts); await adminLog(me, mins ? 'joueur muet' : 'joueur de nouveau audible', k2, mins ? mins + ' min' : '');
+          for (const w of acctWs.get(k2) || []) send(w, { t: 'system', text: mins ? `🔇 Tu as été réduit au silence pour ${mins} min.` : '🔊 Tu peux de nouveau parler.' });
+          ar(true, mins ? `${k2} est muet pendant ${mins} min.` : `${k2} peut de nouveau parler.`); return;
+        }
         if (msg.t === 'adm:inbox') { send(ws, { t: 'adm:inbox', ...supInbox(accounts) }); return; }
         if (msg.t === 'adm:log') { send(ws, { t: 'adm:log', list: await readLog(40) }); return; }
         if (msg.t === 'adm:announce') {
@@ -854,6 +913,12 @@ wss.on('connection', (ws, req) => {
       const acc = ensureChars(accounts[key]);
       const reply = (r, okText) => { send(ws, { t: 'shop:msg', ok: !!r.ok, text: r.ok ? okText : r.error }); send(ws, shopView(acc)); };
       if (msg.t === 'shop:get') { send(ws, shopView(acc)); return; }
+      if (msg.t === 'shop:code') {
+        if (!codeLimiter.hit(key)) { send(ws, { t: 'shop:msg', ok: false, text: 'Trop d\u2019essais : réessaie dans quelques minutes.' }); return; }
+        const r = redeemCode(acc, key, msg.code);
+        if (r.ok) { persistAccounts(accounts); console.log(`[Korvalune] code cadeau utilisé : ${key} +${r.lunes}`); }
+        reply(r, `🎁 Code validé : +${r.lunes} Lunes !`); return;
+      }
       // V10.55 — dons PayPal : le donateur déclare son don, le créateur (OWNER_ACCOUNTS) le valide après l'avoir reçu sur PayPal
       if (msg.t === 'shop:donate') {
         const r = requestDonation(acc, msg.amount, msg.note);
@@ -943,6 +1008,7 @@ wss.on('connection', (ws, req) => {
     // --- Chat ---
     if (msg.t === 'chat') {
       if (!chatLimiter.allow()) return;
+      { const ma = authUsername && accounts[authUsername]; if (ma && ma.mutedUntil > Date.now()) { send(ws, { t: 'system', text: `🔇 Tu es réduit au silence encore ${Math.ceil((ma.mutedUntil - Date.now()) / 60000)} min.` }); return; } }
       const text = sanitize(msg.text, MAX_CHAT_LEN);
       if (!text) return;
       if (msg.channel === 'group') {

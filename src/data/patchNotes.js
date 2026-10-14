@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.59', title: 'Événements & codes cadeaux',
+    items: [
+      '🎁 Nouveau : entre un code cadeau dans Compte → Code cadeau pour gagner des Lunes.',
+      '✨ Des événements du créateur peuvent maintenant apparaître : boosts d’XP et de butin, invasions de monstres, cadeaux.'
+    ]
+  },
+  {
     version: '10.58', title: 'Contacter l’administrateur',
     items: [
       '✉️ Nouveau : écris à l’administrateur depuis Compte → Contacter l’administrateur. Sa réponse apparaît au même endroit.'

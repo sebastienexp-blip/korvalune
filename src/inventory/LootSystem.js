@@ -1,3 +1,4 @@
+import { wbDrop } from '../data/worldBoost.js';
 import { rollLootItem, generateItem, rollItemLevel } from './ItemGenerator.js';
 import { getDifficulty } from '../data/difficulty.js';
 import { rollRarityTier, RARITIES, classForTier } from '../data/rarities.js';
@@ -55,7 +56,7 @@ export const LootSystem = {
     const D = getDifficulty();
     if (Math.random() < Math.min(0.8, CONSUMABLE_CHANCE * (1 + (D.drop - 1) * 0.4))) drops.push(rollPotion(enemy.level || 1, 0));
     // chance d'objet × difficulté ; au-delà de 100 %, objets supplémentaires (ex. 126 % = 1 objet + 26 % d'un second)
-    const ch = (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE) * D.drop;
+    const ch = (enemy.def.itemDropChance ?? ENEMY_ITEM_CHANCE) * D.drop * wbDrop();
     const n = Math.min(4, Math.floor(ch) + (Math.random() < ch - Math.floor(ch) ? 1 : 0)); // V10.33 : au plus 4 objets par monstre, même aux difficultés extrêmes
     for (let i = 0; i < n; i++) drops.push({ gen: rollLootItem({ sourceLevel: enemy.level || 1, tierShift: 0 }) });
     if (Math.random() < 0.06 * Math.min(3, D.drop)) drops.push(runeFor(enemy.level)); // 6 % par monstre, partout dans le monde // V10.19

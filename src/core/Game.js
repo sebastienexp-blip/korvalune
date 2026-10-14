@@ -1,3 +1,5 @@
+import { setWorldBoost, wbInfo } from '../data/worldBoost.js';
+import { AdminSpawns } from '../world/AdminSpawns.js';
 import { AccountSecurity } from '../ui/AccountSecurity.js';
 import { GroundGPS } from '../world/GroundGPS.js';
 import * as THREE from 'three';
@@ -742,6 +744,7 @@ export class Game {
     b.on('ui:account', () => { this.hud.showScreen('account-screen'); this.hud.setAccountError(''); });
     b.on('ui:account-forgot', () => { this._sec ??= new AccountSecurity(this.root, this.net, this.bus); this._sec.openRecover(this.root.querySelector('#acc-username')?.value || ''); });
     b.on('ui:account-support', () => { this._sec ??= new AccountSecurity(this.root, this.net, this.bus); this._sec.openSupport(); });
+    b.on('ui:account-code', () => { this._sec ??= new AccountSecurity(this.root, this.net, this.bus); this._sec.openCode(); });
     b.on('ui:account-security', () => { this._sec ??= new AccountSecurity(this.root, this.net, this.bus); this._sec.openSecurity(); });
     b.on('ui:account-back', () => this.hud.showScreen('main-menu'));
     // V10.3 — page « Nouveautés » (menu principal + page de connexion) ; pastille « Nouveau » tant que la dernière version n'a pas été vue
@@ -949,6 +952,8 @@ export class Game {
     b.on('net:gr', (msg) => this.gw.onRelay(msg));
     b.on('net:chat', (msg) => this.hud.appendChat({ channel: msg.channel, from: msg.from, text: msg.text }));
     b.on('net:whisper', (msg) => this.hud.appendChat({ channel: 'general', whisper: true, from: msg.from, to: msg.to, text: msg.text, self: msg.self }));
+    b.on('net:worldBoost', (m) => { setWorldBoost(m); const i = wbInfo(); if (i) this.hud.notify(`✨ ${i.label} : XP ×${i.xp}, butin ×${i.drop}`, 'boss'); });
+    b.on('net:worldSpawn', (m) => { if (!this.player || !this.world || this.hud._curScreen !== 'game-ui') return; (this._adminSpawns ??= new AdminSpawns(this)).spawn(m); });
     b.on('net:system', (msg) => this.hud.appendChat({ channel: 'general', system: true, text: msg.text }));
     b.on('net:who', (players) => this.hud.appendChat({ channel: 'general', system: true, text: `En ligne (${players.length}) : ${players.map((p) => `${p.name} (Nv.${p.level})`).join(', ') || '—'}` }));
     b.on('net:group', (msg) => { this.group = msg.members || []; this.gw.onGroup(msg); this._renderSocial(); });

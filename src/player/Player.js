@@ -1,3 +1,4 @@
+import { wbXp } from '../data/worldBoost.js';
 import { cleanPotions } from '../data/potions.js';
 import { cleanSatchel } from '../data/satchel.js';
 import { cleanZenith, zenithBonus, zenithXp, MAX_LEVEL } from '../data/zenith.js';
@@ -330,7 +331,7 @@ export class Player {
 
   gainXp(n) {
     if (this.dead) return;
-    n = Math.round(n * (1 + ((this.riftBonus && this.riftBonus.xpPct) || 0) + (this.xpBonus || 0)));
+    n = Math.round(n * (1 + ((this.riftBonus && this.riftBonus.xpPct) || 0) + (this.xpBonus || 0)) * wbXp());
     this.xp += n;
     this.bus.emit('floatText', { pos: this.pos.clone().add({ x: 0, y: 2.1, z: 0 }), text: `+${n} XP`, color: '#8fd0ff' });
     while (this.xp >= this.xpNeeded) {
