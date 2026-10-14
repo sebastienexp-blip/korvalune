@@ -7,6 +7,8 @@ import enemiesData from '../data/enemies.json';
 import { computeEnemyStats } from '../data/enemyScaling.js';
 import { rollLootItem } from '../inventory/ItemGenerator.js';
 import { ModelLibrary } from '../visual/ModelLibrary.js';
+import { createMount, updateMount, disposeMount } from '../visual/MountModel.js';
+import { MOUNT_BY_ID } from '../data/mounts.js';
 
 // V4.9 : événement « Caravane en danger ». Une caravane marchande traverse la
 // carte ; elle n'avance que si le joueur est proche et qu'aucun brigand ne
@@ -29,6 +31,22 @@ function buildWagon() {
   const wg = new THREE.CylinderGeometry(0.45, 0.45, 0.12, 12); wg.rotateX(Math.PI / 2);
   for (const [x, z] of [[-0.8, 0.72], [-0.8, -0.72], [0.8, 0.72], [0.8, -0.72]]) { const w = new THREE.Mesh(wg, DARK); w.position.set(x, 0.45, z); g.add(w); }
   return g;
+}
+
+// V10.48 — la caravane est tirée par un cheval : brancards de chaque côté, collier et palonnier. Le cheval marche quand le chariot avance.
+const HORSE_X = 3.45;
+function buildTeam() {
+  const horse = createMount(MOUNT_BY_ID.horse_brun);
+  horse.group.rotation.y = Math.PI / 2;            // le cheval regarde vers +X, comme le timon du chariot
+  horse.group.position.set(HORSE_X, 0, 0);
+  const rig = new THREE.Group();
+  for (const z of [-0.42, 0.42]) {                // brancards
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.08, 0.08), WOOD);
+    shaft.position.set(HORSE_X - 1.2, 0.95, z); rig.add(shaft);
+  }
+  const yoke = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.96), DARK); yoke.position.set(HORSE_X - 0.3, 1.5, 0); rig.add(yoke);
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 6, 14), DARK); collar.rotation.y = Math.PI / 2; collar.position.set(HORSE_X + 0.28, 1.55, 0); rig.add(collar);
+  return { horse, rig };
 }
 
 export class CaravanEvent {
@@ -59,6 +77,7 @@ export class CaravanEvent {
     this.active = true; this.route = r; this.progress = 0; this.wave = 0; this.away = 0; this.t = 0;
     this.mesh = new THREE.Group();
     this.mesh.add(buildWagon());
+    try { const t = buildTeam(); this.horse = t.horse; this.mesh.add(t.horse.group, t.rig); } catch (e) { console.warn('[V10.48] cheval de caravane ignoré', e); this.horse = null; }
     const lbl = makeLabel('Caravane marchande', { color: '#ffe9a8', size: 44, scale: 3.4 }); lbl.position.y = 3.1; this.mesh.add(lbl);
     this.mesh.position.set(r.sx, g.world.heightAt(r.sx, r.sz), r.sz);
     this.mesh.rotation.y = Math.atan2(r.ex - r.sx, r.ez - r.sz) - Math.PI / 2;
@@ -104,7 +123,7 @@ export class CaravanEvent {
     const g = this.g, p = g.player;
     this._cleanup();
     const c = this.mesh.position.clone();
-    g.scene.remove(this.mesh); this.mesh = null; this.active = false;
+    g.scene.remove(this.mesh); if (this.horse) { disposeMount(this.horse); this.horse = null; } this.mesh = null; this.active = false;
     this.cd = 420 + Math.random() * 180;
     if (!success) { g.hud.notify('La caravane a poursuivi sa route sans vous.', 'info'); return; }
     const st = computeEnemyStats(p.level, 'elite');
@@ -137,9 +156,11 @@ export class CaravanEvent {
     this.away = dP > FAIL_AWAY ? this.away + dt : 0;
     if (this.away > FAIL_T) { this._end(false); return; }
     const threat = this.ambushers.some((e) => e.alive && Math.hypot(e.pos.x - c.x, e.pos.z - c.z) < 30);
-    if (dP < 24 && !threat) {
+    const rolling = dP < 24 && !threat && this.progress < 1;
+    if (rolling) {
       this.progress = Math.min(1, this.progress + (SPEED * dt) / DIST);
     }
+    if (this.horse) updateMount(this.horse, dt, rolling ? SPEED : 0, false);   // le cheval marche seulement quand la caravane avance
     const x = r.sx + (r.ex - r.sx) * this.progress, z = r.sz + (r.ez - r.sz) * this.progress;
     c.set(x, g.world.heightAt(x, z) + Math.abs(Math.sin(this.t * 5)) * (dP < 24 && !threat ? 0.03 : 0), z);
     if (this.wave < 3 && this.progress >= (this.wave + 1) * 0.25 && !threat) this._ambush();

@@ -1352,3 +1352,17 @@ input[type="range"] { accent-color: var(--brass); padding: 0; background: none; 
 
 /* V10.46 — pendant une cinématique d'histoire, l'interface de jeu est masquée */
 #game-ui.cine-hide{visibility:hidden !important}
+
+/* V10.48 — icône du carquois (objet secondaire de l'archer) */
+svg.ico-q { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -0.18em; }
+.inv-icon svg.ico-q, #is-icon svg.ico-q, .ws-ic svg.ico-q { width: 1.1em; height: 1.1em; display: block; margin: 0 auto; }
+
+/* V10.48 — menu des émotes */
+#emote-panel { position: absolute; right: 64px; bottom: 120px; width: 252px; padding: 10px; z-index: 30; pointer-events: auto; }
+#emote-panel .em-title { font-family: var(--serif); font-size: 15px; margin: 0 0 8px; color: var(--brass-hi, #f3d68a); }
+#emote-panel .em-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+#emote-panel .em-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 8px; border: 1px solid rgba(226, 184, 102, 0.45); background: rgba(226, 184, 102, 0.1); color: inherit; font-family: var(--serif); cursor: pointer; min-height: 52px; }
+#emote-panel .em-btn span { font-size: 22px; line-height: 1; }
+#emote-panel .em-btn small { font-size: 10px; line-height: 1.1; text-align: center; }
+#emote-panel .em-btn:hover, #emote-panel .em-btn:focus-visible { background: rgba(226, 184, 102, 0.28); outline: none; }
+#emote-panel .em-hint { margin-top: 8px; font-size: 10px; opacity: 0.7; }

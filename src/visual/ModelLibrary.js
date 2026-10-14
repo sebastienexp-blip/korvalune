@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildExtraClips } from './ExtraClips.js';
 
 // Bibliothèque de modèles 3D (GLB) optionnels — V3.
 //
@@ -42,14 +43,15 @@ const CLIP_PATTERNS = {
   walk: [/^walk$/i, /walk/i, /jog/i],
   run: [/^run$/i, /run/i, /sprint/i, /gallop/i],
   jump: [/jump/i, /leap/i],
-  ride: [/^ride$/i, /sit/i, /mount/i, /saddle/i],
+  ride: [/^ride$/i, /^sit$/i, /mount/i, /saddle/i],
   hit: [/hit_?[ab]?$/i, /hitrec/i, /hurt/i, /react/i, /damage/i, /flinch/i, /get.?hit/i],
   death: [/death/i, /die/i, /dead/i, /defeat/i],
   interact: [/interact/i, /cheer/i, /wave/i, /pickup/i, /use/i, /spawn/i, /talk/i],
   attack: [/1h.*(slice|chop|stab|attack)/i, /melee/i, /attack/i, /slash/i, /swing/i, /punch/i, /bite/i, /claw/i, /stab/i, /sword/i],
   attack2: [/2h|heavy|spin|combo|horizontal|big/i, /attack.?2|attack_b|slash_?2/i, /kick/i],
   cast: [/cast/i, /spell/i, /magic/i],
-  shoot: [/bow|shoot|ranged|aim/i]
+  shoot: [/bow|shoot|ranged|aim/i],
+  roll: [/^roll$/i, /roll|dodge|tumble/i]
 };
 
 const hashStr = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
@@ -114,6 +116,7 @@ export const ModelLibrary = {
     };
     await Promise.all([worker(), worker(), worker(), worker(), this._terrainP]);
     if (done < files.length) console.warn(`[V3] chargement interrompu : ${done}/${files.length} modèles`);
+    try { for (const c of buildExtraClips()) if (!this.clips.has(c.name)) this.clips.set(c.name, c); } catch (e) { console.warn('[V10.48] mouvements supplémentaires ignorés', e); }   // roulade, tir à l'arc, incantation, émotes
     this.ready = this.characters.length > 0;
     this.count = this.characters.length;
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
@@ -298,9 +301,10 @@ export const ModelLibrary = {
 
   findClip(entry, state, role = '') {
     const classId = (role.split(':')[1] || '');
-    let lists = CLIP_PATTERNS[state] || [];
+    let lists = CLIP_PATTERNS[state] || (state.startsWith('emote_') ? [new RegExp('^' + state + '$', 'i')] : []);
     if (state === 'attack' || state === 'attack2') {
-      const pref = classId === 'mage' ? CLIP_PATTERNS.cast : classId === 'archer' ? CLIP_PATTERNS.shoot : null;
+      const big = state === 'attack2';   // V10.48 : sort simple / grand sort, tir normal / puissant
+      const pref = classId === 'mage' ? [big ? /^cast2$/i : /^cast$/i, ...CLIP_PATTERNS.cast] : classId === 'archer' ? [big ? /^shoot2$/i : /^shoot$/i, ...CLIP_PATTERNS.shoot] : null;
       if (pref) lists = [...pref, ...lists];
     }
     const own = entry.clips || [];
@@ -373,8 +377,9 @@ export function tryCreateGlbRig(kind, opts = {}) {
   return rig;
 }
 
-const ONE_SHOT = new Set(['attack', 'attack2', 'interact', 'death', 'hit', 'jump']);
-const FALLBACK = { attack2: ['attack'], attack: ['cast', 'shoot', 'attack2'], interact: ['idle'], jump: ['run'], hit: [], death: [], walk: ['run', 'idle'], run: ['walk', 'idle'] };
+const ONE_SHOT = new Set(['attack', 'attack2', 'interact', 'death', 'hit', 'jump', 'roll']);
+const isEmote = (a) => typeof a === 'string' && a.startsWith('emote_');
+const FALLBACK = { roll: [], attack2: ['attack'], attack: ['cast', 'shoot', 'attack2'], interact: ['idle'], jump: ['run'], hit: [], death: [], walk: ['run', 'idle'], run: ['walk', 'idle'] };
 const easeOut = (t) => 1 - (1 - t) * (1 - t);
 
 function getAction(g, state) {
@@ -390,7 +395,7 @@ function play(g, state, { dur = 0, fade = 0.15, scale = 1 } = {}) {
   const act = getAction(g, state);
   if (!act) return null;
   const prev = g.action;
-  const once = ONE_SHOT.has(state);
+  const once = ONE_SHOT.has(state) || isEmote(state);
   act.reset();
   act.enabled = true;
   act.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, once ? 1 : Infinity);
@@ -411,7 +416,8 @@ export function animateGlbRig(rig, s, dt, kind = 'humanoid') {
   rig.t += dt;
   rig.hurtT = Math.max(0, rig.hurtT - dt * 3.5);
   const dead = !!s.dead;
-  const acting = !dead && (s.action === 'attack' || s.action === 'attack2' || s.action === 'interact');
+  const emote = !dead && kind === 'humanoid' && isEmote(s.action) && !!getAction(g, s.action);
+  const acting = !dead && (s.action === 'attack' || s.action === 'attack2' || s.action === 'interact' || emote || (kind === 'humanoid' && s.action === 'roll' && !!getAction(g, 'roll')));
   const speed = s.speed || 0;
   const loco = speed > 4.6 ? 'run' : speed > 0.35 ? 'walk' : 'idle';
   let want;
@@ -439,13 +445,13 @@ export function animateGlbRig(rig, s, dt, kind = 'humanoid') {
     if (want === 'death') {
       if (!play(g, 'death', { fade: 0.1 })) g.noDeathClip = true;
     } else if (acting) {
-      play(g, want, { dur: s.actionDur > 0 ? s.actionDur : 0, fade: 0.08 });
+      play(g, want, { dur: emote ? 0 : s.actionDur > 0 ? s.actionDur : 0, fade: emote ? 0.2 : 0.08 });
     } else if (!play(g, want, { fade: 0.2 })) {
       g.state = want;
     }
   }
   // cadence de marche/course proportionnelle à la vitesse
-  if (g.action && !ONE_SHOT.has(g.state)) {
+  if (g.action && !ONE_SHOT.has(g.state) && !isEmote(g.state)) {
     g.action.timeScale = g.state === 'run' ? Math.min(1.6, Math.max(0.8, speed / 6.5)) : g.state === 'walk' ? Math.min(1.5, Math.max(0.7, speed / 3.2)) : 1;
   }
 

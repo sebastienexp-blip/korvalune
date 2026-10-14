@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { CONFIG } from '../core/config.js';
 import { clamp, damp, lerpAngle } from '../core/math.js';
 import { createHumanoid, animateHumanoid } from '../entities/HumanoidModel.js';
+import { EMOTES } from '../visual/ExtraClips.js';
 import { setWeaponAura } from '../visual/WeaponAura.js';
 import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
 import { createMount, updateMount, disposeMount } from '../visual/MountModel.js';
@@ -598,6 +599,7 @@ export class Player {
     // Pendant le lancer, le personnage garde sa direction de visée et se déplace en « strafe » vers où pointe le joystick.
     const casting = busy && !!this.action && this.action !== 'roll' && !this.dash;
     const moving = (mv.x || mv.y) && (!busy || casting);
+    if (this.action && this.action.startsWith('emote_') && (mv.x || mv.y || this.mount)) { this.action = null; this.actionT = 0; }   // V10.48 : bouger interrompt une émote
 
     if (moving) {
       const worldAngle = Math.atan2(mv.x, mv.y) + cameraYaw;
@@ -719,6 +721,14 @@ export class Player {
       this.rig.root.position.y += mr.seat;
     }
     animateHumanoid(this.rig, { speed: this.mount ? 0 : this.speed, grounded: this.mount ? true : this.grounded || (this.airT || 0) < 0.14, action: this.action, actionT: this.actionT, actionDur: this.actionDur, dead: false, crouch: this.crouch || !!this.mount, riding: !!this.mount }, dt);
+  }
+
+  // V10.48 : émote sociale (animation visible par les autres joueurs : le nom de l'action est relayé tel quel par le réseau)
+  startEmote(id) {
+    const e = EMOTES.find((x) => x.id === id);
+    if (!e || this.dead || this.mount || this.dash || this.swimming || this.busyUntil > performance.now() / 1000 || !this.grounded) return false;
+    this.action = 'emote_' + e.id; this.actionT = 0; this.actionDur = e.dur; this.pendingSkill = null;
+    return true;
   }
 
   serialize() {

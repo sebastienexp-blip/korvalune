@@ -145,7 +145,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.47 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.48 — Korvalune</div>
         </div>
       </div>
 
@@ -281,6 +281,7 @@ export class HUD {
           <button id="btn-pass" class="tbtn small" aria-label="Pass de combat" title="Pass de combat">🏅<i class="pass-dot hidden"></i></button>
           <button id="btn-lune" class="tbtn small" aria-label="Boutique des Lunes" title="Boutique des Lunes"><span class="bl-ico">🌙</span><span class="bl-txt">Boutique</span></button>
           <button id="btn-chat" class="tbtn small">💬</button>
+          <button id="btn-emote" class="tbtn small" aria-label="Émotes" title="Émotes (G)">🙂</button>
         </div>
 
         <div id="net-status" class="hidden">Mode solo — serveur multijoueur non détecté</div>
@@ -629,7 +630,7 @@ export class HUD {
     const MAP = [
       ['#btn-inv', 'bag', 'Inventaire'], ['#btn-char', 'char', 'Personnage'], ['#btn-skills', 'skills', 'Compétences'], ['#btn-quests', 'quests', 'Quêtes'],
       ['#btn-ach', 'trophy', 'Succès'], ['#btn-social', 'people', 'Social'], ['#btn-tp', 'portal', 'Portail'], ['#btn-mount', 'horse', 'Monture'],
-      ['#btn-pass', 'medal', 'Pass'], ['#btn-lune', 'moon', 'Boutique', '.bl-ico'], ['#btn-chat', 'chat', 'Discussion'], ['#btn-menu', 'menu', 'Menu'],
+      ['#btn-pass', 'medal', 'Pass'], ['#btn-lune', 'moon', 'Boutique', '.bl-ico'], ['#btn-chat', 'chat', 'Discussion'], ['#btn-emote', 'emote', 'Émotes'], ['#btn-menu', 'menu', 'Menu'],
       ['#btn-pause', 'pause', 'Pause'], ['#t-attack', 'sword'], ['#t-jump', 'roll'], ['#t-run', 'bolt'], ['#t-interact', 'hand'], ['#t-lock', 'lock'],
       ['#pq-heal', 'flaskHeal', null, '.pq-ic'], ['#pq-mana', 'flaskMana', null, '.pq-ic'], ['#map-expand', 'map'], ['#map-mode', 'compass']
     ];
@@ -898,7 +899,7 @@ export class HUD {
         cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
         if (view.rarityInfo.prismatic) cell.classList.add('prismatic-border');
         const betterBadge = this._isUpgrade(view, equipment) ? '<span class="inv-upgrade">▲</span>' : '';
-        cell.innerHTML = `<span class="inv-icon">${view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}${betterBadge}`;
+        cell.innerHTML = `<span class="inv-icon">${view.iconHtml || view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}${betterBadge}`;
         cell.onclick = () => this.openItemSheet(slot, i, equipment, player, onAction);
         if (this.ms.on) this._msDecorate(cell, 'inv', i, rerender);
       }
@@ -979,7 +980,7 @@ export class HUD {
         cell.style.borderColor = view.rarityInfo.color;
         cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
         cell.title = `${SLOT_LABELS[s]} : ${view.name}${view.broken ? ' (brisé)' : ''}`;
-        cell.innerHTML = `<span class="inv-icon">${view.icon}</span><span class="eq-tag">${view.broken ? '💥 ' : view.isGenerated && view.dur / view.durMax <= 0.25 ? '⚠ ' : ''}${SLOT_LABELS[s]}</span>`;
+        cell.innerHTML = `<span class="inv-icon">${view.iconHtml || view.icon}</span><span class="eq-tag">${view.broken ? '💥 ' : view.isGenerated && view.dur / view.durMax <= 0.25 ? '⚠ ' : ''}${SLOT_LABELS[s]}</span>`;
         if (view.broken) cell.classList.add('broken');
         cell.onclick = () => this.onUnequip && this.onUnequip(s);
       } else {
@@ -1007,7 +1008,7 @@ export class HUD {
     const view = resolveItem(slot);
     const sheet = this.q('#item-sheet');
     sheet.classList.remove('hidden');
-    this.q('#is-icon').textContent = view.icon;
+    this.q('#is-icon').innerHTML = view.iconHtml || view.icon;
     const nameEl = this.q('#is-name');
     nameEl.textContent = view.name;
     nameEl.style.color = view.rarityInfo.color;
@@ -1126,7 +1127,7 @@ export class HUD {
         const view = resolveItem(item);
         row.style.borderColor = view.rarityInfo.color;
         row.style.boxShadow = rarityGlow(view.rarityInfo).box;
-        row.innerHTML = `<span class="inv-icon">${view.icon}</span><span class="eq-text"><small>${SLOT_LABELS[s]}</small><b style="color:${view.rarityInfo.color}">${view.name}</b></span>`;
+        row.innerHTML = `<span class="inv-icon">${view.iconHtml || view.icon}</span><span class="eq-text"><small>${SLOT_LABELS[s]}</small><b style="color:${view.rarityInfo.color}">${view.name}</b></span>`;
         row.onclick = () => onUnequip(s);
       } else {
         row.classList.add('equip-empty');
@@ -1445,7 +1446,7 @@ export class HUD {
     const cell = (slot, attrs = '') => {
       const v = resolveItem(slot.gen ? { gen: slot.gen } : { defId: slot.defId, qty: slot.qty });
       if (!v) return '';
-      return `<button class="inv-cell trade-cell" style="border-color:${v.rarityInfo.color}" title="${esc(v.name)}" ${attrs}><span class="inv-icon">${v.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}<small>${esc(v.name)}</small></button>`;
+      return `<button class="inv-cell trade-cell" style="border-color:${v.rarityInfo.color}" title="${esc(v.name)}" ${attrs}><span class="inv-icon">${v.iconHtml || v.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}<small>${esc(v.name)}</small></button>`;
     };
     this.q('#trade-mine').innerHTML = d.mine.length ? d.mine.map((s) => cell(s)).join('') : '<p class="menu-hint">Rien pour l’instant.</p>';
     this.q('#trade-theirs').innerHTML = d.theirs.length ? d.theirs.map((s) => cell(s)).join('') : '<p class="menu-hint">Rien pour l’instant.</p>';
@@ -1550,7 +1551,7 @@ export class HUD {
           const view = resolveItem(slot);
           cell.style.borderColor = view.rarityInfo.color;
           cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
-          cell.innerHTML = `<span class="inv-icon">${view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}`;
+          cell.innerHTML = `<span class="inv-icon">${view.iconHtml || view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}`;
           cell.onclick = () => onTap(startIdx + i);
           if (this.ms.on) this._msDecorate(cell, scope, startIdx + i, rerender);
         }
@@ -1603,7 +1604,7 @@ export class HUD {
           const view = resolveItem(slot);
           cell.style.borderColor = view.rarityInfo.color;
           cell.style.boxShadow = rarityGlow(view.rarityInfo).box;
-          cell.innerHTML = `<span class="inv-icon">${view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}`;
+          cell.innerHTML = `<span class="inv-icon">${view.iconHtml || view.icon}</span>${slot.qty > 1 ? `<span class="inv-qty">${slot.qty}</span>` : ''}`;
           cell.title = `${view.name} — ${(view.isGenerated ? view.value : view.value * slot.qty).toLocaleString('fr-FR')} 🪙`;
           this._msDecorate(cell, 'inv', i, rerender);
         }

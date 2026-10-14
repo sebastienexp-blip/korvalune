@@ -9,6 +9,7 @@ import { applyCosmetics, disposeCosmetics } from '../visual/Cosmetics.js';
 import { CATALOG_BY_ID } from '../data/shopCatalog.js';
 import { giveClassGear } from '../visual/GlbEquipment.js';
 import { sanitizeAppearance } from '../data/looks.js';
+import { EMOTE_BY_ANIM } from '../visual/ExtraClips.js';
 
 // Représentation visuelle d'un autre joueur connecté. La position réelle
 // n'est mise à jour que ~9 fois/seconde par le serveur ; on lisse ("interpole")
@@ -123,7 +124,7 @@ export class RemotePlayer {
     if (isAction) this._actionT += dt; else this._actionT = 0;
     animateHumanoid(this.rig, {
       speed: this._mount ? 0 : this.speed, grounded: true,
-      action: isAction ? this.anim : null, actionT: this._actionT, actionDur: 0.5,
+      action: isAction ? this.anim : null, actionT: this._actionT, actionDur: EMOTE_BY_ANIM[this.anim]?.dur || (this.anim === 'roll' ? 0.5 : 0.5),
       dead: this.anim === 'dead', crouch: !!this._mount
     }, dt);
     if (camQuat) { this.label.quaternion.copy(camQuat); if (this.titleLabel) this.titleLabel.quaternion.copy(camQuat); }

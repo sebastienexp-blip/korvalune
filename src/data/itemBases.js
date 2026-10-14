@@ -37,6 +37,9 @@ export const ARMOR_BASES = {
   cloak: { name: 'Cape', icon: '🧣', slot: 'cape', base: 1, perLevel: 0.5, hpBase: 4, hpPerLevel: 1.0 }
 };
 
+// V10.48 — icône du carquois : un vrai carquois (étui de cuir + flèches empennées), pas un arc. `icon` reste un emoji pour les textes (notifications, étiquettes) ; `iconHtml` est utilisé dans les cases d'inventaire.
+export const QUIVER_SVG = '<svg class="ico-q" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(24 12 12)"><path d="M9.5 9.6h5l-.9 11.4a1.5 1.5 0 0 1-1.5 1.4h-.2a1.5 1.5 0 0 1-1.5-1.4z" fill="#8a5a33" stroke="#2f1c0d" stroke-width=".9"/><rect x="9" y="8.6" width="6" height="1.9" rx=".6" fill="#c9a064" stroke="#2f1c0d" stroke-width=".8"/><path d="M10.4 8.6V3.6M12 8.6V2.4M13.6 8.6V3.6" stroke="#efe6cf" stroke-width="1" stroke-linecap="round"/><path d="M10.4 4.2l-1-1.7h2zM12 3l-1-1.7h2zM13.6 4.2l-1-1.7h2z" fill="#c8453b"/><path d="M10.2 12.6h3.6M10.4 15.8h3.2" stroke="#3b2412" stroke-width=".7" opacity=".7"/></g></svg>';
+
 // V10.26 — objets secondaires : un par famille de classe (bouclier, orbe, carquois, dague de la main gauche).
 // Chaque champ [base, parNiveau] donne une statistique ; `crit` est une fraction fixe.
 export const OFFHAND_BASES = {

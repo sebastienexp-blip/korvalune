@@ -611,7 +611,10 @@ function buildDistricts(world, g, T, stone, wood, add) {
 
   // ---- place des Métamorphoses : cercle de pierre autour du monolithe, quatre torchères runiques
   const [mx, mz] = POS.monolith, my = world.heightAt(mx, mz);
-  if (glbDist) placeGlb('cercle_monolithe', mx, my, mz);
+  if (glbDist) {
+    const ring = placeGlb('cercle_monolithe', mx, my, mz);
+    ring.userData.noAutoCollide = true;   // V10.48 : le cercle est un anneau au sol — son volume englobant (13,5 m) bouchait toute la place et interdisait l'accès au Monolithe
+  }
   else add(new THREE.TorusGeometry(6.5, 0.28, 6, 36).rotateX(Math.PI / 2), stone, mx, my + 0.14, mz).castShadow = false;
   for (let i = 0; i < 4; i++) {
     const a2 = i * Math.PI / 2 + Math.PI / 4, px = mx + Math.cos(a2) * 6.5, pz = mz + Math.sin(a2) * 6.5;
@@ -622,6 +625,7 @@ function buildDistricts(world, g, T, stone, wood, add) {
     halo(px, my + 3.0, pz, 0x8fe3ff, 3);
     world.addCircle(px, pz, 0.5);
   }
+  world.addCircle(mx, mz, 1.5);   // V10.48 : socle de la statue seul (on ne traverse plus la pierre, mais on peut s'en approcher)
 
   // ---- écurie : abri ouvert, enclos, auge, foin
   const [sx0, sz0] = POS.stable, sy = world.heightAt(sx0, sz0);

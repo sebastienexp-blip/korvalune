@@ -792,7 +792,7 @@ export class World {
     let added = 0;
     this.group.traverse((o) => {
       if (!o.isMesh || o.isInstancedMesh || o === this.terrain || o === this.water || o === this.water2) return;
-      for (let p = o; p; p = p.parent) if (p.visible === false) return;
+      for (let p = o; p; p = p.parent) if (p.visible === false || p.userData?.noAutoCollide) return;
       if (o.material && o.material.transparent && o.material.opacity < 0.6) return;
       if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
       box.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); box.getSize(sz); box.getCenter(ct);

@@ -3,6 +3,18 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.48', title: 'Animations, émotes et corrections',
+    items: [
+      '🤸 Roulade : le personnage fait enfin une vraie roulade avant, en boule.',
+      '🏹 L’archer tire vraiment à l’arc : arc tenu à la main gauche, corde tendue jusqu’à la joue, flèche lâchée au bon moment (tir normal et tir puissant).',
+      '🔮 Le mage lance ses sorts (sort simple et grand sort à deux bras), et toutes les classes ont une pose d’invocation pour leurs bonus, soins et cris.',
+      '🙂 11 émotes : saluer, victoire, applaudir, révérence, danser, pointer, rire, s’asseoir, salut militaire, muscles, haussement d’épaules. Touche G, bouton 🙂, ou /danse, /salut… dans le chat. Les autres joueurs les voient.',
+      '🗿 Le Monolithe des Métamorphoses est de nouveau accessible : un obstacle invisible bouchait toute la place.',
+      '🐎 La caravane marchande est tirée par un cheval, qui marche quand elle avance.',
+      '🎯 L’objet secondaire de l’archer a maintenant une vraie icône de carquois (au lieu d’un arc).'
+    ]
+  },
+  {
     version: '10.47', title: 'Mode histoire : Acte I, Les Ombres',
     items: [
       '🌲 Acte I : après le prologue, Ysmer t’envoie dans la Forêt des Ombres. Trois quêtes jusqu’au premier Gardien corrompu.',

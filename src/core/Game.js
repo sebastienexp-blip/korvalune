@@ -34,6 +34,8 @@ import { wearGear } from '../crafting/Crafting.js';
 import { PASS_ITEM_BY_ID, rewardOf as passRewardOf } from '../data/battlePass.js';
 import { Workshop } from '../ui/Workshop.js';
 import { buildForgeDecor } from '../world/Monolith.js';
+import { EmoteMenu } from '../ui/EmoteMenu.js';
+import { findEmote } from '../visual/ExtraClips.js';
 import { POS } from '../world/TownMap.js';
 import { setDifficultyId, getDifficulty, DIFFICULTIES, clampDifficulty } from '../data/difficulty.js';
 
@@ -1125,6 +1127,8 @@ export class Game {
       dmIn.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') dmSend(); });
     }
     this.root.querySelector('#btn-chat').addEventListener('click', () => { document.exitPointerLock?.(); this.hud.toggleChat(); });
+    try { this.emotes = new EmoteMenu(this); } catch (e) { console.warn('[V10.48] menu des émotes ignoré', e); }
+    this.root.querySelector('#btn-emote')?.addEventListener('click', () => { document.exitPointerLock?.(); this.emotes?.toggle(); });
     document.addEventListener('keydown', (e) => {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') {
@@ -1142,6 +1146,7 @@ export class Game {
       else if (act === 'character') this.modalOpen ? this._closeModal() : this._openCharacter();
       else if (act === 'skills') this.modalOpen ? this._closeModal() : this._openSkills();
       else if (act === 'interact') this._tryInteract();
+      else if (act === 'emote' && !e.repeat && !this.modalOpen) this.emotes?.toggle();
       else if (act === 'mount' && !e.repeat) this._toggleMount();
       else if (act === 'townPortal' && !e.repeat && !this.modalOpen) this.tp?.cast();
       else if (act === 'potionHeal') this._quickPotion('heal');
@@ -1389,11 +1394,17 @@ export class Game {
       const arg = rest.join(' ').trim();
       switch (cmd.toLowerCase()) {
         case 'help':
-          this.hud.appendChat({ channel: 'general', system: true, text: 'Commandes : /help /who /invite <nom> /group [accept|leave] /friend add <compte> /whisper <nom> <message> — ou le bouton 👥' });
+          this.hud.appendChat({ channel: 'general', system: true, text: 'Commandes : /help /who /emote <nom> (ou /danse, /salut, /rire…) /invite <nom> /group [accept|leave] /friend add <compte> /whisper <nom> <message> — ou le bouton 👥' });
           break;
         case 'who':
           this.net.requestWho();
           break;
+        case 'emote':
+        case 'e': {
+          const em = findEmote(arg);
+          if (em) this.emotes?.play(em.id); else this.emotes?.toggle();
+          break;
+        }
         case 'friend':
         case 'ami': {
           const [sub, ...r2] = rest; const nm = r2.join(' ').trim();
@@ -1423,8 +1434,11 @@ export class Game {
           else this.hud.appendChat({ channel: 'general', system: true, text: 'Usage : /whisper <nom> <message>' });
           break;
         }
-        default:
+        default: {
+          const em = findEmote(cmd);   // « /danse », « /salut », « /rire »…
+          if (em) { this.emotes?.play(em.id); break; }
           this.hud.appendChat({ channel: 'general', system: true, text: `Commande inconnue : /${cmd} (tape /help)` });
+        }
       }
       return;
     }

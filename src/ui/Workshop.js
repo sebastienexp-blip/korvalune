@@ -77,7 +77,7 @@ export class Workshop {
     const { gen, view, ref } = x;
     const where = ref.where === 'eq' ? `<small class="ws-eq">équipé · ${esc(SLOT_LABELS[ref.slot] || '')}</small>` : '';
     return `<button class="ws-item${selected ? ' on' : ''}${view.broken ? ' broken' : ''}" data-ws="sel" data-v="${esc(gen.uid)}" style="border-color:${view.rarityInfo.color}">
-      <span class="ws-ic">${esc(view.icon)}</span><span class="ws-nm"><b style="color:${view.rarityInfo.color}">${esc(view.name)}</b><small>${esc(this._desc(gen, view))}</small>${where}${extra}</span></button>`;
+      <span class="ws-ic">${view.iconHtml || esc(view.icon)}</span><span class="ws-nm"><b style="color:${view.rarityInfo.color}">${esc(view.name)}</b><small>${esc(this._desc(gen, view))}</small>${where}${extra}</span></button>`;
   }
   _list(items, empty) {
     if (!items.length) return `<p class="ws-empty">${empty}</p>`;
