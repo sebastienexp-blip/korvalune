@@ -151,7 +151,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.60 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.61 — Korvalune</div>
         </div>
       </div>
 
@@ -1345,14 +1345,13 @@ export class HUD {
       const when = (iso) => { try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }); } catch { return ''; } };
       const STATUS = { pending: '⏳ en attente de vérification', done: '✅ validé', refused: '❌ non confirmé' };
       let h = '<h3>Soutenir Korvalune</h3>' +
-        '<p class="menu-hint">Korvalune est gratuit et développé avec passion. Un don est libre et volontaire : merci du fond du cœur ! En remerciement, le créateur vous offre des Lunes (aucune puissance en combat, uniquement de l’apparence).</p>' +
+        '<p class="menu-hint">Korvalune est gratuit et développé avec passion. Un don est libre : merci du fond du cœur ! En remerciement, vous recevez des Lunes.</p>' +
         '<div class="don-tiers">' + DON_EXAMPLES.map((e) => `<span><b>${eur(e)}</b> → ${thanksLunes(e)} 🌙</span>`).join('') + '</div>' +
-        `<p class="menu-hint">Barème : ${DON_PER_EURO} Lunes par euro, avec un bonus dès 5 € (+20 %), dès 10 € (+50 %) et dès 25 € (+60 %).</p>` +
+        `<p class="menu-hint">1 € = ${DON_PER_EURO} Lunes, et plus on donne, plus le bonus grandit (jusqu’à +100 %).</p>` +
         '<ol class="don-steps"><li>Faites votre don sur PayPal :</li></ol>' +
         `<a class="soc-btn lune-donate" href="${esc(sh.don.url)}" target="_blank" rel="noopener noreferrer">Faire un don avec PayPal</a>` +
-        '<ol class="don-steps" start="2"><li>Revenez ici et signalez-le (le créateur vérifie la réception, puis vos Lunes arrivent) :</li></ol>' +
-        `<div class="don-form"><input id="don-amount" type="number" inputmode="decimal" min="${DON_MIN}" max="${DON_MAX}" step="0.5" placeholder="Montant €" aria-label="Montant du don en euros"><input id="don-note" type="text" maxlength="60" placeholder="Nom PayPal (facultatif)" aria-label="Nom PayPal"><button class="soc-btn" data-la="donate">J’ai fait mon don</button></div>` +
-        '<p class="menu-hint">Les Lunes de remerciement ne sont créditées qu’après vérification : elles n’ont aucune valeur monétaire, ni échange ni remboursement. Le jeu ne voit jamais vos informations de paiement.</p>';
+        '<ol class="don-steps" start="2"><li>Revenez ici et signalez-le : vos Lunes arrivent dès que le don est confirmé.</li></ol>' +
+        `<div class="don-form"><input id="don-amount" type="number" inputmode="decimal" min="${DON_MIN}" max="${DON_MAX}" step="0.5" placeholder="Montant €" aria-label="Montant du don en euros"><input id="don-note" type="text" maxlength="60" placeholder="Nom PayPal (facultatif)" aria-label="Nom PayPal"><button class="soc-btn" data-la="donate">J’ai fait mon don</button></div>`;
       if (sh.don.mine.length) h += '<div class="don-mine">' + sh.don.mine.map((m) => `<div>${when(m.at)} · ${eur(m.amount)} · ${STATUS[m.status] || ''}${m.status === 'done' ? ` (+${m.lunes} 🌙)` : ''}</div>`).join('') + '</div>';
       if (sh.owner) { // panneau du créateur : demandes à valider
         h += '<h3>Dons à valider (créateur)</h3><button class="soc-btn" data-la="donList">Actualiser la liste</button>';
