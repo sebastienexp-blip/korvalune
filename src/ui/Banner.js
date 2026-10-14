@@ -18,10 +18,14 @@ export class Banner {
   show(m) {
     if (!m || !m.text) return;
     this.queue.push({ kind: m.kind || 'announce', icon: m.icon || '📢', text: String(m.text).slice(0, 200), sub: m.sub ? String(m.sub).slice(0, 120) : '', secs: Math.min(30, Math.max(3, +m.secs || 7)) });
+    this.queue[this.queue.length - 1].at = Date.now();
     if (this.queue.length > 5) this.queue.splice(0, this.queue.length - 5);
     if (!this.busy) this._next();
   }
+  _inGame() { return this.game?.hud?._curScreen === 'game-ui'; }
   _next() {
+    while (this.queue.length && Date.now() - this.queue[0].at > 120000) this.queue.shift(); // trop vieux : on laisse tomber
+    if (!this._inGame()) { this.busy = false; return; } // reçu dans un menu : attend l'entrée en jeu
     const m = this.queue.shift();
     if (!m) { this.busy = false; return; }
     this.busy = true;
@@ -35,7 +39,9 @@ export class Banner {
   // pastille d'un événement local (ex. invasion) : set(id, { icon, label, until }) / set(id, null)
   setChip(id, c) { if (c) this.extra.set(id, c); else this.extra.delete(id); this._tickChips(); }
   _tickChips() {
+    if (!this.busy && this.queue.length && this._inGame()) this._next();
     const now = Date.now(), list = [];
+    this.chips.style.display = this._inGame() ? '' : 'none';
     const b = wbInfo();
     if (b) list.push({ icon: '✨', label: `${b.label} — XP ×${b.xp} · butin ×${b.drop}`, left: b.until - now, cls: 'boost' });
     for (const [id, c] of this.extra) { if (c.until <= now) { this.extra.delete(id); continue; } list.push({ icon: c.icon, label: c.label, left: c.until - now, cls: 'inv' }); }

@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.64', title: 'Annonces en jeu',
+    items: [
+      '📢 Les annonces et pastilles d’événements s’affichent uniquement en jeu, en haut au milieu de l’écran. Une annonce reçue pendant que tu es dans un menu s’affiche dès que tu reprends la partie.'
+    ]
+  },
+  {
     version: '10.63', title: 'Annonces à l’écran',
     items: [
       '📢 Les annonces, messages et événements du créateur s’affichent en grand, en blanc, au milieu de l’écran.',

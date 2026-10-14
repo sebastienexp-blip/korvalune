@@ -1422,3 +1422,10 @@ svg.ico-eq.ghost { opacity: 0.3; filter: grayscale(0.55); }
 .big-banner{width:max-content;max-width:min(66vw,1000px);top:12%}
 @media(max-width:900px){.big-banner{max-width:92vw;top:9%}.event-chips{top:auto;bottom:130px;right:8px}}
 .event-chips{top:auto;bottom:130px;right:12px}
+
+/* V10.64 — uniquement en jeu, en haut au milieu */
+.big-banner{top:74px!important}
+.event-chips{top:8px!important;bottom:auto!important;right:auto!important;left:50%;transform:translateX(-50%);flex-direction:row!important;flex-wrap:wrap;justify-content:center;max-width:70vw}
+.ev-chip{padding:4px 12px;font-size:13px}.ev-chip .ev-ico{font-size:20px}
+@media(max-width:900px){.event-chips{top:8px!important;bottom:auto!important;right:auto!important}.big-banner{top:64px!important}}
+.event-chips{width:max-content}

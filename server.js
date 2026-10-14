@@ -218,7 +218,8 @@ function ensureChars(acc) {
 }
 const ENEMY_LIST = (() => { try { const d = JSON.parse(readFileSync(new URL('./src/data/enemies.json', import.meta.url), 'utf8')); return Object.entries(d).map(([id, e]) => ({ id, name: e.name || id, boss: !!e.boss })); } catch { return []; } })();
 const ENEMY_IDS = new Set(ENEMY_LIST.map((e) => e.id));
-const bannerAll = (b) => broadcastAll({ t: 'banner', ...b });
+const sendEveryone = (m) => { for (const c of wss.clients) send(c, m); }; // tous les clients connectés (même ceux qui sont encore dans les menus)
+const bannerAll = (b) => sendEveryone({ t: 'banner', ...b });
 const loginExtras = (ws, acc, key) => { // message du jour, boost en cours, réponses de l'admin
   const n = supNotify(acc); if (n) send(ws, n);
   const m = getMotd(); if (m) { send(ws, { t: 'system', text: '📜 ' + m }); send(ws, { t: 'banner', kind: 'message', icon: '📜', text: m, secs: 8 }); }
@@ -826,9 +827,9 @@ wss.on('connection', (ws, req) => {
           ar(true, msg.on ? 'Maintenance activée : seuls les créateurs peuvent se connecter.' : 'Maintenance terminée : le jeu est ouvert.'); send(ws, admState()); return;
         }
         if (msg.t === 'adm:boost') {
-          if (msg.off) { await stopBoost(); broadcastAll({ t: 'world:boost', xp: 1, drop: 1, left: 0 }); await adminLog(me, 'boost arrêté', '-'); ar(true, 'Boost arrêté.'); send(ws, admState()); return; }
+          if (msg.off) { await stopBoost(); sendEveryone({ t: 'world:boost', xp: 1, drop: 1, left: 0 }); await adminLog(me, 'boost arrêté', '-'); ar(true, 'Boost arrêté.'); send(ws, admState()); return; }
           const r = setBoost(msg.xp, msg.drop, msg.minutes, msg.label); if (!r.ok) { ar(false, r.error); return; }
-          broadcastAll({ t: 'world:boost', ...r.boost, left: r.boost.until - Date.now() }); bannerAll({ kind: 'event', icon: '✨', text: r.boost.label, sub: `XP ×${r.boost.xp} · Butin ×${r.boost.drop} · pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min`, secs: 10 }); broadcastAll({ t: 'system', text: `✨ ${r.boost.label} : XP ×${r.boost.xp}, butin ×${r.boost.drop} pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min !` });
+          sendEveryone({ t: 'world:boost', ...r.boost, left: r.boost.until - Date.now() }); bannerAll({ kind: 'event', icon: '✨', text: r.boost.label, sub: `XP ×${r.boost.xp} · Butin ×${r.boost.drop} · pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min`, secs: 10 }); broadcastAll({ t: 'system', text: `✨ ${r.boost.label} : XP ×${r.boost.xp}, butin ×${r.boost.drop} pendant ${Math.round((r.boost.until - Date.now()) / 60000)} min !` });
           await adminLog(me, 'boost', '-', `XP×${r.boost.xp} butin×${r.boost.drop} ${msg.minutes} min`); ar(true, 'Boost lancé pour tous les joueurs.'); send(ws, admState()); return;
         }
         if (msg.t === 'adm:spawn') {
@@ -867,7 +868,7 @@ wss.on('connection', (ws, req) => {
         if (msg.t === 'adm:announce') {
           const text = sanitize(msg.text, 200).trim();
           if (text.length < 3) { ar(false, 'Message trop court.'); return; }
-          broadcastAll({ t: 'system', text: '📢 ' + text }); bannerAll({ kind: 'announce', icon: '📢', text, secs: Math.min(30, Math.max(4, Math.floor(Number(msg.secs) || 8))) }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${players.size} joueur(s) connecté(s).`); return;
+          sendEveryone({ t: 'system', text: '📢 ' + text }); bannerAll({ kind: 'announce', icon: '📢', text, secs: Math.min(30, Math.max(4, Math.floor(Number(msg.secs) || 8))) }); await adminLog(me, 'annonce', '-', text); ar(true, `Annonce envoyée à ${players.size} joueur(s) connecté(s).`); return;
         }
         const [k, a] = target();
         if (!k) { ar(false, 'Compte introuvable.'); return; }
