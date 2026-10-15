@@ -1,0 +1,27 @@
+name: Lien d'invitation Discord permanent
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  invite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Créer le lien permanent
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+        run: node tools/discord/invite.mjs
+      - name: Publier le lien (le site et le jeu le lisent)
+        run: |
+          git config user.name "korvalune-bot"
+          git config user.email "noreply@github.com"
+          git add public/discord.json
+          git diff --cached --quiet && echo "Aucun changement" || (git commit -m "Lien Discord permanent" && git push)

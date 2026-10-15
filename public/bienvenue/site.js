@@ -85,6 +85,12 @@
     }
   }).catch(() => { $('news').textContent = ''; });
 
+  // ---- lien Discord (fichier /discord.json, mis à jour sans toucher au code) ----
+  fetch('/discord.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => {
+    if (!/^https:\/\/discord\.(gg|com)\//.test(j?.invite || '')) return;
+    document.querySelectorAll('a[data-discord]').forEach((a) => { a.href = j.invite; });
+  }).catch(() => {});
+
   // ---- partage ----
   const url = location.origin + '/bienvenue/';
   const text = 'Je joue à Korvalune, un jeu d’aventure fantasy gratuit. Rejoins-moi !';

@@ -138,6 +138,9 @@ export class HUD {
             <a class="dl-btn" id="dl-apk" href="/telechargements/Korvalune.apk" download="Korvalune.apk"><b>Android</b><small>Télécharger l’application (APK)</small></a>
             <a class="dl-btn" id="dl-win" href="/telechargements/Korvalune-Installation.exe" download="Korvalune-Installation.exe"><b>Windows</b><small>Télécharger l’installation</small></a>
           </div>
+          <div class="dl-row" id="mm-discord" hidden>
+            <a class="dl-btn" id="dl-discord" href="#" target="_blank" rel="noopener noreferrer"><b>Discord</b><small>Rejoindre la communauté</small></a>
+          </div>
         </div>
         <div class="mm-right">
           <div id="account-status">Mode invité</div>
@@ -636,7 +639,16 @@ export class HUD {
   // V10.36 : emoji (PC) + pictogramme vectoriel (mobile) côte à côte ; la classe .touch-on choisit lequel s'affiche
   // V10.50 : liens de téléchargement (APK Android, installation Windows) sur l'écran d'accueil.
   // Masqués dans l'application elle-même ; un lien dont le fichier n'est pas encore publié est grisé (« Bientôt disponible »).
+  _initDiscord() {
+    const box = this.q('#mm-discord'), a = this.q('#dl-discord'); if (!box || !a) return;
+    fetch('/discord.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => {
+      if (!/^https:\/\/discord\.(gg|com)\//.test(j?.invite || '')) return;
+      a.href = j.invite; box.hidden = false;
+    }).catch(() => { /* hors ligne : le bouton reste caché */ });
+  }
+
   _initDownloads() {
+    this._initDiscord();
     const box = this.q('#mm-downloads'); if (!box) return;
     const inApp = !!(window.Capacitor?.isNativePlatform?.() || /Electron|KorvaluneApp/i.test(navigator.userAgent));
     if (inApp) return;
