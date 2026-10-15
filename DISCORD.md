@@ -1,6 +1,6 @@
 # Serveur Discord Korvalune
 
-Un outil construit tout le serveur d'un coup : 11 rôles (créateur, modérateur, guide, testeur, mécène, 5 classes, joueur), 8 catégories et 30 salons (infos, communauté, jeu, avis et support, vocal, testeurs, mécènes, équipe), permissions, règlement, messages d'accueil, liens utiles et modération automatique (spam de mentions, liens d'invitation). Il peut être relancé sans risque : il ne supprime rien et ne recrée pas ce qui existe.
+Un outil construit tout le serveur d'un coup : 11 rôles (créateur, modérateur, guide, testeur, mécène, 5 classes, joueur), 8 catégories et 32 salons (infos, communauté, jeu, avis et support, vocal, testeurs, mécènes, équipe), permissions, règlement, messages d'accueil, liens utiles et modération automatique (spam de mentions, liens d'invitation). Il peut être relancé sans risque : il ne supprime rien et ne recrée pas ce qui existe.
 
 ## 1. Ce que tu fais (≈ 10 minutes, rien à payer)
 1. **Créer le serveur** : Discord → « + » → Créer le mien → « Pour moi et mes amis » → nom *Korvalune*. Ajoute l'icône `docs/play/icon-512.png`.
