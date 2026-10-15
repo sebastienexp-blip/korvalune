@@ -293,10 +293,12 @@ function step(dt, draw) {
   const tx = st.x, tz = st.z, ty = 1.1;
   cam.position.set(tx + Math.sin(camYaw) * Math.cos(camPitch) * camDist, ty + Math.sin(camPitch) * camDist, tz + Math.cos(camYaw) * Math.cos(camPitch) * camDist);
   cam.lookAt(tx, ty, tz);
+  if (window.__cine) { const c = window.__cine; cam.position.set(c.p[0], c.p[1], c.p[2]); cam.lookAt(c.t[0], c.t[1], c.t[2]); if (c.fov && cam.fov !== c.fov) { cam.fov = c.fov; cam.updateProjectionMatrix(); } }
   if (draw) renderer.render(scene, cam);
 }
 // pas de simulation déterministe pour les tests automatiques (aucune dépendance à la cadence d'affichage)
 window.__step = (n, dt = 1 / 30) => { for (let i = 0; i < n; i++) step(dt, i === n - 1); };
 window.__info = () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures });
+window.__st = st; window.__trigger = trigger; window.__foes = foes; window.__beasts = beasts; window.__scene = scene;
 window.__state = () => ({ hero: st, wolf: wolf && { x: wolf.x, z: wolf.z, hp: wolf.hp, dead: wolf.dead, action: wolf.action } });
 frame();
