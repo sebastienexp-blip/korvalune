@@ -13,6 +13,9 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       # Dons PayPal (voir DONS-PAYPAL.md) : nom(s) du/des compte(s) créateur autorisés à valider les dons, séparés par des virgules
+      # Nom de domaine officiel du site vitrine (voir DOMAINE.md), ex. korvalune.fr — laisser vide tant qu'il n'est pas branché
+      - key: PUBLIC_HOST
+        sync: false
       - key: OWNER_ACCOUNTS
         sync: false
     disk:

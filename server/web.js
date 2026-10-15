@@ -83,6 +83,12 @@ export function createWebServer({ distDir, onHealth, onApi }) {
     let url;
     try { url = new URL(req.url, 'http://x'); } catch { res.writeHead(400, base); res.end(); return; }
     if (url.pathname === '/healthz') { res.writeHead(200, { ...base, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(onHealth ? onHealth() : { ok: true })); return; }
+    // Nom de domaine officiel (variable PUBLIC_HOST, ex. korvalune.fr) : le site vitrine n'est servi que là, l'ancienne adresse y redirige.
+    const wantHost = (process.env.PUBLIC_HOST || '').trim().toLowerCase();
+    const gotHost = String(req.headers.host || '').split(':')[0].toLowerCase();
+    if (wantHost && gotHost && gotHost !== wantHost && /^\/(bienvenue|accueil|robots\.txt|sitemap\.xml)/.test(url.pathname)) {
+      res.writeHead(301, { ...base, Location: 'https://' + wantHost + (url.pathname === '/accueil' || url.pathname === '/accueil/' ? '/bienvenue/' : url.pathname) }); res.end(); return;
+    }
     if (url.pathname === '/bienvenue' || url.pathname === '/accueil' || url.pathname === '/accueil/') { res.writeHead(302, { ...base, Location: '/bienvenue/', 'Cache-Control': 'no-cache' }); res.end(); return; } // V10.66 : site vitrine public
     let rel;
     try { rel = decodeURIComponent(url.pathname).replace(/^\/+/, ''); } catch { res.writeHead(400, base); res.end(); return; }
