@@ -772,7 +772,7 @@ export class Game {
         this._serverChars = Array.isArray(msg.chars) ? msg.chars : (msg.save ? [msg.save] : []);
         this._serverBank = Array.isArray(msg.bank) ? msg.bank : (msg.save?.bank || []);
         this._refreshContinueButton();
-        this.hud.notify(`Connecté : ${msg.username}`, 'quest');
+        if (!msg.resumed) this.hud.notify(`Connecté : ${msg.username}`, 'quest');
         if (this._accountGate || (this._onlineHost && this.hud._curScreen === 'account-screen')) { this._accountGate = false; this.hud.showScreen('main-menu'); }
       } else if (!msg.silent) {
         this.hud.setAccountError(msg.error || 'Erreur.');

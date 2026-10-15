@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CONFIG } from '../core/config.js';
 import { clamp, lerp, smoothstep, mulberry32 } from '../core/math.js';
 import { fbm } from './noise.js';
@@ -42,6 +42,47 @@ function paint(geo, hex) {
   geo.setAttribute('color', new THREE.BufferAttribute(a, 3));
   return geo;
 }
+
+// V10.71 — rochers procéduraux (sans mousse ni facettes en alvéoles) : icosphère déformée par un bruit 3D, base plate, strates douces.
+// Couleurs portées par les sommets (gris chaud neutre) : la teinte de chaque biome est appliquée par instance.
+const _h3 = (x, y, z) => { let h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(z | 0, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+const _n3 = (x, y, z) => {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), fx = x - xi, fy = y - yi, fz = z - zi;
+  const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy), w = fz * fz * (3 - 2 * fz);
+  const l = (a, b, t) => a + (b - a) * t;
+  return l(l(l(_h3(xi, yi, zi), _h3(xi + 1, yi, zi), u), l(_h3(xi, yi + 1, zi), _h3(xi + 1, yi + 1, zi), u), v), l(l(_h3(xi, yi, zi + 1), _h3(xi + 1, yi, zi + 1), u), l(_h3(xi, yi + 1, zi + 1), _h3(xi + 1, yi + 1, zi + 1), u), v), w);
+};
+const _f3 = (x, y, z) => _n3(x, y, z) * 0.55 + _n3(x * 2.1 + 5, y * 2.1, z * 2.1) * 0.3 + _n3(x * 4.3, y * 4.3 + 9, z * 4.3) * 0.15;
+export function naturalRockGeometry(seed = 0, { squash = 0.8, rough = 0.38, flat = -0.42, strata = 0.05, cluster = false } = {}) {
+  const one = (sd, sc) => {
+    let g = new THREE.IcosahedronGeometry(1, 3);
+    g.deleteAttribute('normal'); g.deleteAttribute('uv');
+    g = mergeVertices(g, 1e-4);
+    const p = g.attributes.position, c = new Float32Array(p.count * 3);
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+      const n = _f3(x * 1.5 + sd, y * 1.5 + sd * 0.7, z * 1.5 - sd), r = 1 + (n - 0.5) * rough * 2.2;
+      x *= r * sc; y *= r * sc * squash; z *= r * sc;
+      if (y < flat * sc) y = flat * sc + (y - flat * sc) * 0.12;     // base plate : le rocher repose sur le sol
+      p.setXYZ(i, x, y, z);
+      const band = Math.sin(y * 7 + n * 5) * strata, sp = (_n3(x * 9, y * 9, z * 9 + sd) - 0.5) * 0.1;
+      const k = 0.6 + (n - 0.5) * 0.42 + band + sp + Math.max(0, y / sc) * 0.07;   // un peu plus clair vers le haut
+      const kl = Math.pow(Math.max(0.05, k), 2.2);   // les couleurs de sommets sont linéaires : on convertit pour un gris moyen (pas délavé)
+      c[i * 3] = kl * 1.03; c[i * 3 + 1] = kl * 0.99; c[i * 3 + 2] = kl * 0.93;
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+    g.computeVertexNormals();
+    return g;
+  };
+  if (!cluster) return one(seed, 1);
+  const parts = [];
+  [[0, 0, 0, 1], [1.05, -0.05, 0.4, 0.6], [-0.8, -0.05, -0.5, 0.55], [0.3, 0, -1, 0.42]].forEach(([x, y, z, sc], i) => {
+    const g = one(seed + i * 3.1, sc); g.translate(x, y, z); parts.push(g);
+  });
+  return mergeGeometries(parts);
+}
+// teinte d'un rocher selon le biome (multiplie la couleur des sommets)
+const ROCK_TINT = { desert: [1.02, 0.8, 0.55], tundra: [1.08, 1.12, 1.18], mount: [0.95, 0.95, 1.0], forest: [0.95, 1.0, 0.92], swamp: [0.82, 0.9, 0.76], void: [0.55, 0.5, 0.62], corrupt: [0.7, 0.58, 0.82], abyss: [0.55, 0.45, 0.42], celeste: [1.1, 1.05, 0.95] };
 
 export class World {
   constructor(scene) {
@@ -471,7 +512,7 @@ export class World {
       pine: NG('pine', () => FO.pineGeometry(lod)), oak: NG('oak_green', () => FO.oakGeometry(lod, 'green')), light: NG('oak_light', () => FO.oakGeometry(lod, 'light')),
       autumn: NG('oak_autumn', () => FO.oakGeometry(lod, 'autumn')), birch: NG('birch', () => FO.birchGeometry(lod)), dead: NG('dead', () => FO.deadTreeGeometry())
     };
-    const rocksG = [NG('boulder1', () => FO.boulderGeometry(1)), NG('boulder7', () => FO.boulderGeometry(7)), NG('cluster', () => FO.rockClusterGeometry())];
+    const rocksG = [naturalRockGeometry(1), naturalRockGeometry(7, { squash: 0.62, rough: 0.26, strata: 0.07 }), naturalRockGeometry(3, { cluster: true })];
     const bushG = NG('bush', () => FO.bushGeometry(lod)), stumpG = NG('stump', () => FO.stumpGeometry()), logG = NG('log', () => FO.logGeometry()), mushG = NG('mushroom', () => FO.mushroomGeometry()), reedG = NG('reed', () => FO.reedGeometry());
 
     const rnd = this.rand, half = CONFIG.world.bound - 8;
@@ -563,7 +604,7 @@ export class World {
     }
     rocks.forEach((list, k) => {
       if (!list.length) return;
-      const mesh = new THREE.InstancedMesh(rocksG[k], nat(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })), list.length);
+      const mesh = new THREE.InstancedMesh(rocksG[k], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }), list.length);
       list.forEach((r, i) => {
         const sc = k === 2 ? r.s * 0.8 : r.s;
         dummy.position.set(r.x, this._gmin(r.x, r.z, sc * 1.1) + sc * 0.05, r.z);
@@ -571,7 +612,7 @@ export class World {
         dummy.scale.set(sc * 1.15, sc * (0.7 + r.v * 0.5), sc);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        mesh.setColorAt(i, col.setScalar(0.75 + r.v * 0.45));
+        { const t = ROCK_TINT[this.biomeAt(r.x, r.z)] || [1, 1, 1], b = 0.8 + r.v * 0.4; mesh.setColorAt(i, col.setRGB(t[0] * b, t[1] * b, t[2] * b)); }
         if (r.s > 0.7) this.addCircle(r.x, r.z, sc * 1.0);
       });
       mesh.castShadow = mesh.receiveShadow = true;
@@ -690,9 +731,12 @@ export class World {
     };
     const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true, ...extra });
     const cyl = new THREE.CylinderGeometry(0.75, 1, 1, 7), cone = new THREE.ConeGeometry(1, 1, 5), octa = new THREE.OctahedronGeometry(1, 0), dode = new THREE.DodecahedronGeometry(1, 0);
+    // V10.71 : rochers de biome en géométrie naturelle (plus de dodécaèdres à facettes) ; teinte = couleur du matériau × sommets
+    const rstd = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, vertexColors: true, roughness: 1, ...extra });
+    const rockB = naturalRockGeometry(11, { squash: 1, rough: 0.3, strata: 0.04 }), rockB2 = naturalRockGeometry(23, { squash: 1, rough: 0.34, strata: 0.08 });
     // Néant : piliers de basalte fracturés + débris posés au sol
     meshK('biome_basalte', cyl, std(0x2b2530), pick('void', 55), (o, d) => { const h = 5 + o.v * 15; o.cs = 1; d.position.y = o.y + h / 2 - 0.5; d.scale.set(1.6 + o.v * 1.4, h, 1.6 + o.v * 1.4); d.rotation.z = (o.v - 0.5) * 0.12; }, 1.9);
-    meshK('biome_debris', dode, std(0x3a3140, { emissive: 0x5a2a10, emissiveIntensity: 0.6 }), pick('void', 45, 0.5), (o, d) => { const s = 0.8 + o.v * 1.8; d.position.y = this._gmin(o.x, o.z, s) + s * 0.3; d.scale.set(s * 1.3, s * 0.8, s);   /* V10.67 : plus de débris en lévitation, tout est posé au sol */ d.rotation.set(o.v * 3, o.r, o.v * 2); });
+    mesh(rockB2, rstd(0x7a6a86, { emissive: 0x3a1a08, emissiveIntensity: 0.5 }), pick('void', 45, 0.5), (o, d) => { const s = 0.8 + o.v * 1.8; d.position.y = this._gmin(o.x, o.z, s) + s * 0.3; d.scale.set(s * 1.3, s * 0.8, s);   /* V10.67 : plus de débris en lévitation, tout est posé au sol */ d.rotation.set(o.v * 3, o.r, o.v * 2); });
     // Abysses : éclats d'obsidienne
     meshK('biome_obsidienne', cone, std(0x1c1618, { emissive: 0x4a1208, emissiveIntensity: 0.5 }), pick('abyss', 130, 0.5), (o, d) => { const h = 2 + o.v * 7; d.position.y = o.y + h / 2 - 0.3; d.scale.set(0.7 + o.v * 1.1, h, 0.7 + o.v * 1.1); d.rotation.z = (o.v - 0.5) * 0.35; }, 0.8);
     // Terres corrompues : cristaux violets
@@ -700,18 +744,18 @@ export class World {
     // Royaume céleste : colonnes de marbre (certaines brisées)
     meshK('biome_colonne', cyl, std(0xeee6d2, { roughness: 0.6 }), pick('celeste', 70, 0.55), (o, d) => { const h = o.v < 0.4 ? 1.2 + o.v * 3 : 5 + o.v * 4; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.55, h, 0.55); }, 0.7);
     // Montagnes de fer : gros blocs
-    meshK('biome_roche_fer', dode, std(0x6b6a66), pick('mount', 70, 0.5), (o, d) => { const s = 1.5 + o.v * 3.2; d.position.y = this._gmin(o.x, o.z, s) + s * 0.3; d.scale.set(s * 1.2, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); }, 1.3);
+    mesh(rockB, rstd(0xc8c8d0), pick('mount', 70, 0.5), (o, d) => { const s = 1.5 + o.v * 3.2; d.position.y = this._gmin(o.x, o.z, s) + s * 0.3; d.scale.set(s * 1.2, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); }, 1.3);
     // V8.0 — Désert d'Ambre : cactus et rochers de grès
     const sandstone = std(0xb98e52), cactusM = std(0x4f7a3a);
     meshK('biome_cactus', cyl, cactusM, pick('desert', 95, 0.6), (o, d) => { const h = 1.6 + o.v * 2.6; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.4 + o.v * 0.12, h, 0.4 + o.v * 0.12); }, 0.55);
-    meshK('biome_roche_gres', dode, sandstone, pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
+    mesh(rockB2, rstd(0xe8b070), pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
     // Marais de Brume : souches pourries, roseaux géants et feux follets
     meshK('biome_souche', cyl, std(0x3b2f22), pick('swamp', 85, 0.6), (o, d) => { const h = 0.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.15; d.scale.set(0.5 + o.v * 0.4, h, 0.5 + o.v * 0.4); d.rotation.z = (o.v - 0.5) * 0.3; }, 0.6);
     meshK('biome_roseau', cone, std(0x4d6a2c), pick('swamp', 160, 0.55), (o, d) => { const h = 1.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.3, h, 0.3); }, 0);
     mesh(octa, new THREE.MeshBasicMaterial({ color: 0x9dffb0 }), pick('swamp', 40, 0.6), (o, d) => { d.position.y = o.y + 1.4 + o.v * 1.4; d.scale.setScalar(0.16 + o.v * 0.08); });
     // Toundra de Givre : pointes de glace et rochers enneigés
     meshK('biome_glace', cone, std(0xbfe6f5, { emissive: 0x4a7a90, emissiveIntensity: 0.45, roughness: 0.3 }), pick('tundra', 110, 0.55), (o, d) => { const h = 1.5 + o.v * 5; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.5 + o.v * 0.7, h, 0.5 + o.v * 0.7); d.rotation.z = (o.v - 0.5) * 0.25; }, 0.6);
-    meshK('biome_roche_neige', dode, std(0xe6eef2), pick('tundra', 70, 0.55), (o, d) => { const s2 = 1.2 + o.v * 2.8; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.2, s2 * 0.8, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.1);
+    mesh(rockB, rstd(0xffffff), pick('tundra', 70, 0.55), (o, d) => { const s2 = 1.2 + o.v * 2.8; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.2, s2 * 0.8, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.1);
   }
 
   // Herbe et fleurs dynamiques autour du joueur (appelé par Game après build())

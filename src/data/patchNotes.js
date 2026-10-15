@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.71', title: 'Rochers et connexion',
+    items: [
+      '🪨 Nouveaux rochers et débris : formes naturelles, teintes adaptées à chaque région (sable, givre, basalte…), sans taches de mousse ni facettes.',
+      '🔐 Corrigé : après une coupure de connexion, le compte est de nouveau reconnu automatiquement (plus de « connecte-toi » alors que tu l’es, notamment pour les codes).'
+    ]
+  },
+  {
     version: '10.70', title: 'Codes et tickets',
     items: [
       '🎟️ Nouveau : « Entrer un code » dans le menu Pause et dans Compte.',

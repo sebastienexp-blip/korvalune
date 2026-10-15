@@ -53,7 +53,10 @@ export class NetworkManager {
       this.connected = true;
       this.bus.emit('net:status', { connected: true });
       let saved = null; try { saved = localStorage.getItem('aetheria.session'); } catch { /* ignoré */ }
-      if (saved && !this.token) this._send({ t: 'resume', token: saved }); // reconnexion automatique
+      // V10.71 : à chaque (re)connexion on ré-authentifie la nouvelle socket avec le jeton en mémoire (ou enregistré). Avant, après une coupure
+      // (mise à jour du serveur, réseau mobile) le jeu se croyait toujours connecté alors que le serveur ne reconnaissait plus le joueur.
+      const tok = this.token || saved;
+      if (tok) this._send({ t: 'resume', token: tok });
       if (this._joinProfile) this._send({ t: 'join', ...this._joinProfile });
     });
     ws.addEventListener('message', (e) => this._onMessage(e.data));
@@ -102,7 +105,7 @@ export class NetworkManager {
       case 'group:invited': this.bus.emit('net:groupInvited', msg); break;
       case 'authResult':
         if (msg.ok) { this.token = msg.token; this.username = msg.username; try { localStorage.setItem('aetheria.session', msg.token); } catch { /* ignoré */ } }
-        else if (msg.silent) { try { localStorage.removeItem('aetheria.session'); } catch { /* ignoré */ } }
+        else if (msg.silent) { this.token = null; this.username = null; try { localStorage.removeItem('aetheria.session'); } catch { /* ignoré */ } }
         this.bus.emit('net:authResult', msg);
         break;
       case 'shop': this.bus.emit('net:shop', msg); break;
