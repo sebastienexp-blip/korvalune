@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Korvalune — jeu d’aventure fantasy gratuit en ligne</title>
+<meta name="description" content="Korvalune est un jeu d’aventure fantasy 3D gratuit, jouable dans le navigateur, sur Android et sur Windows. Crée ton héros, explore, combats et progresse avec tes amis.">
+<meta name="theme-color" content="#0e0c22">
+<link rel="icon" href="/bienvenue/img/lune.svg" type="image/svg+xml">
+<link rel="canonical" href="https://legends-of-aetheria-mxaq.onrender.com/bienvenue/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Korvalune — jeu d’aventure fantasy gratuit">
+<meta property="og:description" content="Crée ton héros, explore un monde fantasy 3D et joue avec tes amis. Gratuit, dans ton navigateur, sur Android et Windows.">
+<meta property="og:url" content="https://legends-of-aetheria-mxaq.onrender.com/bienvenue/">
+<meta property="og:image" content="https://legends-of-aetheria-mxaq.onrender.com/bienvenue/img/og.png">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/bienvenue/site.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#haut" aria-label="Korvalune, haut de page"><img src="/bienvenue/img/lune.svg" alt="" width="34" height="34"><span>Korvalune</span></a>
+  <nav aria-label="Navigation principale">
+    <a href="#univers">Le jeu</a>
+    <a href="#classes">Classes</a>
+    <a href="#telecharger">Télécharger</a>
+    <a href="#nouveautes">Nouveautés</a>
+    <a href="#faq">Questions</a>
+  </nav>
+  <a class="btn gold small" href="/">Jouer</a>
+</header>
+
+<main id="haut">
+<section class="hero">
+  <div class="moon" aria-hidden="true"></div>
+  <div class="hero-text">
+    <h1>Korvalune</h1>
+    <p class="lead">Un monde fantasy en 3D où chaque nuit de lune cache une menace. Crée ton héros, explore, combats, et progresse avec tes amis.</p>
+    <p class="cta">
+      <a class="btn gold" href="/">Jouer maintenant, c’est gratuit</a>
+      <a class="btn ghost" href="#compte">Créer mon compte</a>
+    </p>
+    <p class="live" id="live" aria-live="polite">Vérification du serveur…</p>
+  </div>
+  <figure class="shot"><img src="/bienvenue/img/archer.jpg" alt="Capture du jeu : un archer sur la place de Korvalune" width="1280" height="720" fetchpriority="high"></figure>
+</section>
+
+<section class="band" id="compte">
+  <div class="account">
+    <div>
+      <h2>Ton compte Korvalune</h2>
+      <p>Un seul compte pour jouer partout : navigateur, Android et Windows. Ta progression, tes personnages et tes Lunes te suivent d’un appareil à l’autre.</p>
+      <ul class="ticks">
+        <li>Gratuit, sans carte bancaire</li>
+        <li>Mot de passe protégé (jamais lisible, même par nous)</li>
+        <li>Récupération possible avec une question secrète, depuis le jeu</li>
+      </ul>
+    </div>
+    <form class="card" id="authForm" novalidate>
+      <div class="tabs" role="tablist" aria-label="Connexion ou création de compte">
+        <button type="button" role="tab" id="tabLogin" aria-selected="true" aria-controls="authForm">Se connecter</button>
+        <button type="button" role="tab" id="tabReg" aria-selected="false" aria-controls="authForm">Créer un compte</button>
+      </div>
+      <label for="u">Nom de compte</label>
+      <input id="u" name="u" autocomplete="username" maxlength="24" autocapitalize="off" spellcheck="false" required>
+      <label for="p">Mot de passe</label>
+      <input id="p" name="p" type="password" autocomplete="current-password" maxlength="100" required>
+      <div id="p2wrap" hidden>
+        <label for="p2">Confirme le mot de passe</label>
+        <input id="p2" name="p2" type="password" autocomplete="new-password" maxlength="100">
+      </div>
+      <p class="msg" id="msg" role="alert" aria-live="assertive"></p>
+      <button class="btn gold wide" id="go" type="submit">Se connecter et jouer</button>
+      <p class="fine" id="forgot">Mot de passe oublié ? Ouvre le jeu, puis « Compte » → « Mot de passe oublié ».</p>
+      <p class="fine">En créant un compte, tu acceptes la <a href="/legal/confidentialite.html">politique de confidentialité</a>.</p>
+    </form>
+  </div>
+</section>
+
+<section id="univers">
+  <h2>Ce qui t’attend</h2>
+  <div class="grid">
+    <article><h3>Une histoire à vivre</h3><p>Un prologue puis l’Acte I : des quêtes, des personnages à rencontrer, des voix et des cinématiques. L’Acte II arrive.</p></article>
+    <article><h3>Des combats en temps réel</h3><p>Compétences, esquives, boss à phases et monstres qui s’adaptent. Cinq classes, chacune avec sa façon de jouer.</p></article>
+    <article><h3>Du butin à chaque rencontre</h3><p>Armes, armures et objets de plusieurs raretés, ensembles à compléter, artisanat et améliorations.</p></article>
+    <article><h3>Un monde partagé</h3><p>Croise d’autres joueurs, forme un groupe, discute, échange des objets et ajoute tes amis.</p></article>
+    <article><h3>Des événements surprise</h3><p>Invasions, bonus d’expérience, fêtes de saison : le monde change, avec des annonces directement à l’écran.</p></article>
+    <article><h3>Rien ne s’achète pour gagner</h3><p>La boutique et le passe de saison ne proposent que de l’apparence et du confort. Jamais de puissance en combat.</p></article>
+  </div>
+</section>
+
+<section id="classes">
+  <h2>Choisis ta voie</h2>
+  <p class="sub">Cinq classes et cinq peuples (humain, elfe, nain, orc, sylvain). À chaque niveau, ton style de jeu se précise grâce aux voies et aux talents.</p>
+  <div class="classes">
+    <article><h3>Guerrier</h3><p>Robuste et polyvalent, il excelle au corps-à-corps.</p></article>
+    <article><h3>Paladin</h3><p>Combattant sacré capable de se soigner.</p></article>
+    <article><h3>Mage</h3><p>Fragile mais dévastateur, il maîtrise les arts magiques.</p></article>
+    <article><h3>Archer</h3><p>Précis et mobile, il frappe à distance.</p></article>
+    <article><h3>Assassin</h3><p>Rapide et létal, il vise les points faibles.</p></article>
+  </div>
+  <figure class="wide-shot"><img src="/bienvenue/img/mage.jpg" alt="Capture du jeu : un mage sur la place de Korvalune" width="1280" height="720" loading="lazy"></figure>
+</section>
+
+<section class="band" id="telecharger">
+  <h2>Joue où tu veux</h2>
+  <div class="dl">
+    <article>
+      <h3>Dans le navigateur</h3>
+      <p>Rien à installer. Ouvre le jeu sur ordinateur, téléphone ou tablette.</p>
+      <a class="btn gold" href="/">Jouer maintenant</a>
+    </article>
+    <article>
+      <h3>Android</h3>
+      <p>Télécharge l’application (.apk) puis ouvre-la. Android te demandera d’autoriser l’installation depuis ce navigateur, c’est normal.</p>
+      <a class="btn ghost" id="dl-apk" href="/telechargements/Korvalune.apk" download>Télécharger pour Android</a>
+      <small></small>
+    </article>
+    <article>
+      <h3>Windows</h3>
+      <p>Lance l’installateur : le jeu se met à jour tout seul. Windows peut afficher un avertissement pour un éditeur inconnu : choisis « Informations complémentaires » puis « Exécuter quand même ».</p>
+      <a class="btn ghost" id="dl-win" href="/telechargements/Korvalune-Installation.exe" download>Télécharger pour Windows</a>
+      <small></small>
+    </article>
+  </div>
+  <p class="fine center">Les applications ouvrent le même jeu en ligne : une connexion internet est nécessaire.</p>
+</section>
+
+<section id="nouveautes">
+  <h2>Dernières nouveautés</h2>
+  <div id="news" class="news"><p class="fine">Chargement…</p></div>
+</section>
+
+<section class="band" id="faq">
+  <h2>Questions fréquentes</h2>
+  <div class="faq">
+    <details><summary>Est-ce vraiment gratuit ?</summary><p>Oui. Tout le jeu est accessible gratuitement. La boutique propose de l’apparence et du confort avec des Lunes, que l’on gagne aussi en jouant (récompense du jour, niveaux, passe de saison). Un don est possible depuis le site pour soutenir le projet, il est libre.</p></details>
+    <details><summary>Faut-il un compte ?</summary><p>Oui pour sauvegarder ta progression et jouer avec les autres. Il se crée en quelques secondes avec un nom et un mot de passe, sans adresse e-mail obligatoire.</p></details>
+    <details><summary>J’ai oublié mon mot de passe.</summary><p>Dans le jeu, sur l’écran de connexion, choisis « Mot de passe oublié » et réponds à ta question secrète ou utilise ton code de secours. Pense à les configurer dans « Compte » pour être tranquille.</p></details>
+    <details><summary>Ça marche sur mon téléphone ?</summary><p>Oui, avec commandes tactiles. Il faut un téléphone assez récent : le jeu est en 3D. La qualité s’adapte à l’appareil.</p></details>
+    <details><summary>Le premier chargement est long, pourquoi ?</summary><p>Le serveur se met en veille quand personne ne joue. Le premier visiteur le réveille, ce qui peut prendre une trentaine de secondes. Ensuite, c’est rapide.</p></details>
+    <details><summary>Comment supprimer mon compte ?</summary><p>Les étapes sont sur <a href="/legal/suppression-compte.html">cette page</a>.</p></details>
+    <details><summary>Un joueur triche ou se comporte mal.</summary><p>Écris-nous depuis le jeu : « Compte » puis « Contacter l’administrateur ». Chaque message est lu.</p></details>
+  </div>
+</section>
+
+<section class="share">
+  <h2>Fais découvrir Korvalune à tes amis</h2>
+  <p class="cta">
+    <a class="btn ghost" id="sh-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+    <a class="btn ghost" id="sh-fb" href="#" target="_blank" rel="noopener">Facebook</a>
+    <a class="btn ghost" id="sh-x" href="#" target="_blank" rel="noopener">X</a>
+    <button class="btn ghost" id="sh-copy" type="button">Copier le lien</button>
+  </p>
+</section>
+</main>
+
+<footer>
+  <p><b>Korvalune</b> · jeu gratuit fait avec passion</p>
+  <p><a href="/legal/mentions.html">Mentions légales</a> · <a href="/legal/confidentialite.html">Confidentialité</a> · <a href="/legal/suppression-compte.html">Supprimer mon compte</a></p>
+</footer>
+<script src="/bienvenue/site.js" defer></script>
+</body>
+</html>

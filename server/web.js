@@ -83,6 +83,7 @@ export function createWebServer({ distDir, onHealth, onApi }) {
     let url;
     try { url = new URL(req.url, 'http://x'); } catch { res.writeHead(400, base); res.end(); return; }
     if (url.pathname === '/healthz') { res.writeHead(200, { ...base, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(onHealth ? onHealth() : { ok: true })); return; }
+    if (url.pathname === '/bienvenue' || url.pathname === '/accueil' || url.pathname === '/accueil/') { res.writeHead(302, { ...base, Location: '/bienvenue/', 'Cache-Control': 'no-cache' }); res.end(); return; } // V10.66 : site vitrine public
     let rel;
     try { rel = decodeURIComponent(url.pathname).replace(/^\/+/, ''); } catch { res.writeHead(400, base); res.end(); return; }
     if (rel === '' || rel.endsWith('/')) rel += 'index.html';

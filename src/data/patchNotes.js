@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.66', title: 'Site officiel',
+    items: [
+      '🌐 Un site de présentation est en ligne : /bienvenue/ (présentation, téléchargements, nouveautés, création de compte).',
+      '🔗 Pratique pour inviter tes amis : tu peux partager le lien en un clic.'
+    ]
+  },
+  {
     version: '10.65', title: 'Audit et fiabilité',
     items: [
       '📢 Correction : les annonces du créateur s’affichent bien à l’écran.',

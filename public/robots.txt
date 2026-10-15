@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /createur.html
+Sitemap: https://legends-of-aetheria-mxaq.onrender.com/sitemap.xml
