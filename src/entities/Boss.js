@@ -86,6 +86,8 @@ export class Boss {
     const lp = share.localPlayer;
     const near = share.role === 'solo' || !this.netKey || this.id === 'spire_warden' || !lp?.pos || lp.pos.distanceTo(this.pos) < share.range;
     this.bus.emit('bossDefeated', this);
+    // V10.67 : le corps du boss disparaît peu après sa mort (le temps de voir l'explosion et le butin tomber)
+    setTimeout(() => { try { this.rig.root.visible = false; } catch (e) { /* ignoré */ } }, 1800);
     if (near) {
       this.bus.emit('bossKilled', this.id);
       this.bus.emit('loot', this);

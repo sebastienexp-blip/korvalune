@@ -883,7 +883,7 @@ export class Game {
     // V10.19 : usure de l'équipement (mort : −10 % ; coups reçus / donnés : lente)
     b.on('playerHurt', () => { try { wearGear(this._craftCtx(), 'hit'); } catch (e) { /* usure facultative */ } });
     b.on('playerSkillHit', () => { try { wearGear(this._craftCtx(), 'attack'); } catch (e) { /* usure facultative */ } });
-    b.on('playerDeath', () => { try { wearGear(this._craftCtx(), 'death'); this.hud.notify('Tu perds 10 % de durabilité sur tout ton équipement.', 'warn'); } catch (e) { /* usure facultative */ } });
+    b.on('playerDeath', () => { try { this.hud.showBossBar(null); } catch (e) { /* ignoré */ } try { wearGear(this._craftCtx(), 'death'); this.hud.notify('Tu perds 10 % de durabilité sur tout ton équipement.', 'warn'); } catch (e) { /* usure facultative */ } });
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
     b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length && this.settings.notifLevel !== false) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } if (this.settings.notifLevel !== false) this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
     b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || '' }));

@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.68', title: 'Tout au sol',
+    items: [
+      '🪨 Plus aucune pierre en l’air : rochers, débris du Néant, arbres et buissons sont posés au sol, même sur les pentes.',
+      '🏆 La barre de boss disparaît dès que le boss est vaincu, ou quand tu meurs face à lui.',
+      '💀 Les boss disparaissent après leur défaite.'
+    ]
+  },
+  {
     version: '10.67', title: 'Corrections du terrain',
     items: [
       '🚪 Les arches entre les zones se traversent enfin.',

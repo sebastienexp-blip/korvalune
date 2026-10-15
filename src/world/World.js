@@ -382,7 +382,7 @@ export class World {
       if (!valid(x, z, h, 6)) continue;
       if (fbm(x * 0.02 + 200, z * 0.02 + 200, 3) < 0.4 && rnd() > 0.06) continue;
       const cx = clamp(Math.floor((x + half) / cs), 0, CHUNKS - 1), cz = clamp(Math.floor((z + half) / cs), 0, CHUNKS - 1);
-      per[cx * CHUNKS + cz].push({ x, y: h, z, s: 0.8 + rnd() * 0.9, r: rnd() * 6.28, v: rnd() });
+      per[cx * CHUNKS + cz].push({ x, y: this._gmin(x, z, 0.7) - 0.05, z, s: 0.8 + rnd() * 0.9, r: rnd() * 6.28, v: rnd() });
       n++;
     }
     const treeGeo = mergeGeometries([
@@ -440,7 +440,7 @@ export class World {
       const x = (rnd() * 2 - 1) * half, z = (rnd() * 2 - 1) * half;
       const h = this.heightAt(x, z);
       if (!valid(x, z, h, 3)) continue;
-      bushes.push({ x, y: h, z, s: 0.6 + rnd() * 0.8, v: rnd() });
+      bushes.push({ x, y: this._gmin(x, z, 0.6), z, s: 0.6 + rnd() * 0.8, v: rnd() });
     }
     const bushMesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.7, 1), new THREE.MeshStandardMaterial({ color: 0x3f7a35, roughness: 1, flatShading: true }), bushes.length);
     bushes.forEach((b, i) => {
@@ -513,7 +513,7 @@ export class World {
         else sp = r < 0.38 ? 'oak' : r < 0.68 ? 'light' : r < 0.85 ? 'birch' : 'pine';
       }
       const cx = clamp(Math.floor((x + half) / cs), 0, CHUNKS - 1), cz = clamp(Math.floor((z + half) / cs), 0, CHUNKS - 1);
-      per[sp][cx * CHUNKS + cz].push({ x, y: h, z, s: 0.8 + rnd() * 0.9, r: rnd() * 6.28, v: rnd(), tint, tx: (rnd() - 0.5) * 0.08, tz: (rnd() - 0.5) * 0.08 });
+      per[sp][cx * CHUNKS + cz].push({ x, y: this._gmin(x, z, 0.7) - 0.05, z, s: 0.8 + rnd() * 0.9, r: rnd() * 6.28, v: rnd(), tint, tx: (rnd() - 0.5) * 0.08, tz: (rnd() - 0.5) * 0.08 });
       n++;
     }
     const treeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
@@ -585,7 +585,7 @@ export class World {
       const x = (rnd() * 2 - 1) * half, z = (rnd() * 2 - 1) * half;
       const h = this.heightAt(x, z);
       if (!valid(x, z, h, 3)) continue;
-      bushes.push({ x, y: h, z, s: 0.7 + rnd() * 0.9, v: rnd() });
+      bushes.push({ x, y: this._gmin(x, z, 0.6), z, s: 0.7 + rnd() * 0.9, v: rnd() });
     }
     const bushMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 });
     addSway(bushMat, { amp: 0.07, height: 1.2, speed: 1.4 });
@@ -610,7 +610,7 @@ export class World {
         const x = (rnd() * 2 - 1) * half, z = (rnd() * 2 - 1) * half;
         const h = this.heightAt(x, z);
         if (!accept(x, z, h)) continue;
-        list.push({ x, y: h, z, r: rnd() * 6.28, v: rnd() });
+        list.push({ x, y: this._gmin(x, z, 0.5), z, r: rnd() * 6.28, v: rnd() });
       }
       if (!list.length) return;
       const mesh = new THREE.InstancedMesh(geo, mat, list.length);
@@ -654,7 +654,7 @@ export class World {
         const h = this.heightAt(x, z);
         if (h < wl + 0.8 || h > hMax) continue;
         if (this.roadDist(x, z) < 5.5) continue;
-        out.push({ x, y: h, z, v: rnd(), r: rnd() * 6.28 });
+        out.push({ x, y: this._gmin(x, z, 0.5), z, v: rnd(), r: rnd() * 6.28 });
       }
       return out;
     };
@@ -690,9 +690,9 @@ export class World {
     };
     const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true, ...extra });
     const cyl = new THREE.CylinderGeometry(0.75, 1, 1, 7), cone = new THREE.ConeGeometry(1, 1, 5), octa = new THREE.OctahedronGeometry(1, 0), dode = new THREE.DodecahedronGeometry(1, 0);
-    // Néant : piliers de basalte fracturés + débris en lévitation
+    // Néant : piliers de basalte fracturés + débris posés au sol
     meshK('biome_basalte', cyl, std(0x2b2530), pick('void', 55), (o, d) => { const h = 5 + o.v * 15; o.cs = 1; d.position.y = o.y + h / 2 - 0.5; d.scale.set(1.6 + o.v * 1.4, h, 1.6 + o.v * 1.4); d.rotation.z = (o.v - 0.5) * 0.12; }, 1.9);
-    meshK('biome_debris', dode, std(0x3a3140, { emissive: 0x5a2a10, emissiveIntensity: 0.6 }), pick('void', 45, 0.5), (o, d) => { d.position.y = o.y + 5 + o.v * 9; const s = 0.8 + o.v * 1.8; d.scale.set(s * 1.3, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); });
+    meshK('biome_debris', dode, std(0x3a3140, { emissive: 0x5a2a10, emissiveIntensity: 0.6 }), pick('void', 45, 0.5), (o, d) => { const s = 0.8 + o.v * 1.8; d.position.y = this._gmin(o.x, o.z, s) + s * 0.3; d.scale.set(s * 1.3, s * 0.8, s);   /* V10.67 : plus de débris en lévitation, tout est posé au sol */ d.rotation.set(o.v * 3, o.r, o.v * 2); });
     // Abysses : éclats d'obsidienne
     meshK('biome_obsidienne', cone, std(0x1c1618, { emissive: 0x4a1208, emissiveIntensity: 0.5 }), pick('abyss', 130, 0.5), (o, d) => { const h = 2 + o.v * 7; d.position.y = o.y + h / 2 - 0.3; d.scale.set(0.7 + o.v * 1.1, h, 0.7 + o.v * 1.1); d.rotation.z = (o.v - 0.5) * 0.35; }, 0.8);
     // Terres corrompues : cristaux violets
