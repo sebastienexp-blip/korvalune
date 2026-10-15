@@ -75,9 +75,19 @@ const idOf = (frag) => Object.values(made).find((m) => m.def.name.includes(frag)
 const REF = { RULES: idOf('règlement'), INTRO: idOf('présentations'), BEGINNERS: idOf('aide-débutants'), BUGS: idOf('bugs'), SUPPORT: idOf('aide-technique') };
 for (const { c, def } of Object.values(made)) {
   for (const key of def.post || []) {
-    const hist = await call('GET', `/channels/${c.id}/messages?limit=1`).catch(() => [1]);
-    if (hist.length) { console.log('= messages déjà présents :', def.name); break; }
-    for (const text of MESSAGES[key]) await call('POST', `/channels/${c.id}/messages`, { content: text.replace(/<#(\w+)>/g, (m, k) => (REF[k] ? `<#${REF[k]}>` : '')) });
+    const fill = (text) => text.replace(/<#(\w+)>/g, (m, k) => (REF[k] ? `<#${REF[k]}>` : ''));
+    const hist = await call('GET', `/channels/${c.id}/messages?limit=50`).catch(() => [1]);
+    if (hist.length) {
+      // salon déjà garni : on met à jour NOS messages (liens, texte) s'ils ont changé, sans rien publier de plus
+      const mine = hist.filter((m) => m.author?.id === me.id).reverse();
+      for (const [i, text] of MESSAGES[key].entries()) {
+        const want = fill(text);
+        if (mine[i] && mine[i].content !== want) { await call('PATCH', `/channels/${c.id}/messages/${mine[i].id}`, { content: want }); console.log('~ message mis à jour :', def.name); }
+        else console.log('= message à jour :', def.name);
+      }
+      break;
+    }
+    for (const text of MESSAGES[key]) await call('POST', `/channels/${c.id}/messages`, { content: fill(text) });
     console.log('+ message publié :', def.name);
   }
 }

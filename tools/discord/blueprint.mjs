@@ -1,6 +1,8 @@
 // Plan du serveur Discord Korvalune : rôles, catégories, salons, permissions et messages d'accueil.
 // Modifier ici puis relancer l'outil : ce qui existe déjà (même nom) n'est jamais recréé ni supprimé.
-const INVITE = process.env.DISCORD_INVITE || 'https://discord.gg/dQCTQuUtM9';
+import fs from 'node:fs';
+let FILE_INVITE = ''; try { FILE_INVITE = JSON.parse(fs.readFileSync(new URL('../../public/discord.json', import.meta.url), 'utf8')).invite; } catch { /* fichier absent */ }
+const INVITE = process.env.DISCORD_INVITE || FILE_INVITE || 'https://discord.gg/dQCTQuUtM9';
 import { thanksLunes, DON_EXAMPLES, DON_PER_EURO } from '../../src/data/donations.js';
 const DONATE = process.env.DONATE_URL || 'https://www.paypal.com/qrcodes/p2pqrc/U5392UEE3VMRA';
 const SITE = process.env.SITE_URL || 'https://legends-of-aetheria-mxaq.onrender.com';
@@ -78,13 +80,13 @@ export const MESSAGES = {
     `# Soutenir Korvalune 💛\nKorvalune est gratuit et développé avec passion. Si le jeu te plaît, un don est **libre** (jamais obligatoire) et aide à payer l’hébergement et à faire grandir le projet. En remerciement, tu reçois des **Lunes 🌙** dans le jeu.\n\n**Barème** (1 € = ${DON_PER_EURO} Lunes, avec un bonus qui grandit avec le montant) :\n${DON_EXAMPLES.map((e) => `• **${e} €** → ${thanksLunes(e)} 🌙`).join('\n')}\n\n**Comment faire ?**\n1️⃣ Fais ton don sur PayPal : ${DONATE}\n2️⃣ Ouvre le jeu sur le site (${SITE}/), puis **Boutique → Soutenir Korvalune** et touche « J’ai fait mon don » (indique le montant).\n3️⃣ Le créateur vérifie le don et tes Lunes arrivent sur ton compte. Tu reçois aussi le rôle **💛 Mécène** ici, si tu le souhaites : écris-nous.\n\nℹ️ La boutique ne vend que de l’apparence et du confort, jamais de puissance en combat. Les dons se font sur le site (pas dans l’application Android). Ne communique jamais ton mot de passe de jeu ou PayPal à qui que ce soit.`
   ],
   welcome: [
-    `# Bienvenue sur Korvalune ! 🌙\nKorvalune est un jeu d’aventure fantasy en 3D, **gratuit**, jouable dans ton navigateur, sur Android et sur Windows. Crée ton héros, explore, combats et progresse avec tes amis.\n\n**Pour commencer**\n1️⃣ Lis le règlement dans <#RULES>\n2️⃣ Crée ton compte et joue : ${SITE}/bienvenue/\n3️⃣ Présente-toi dans <#INTRO>\n4️⃣ Besoin d’aide ? <#BEGINNERS>\n\nBon voyage, aventurier !`
+    `# Bienvenue sur Korvalune ! 🌙\nKorvalune est un jeu d’aventure fantasy en 3D, **gratuit**, jouable dans ton navigateur, sur Android et sur Windows. Crée ton héros, explore, combats et progresse avec tes amis.\n\n**Pour commencer**\n1️⃣ Lis le règlement dans <#RULES>\n2️⃣ Crée ton compte et joue : ${SITE}/bienvenue/\n3️⃣ Présente-toi dans <#INTRO>\n4️⃣ Besoin d’aide ? <#BEGINNERS>\n\n🌐 **Site officiel** : ${SITE}/bienvenue/\n🎮 **Jouer directement** : ${SITE}/\n\nBon voyage, aventurier !`
   ],
   rules: [
     `# Règlement 📜\n**1. Respect.** Pas d’insultes, de harcèlement, de discrimination ni de propos haineux.\n**2. Pas de spam.** Pas de pub, de liens vers d’autres serveurs, ni de messages répétés.\n**3. Pas de triche.** Exploiter un bug ou tricher dans le jeu est interdit. Signale les bugs dans <#BUGS>, ne les cache pas.\n**4. Sécurité des comptes.** Ne partage jamais ton mot de passe. L’équipe ne te le demandera **jamais**. Pas de vente ni d’échange de comptes contre de l’argent réel.\n**5. Spoilers.** Utilise ||le texte caché|| pour l’histoire du jeu.\n**6. Contenu adapté.** Pas de contenu choquant, sexuel ou illégal.\n**7. Langue.** Ici, on parle français (sauf salons précisés).\n**8. Bon sens.** Les modérateurs ont le dernier mot. Contestation : message privé à un modérateur, avec calme.\n\n**Sanctions** : avertissement → mise en sourdine → exclusion → bannissement (immédiat en cas de faute grave).\nTu dois aussi respecter les conditions d’utilisation de Discord.`
   ],
   firstAnnounce: [
-    `📢 **Ouverture du serveur Discord de Korvalune !**\nIci, retrouve les annonces, les événements, les nouveautés du jeu et la communauté. Passe un bon moment et n’hésite pas à inviter tes amis.`
+    `📢 **Ouverture du serveur Discord de Korvalune !**\nIci, retrouve les annonces, les événements, les nouveautés du jeu et la communauté. Passe un bon moment et n’hésite pas à inviter tes amis.\n🌐 Site officiel : ${SITE}/bienvenue/`
   ],
   links: [
     `# Liens utiles 🔗\n🎮 **Jouer maintenant** : ${SITE}/\n🌐 **Site officiel (compte, téléchargements, nouveautés)** : ${SITE}/bienvenue/\n📱 **Android (APK)** : ${SITE}/telechargements/Korvalune.apk\n🖥️ **Windows** : ${SITE}/telechargements/Korvalune-Installation.exe\n🔐 **Confidentialité** : ${SITE}/legal/confidentialite.html\n📄 **Mentions légales** : ${SITE}/legal/mentions.html\n🗑️ **Supprimer mon compte** : ${SITE}/legal/suppression-compte.html\n\n🔁 **Inviter un ami sur ce Discord** : ${INVITE}\n\n💬 Dans le jeu : *Compte → Contacter l’administrateur* pour écrire directement au créateur.`
