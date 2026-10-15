@@ -931,7 +931,7 @@ export class Game {
       if (gv.xp) this.player.gainXp(gv.xp);
     });
     b.on('bossStart', (boss) => this.hud.notify(`⚠ ${boss.name} se réveille !`, 'boss'));
-    b.on('bossHp', (boss) => this.hud.showBossBar(boss));
+    b.on('bossHp', (boss) => { if (boss.alive && boss.hp > 0) this.hud.showBossBar(boss); });
     b.on('bossDefeated', (boss) => { this.hud.notify(`🏆 ${boss.name} est vaincu !`, 'boss'); this.hud.showBossBar(null); });
 
     // ---------- Réseau (multijoueur, chat, groupe) ----------
@@ -3337,7 +3337,10 @@ export class Game {
     for (const b of this.bosses) {
       if (b.alive) b.update(dt, gwHost ? this.gw.pick(b) : this.player);
       if (!b.activated && !b.netProxy && this.gw.activeTargets().some((t) => t.pos.distanceTo(b.home) < 20)) { b.activate(); b.activated = true; }
-      if (b.state !== 'dormant' && b.alive) nearestActiveBoss = nearestActiveBoss || b;
+      if (b.state !== 'dormant' && b.alive && b.hp > 0 && !this.player.dead) { // V10.67 : barre de boss = le boss actif le plus proche, et seulement s'il est à portée de vue
+        const d2b = b.pos.distanceToSquared(this.player.pos);
+        if (d2b < 110 * 110 && (!nearestActiveBoss || d2b < nearestActiveBoss._d2)) { nearestActiveBoss = b; b._d2 = d2b; }
+      }
     }
     this._camQuat.copy(this.camera.quaternion);
     for (const n of this.npcs) n.update(dt, this._camQuat, this.player?.pos);

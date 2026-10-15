@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.67', title: 'Corrections du terrain',
+    items: [
+      '🚪 Les arches entre les zones se traversent enfin.',
+      '🪨 Les rochers sont posés au sol (plus de pierres en l’air sur les pentes), avec de nouvelles textures de roche et d’écorce.',
+      '🔊 Le son baisse pendant les cinématiques ; la scène de fin du prologue se referme toujours (plus d’écran noir).',
+      '🏆 La barre de boss disparaît quand le boss est vaincu ; nouvelle icône de monture.'
+    ]
+  },
+  {
     version: '10.66', title: 'Site officiel',
     items: [
       '🌐 Un site de présentation est en ligne : /bienvenue/ (présentation, téléchargements, nouveautés, création de compte).',

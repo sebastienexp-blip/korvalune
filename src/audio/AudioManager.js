@@ -184,8 +184,9 @@ export class AudioManager {
   }
 
   // V10.52 : pendant une cinématique parlée, la musique et les ambiances baissent pour laisser entendre la voix
-  cinemaMix(on) {
-    this._cine = on ? { music: 0.16, ambience: 0.3, sfx: 0.6 } : null;
+  // V10.67 : `intro` = film d'ouverture (musique plus basse et bruitages adoucis : le son ne doit pas agresser)
+  cinemaMix(on, kind) {
+    this._cine = on ? (kind === 'intro' ? { music: 0.32, ambience: 0.2, sfx: 0.4, ui: 0.5 } : { music: 0.16, ambience: 0.3, sfx: 0.45, ui: 0.6 }) : null;
     this._applyMix(false);
   }
 

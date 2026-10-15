@@ -131,7 +131,7 @@ export function buildLandmarks(world) {
           break;
         }
         case 'obelisk': { G('lm_obelisque'); const o = G('lm_obelisque_coeur'); col(0, 0, 1.6); anim.push((t) => { o.rotation.y = t * 0.5; }); break; }
-        case 'arch': G('lm_arche'); col(-5, 0, 1.1); col(5, 0, 1.1); break;
+        case 'arch': g.userData.noAutoCollide = true; G('lm_arche'); col(-5, 0, 1.1); col(5, 0, 1.1); break;
         case 'fountain': { G('lm_fontaine'); const orb = G('lm_orbe', 0, 4, 0); anim.push((t) => { orb.position.y = 4 + Math.sin(t * 1.6) * 0.3; orb.rotation.y = t; }); col(0, 0, 5); break; }
         case 'temple': G('lm_temple'); colsOf('lm_temple'); break;
         case 'maw': G('lm_gueule'); colsOf('lm_gueule'); break;
@@ -199,6 +199,7 @@ export function buildLandmarks(world) {
         anim.push((t) => { o.rotation.y = t * 0.5; }); break;
       }
       case 'arch': {
+        g.userData.noAutoCollide = true;
         for (const sx of [-1, 1]) { add(cyl(0.9, 1.1, 8, 8), marble, sx * 5, 4, 0); col(sx * 5, 0, 1.1); }
         add(new THREE.TorusGeometry(5, 0.7, 8, 20, Math.PI), gold, 0, 8, 0); break;
       }
@@ -255,6 +256,7 @@ function buildBorderGates(world, root, mat) {
       const g = new THREE.Group();
       g.position.set(x, world.heightAt(x, z), z);
       g.rotation.y = phi;
+      g.userData.noAutoCollide = true;   // V10.67 : les deux piliers ont leurs collisions ; le volume englobant du portique bouchait le passage
       const glbGate = ModelLibrary.hasTown(['lm_portique', 'lm_portique_banniere']);
       if (glbGate) {
         g.add(ModelLibrary.townInstance('lm_portique'));

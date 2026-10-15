@@ -422,7 +422,7 @@ export class World {
     }
     const rockMesh = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: 0x7d7b78, roughness: 1, flatShading: true }), rocks.length);
     rocks.forEach((r, i) => {
-      dummy.position.set(r.x, r.y + r.s * 0.15, r.z);
+      dummy.position.set(r.x, this._gmin(r.x, r.z, r.s) + r.s * 0.15, r.z);   // V10.67 : le rocher suit le point le plus bas de son emprise (plus de rochers en l'air sur les pentes)
       dummy.rotation.set(r.v * 3, r.r, r.v * 2);
       dummy.scale.set(r.s * 1.2, r.s * 0.75, r.s);
       dummy.updateMatrix();
@@ -566,7 +566,7 @@ export class World {
       const mesh = new THREE.InstancedMesh(rocksG[k], nat(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })), list.length);
       list.forEach((r, i) => {
         const sc = k === 2 ? r.s * 0.8 : r.s;
-        dummy.position.set(r.x, r.y + sc * 0.05, r.z);
+        dummy.position.set(r.x, this._gmin(r.x, r.z, sc * 1.1) + sc * 0.05, r.z);
         dummy.rotation.set((r.v - 0.5) * 0.4, r.r, (r.v - 0.5) * 0.3);
         dummy.scale.set(sc * 1.15, sc * (0.7 + r.v * 0.5), sc);
         dummy.updateMatrix();
@@ -700,18 +700,18 @@ export class World {
     // Royaume céleste : colonnes de marbre (certaines brisées)
     meshK('biome_colonne', cyl, std(0xeee6d2, { roughness: 0.6 }), pick('celeste', 70, 0.55), (o, d) => { const h = o.v < 0.4 ? 1.2 + o.v * 3 : 5 + o.v * 4; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.55, h, 0.55); }, 0.7);
     // Montagnes de fer : gros blocs
-    meshK('biome_roche_fer', dode, std(0x6b6a66), pick('mount', 70, 0.5), (o, d) => { const s = 1.5 + o.v * 3.2; d.position.y = o.y + s * 0.3; d.scale.set(s * 1.2, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); }, 1.3);
+    meshK('biome_roche_fer', dode, std(0x6b6a66), pick('mount', 70, 0.5), (o, d) => { const s = 1.5 + o.v * 3.2; d.position.y = this._gmin(o.x, o.z, s) + s * 0.3; d.scale.set(s * 1.2, s * 0.8, s); d.rotation.set(o.v * 3, o.r, o.v * 2); }, 1.3);
     // V8.0 — Désert d'Ambre : cactus et rochers de grès
     const sandstone = std(0xb98e52), cactusM = std(0x4f7a3a);
     meshK('biome_cactus', cyl, cactusM, pick('desert', 95, 0.6), (o, d) => { const h = 1.6 + o.v * 2.6; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.4 + o.v * 0.12, h, 0.4 + o.v * 0.12); }, 0.55);
-    meshK('biome_roche_gres', dode, sandstone, pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = o.y + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
+    meshK('biome_roche_gres', dode, sandstone, pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
     // Marais de Brume : souches pourries, roseaux géants et feux follets
     meshK('biome_souche', cyl, std(0x3b2f22), pick('swamp', 85, 0.6), (o, d) => { const h = 0.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.15; d.scale.set(0.5 + o.v * 0.4, h, 0.5 + o.v * 0.4); d.rotation.z = (o.v - 0.5) * 0.3; }, 0.6);
     meshK('biome_roseau', cone, std(0x4d6a2c), pick('swamp', 160, 0.55), (o, d) => { const h = 1.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.3, h, 0.3); }, 0);
     mesh(octa, new THREE.MeshBasicMaterial({ color: 0x9dffb0 }), pick('swamp', 40, 0.6), (o, d) => { d.position.y = o.y + 1.4 + o.v * 1.4; d.scale.setScalar(0.16 + o.v * 0.08); });
     // Toundra de Givre : pointes de glace et rochers enneigés
     meshK('biome_glace', cone, std(0xbfe6f5, { emissive: 0x4a7a90, emissiveIntensity: 0.45, roughness: 0.3 }), pick('tundra', 110, 0.55), (o, d) => { const h = 1.5 + o.v * 5; d.position.y = o.y + h / 2 - 0.2; d.scale.set(0.5 + o.v * 0.7, h, 0.5 + o.v * 0.7); d.rotation.z = (o.v - 0.5) * 0.25; }, 0.6);
-    meshK('biome_roche_neige', dode, std(0xe6eef2), pick('tundra', 70, 0.55), (o, d) => { const s2 = 1.2 + o.v * 2.8; d.position.y = o.y + s2 * 0.3; d.scale.set(s2 * 1.2, s2 * 0.8, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.1);
+    meshK('biome_roche_neige', dode, std(0xe6eef2), pick('tundra', 70, 0.55), (o, d) => { const s2 = 1.2 + o.v * 2.8; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.2, s2 * 0.8, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.1);
   }
 
   // Herbe et fleurs dynamiques autour du joueur (appelé par Game après build())
@@ -770,6 +770,13 @@ export class World {
       const far = d > R + (ch.far ? -10 : 10);   // hystérésis : évite le clignotement à la frontière
       if (far !== !!ch.far) { ch.far = far; ch.mesh.visible = !far; ch.lo.visible = far; }
     }
+  }
+
+  // V10.67 : hauteur du terrain la plus basse sous l'emprise d'un objet de rayon `rad` (pour poser les rochers sans vide sous eux)
+  _gmin(x, z, rad) {
+    let m = this.heightAt(x, z);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.6; m = Math.min(m, this.heightAt(x + Math.cos(a) * rad, z + Math.sin(a) * rad)); }
+    return m;
   }
 
   setGrassVisible(v) { if (this.grass) this.grass.setVisible(v); }

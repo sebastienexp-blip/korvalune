@@ -147,23 +147,25 @@ export class StoryDirector {
     this._buildDom(cin);
     this._base = base;
     this._addLight(base);
-    g.audio?.cinemaMix?.(true);
-    g.audio?.play('levelup');
-    await wait(900);
-    for (const shot of cin.shots) {
-      if (this.skipped) break;
-      this._startShot(shot);
-      const t0 = performance.now();
-      for (const idx of shot.say) {
+    try {
+      g.audio?.cinemaMix?.(true);
+      g.audio?.play('levelup');
+      await wait(900);
+      for (const shot of cin.shots) {
         if (this.skipped) break;
-        const line = lines[idx];
-        if (!line) continue;
-        await this._sayLine(line);
+        this._startShot(shot);
+        const t0 = performance.now();
+        for (const idx of shot.say) {
+          if (this.skipped) break;
+          const line = lines[idx];
+          if (!line) continue;
+          await this._sayLine(line);
+        }
+        const rest = shot.dur * 1000 - (performance.now() - t0);
+        if (rest > 0 && !this.skipped) await wait(rest);
       }
-      const rest = shot.dur * 1000 - (performance.now() - t0);
-      if (rest > 0 && !this.skipped) await wait(rest);
-    }
-    if (cin.card && !this.skipped) await this._showCard(cin.card);
+      if (cin.card && !this.skipped) await this._showCard(cin.card);
+    } catch (e) { console.warn('[histoire] cinématique interrompue', e); }
     this._finish();
   }
 
@@ -175,7 +177,8 @@ export class StoryDirector {
     const min = readTime(line.t) * 1000;
     const t0 = performance.now();
     const skipP = new Promise((r) => { this._skipResolve = r; });
-    await Promise.race([this.voice.speak(line), skipP]);
+    const cap = new Promise((r) => setTimeout(r, min + 6000));   // V10.67 : une voix de synthèse qui ne se termine jamais ne bloque plus la scène
+    await Promise.race([this.voice.speak(line), skipP, cap]);
     const left = min - (performance.now() - t0);
     if (left > 0 && !this.skipped) await Promise.race([wait(left), skipP]);
     if (!this.skipped) await Promise.race([wait(450), skipP]);
@@ -215,14 +218,15 @@ export class StoryDirector {
 
   _finish() {
     const g = this.game;
-    g.audio?.cinemaMix?.(false);
-    this.voice.stop();
+    // V10.67 : chaque étape est protégée, pour que le rideau noir (carte de fin) disparaisse toujours — jamais d'écran noir bloqué après le générique
+    try { g.audio?.cinemaMix?.(false); } catch (e) { /* ignoré */ }
+    try { this.voice.stop(); } catch (e) { /* ignoré */ }
     this._shot = null;
-    if (this._light) { g.scene.remove(this._light); this._light.dispose?.(); this._light = null; }
-    this._closeDom();
+    try { if (this._light) { g.scene.remove(this._light); this._light.dispose?.(); this._light = null; } } catch (e) { /* ignoré */ }
+    try { this._closeDom(); } catch (e) { document.getElementById('story-cine')?.remove(); document.querySelector('#game-ui')?.classList.remove('cine-hide'); }
     g.dialogueOpen = false;
     this.playing = false;
-    g.cameraRig?.update?.(g.player.pos, 0.016, { x: 0, y: 0 }, 0, g.player.yaw);
+    try { g.cameraRig?.update?.(g.player.pos, 0.016, { x: 0, y: 0 }, 0, g.player.yaw); } catch (e) { /* ignoré */ }
   }
 
   // ---------------------------------------------------------------- interface

@@ -10,7 +10,7 @@ export const ICONS = {
   trophy: S('<path d="M8 4h8v5.2a4 4 0 0 1-8 0z"/><path d="M8 6H5.2v1.3A3 3 0 0 0 8 10.3M16 6h2.8v1.3A3 3 0 0 1 16 10.3"/><path d="M12 13.2V17M9 20h6M10.2 17h3.6"/>'),
   people: S('<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c0-3.5 2.5-5.4 5.5-5.4s5.5 1.9 5.5 5.4"/><circle cx="17" cy="9.5" r="2.4" opacity=".75"/><path d="M16 14c3 0 4.8 1.7 4.8 4.4" opacity=".75"/>'),
   portal: S('<ellipse cx="12" cy="12" rx="5.2" ry="8.5"/><ellipse cx="12" cy="12" rx="2.4" ry="5" opacity=".7"/><path d="M4 5.5c1.2-1 2.6-1.5 4-1.7M20 18.5c-1.2 1-2.6 1.5-4 1.7" opacity=".55"/>'),
-  horse: S('<path d="M6.5 20.5V11a5.5 5.5 0 0 1 11 0v9.5"/><path d="M10.5 20.5V11.2a1.5 1.5 0 0 1 3 0v9.3" opacity=".7"/><circle cx="6.5" cy="15" r=".7" fill="url(#icoG)"/><circle cx="17.5" cy="15" r=".7" fill="url(#icoG)"/>'),
+  horse: S('<path d="M7.5 21C7.8 15.5 8.6 11.5 10.8 8.6L11 4.4l2.3 3.2C15.6 7.8 17.3 9.3 18.4 11.8l2.3 5.4c.4 1.2-.5 2.2-1.7 2.1l-1.6-.2c-1-.1-1.7-.9-2-1.9-1.1.6-1.8 1.6-1.8 3.8"/><path d="M9 11.6L6.6 10.6M8.3 14.6L5.8 14M7.9 17.6l-2.4.2" opacity=".7"/><circle cx="15.2" cy="11.9" r=".85" fill="url(#icoG)" stroke="none"/><circle cx="19.6" cy="16.6" r=".5" fill="url(#icoG)" stroke="none" opacity=".8"/>'),
   medal: S('<path d="M8.5 3.5L12 10l3.5-6.5"/><circle cx="12" cy="15" r="5.2"/><path d="M12 12.4l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3z" fill="url(#icoG)" stroke="none"/>'),
   moon: S('<path d="M19.5 14.2A8 8 0 1 1 9.8 4.5a6.4 6.4 0 0 0 9.7 9.7z"/><path d="M17 4v3M15.5 5.5h3" opacity=".7"/>'),
   chat: S('<path d="M4 5.5h16v10.5H11.5L7.5 20v-4H4z"/><path d="M8 9.5h8M8 12.5h5" opacity=".7"/>'),

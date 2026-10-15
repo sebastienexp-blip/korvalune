@@ -466,6 +466,7 @@ export class IntroCinematic {
     if (!a.ctx) return;
     this.ac = a.ctx; this.aud = a;
     a.setMusicContext({ cinematic: true });
+    a.cinemaMix?.(true, 'intro');   // V10.67 : son plus bas pendant la cinématique
     a.startMusic();
     this._sfxTimers = [
       [21.5, () => a.play('absolute')], [28, () => { a.play('explode'); a.thunder(); }], [31, () => a.play('guardian')],
@@ -476,6 +477,6 @@ export class IntroCinematic {
   _stopAudio() {
     for (const id of this._sfxTimers || []) clearTimeout(id);
     this._sfxTimers = [];
-    if (this.aud) this.aud.setMusicContext({ cinematic: false }); // la musique du monde reprend en fondu enchaîné
+    if (this.aud) { this.aud.cinemaMix?.(false); this.aud.setMusicContext({ cinematic: false }); } // la musique du monde reprend en fondu enchaîné
   }
 }
