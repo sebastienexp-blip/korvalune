@@ -1,6 +1,6 @@
 // Plan du serveur Discord Korvalune : rôles, catégories, salons, permissions et messages d'accueil.
 // Modifier ici puis relancer l'outil : ce qui existe déjà (même nom) n'est jamais recréé ni supprimé.
-const INVITE = process.env.DISCORD_INVITE || 'https://discord.gg/MgvbUYVuP';
+const INVITE = process.env.DISCORD_INVITE || 'https://discord.gg/dQCTQuUtM9';
 const SITE = process.env.SITE_URL || 'https://legends-of-aetheria-mxaq.onrender.com';
 
 export const ROLES = [
