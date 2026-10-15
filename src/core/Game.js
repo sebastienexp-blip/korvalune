@@ -1168,7 +1168,7 @@ export class Game {
       else if (act === 'camReset') this.bus.emit('toggleCameraLock');
       else if (act.startsWith('skill')) this._useSkill(this.player.skillBar[+act.slice(5) - 1]);
     });
-    this.root.addEventListener('click', (e) => { if (e.target.id === 'game-canvas' && this.player && !this.dialogueOpen && !this.modalOpen) (this._tryClickPlayer(e) || this._tryClickTarget(e)); });
+    this.root.addEventListener('click', (e) => { if (e.target.id === 'game-canvas' && this.player && !this.dialogueOpen && !this.modalOpen) (this._tryClickPlayer(e) || this._tryClickStatue(e) || this._tryClickTarget(e)); });
   }
 
   /** V10.19 : contexte passé aux fonctions d'artisanat (forgeron, Monolithe, mystique). */
@@ -2974,6 +2974,22 @@ export class Game {
     }
     if (!best) return false;
     this._openPlayerMenu({ id: best.id, name: best.name, level: best.level, classId: best.classId });
+    return true;
+  }
+
+  // V10.67 : un clic sur la statue de la spire (ou sur son portail ouvert) l'active, comme la touche d'interaction (version PC)
+  _tryClickStatue(e) {
+    const r = this.rift, st = this.riftStatue;
+    if (!r || !st || r.active || this.player.dead) return false;
+    this._pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    this._raycaster.setFromCamera(this._pointer, this.camera);
+    const targets = [st.group]; if (r.pending && st.portal.group) targets.push(st.portal.group);
+    const hit = this._raycaster.intersectObjects(targets, true).find((h) => h.object.visible !== false && !h.object.isSprite);
+    if (!hit) return false;
+    let onPortal = false; for (let o = hit.object; o; o = o.parent) if (o === st.portal.group) { onPortal = true; break; }
+    const pp = this.player.pos, target = onPortal ? st.portal.pos : st.pos;
+    if (Math.hypot(pp.x - target.x, pp.z - target.z) > 9) { this.hud.notify(onPortal ? 'Approche-toi du portail.' : 'Approche-toi de la statue de la spire.', 'info'); return true; }
+    if (onPortal) r.enter(); else r.openStatueUi();
     return true;
   }
 
