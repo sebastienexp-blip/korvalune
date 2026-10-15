@@ -482,13 +482,22 @@ function buildCityLayout(world, g, T, stone, wood, add) {
   g.add(inst);
 
   // --- sols : parvis du château, avenues, places
+  // V10.69 : toutes les dalles affleurent à la même hauteur (+1 cm) ; l'ordre de pose est départagé par polygonOffset.
+  // Avant, chaque dalle avait sa propre hauteur (jusqu'à +9 cm) : scintillement aux recouvrements et pieds sous la pierre.
+  let slabLayer = 0;
+  const slabMat = (color) => {
+    const m = new THREE.MeshStandardMaterial({ color, map: T.stone || null, roughness: 0.95 });
+    slabLayer++;
+    m.polygonOffset = true; m.polygonOffsetFactor = -slabLayer; m.polygonOffsetUnits = -slabLayer;
+    return m;
+  };
   const pave = (w, dd, x, z, y, color = 0x8d8372) => {
-    const m = add(new THREE.BoxGeometry(w, 0.06, dd), new THREE.MeshStandardMaterial({ color, map: T.stone || null, roughness: 0.95 }), x, y0 + y, z);
-    m.castShadow = false; return m;
+    const m = add(new THREE.BoxGeometry(w, 0.06, dd), slabMat(color), x, world.heightAt(x, z) - 0.02, z);
+    m.castShadow = false; m.receiveShadow = true; return m;
   };
   const disc = (r, x, z, y, color) => {
-    const m = add(new THREE.CylinderGeometry(r, r, 0.06, 40), new THREE.MeshStandardMaterial({ color, map: T.stone || null, roughness: 0.92 }), x, y0 + y, z);
-    m.castShadow = false; return m;
+    const m = add(new THREE.CylinderGeometry(r, r, 0.06, 40), slabMat(color), x, world.heightAt(x, z) - 0.02, z);
+    m.castShadow = false; m.receiveShadow = true; return m;
   };
   pave(C.hw * 2 + 20, C.hd * 2 + 20, C.x, C.z, 0.03, 0xa49c8c);                     // parvis
   pave(C.hw * 2 - 4, C.hd * 2 - 4, C.x, C.z, 0.06, 0xbdb4a0);                       // cour intérieure
@@ -611,6 +620,91 @@ function buildDistricts(world, g, T, stone, wood, add) {
   };
   bench(-44, -22, 0, 'armor'); bench(-50, -4, Math.PI / 2, 'alchemy'); bench(POS.enchantBench[0], POS.enchantBench[1], Math.PI / 2, 'enchant'); bench(-30, -22, 0, 'forge');
   bench(-48, -16, Math.PI / 2, 'forge');
+
+  // ---- V10.69 : vrais stands d'artisans autour des établis (toit, murs, étagères, enseigne, lanternes, tonneaux)
+  // Repère local du stand : le comptoir est à l'origine, l'ouverture (le client) est du côté +z, le fond à z = -1.5.
+  const craftStand = (x, z, yaw, kind) => {
+    const COL = { forge: [0x7a2e2a, 0xff9a40, 'Forge'], armor: [0x3f5b72, 0xbfd0e8, 'Armurier'], alchemy: [0x3f6a3a, 0x7affb0, 'Alchimie'], enchant: [0x5a3a8a, 0xb89aff, 'Enchantement'] }[kind];
+    const y = world.heightAt(x, z), grp = new THREE.Group();
+    grp.position.set(x, y, z); grp.rotation.y = yaw; g.add(grp);
+    const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.88, ...o });
+    const mPost = mat(0x5a3d24), mPlank = mat(0x7a5733), mDark = mat(0x3d2916), mRoof = mat(COL[0], { side: THREE.DoubleSide }), mCloth = mat(COL[0], { side: THREE.DoubleSide });
+    const a = (geo, m, px, py, pz, rx = 0, ry = 0, rz = 0) => { const o = add(geo, m, px, py, pz, grp); o.rotation.set(rx, ry, rz); return o; };
+    const W = 5.6, D = 3.9, zb = -1.5, zf = zb + D, H = 3.3;
+    // dalle de pavage sous le stand (affleurante)
+    const floor = a(new THREE.BoxGeometry(W + 0.6, 0.06, D + 0.6), (() => { const m = mat(0x6b5a44); m.polygonOffset = true; m.polygonOffsetFactor = -20; m.polygonOffsetUnits = -20; return m; })(), 0, -0.02, (zb + zf) / 2); floor.castShadow = false;
+    // poteaux
+    for (const px of [-W / 2, W / 2]) for (const pz of [zb, zf]) a(new THREE.BoxGeometry(0.2, H, 0.2), mPost, px, H / 2, pz);
+    // fond planches + étagères, côtés pleins à hauteur de ceinture puis ajourés
+    a(new THREE.BoxGeometry(W, 2.7, 0.14), mPlank, 0, 1.35, zb);
+    for (let i = 0; i < 7; i++) a(new THREE.BoxGeometry(0.03, 2.7, 0.16), mDark, -W / 2 + 0.4 + i * (W - 0.8) / 6, 1.35, zb + 0.01);
+    for (const sx of [-1, 1]) {
+      a(new THREE.BoxGeometry(0.12, 1.15, D), mPlank, sx * W / 2, 0.58, (zb + zf) / 2);
+      a(new THREE.BoxGeometry(0.16, 0.1, D), mDark, sx * W / 2, 1.18, (zb + zf) / 2);
+    }
+    for (const sy of [1.25, 1.95]) a(new THREE.BoxGeometry(W - 0.8, 0.09, 0.45), mDark, 0, sy, zb + 0.3);
+    // toit à deux pans, bord frontal en tissu festonné
+    const slope = 0.42, rl = Math.hypot(D / 2 + 0.7, 0.85);
+    for (const sgn of [-1, 1]) {
+      const r = a(new THREE.BoxGeometry(W + 0.9, 0.12, rl), mRoof, 0, H + 0.45, (zb + zf) / 2 + sgn * (D / 4 + 0.15), sgn * slope * 0.9, 0, 0);
+      r.rotation.x = -sgn * Math.atan2(0.85, D / 2 + 0.7); r.castShadow = true;
+    }
+    a(new THREE.BoxGeometry(W + 1.0, 0.14, 0.2), mDark, 0, H + 0.95, (zb + zf) / 2);
+    const nF = 8;
+    for (let i = 0; i < nF; i++) {
+      const f = a(new THREE.BoxGeometry((W + 0.9) / nF - 0.06, 0.42, 0.05), i % 2 ? mCloth : mat(0xe8dcc0, { side: THREE.DoubleSide }), -W / 2 - 0.45 + ((W + 0.9) / nF) * (i + 0.5), H - 0.08, zf + 0.62);
+      f.castShadow = false;
+    }
+    // enseigne suspendue (nom du métier)
+    try {
+      const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64;
+      const c2 = cv.getContext('2d');
+      c2.fillStyle = '#3d2916'; c2.fillRect(0, 0, 256, 64); c2.strokeStyle = '#c9a74a'; c2.lineWidth = 4; c2.strokeRect(3, 3, 250, 58);
+      c2.fillStyle = '#f2e2b0'; c2.font = 'bold 34px serif'; c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText(COL[2], 128, 34);
+      const tex = new THREE.CanvasTexture(cv);
+      const sign = a(new THREE.BoxGeometry(2.2, 0.55, 0.08), [mDark, mDark, mDark, mDark, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 })], 0, H - 0.75, zf + 0.7);
+      sign.castShadow = false;
+      for (const sx of [-0.9, 0.9]) a(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 4), iron, sx, H - 0.35, zf + 0.7);
+    } catch (e) { /* enseigne facultative */ }
+    // lanternes aux deux coins avant
+    for (const sx of [-1, 1]) {
+      a(new THREE.BoxGeometry(0.05, 0.35, 0.05), iron, sx * (W / 2 - 0.1), H - 0.3, zf + 0.15);
+      const lamp = a(new THREE.BoxGeometry(0.22, 0.3, 0.22), new THREE.MeshBasicMaterial({ color: COL[1] }), sx * (W / 2 - 0.1), H - 0.62, zf + 0.15); lamp.castShadow = false;
+      halo(x + Math.cos(yaw) * sx * (W / 2 - 0.1) + Math.sin(yaw) * (zf + 0.15), y + H - 0.62, z - Math.sin(yaw) * sx * (W / 2 - 0.1) + Math.cos(yaw) * (zf + 0.15), COL[1], 2.4);
+    }
+    // marchandises et accessoires sur les étagères, selon le métier
+    const bit = (geo, c, px, py, pz, extra = {}) => a(geo, mat(c, extra), px, py, pz);
+    for (let i = 0; i < 6; i++) {
+      const px = -2.0 + i * 0.8;
+      if (kind === 'forge') { bit(new THREE.BoxGeometry(0.5, 0.2, 0.28), 0x4a4e58, px, 1.4, zb + 0.3, { metalness: 0.7, roughness: 0.4 }); bit(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 5), 0x6b4a2b, px, 2.45, zb + 0.12).rotation.z = 0.2; }
+      else if (kind === 'armor') { bit(new THREE.CylinderGeometry(0.2, 0.26, 0.4, 8), 0x8a93a3, px, 1.45, zb + 0.3, { metalness: 0.7, roughness: 0.4 }); bit(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 10), 0x9a2a2a, px, 2.4, zb + 0.1).rotation.x = Math.PI / 2; }
+      else if (kind === 'alchemy') { const c = [0xe04a4a, 0x4a8ae0, 0x6ae04a, 0xb04ae0][i % 4]; bit(new THREE.SphereGeometry(0.15, 8, 6), c, px, 1.4, zb + 0.3, { emissive: c, emissiveIntensity: 0.35, roughness: 0.25 }); bit(new THREE.CylinderGeometry(0.08, 0.11, 0.26, 7), c, px + 0.3, 2.08, zb + 0.3, { emissive: c, emissiveIntensity: 0.3 }); }
+      else { bit(new THREE.BoxGeometry(0.34, 0.07, 0.26), 0x6a2a8a, px, 1.3, zb + 0.3); bit(new THREE.OctahedronGeometry(0.13), 0xb89aff, px, 2.15, zb + 0.3, { emissive: 0x7a5aff, emissiveIntensity: 0.7 }); }
+    }
+    // tonneaux, caisses, sacs, râtelier : à l'arrière-côté et le long des parois, hors de l'ouverture
+    const barrel = (px, pz) => { a(new THREE.CylinderGeometry(0.34, 0.3, 0.8, 10), mat(0x7a5530), px, 0.4, pz); a(new THREE.TorusGeometry(0.33, 0.025, 4, 12), iron, px, 0.55, pz, Math.PI / 2); };
+    barrel(-W / 2 + 0.5, zb + 0.55); barrel(-W / 2 + 0.55, zb + 1.3);
+    const crate = (px, pz, s = 0.55) => a(new THREE.BoxGeometry(s, s, s), mat(0x8a6a40), px, s / 2, pz, 0, px * 3, 0);
+    crate(W / 2 - 0.5, zb + 0.55); crate(W / 2 - 0.5, zb + 1.2, 0.45); crate(W / 2 - 0.55, zb + 0.55, 0.38).position.y = 0.55 + 0.19;
+    a(new THREE.SphereGeometry(0.3, 8, 6), mat(0xb6a47a), W / 2 - 0.6, 0.2, zb + 1.9).scale.set(1, 0.7, 0.9);
+    // tapis devant le comptoir
+    const rug = a(new THREE.BoxGeometry(3.2, 0.02, 1.0), (() => { const m = mat(COL[0]); m.polygonOffset = true; m.polygonOffsetFactor = -30; m.polygonOffsetUnits = -30; return m; })(), 0, 0.0, 1.35); rug.castShadow = false;
+    // collisions (alignées sur les axes : les stands sont tournés par quarts de tour)
+    const quarter = Math.abs(Math.sin(yaw)) > 0.5;
+    const wp = (lx, lz) => [x + Math.cos(yaw) * lx + Math.sin(yaw) * lz, z - Math.sin(yaw) * lx + Math.cos(yaw) * lz];
+    const [bx2, bz2] = wp(0, zb);
+    world.addBox(bx2, bz2, quarter ? 0.3 : W / 2, quarter ? W / 2 : 0.3, y - 1, y + 3);               // fond
+    for (const sx of [-1, 1]) { const [sx2, sz2] = wp(sx * W / 2, (zb + zf) / 2); world.addBox(sx2, sz2, quarter ? D / 2 : 0.25, quarter ? 0.25 : D / 2, y - 1, y + 3); } // parois
+    for (const sx of [-1, 1]) { const [px2, pz2] = wp(sx * W / 2, zf); world.addCircle(px2, pz2, 0.3); }
+  };
+  { // l'ouverture de chaque stand suit l'orientation de son établi (vers le centre de la ville)
+    const Q = Math.PI / 2;
+    craftStand(-44, -22, 0, 'armor');
+    craftStand(-30, -22, 0, 'forge');
+    craftStand(-50, -4, Q, 'alchemy');
+    craftStand(POS.enchantBench[0], POS.enchantBench[1], Q, 'enchant');
+    craftStand(-48, -16, Q, 'forge');
+  }
 
   // ---- place des Métamorphoses : cercle de pierre autour du monolithe, quatre torchères runiques
   const [mx, mz] = POS.monolith, my = world.heightAt(mx, mz);

@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.69', title: 'Stands et ville',
+    items: [
+      '🔨 Les artisans ont de vrais stands : toit, murs, étagères, enseigne, lanternes, tonneaux et caisses autour de la forge, de l’armurier, de l’alchimie et de l’enchantement.',
+      '🧱 Dalles de la ville remises à plat : plus de pierres superposées qui scintillent, ni de pieds dans le sol.',
+      '🏦 Le coffre de banque est déplacé devant le château, hors de la place du puits.'
+    ]
+  },
+  {
     version: '10.68', title: 'Tout au sol',
     items: [
       '🪨 Plus aucune pierre en l’air : rochers, débris du Néant, arbres et buissons sont posés au sol, même sur les pentes.',
