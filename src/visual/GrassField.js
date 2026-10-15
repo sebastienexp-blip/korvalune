@@ -47,7 +47,7 @@ export class GrassField {
     this.cx = new Int32Array(cells * cells).fill(2147483647);
     this.cz = new Int32Array(cells * cells).fill(2147483647);
     this._d = new THREE.Object3D();
-    this._c = new THREE.Color();
+    this._c = new THREE.Color(); this._tc = new THREE.Color();
     this._zero = new THREE.Matrix4().makeScale(0, 0, 0);
     this.visible = true;
     this.lastCx = null; this.lastCz = null;
@@ -66,12 +66,12 @@ export class GrassField {
       const idx = baseIdx + k;
       const dist = Math.hypot(x, z);
       let ok = dist > CONFIG.world.townRadius - 2 && dist < CONFIG.world.bound - 6;
-      let y = 0;
+      let y = 0, bm = '';
       if (ok) {
         y = w.heightAt(x, z);
         if (y < wl + 0.55 || y > 17) ok = false;
         else if (w.roadDist(x, z) < 2.4) ok = false; // chemin
-        else { const bm = w.biomeAt(x, z); if (bm === 'abyss' || bm === 'void' || bm === 'corrupt' || bm === 'desert' || bm === 'tundra' || bm === 'swamp') ok = false; } // pas d'herbe en terres stériles
+        else { bm = w.biomeAt(x, z); if (bm === 'abyss' || bm === 'void' || bm === 'corrupt' || bm === 'desert' || bm === 'tundra' || bm === 'swamp') ok = false; } // pas d'herbe en terres stériles
       }
       if (!ok) { this.grass.setMatrixAt(idx, this._zero); continue; }
       // densité plus faible en lisière de forêt / rochers (bruit)
@@ -86,6 +86,8 @@ export class GrassField {
       // couleur : herbe sèche ↔ verte, + zones sombres sous les arbres
       const dry = fbm(x * 0.012 + 400, z * 0.012 + 400, 2);
       this._c.setRGB(0.75 + dry * 0.55, 0.85 + (1 - dry) * 0.25, 0.62 + hash(ix, iz, k) * 0.2);
+      // V10.73 : l'herbe prend la teinte de sa région (dorée au Royaume Céleste, plus sombre en forêt, grisée en montagne)
+      if (bm === 'celeste') this._c.multiply(this._tc.setRGB(1.3, 1.08, 0.5)); else if (bm === 'forest') this._c.multiply(this._tc.setRGB(0.72, 0.86, 0.72)); else if (bm === 'mount') this._c.multiply(this._tc.setRGB(0.92, 0.95, 0.88));
       this.grass.setColorAt(idx, this._c);
       // fleur ?
       if (!anyFlower && k === 0) {

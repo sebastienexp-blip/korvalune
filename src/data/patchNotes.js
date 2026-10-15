@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.73', title: 'Textures cohérentes',
+    items: [
+      '🎨 Sols fidèles à leur région : cendre sombre dans les Abysses, sable dans le désert, sol doré au Royaume Céleste (plus de reflets verts venus de la texture de base).',
+      '🌾 L’herbe prend la teinte de sa région (dorée au Royaume Céleste, plus sombre en forêt).',
+      '🪨 Rochers et débris assombris et teintés selon la région (braise, violet, basalte, givre…).'
+    ]
+  },
+  {
     version: '10.72', title: 'Ambiance des régions',
     items: [
       '🌫️ Chaque région a sa propre atmosphère : brume et lumière teintées (sable chaud du désert, marais verdâtre, braises des Abysses, voile violet des Terres Corrompues…), avec des transitions en douceur.',

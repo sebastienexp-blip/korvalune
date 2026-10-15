@@ -66,7 +66,7 @@ export function naturalRockGeometry(seed = 0, { squash = 0.8, rough = 0.38, flat
       if (y < flat * sc) y = flat * sc + (y - flat * sc) * 0.12;     // base plate : le rocher repose sur le sol
       p.setXYZ(i, x, y, z);
       const band = Math.sin(y * 7 + n * 5) * strata, sp = (_n3(x * 9, y * 9, z * 9 + sd) - 0.5) * 0.1;
-      const k = 0.6 + (n - 0.5) * 0.42 + band + sp + Math.max(0, y / sc) * 0.07;   // un peu plus clair vers le haut
+      const k = 0.5 + (n - 0.5) * 0.42 + band + sp + Math.max(0, y / sc) * 0.07;   // un peu plus clair vers le haut
       const kl = Math.pow(Math.max(0.05, k), 2.2);   // les couleurs de sommets sont linéaires : on convertit pour un gris moyen (pas délavé)
       c[i * 3] = kl * 1.03; c[i * 3 + 1] = kl * 0.99; c[i * 3 + 2] = kl * 0.93;
     }
@@ -82,7 +82,7 @@ export function naturalRockGeometry(seed = 0, { squash = 0.8, rough = 0.38, flat
   return mergeGeometries(parts);
 }
 // teinte d'un rocher selon le biome (multiplie la couleur des sommets)
-const ROCK_TINT = { desert: [1.02, 0.8, 0.55], tundra: [1.08, 1.12, 1.18], mount: [0.95, 0.95, 1.0], forest: [0.95, 1.0, 0.92], swamp: [0.82, 0.9, 0.76], void: [0.55, 0.5, 0.62], corrupt: [0.7, 0.58, 0.82], abyss: [0.55, 0.45, 0.42], celeste: [1.1, 1.05, 0.95] };
+const ROCK_TINT = { desert: [1.02, 0.8, 0.55], tundra: [1.08, 1.12, 1.18], mount: [0.95, 0.95, 1.0], forest: [0.95, 1.0, 0.92], swamp: [0.82, 0.9, 0.76], void: [0.38, 0.34, 0.44], corrupt: [0.5, 0.4, 0.62], abyss: [0.3, 0.24, 0.23], celeste: [1.1, 1.05, 0.95] };
 
 export class World {
   constructor(scene) {
@@ -311,7 +311,7 @@ export class World {
         const w = this.regionW(x, z, id);
         if (w < 0.02) continue;
         if (id !== 'forest' && id !== 'mount' && id !== 'tundra') warm = Math.max(warm, w);
-        c.lerp(PAL[id].g, w * 0.82);
+        c.lerp(PAL[id].g, Math.min(1, w * 1.12) * 0.95);   // V10.73 : la palette de région remplace presque entièrement le vert de base (le sol des Abysses/du Céleste restait verdâtre)
         c.lerp(PAL[id].r, smoothstep(0.2, 0.4, slope) * w * 0.85);
         if (id === 'abyss') { const a = Math.abs(fbm(x * 0.012 + 130, z * 0.012 + 130, 4) - 0.5) * 2; c.lerp(lava, (1 - smoothstep(0.035, 0.09, a)) * w); }
         else if (id === 'corrupt') { const rv = Math.abs(fbm(x * 0.05 + 11, z * 0.05 + 7, 3) * 2 - 1); c.lerp(vein, (1 - smoothstep(0.02, 0.07, rv)) * w * 0.8); }
@@ -349,9 +349,11 @@ export class World {
             shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
 #ifdef USE_MAP
   diffuseColor.rgb *= mix(vec3(1.0), texture2D(map, vMapUv * 0.067 + vec2(0.37, 0.11)).rgb * 1.2, 0.65);
+  // V10.73 : la texture de détail est verte ; on garde son grain mais on neutralise sa teinte, sinon le sable, la cendre et le basalte virent au vert
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), 0.8);
 #endif`);
           };
-          mat.customProgramCacheKey = () => 'terrain_v25';
+          mat.customProgramCacheKey = () => 'terrain_v25b';
         }
       }
     }
