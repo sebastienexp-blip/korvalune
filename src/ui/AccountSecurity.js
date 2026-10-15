@@ -47,8 +47,8 @@ export class AccountSecurity {
   // ----- Code cadeau -----
   openCode() {
     this.mode = 'code';
-    this._show(`<h3>Code cadeau</h3><p class="sec-hint">Tu as reçu un code de l’équipe ? Entre-le ici pour gagner des Lunes.</p>
-      <input id="sec-gift" maxlength="24" placeholder="CODE" autocomplete="off" style="text-transform:uppercase">
+    this._show(`<h3>🎟️ Entrer un code</h3><p class="sec-hint">Un code reçu de l’équipe (Discord, événement) ? Entre-le ici : tickets double XP / butin ×2, Lunes… Chaque code ne sert qu’une seule fois. Il faut être connecté à ton compte.</p>
+      <input id="sec-gift" maxlength="24" placeholder="KORV-XXXX-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase">
       <p class="sec-msg"></p><div class="sec-btns"><button class="btn-primary" data-s="gift-go">Valider</button><button data-s="close">Fermer</button></div>`);
   }
 
@@ -101,7 +101,7 @@ export class AccountSecurity {
       if (np.length < 8) return this._msg('Mot de passe trop court (8 caractères minimum).');
       this.net.sendRaw({ t: 'acct:recover', username: this.info.username, method: this.v('sec-method'), secret, newPassword: np }); return;
     }
-    if (a === 'gift-go') { const c = this.v('sec-gift'); if (c.length < 4) return this._msg('Entre ton code.'); this.net.sendRaw({ t: 'shop:code', code: c }); return; }
+    if (a === 'gift-go') { const c = this.v('sec-gift'); if (c.length < 4) return this._msg('Entre ton code.'); this._msg('Vérification…', true); this.net.sendRaw({ t: 'shop:code', code: c }); return; }
     if (a === 'sup-send') { const t = (this.el.querySelector('#sup-text')?.value || '').trim(); if (t.length < 2) return this._msg('Écris ton message.'); this.net.sendRaw({ t: 'support:send', text: t }); return; }
     if (a === 'sec-save') {
       const pw = this.v('sec-pw'); if (!pw) return this._msg('Entre ton mot de passe actuel.');
@@ -134,5 +134,6 @@ export class AccountSecurity {
       if (sent) { const ta = this.el.querySelector('#sup-text'); if (ta) ta.value = ''; }
       this._supportForm(m); if (sent) this._msg(keep, true);
     } else if (m.t === 'support:msg' && this.mode === 'support') this._msg(m.text, m.ok);
+    else if (m.t === 'shop:msg' && this.mode === 'code') { this._msg(m.text, m.ok); if (m.ok) { const i = this.el.querySelector('#sec-gift'); if (i) i.value = ''; } }
   }
 }

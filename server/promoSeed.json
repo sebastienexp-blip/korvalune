@@ -1,0 +1,86 @@
+[
+ {
+  "h": "4fff66d9e2a7d3ec0535c0bd2944427f4ad38d380b7fa58567db46e4f8f2047f",
+  "xp": 2,
+  "drop": 1,
+  "minutes": 30,
+  "label": "Double XP 30 min"
+ },
+ {
+  "h": "3bde40ea9f8cc6670b690af7844ef1a64c6c30d32b3526280127b846a4072511",
+  "xp": 2,
+  "drop": 1,
+  "minutes": 30,
+  "label": "Double XP 30 min"
+ },
+ {
+  "h": "09193caeb3ec4cbb999c9b4685b569dcb953f5b2e5c71a8ced6499be80b09e75",
+  "xp": 2,
+  "drop": 1,
+  "minutes": 60,
+  "label": "Double XP 1 h"
+ },
+ {
+  "h": "884c93881bc4918b706cfa3725160ca4c74a9298ed19cfa0218c0a0286e88783",
+  "xp": 2,
+  "drop": 1,
+  "minutes": 60,
+  "label": "Double XP 1 h"
+ },
+ {
+  "h": "d47adbffb08e66dad3feba37b58acf22795052e8a5aaf035b9ee45942f802be7",
+  "xp": 1,
+  "drop": 2,
+  "minutes": 30,
+  "label": "Butin x2 30 min"
+ },
+ {
+  "h": "c4c63de2b58896f85eb3df4ca60b46fa23f80721364843ad494abbbc3b3f135e",
+  "xp": 1,
+  "drop": 2,
+  "minutes": 30,
+  "label": "Butin x2 30 min"
+ },
+ {
+  "h": "0e768cdc294e685259d8f87e4170100df6ca9184c6fa8a3515598bcb34dabb53",
+  "xp": 1,
+  "drop": 2,
+  "minutes": 60,
+  "label": "Butin x2 1 h"
+ },
+ {
+  "h": "626a792a742eaa86613b6d300a8668156760985314e56e389c707175881ea18e",
+  "xp": 1,
+  "drop": 2,
+  "minutes": 60,
+  "label": "Butin x2 1 h"
+ },
+ {
+  "h": "761a4112cc835f91715925d45c0131c532fb962647ab21ac938f441ca2a3d523",
+  "xp": 2,
+  "drop": 2,
+  "minutes": 30,
+  "label": "Double XP + Butin x2 30 min"
+ },
+ {
+  "h": "7deda8222892d7ed368d8d5a5006aa74d317738814fb4fa646f9472078fb1be7",
+  "xp": 2,
+  "drop": 2,
+  "minutes": 30,
+  "label": "Double XP + Butin x2 30 min"
+ },
+ {
+  "h": "088da09a547fd415ee7726c6d76f1d8c1ce21f33f77a3ed112cef91483e12a6a",
+  "xp": 2,
+  "drop": 2,
+  "minutes": 60,
+  "label": "Double XP + Butin x2 1 h"
+ },
+ {
+  "h": "4f84230152e251a17934b8b702fa8bdf21bc4fe7f6e1ee063affa52b9f466477",
+  "xp": 2,
+  "drop": 2,
+  "minutes": 60,
+  "label": "Double XP + Butin x2 1 h"
+ }
+]

@@ -1,6 +1,7 @@
 // V10.59 — outils du créateur : maintenance, message du jour, boosts mondiaux, codes cadeaux. Config conservée dans DATA_DIR.
 import { readFileSync, promises as fs } from 'fs';
 import path from 'path';
+import { createHash } from 'crypto';
 import { DATA_DIR } from './store.js';
 import { ensureShop } from './shop.js';
 
@@ -38,14 +39,44 @@ export function createCode(code, lunes, maxUses, days) {
   cfg.codes[c] = { lunes: l, max: mu, used: 0, by: [], until: d > 0 ? Date.now() + Math.min(d, 365) * 86400000 : 0, at: Date.now(), off: false };
   save(); return { ok: true, code: c };
 }
-export const codeList = () => Object.entries(cfg.codes).map(([code, c]) => ({ code, lunes: c.lunes, used: c.used, max: c.max, until: c.until, off: !!c.off })).sort((a, b) => b.used - a.used || a.code.localeCompare(b.code));
+export const codeList = () => Object.entries(cfg.codes).map(([code, c]) => ({ code: code.startsWith('h:') ? `🎟️ ${c.label || 'Ticket'} (${code.slice(2, 8)}…)` : code, lunes: c.lunes, used: c.used, max: c.max, until: c.until, off: !!c.off })).sort((a, b) => b.used - a.used || a.code.localeCompare(b.code));
 export function stopCode(code) { const c = cfg.codes[normCode(code)]; if (!c) return false; c.off = true; save(); return true; }
+// V10.70 — codes à usage unique « tickets » : bonus personnel (XP ×2 et/ou butin ×2) pendant 30 min ou 1 h.
+// Les codes distribués sont fournis HACHÉS (SHA-256) dans server/promoSeed.json : le dépôt ne contient jamais un code en clair.
+const hashCode = (c) => createHash('sha256').update(c).digest('hex');
+try {
+  const seed = JSON.parse(readFileSync(new URL('./promoSeed.json', import.meta.url), 'utf8'));
+  let add = 0;
+  for (const e of Array.isArray(seed) ? seed : []) {
+    const key = 'h:' + String(e.h || '');
+    if (!/^h:[0-9a-f]{64}$/.test(key) || cfg.codes[key]) continue;   // déjà connu : on garde son état (utilisé ou non)
+    const xp = Math.min(3, Math.max(1, +e.xp || 1)), drop = Math.min(3, Math.max(1, +e.drop || 1)), minutes = Math.min(240, Math.max(1, Math.floor(+e.minutes) || 30));
+    if (xp === 1 && drop === 1) continue;
+    cfg.codes[key] = { lunes: 0, boost: { xp, drop, minutes }, label: String(e.label || '').slice(0, 40), max: 1, used: 0, by: [], until: 0, at: Date.now(), off: false };
+    add++;
+  }
+  if (add) save();
+} catch { /* pas de fichier de codes */ }
+
+// bonus personnel encore actif d'un compte, sinon null
+export const personalBoost = (acc) => (acc && acc.boost && acc.boost.until > Date.now() ? acc.boost : null);
+
 export function redeem(acc, accName, code) {
-  const k = normCode(code), c = cfg.codes[k];
+  const k = normCode(code);
+  const hk = 'h:' + hashCode(k);
+  const key = cfg.codes[k] ? k : (cfg.codes[hk] ? hk : '');
+  const c = key && cfg.codes[key];
   if (!c || c.off) return { ok: false, error: 'Code invalide.' };
   if (c.until && c.until < Date.now()) return { ok: false, error: 'Ce code a expiré.' };
-  if (c.used >= c.max) return { ok: false, error: 'Ce code a déjà été utilisé au maximum.' };
+  if (c.used >= c.max) return { ok: false, error: c.max === 1 ? 'Ce code a déjà été utilisé.' : 'Ce code a déjà été utilisé au maximum.' };
   if (c.by.includes(accName)) return { ok: false, error: 'Tu as déjà utilisé ce code.' };
-  c.used++; c.by.push(accName); ensureShop(acc).gems += c.lunes; save();
+  c.used++; c.by.push(accName);
+  if (c.boost) {
+    const cur = personalBoost(acc), now = Date.now();
+    acc.boost = { xp: Math.max(c.boost.xp, cur ? cur.xp : 1), drop: Math.max(c.boost.drop, cur ? cur.drop : 1), until: (cur ? cur.until : now) + c.boost.minutes * 60000, label: 'Ticket' };
+    save();
+    return { ok: true, boost: { ...acc.boost, minutes: c.boost.minutes } };
+  }
+  ensureShop(acc).gems += c.lunes; save();
   return { ok: true, lunes: c.lunes };
 }

@@ -26,7 +26,7 @@ import { createWebServer } from './server/web.js';
 import { loadSecret, makeToken, verifyToken, tokenIssuedAt, KeyedLimiter } from './server/security.js';
 import { QUESTIONS, secView, setQuestion, setEmail, makeRecoveryCode, checkRecovery } from './server/recovery.js';
 import { addMessage as supAdd, playerView as supView, markRead as supRead, threadView as supThread, inbox as supInbox } from './server/support.js';
-import { getMotd, setMotd, maint as maintCfg, setMaint, boost as worldBoost, setBoost, stopBoost, createCode, codeList, stopCode, redeem as redeemCode } from './server/adminTools.js';
+import { getMotd, setMotd, maint as maintCfg, setMaint, boost as worldBoost, setBoost, stopBoost, createCode, codeList, stopCode, redeem as redeemCode, personalBoost } from './server/adminTools.js';
 import { adminLog, readLog, searchAccounts, summary as accSummary, resetPassword, giveLunes } from './server/accountAdmin.js';
 import { isMountId, MAX_MOUNTS } from './src/data/mounts.js';
 import { normalizeLook, sanitizeAppearance } from './src/data/looks.js';
@@ -224,6 +224,7 @@ const loginExtras = (ws, acc, key) => { // message du jour, boost en cours, rép
   const n = supNotify(acc); if (n) send(ws, n);
   const m = getMotd(); if (m) { send(ws, { t: 'system', text: '📜 ' + m }); send(ws, { t: 'banner', kind: 'message', icon: '📜', text: m, secs: 8 }); }
   const b = worldBoost(); if (b) send(ws, { t: 'world:boost', ...b, left: b.until - Date.now() });
+  const pb = personalBoost(acc); if (pb) send(ws, { t: 'user:boost', ...pb, left: pb.until - Date.now() });
 };
 // compte d'un jeton valide ; refuse les jetons émis avant un changement de mot de passe, et les comptes bloqués
 const tokenAccount = (token) => { const k = resolveAccount(verifyToken(SECRET, token) || ''); const a = k && accounts[k]; if (!a || a.ban || tokenIssuedAt(token) < (a.revokedAt || 0)) return null; return k; };
@@ -920,8 +921,10 @@ wss.on('connection', (ws, req) => {
       if (msg.t === 'shop:code') {
         if (!codeLimiter.hit(key)) { send(ws, { t: 'shop:msg', ok: false, text: 'Trop d\u2019essais : réessaie dans quelques minutes.' }); return; }
         const r = redeemCode(acc, key, msg.code);
-        if (r.ok) { persistAccounts(accounts); console.log(`[Korvalune] code cadeau utilisé : ${key} +${r.lunes}`); }
-        reply(r, `🎁 Code validé : +${r.lunes} Lunes !`); return;
+        if (r.ok) { persistAccounts(accounts); console.log(`[Korvalune] code cadeau utilisé : ${key} ${r.boost ? `ticket ×${r.boost.xp}/×${r.boost.drop} ${r.boost.minutes} min` : `+${r.lunes}`}`); }
+        if (r.ok && r.boost) send(ws, { t: 'user:boost', ...r.boost, left: r.boost.until - Date.now() });
+        const bt = r.boost ? `🎟️ Ticket activé : ${[r.boost.xp > 1 ? `XP ×${r.boost.xp}` : '', r.boost.drop > 1 ? `butin ×${r.boost.drop}` : ''].filter(Boolean).join(' et ')} pendant ${r.boost.minutes} min !` : '';
+        reply(r, r.boost ? bt : `🎁 Code validé : +${r.lunes} Lunes !`); return;
       }
       // V10.55 — dons PayPal : le donateur déclare son don, le créateur (OWNER_ACCOUNTS) le valide après l'avoir reçu sur PayPal
       if (msg.t === 'shop:donate') {

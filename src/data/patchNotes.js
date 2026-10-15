@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.70', title: 'Codes et tickets',
+    items: [
+      '🎟️ Nouveau : « Entrer un code » dans le menu Pause et dans Compte.',
+      '⚡ Tickets de bonus : double XP et/ou butin ×2 pendant 30 min ou 1 h, à ton compte uniquement.',
+      '💬 Des codes à usage unique sont publiés sur le Discord (salon #codes-cadeaux).'
+    ]
+  },
+  {
     version: '10.69', title: 'Stands et ville',
     items: [
       '🔨 Les artisans ont de vrais stands : toit, murs, étagères, enseigne, lanternes, tonneaux et caisses autour de la forge, de l’armurier, de l’alchimie et de l’enchantement.',

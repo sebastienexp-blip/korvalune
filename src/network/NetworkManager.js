@@ -118,6 +118,7 @@ export class NetworkManager {
       case 'acct:recoverInfo': case 'acct:recoverResult': case 'acct:sec': case 'acct:code': case 'acct:msg': case 'support': case 'support:msg': this.bus.emit('net:acct', msg); break;
       case 'banner': this.bus.emit('net:banner', msg); break;
       case 'world:boost': this.bus.emit('net:worldBoost', msg); break;
+      case 'user:boost': this.bus.emit('net:userBoost', msg); break;
       case 'world:spawn': this.bus.emit('net:worldSpawn', msg); break;
       case 'shop:donList': this.bus.emit('net:donList', msg); break;
       case 'playerCos': this.bus.emit('net:playerCos', msg); break;

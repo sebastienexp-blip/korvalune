@@ -1,4 +1,4 @@
-import { setWorldBoost, wbInfo } from '../data/worldBoost.js';
+import { setWorldBoost, setPersonalBoost, wbInfo } from '../data/worldBoost.js';
 import { Banner } from '../ui/Banner.js';
 import { AdminSpawns } from '../world/AdminSpawns.js';
 import { AccountSecurity } from '../ui/AccountSecurity.js';
@@ -955,6 +955,7 @@ export class Game {
     b.on('net:chat', (msg) => this.hud.appendChat({ channel: msg.channel, from: msg.from, text: msg.text }));
     b.on('net:whisper', (msg) => this.hud.appendChat({ channel: 'general', whisper: true, from: msg.from, to: msg.to, text: msg.text, self: msg.self }));
     b.on('net:worldBoost', (m) => { setWorldBoost(m); this.banner?._tickChips(); });
+    b.on('net:userBoost', (m) => { setPersonalBoost(m); this.banner?._tickChips(); });
     b.on('net:banner', (m) => this.banner?.show(m));
     b.on('net:worldSpawn', (m) => { if (!this.player || !this.world || this.hud._curScreen !== 'game-ui') return; (this._adminSpawns ??= new AdminSpawns(this)).spawn(m); });
     b.on('net:system', (msg) => this.hud.appendChat({ channel: 'general', system: true, text: msg.text }));
