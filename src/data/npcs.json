@@ -1007,5 +1007,30 @@
         -58
       ]
     ]
+  },
+  "fruitier": {
+    "id": "fruitier",
+    "name": "Marchand Pomel",
+    "title": "Fruitier",
+    "look": {
+      "cloth": 6858026,
+      "armor": 9462856,
+      "cape": 5909082,
+      "hair": 3811866
+    },
+    "dialogues": {
+      "intro": [
+        "Pommes de Brumevent, baies de la lisière, poires juteuses ! Goûte, tu n'achèteras pas ailleurs.",
+        "Ma récolte vient de la ferme au sud, et elle est toujours fraîche."
+      ],
+      "talks": [
+        [
+          "Pommes de Brumevent, baies de la lisière, poires juteuses ! Goûte, tu n'achèteras pas ailleurs."
+        ],
+        [
+          "Un fruit par jour éloigne le gobelin… enfin, d'après ma tante."
+        ]
+      ]
+    }
   }
 }

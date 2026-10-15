@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.74', title: 'Check-up des stands',
+    items: [
+      '🔨 Un seul stand Forge, avec Helga à l’intérieur (enclume et foyer sous le toit) ; Vaelis se tient derrière son établi d’enchantement.',
+      '🛒 Les marchands du marché sont dans leur étal, derrière le comptoir.',
+      '🍎 Nouveau : Marchand Pomel tient l’étal de fruits, qui était vide.',
+      '🧹 Retrait des établis sans personne (armurier, alchimie, forge en double).'
+    ]
+  },
+  {
     version: '10.73', title: 'Textures cohérentes',
     items: [
       '🎨 Sols fidèles à leur région : cendre sombre dans les Abysses, sable dans le désert, sol doré au Royaume Céleste (plus de reflets verts venus de la texture de base).',

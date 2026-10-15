@@ -565,12 +565,13 @@ function buildDistricts(world, g, T, stone, wood, add) {
   const MX = POS.market.x;
   const fruitGoods = (a) => fruit(a, [0xd03a2a, 0xe0a020, 0x6aa030]);
   const STALL_BY = new Map([[weapons, 'etal_armes'], [armors, 'etal_armures'], [potions, 'etal_potions'], [fruitGoods, 'etal_fruits'], [cloth, 'etal_tissus'], [curios, 'etal_curios']]);
-  stall(POS.weaponsmith[0], POS.weaponsmith[1] + 1.1, 's', 0xb03030, 0xe8dcc0, weapons);
-  stall(POS.armorsmith[0], POS.armorsmith[1] + 1.1, 's', 0x2f5f9a, 0xe8dcc0, armors);
-  stall(POS.apothecary[0], POS.apothecary[1] + 1.1, 's', 0x3a8a4a, 0xe8dcc0, potions);
-  stall(POS.tilda[0] - 10, POS.tilda[1] - 1.1, 'n', 0xc09030, 0xe8dcc0, fruitGoods);
-  stall(POS.tilda[0], POS.tilda[1] - 1.1, 'n', 0xa04a8a, 0xe8dcc0, cloth);
-  stall(POS.orsin[0], POS.orsin[1] - 1.1, 'n', 0x4a3a8a, 0xd0b060, curios);
+  // V10.74 : les marchands se tiennent DANS leur étal (derrière le comptoir) : l'étal est décalé de 0,5 m vers la clientèle au lieu de 1,1 m (le PNJ était derrière le panneau du fond)
+  stall(POS.weaponsmith[0], POS.weaponsmith[1] + 0.5, 's', 0xb03030, 0xe8dcc0, weapons);
+  stall(POS.armorsmith[0], POS.armorsmith[1] + 0.5, 's', 0x2f5f9a, 0xe8dcc0, armors);
+  stall(POS.apothecary[0], POS.apothecary[1] + 0.5, 's', 0x3a8a4a, 0xe8dcc0, potions);
+  stall(POS.tilda[0] - 10, POS.tilda[1] - 0.5, 'n', 0xc09030, 0xe8dcc0, fruitGoods);
+  stall(POS.tilda[0], POS.tilda[1] - 0.5, 'n', 0xa04a8a, 0xe8dcc0, cloth);
+  stall(POS.orsin[0], POS.orsin[1] - 0.5, 'n', 0x4a3a8a, 0xd0b060, curios);
   // fontaine du marché
   const fy = world.heightAt(MX, POS.market.z);
   if (glbDist) placeGlb('fontaine', MX, fy, POS.market.z);
@@ -618,19 +619,19 @@ function buildDistricts(world, g, T, stone, wood, add) {
     }
     world.addBox(x, z, Math.abs(Math.cos(rot)) * 1.5 + Math.abs(Math.sin(rot)) * 0.7, Math.abs(Math.cos(rot)) * 0.7 + Math.abs(Math.sin(rot)) * 1.5, y - 1, y + 2.5);
   };
-  bench(-44, -22, 0, 'armor'); bench(-50, -4, Math.PI / 2, 'alchemy'); bench(POS.enchantBench[0], POS.enchantBench[1], Math.PI / 2, 'enchant'); bench(-30, -22, 0, 'forge');
-  bench(-48, -16, Math.PI / 2, 'forge');
+  // V10.74 : un seul établi décoratif (enchantement) ; la forge a déjà son enclume et son foyer (décor de forge) et les autres métiers ont leur étal au marché
+  bench(POS.enchantBench[0], POS.enchantBench[1], Math.PI / 2, 'enchant');
 
   // ---- V10.69 : vrais stands d'artisans autour des établis (toit, murs, étagères, enseigne, lanternes, tonneaux)
   // Repère local du stand : le comptoir est à l'origine, l'ouverture (le client) est du côté +z, le fond à z = -1.5.
-  const craftStand = (x, z, yaw, kind) => {
+  const craftStand = (x, z, yaw, kind, o = {}) => {
     const COL = { forge: [0x7a2e2a, 0xff9a40, 'Forge'], armor: [0x3f5b72, 0xbfd0e8, 'Armurier'], alchemy: [0x3f6a3a, 0x7affb0, 'Alchimie'], enchant: [0x5a3a8a, 0xb89aff, 'Enchantement'] }[kind];
     const y = world.heightAt(x, z), grp = new THREE.Group();
     grp.position.set(x, y, z); grp.rotation.y = yaw; g.add(grp);
     const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.88, ...o });
     const mPost = mat(0x5a3d24), mPlank = mat(0x7a5733), mDark = mat(0x3d2916), mRoof = mat(COL[0], { side: THREE.DoubleSide }), mCloth = mat(COL[0], { side: THREE.DoubleSide });
     const a = (geo, m, px, py, pz, rx = 0, ry = 0, rz = 0) => { const o = add(geo, m, px, py, pz, grp); o.rotation.set(rx, ry, rz); return o; };
-    const W = 5.6, D = 3.9, zb = -1.5, zf = zb + D, H = 3.3;
+    const W = o.w || 5.6, zb = -(o.back ?? 1.5), zf = o.front ?? 2.4, D = zf - zb, H = 3.3, withBench = o.bench !== false;
     // dalle de pavage sous le stand (affleurante)
     const floor = a(new THREE.BoxGeometry(W + 0.6, 0.06, D + 0.6), (() => { const m = mat(0x6b5a44); m.polygonOffset = true; m.polygonOffsetFactor = -20; m.polygonOffsetUnits = -20; return m; })(), 0, -0.02, (zb + zf) / 2); floor.castShadow = false;
     // poteaux
@@ -688,7 +689,7 @@ function buildDistricts(world, g, T, stone, wood, add) {
     crate(W / 2 - 0.5, zb + 0.55); crate(W / 2 - 0.5, zb + 1.2, 0.45); crate(W / 2 - 0.55, zb + 0.55, 0.38).position.y = 0.55 + 0.19;
     a(new THREE.SphereGeometry(0.3, 8, 6), mat(0xb6a47a), W / 2 - 0.6, 0.2, zb + 1.9).scale.set(1, 0.7, 0.9);
     // tapis devant le comptoir
-    const rug = a(new THREE.BoxGeometry(3.2, 0.02, 1.0), (() => { const m = mat(COL[0]); m.polygonOffset = true; m.polygonOffsetFactor = -30; m.polygonOffsetUnits = -30; return m; })(), 0, 0.0, 1.35); rug.castShadow = false;
+    const rug = withBench && a(new THREE.BoxGeometry(3.2, 0.02, 1.0), (() => { const m = mat(COL[0]); m.polygonOffset = true; m.polygonOffsetFactor = -30; m.polygonOffsetUnits = -30; return m; })(), 0, 0.0, 1.35); if (rug) rug.castShadow = false;
     // collisions (alignées sur les axes : les stands sont tournés par quarts de tour)
     const quarter = Math.abs(Math.sin(yaw)) > 0.5;
     const wp = (lx, lz) => [x + Math.cos(yaw) * lx + Math.sin(yaw) * lz, z - Math.sin(yaw) * lx + Math.cos(yaw) * lz];
@@ -697,13 +698,10 @@ function buildDistricts(world, g, T, stone, wood, add) {
     for (const sx of [-1, 1]) { const [sx2, sz2] = wp(sx * W / 2, (zb + zf) / 2); world.addBox(sx2, sz2, quarter ? D / 2 : 0.25, quarter ? 0.25 : D / 2, y - 1, y + 3); } // parois
     for (const sx of [-1, 1]) { const [px2, pz2] = wp(sx * W / 2, zf); world.addCircle(px2, pz2, 0.3); }
   };
-  { // l'ouverture de chaque stand suit l'orientation de son établi (vers le centre de la ville)
+  { // l'ouverture de chaque stand suit l'orientation de l'établi (vers le centre de la ville) ; le PNJ du métier se tient À L'INTÉRIEUR, derrière le comptoir
     const Q = Math.PI / 2;
-    craftStand(-44, -22, 0, 'armor');
-    craftStand(-30, -22, 0, 'forge');
-    craftStand(-50, -4, Q, 'alchemy');
-    craftStand(POS.enchantBench[0], POS.enchantBench[1], Q, 'enchant');
-    craftStand(-48, -16, Q, 'forge');
+    craftStand(-42.6, -12, Q, 'forge', { w: 6.6, back: 4.4, front: 5.2, bench: false });                       // Helga (-40,5 ; -12) entre l'enclume/foyer et l'entrée
+    craftStand(POS.enchantBench[0], POS.enchantBench[1], Q, 'enchant', { w: 5.6, back: 2.0, front: 3.4 });     // Vaelis derrière l'établi
   }
 
   // ---- place des Métamorphoses : cercle de pierre autour du monolithe, quatre torchères runiques

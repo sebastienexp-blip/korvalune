@@ -22,10 +22,10 @@ export const POS = {
   // quartier marchand (est)
   market: { x: 42, z: -6 },
   weaponsmith: [32, -17.1], armorsmith: [42, -17.1], apothecary: [52, -17.1],
-  tilda: [42, 5.2], orsin: [52, 5.2],
+  tilda: [42, 5.2], orsin: [52, 5.2], fruitier: [32, 5.2],
   // artisans (ouest)
-  smith: [-40, -12], forgeDecor: [-44, -12],
-  mystic: [-33, -4], enchantBench: [-37, -4],
+  smith: [-40.5, -12], forgeDecor: [-44, -12],
+  mystic: [-38.6, -4], enchantBench: [-37.6, -4],
   // personnalisation (sud-ouest)
   monolith: [-43, 33], barberHouse: { x: -30, z: 45, w: 5.5, d: 5 }, barber: [-29.6, 49.2],
   // écurie et auberge (sud-est)
@@ -40,7 +40,7 @@ export const POS = {
 export const KEEP_CLEAR = [
   [0, 40, 17], [0, 50, 8], [-12, 15, 5], [7, 57.5, 5],
   [42, -6, 17], [-43, 33, 10], [-30, 49, 6], [42, 50, 15], [25, 46, 9],
-  [-40, -12, 10], [-33, -4, 6], [-44, -22, 7], [-50, -4, 6], [-32, -22, 6],
+  [-41, -12, 10], [-36, -4, 6],
   [0, -50, 12], [17, -45, 6], [-19, -43, 9], [0, -62, 9], [0, 62, 9], [62, -10, 9], [-62, -10, 9]
 ];
 

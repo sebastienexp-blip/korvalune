@@ -452,6 +452,7 @@ export class Game {
       at('gateN', POS.gateGuards.N[0], POS.gateGuards.N[1], 0);
       at('tilda', POS.tilda[0], POS.tilda[1], Math.PI);
       at('orsin', POS.orsin[0], POS.orsin[1], Math.PI);
+      at('fruitier', POS.fruitier[0], POS.fruitier[1], Math.PI);   // V10.74 : l'étal de fruits avait un comptoir mais pas de marchand
       for (const id of ['herald', 'pip', 'mira', 'joss', 'aldric']) { const w = npcsData[id].walk; at(id, w[0][0], w[0][1], 0); }
     }
 
