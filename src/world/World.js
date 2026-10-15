@@ -748,7 +748,7 @@ export class World {
     // V8.0 — Désert d'Ambre : cactus et rochers de grès
     const sandstone = std(0xb98e52), cactusM = std(0x4f7a3a);
     meshK('biome_cactus', cyl, cactusM, pick('desert', 95, 0.6), (o, d) => { const h = 1.6 + o.v * 2.6; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.4 + o.v * 0.12, h, 0.4 + o.v * 0.12); }, 0.55);
-    mesh(rockB2, rstd(0xe8b070), pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
+    mesh(rockB2, rstd(0xd6b890), pick('desert', 85, 0.55), (o, d) => { const s2 = 1.2 + o.v * 3.4; d.position.y = this._gmin(o.x, o.z, s2) + s2 * 0.3; d.scale.set(s2 * 1.3, s2 * 0.75, s2); d.rotation.set(o.v * 2, o.r, o.v); }, 1.2);
     // Marais de Brume : souches pourries, roseaux géants et feux follets
     meshK('biome_souche', cyl, std(0x3b2f22), pick('swamp', 85, 0.6), (o, d) => { const h = 0.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.15; d.scale.set(0.5 + o.v * 0.4, h, 0.5 + o.v * 0.4); d.rotation.z = (o.v - 0.5) * 0.3; }, 0.6);
     meshK('biome_roseau', cone, std(0x4d6a2c), pick('swamp', 160, 0.55), (o, d) => { const h = 1.8 + o.v * 2.2; d.position.y = o.y + h / 2 - 0.1; d.scale.set(0.3, h, 0.3); }, 0);

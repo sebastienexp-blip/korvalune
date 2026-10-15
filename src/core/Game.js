@@ -1,3 +1,4 @@
+import { RegionAtmosphere } from '../effects/RegionAtmosphere.js';
 import { setWorldBoost, setPersonalBoost, wbInfo } from '../data/worldBoost.js';
 import { Banner } from '../ui/Banner.js';
 import { AdminSpawns } from '../world/AdminSpawns.js';
@@ -296,6 +297,7 @@ export class Game {
     this._applyRealLook();
     this.zones = new ZoneManager(this.bus, this.scene);
     this.weather = new Weather(this.scene, this.bus, this.audio);
+    try { this.atmos = new RegionAtmosphere(this.scene); } catch (e) { console.warn('[V10.72] ambiance de région ignorée', e); this.atmos = null; }
     this.particles = new Particles(this.scene, 700);
     this.enemyProj = new EnemyProjectiles(this.scene, this.bus);
     this.hazards = null; // créé quand le monde existe
@@ -3409,6 +3411,16 @@ export class Game {
     this.particles.update(dt);
     this.dayNight.update(dt, this.player.pos, this.camera);
     this.zones.update(this.player.pos, this.scene.fog);
+    if (this.atmos && !this.rift?.active) { // V10.72 : ambiance de la région (brume, lumière, particules)
+      try {
+        const at = this.atmos, pp = this.player.pos;
+        at._rt = (at._rt || 0) - dt; if (at._rt <= 0) { at._rt = 0.5; at.setRegion(this.world.biomeAt(pp.x, pp.z)); }
+        at.factor = this._q ? this._q.particles * (this.settings.particleScale ?? 100) / 100 : 1;
+        at.update(dt, this.camera, this.scene.fog, this.dayNight.night, true, this.world.heightAt(pp.x, pp.z));
+        const l = this.dayNight.sun; if (at.lightK > 0.003) { l.color.lerp(at.lightCol, at.lightK); }
+        const base = (this._q?.fogFar || 180) * (this.settings.viewDist || 100) / 100; this.scene.fog.far = base * at.mul;
+      } catch (e) { /* ambiance facultative */ }
+    } else if (this.atmos) this.atmos.points.visible = false;
     this.weather.setAllowSnow(this.zones.current?.id === 'ironpeaks');
     this.weather.update(dt, this.camera, this.dayNight.sun, this.dayNight.hemi);
     if (this.rift) this.rift.postUpdate();

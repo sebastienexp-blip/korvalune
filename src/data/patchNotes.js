@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.72', title: 'Ambiance des régions',
+    items: [
+      '🌫️ Chaque région a sa propre atmosphère : brume et lumière teintées (sable chaud du désert, marais verdâtre, braises des Abysses, voile violet des Terres Corrompues…), avec des transitions en douceur.',
+      '✨ Particules d’ambiance : poussière de sable, spores, flocons de givre, étincelles, lucioles. Elles suivent tes réglages de particules.'
+    ]
+  },
+  {
     version: '10.71', title: 'Rochers et connexion',
     items: [
       '🪨 Nouveaux rochers et débris : formes naturelles, teintes adaptées à chaque région (sable, givre, basalte…), sans taches de mousse ni facettes.',
