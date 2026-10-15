@@ -1,5 +1,6 @@
 // Plan du serveur Discord Korvalune : rôles, catégories, salons, permissions et messages d'accueil.
 // Modifier ici puis relancer l'outil : ce qui existe déjà (même nom) n'est jamais recréé ni supprimé.
+const INVITE = process.env.DISCORD_INVITE || 'https://discord.gg/MgvbUYVuP';
 const SITE = process.env.SITE_URL || 'https://legends-of-aetheria-mxaq.onrender.com';
 
 export const ROLES = [
@@ -80,7 +81,7 @@ export const MESSAGES = {
     `📢 **Ouverture du serveur Discord de Korvalune !**\nIci, retrouve les annonces, les événements, les nouveautés du jeu et la communauté. Passe un bon moment et n’hésite pas à inviter tes amis.`
   ],
   links: [
-    `# Liens utiles 🔗\n🎮 **Jouer maintenant** : ${SITE}/\n🌐 **Site officiel (compte, téléchargements, nouveautés)** : ${SITE}/bienvenue/\n📱 **Android (APK)** : ${SITE}/telechargements/Korvalune.apk\n🖥️ **Windows** : ${SITE}/telechargements/Korvalune-Installation.exe\n🔐 **Confidentialité** : ${SITE}/legal/confidentialite.html\n📄 **Mentions légales** : ${SITE}/legal/mentions.html\n🗑️ **Supprimer mon compte** : ${SITE}/legal/suppression-compte.html\n\n💬 Dans le jeu : *Compte → Contacter l’administrateur* pour écrire directement au créateur.`
+    `# Liens utiles 🔗\n🎮 **Jouer maintenant** : ${SITE}/\n🌐 **Site officiel (compte, téléchargements, nouveautés)** : ${SITE}/bienvenue/\n📱 **Android (APK)** : ${SITE}/telechargements/Korvalune.apk\n🖥️ **Windows** : ${SITE}/telechargements/Korvalune-Installation.exe\n🔐 **Confidentialité** : ${SITE}/legal/confidentialite.html\n📄 **Mentions légales** : ${SITE}/legal/mentions.html\n🗑️ **Supprimer mon compte** : ${SITE}/legal/suppression-compte.html\n\n🔁 **Inviter un ami sur ce Discord** : ${INVITE}\n\n💬 Dans le jeu : *Compte → Contacter l’administrateur* pour écrire directement au créateur.`
   ],
   beginners: [
     `# Bien démarrer 🧭\n• **Contrôles** : ZQSD/WASD ou le joystick sur mobile, clic ou toucher pour attaquer, compétences sur la barre du bas.\n• **Classes** : guerrier, paladin, mage, archer, assassin. Tu pourras affiner ton style avec les voies et les talents.\n• **Quêtes** : suis le journal de quêtes en haut à gauche, il te guide pas à pas.\n• **Lunes 🌙** : la monnaie de la boutique. Gagne-les avec la récompense du jour et en montant de niveau. La boutique ne vend que de l’apparence et du confort, jamais de puissance.\n• **Compte** : configure ta question secrète dans *Compte* pour pouvoir récupérer ton accès.\nPose tes questions ici, la communauté répond !`
