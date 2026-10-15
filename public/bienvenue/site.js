@@ -85,6 +85,35 @@
     }
   }).catch(() => { $('news').textContent = ''; });
 
+  // ---- builds, raretés et équipement (données générées depuis le jeu : /bienvenue/data.json) ----
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  fetch('/bienvenue/data.json').then((r) => r.json()).then((d) => {
+    const tabs = $('buildTabs'), list = $('buildList');
+    const show = (i) => {
+      [...tabs.children].forEach((b, k) => b.setAttribute('aria-selected', k === i));
+      list.textContent = '';
+      for (const b of d.classes[i].builds) {
+        const a = el('article'); a.append(el('h3', '', b.name), el('p', 'way', 'Voie ' + b.way), el('p', '', b.blurb)); list.appendChild(a);
+      }
+    };
+    d.classes.forEach((c, i) => { const b = el('button', '', c.label); b.type = 'button'; b.setAttribute('role', 'tab'); b.addEventListener('click', () => show(i)); tabs.appendChild(b); });
+    show(0);
+    const eq = d.equipment, total = Object.values(eq).reduce((n, l) => n + l.length, 0);
+    const facts = $('facts');
+    for (const [n, t] of [[d.rarities.length, 'raretés'], [total, 'types d’équipement'], [d.classes[0].builds.length * 5, 'objets de build par classe'], [d.classes.length, 'classes jouables']]) {
+      const f = el('div'); f.append(el('b', '', String(n)), el('span', '', t)); facts.appendChild(f);
+    }
+    for (const r of d.rarities) {
+      const f = el('div'); f.style.setProperty('--c', r.color);
+      const pct = r.pct >= 1 ? String(r.pct).replace('.', ',') + ' %' : String(r.pct).replace('.', ',') + ' %';
+      f.append(el('b', '', r.name), el('small', '', 'Part : ' + pct), el('small', '', r.affixes[1] ? `jusqu’à ${r.affixes[1]} bonus` : 'sans bonus'), el('small', '', r.effects[1] ? `${r.effects[1]} effet${r.effects[1] > 1 ? 's' : ''} spécial${r.effects[1] > 1 ? 'ux' : ''} max` : 'pas d’effet spécial'));
+      $('rars').appendChild(f);
+    }
+    for (const [title, key] of [['Armes', 'weapons'], ['Armures', 'armors'], ['Mains secondaires', 'offhands'], ['Accessoires', 'accessories']]) {
+      const f = el('div'); f.append(el('h4', '', `${title} (${eq[key].length})`), el('p', '', eq[key].join(', '))); $('types').appendChild(f);
+    }
+  }).catch(() => { $('buildList').textContent = ''; });
+
   // ---- lien Discord (fichier /discord.json, mis à jour sans toucher au code) ----
   fetch('/discord.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => {
     if (!/^https:\/\/discord\.(gg|com)\//.test(j?.invite || '')) return;

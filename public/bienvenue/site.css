@@ -63,5 +63,23 @@ details p{margin:0 0 16px;color:var(--mute)}
 .share{text-align:center}.share .cta{justify-content:center}
 footer{border-top:1px solid var(--line);text-align:center;padding:32px 16px 48px;color:var(--mute);font-size:15px}
 footer p{margin:6px 0}
+h3.mid{text-align:center;margin:40px 0 14px;color:var(--gold)}
+.tabs.bt{max-width:760px;margin:0 auto 20px;flex-wrap:wrap}.tabs.bt button{min-width:96px}
+.builds{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.builds article{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.builds h3{margin:0 0 2px;font-size:19px;color:var(--gold)}.builds .way{color:var(--ok);font-size:14px;margin:0 0 6px}.builds p{margin:0;color:var(--mute);font-size:15px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.facts div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center}
+.facts b{display:block;font:700 40px/1.1 var(--serif);color:var(--gold)}.facts span{color:var(--mute);font-size:15px}
+.rars{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.rars div{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:12px;text-align:center}
+.rars b{display:block;color:var(--c);font-size:17px}.rars small{display:block;color:var(--mute);margin-top:4px;line-height:1.35}
+.types{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.types div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.types h4{margin:0 0 6px;font:700 17px var(--serif);color:var(--gold)}.types p{margin:0;color:var(--mute);font-size:15px}
+.cfg article p{margin:0 0 10px}.cfg b{color:var(--text)}
+.tip{margin:26px auto 0;max-width:760px;border:1px solid var(--gold2);border-radius:16px;padding:20px 24px;background:rgba(242,217,139,.07)}
+.tip h3{color:var(--gold);margin-bottom:.3em}.tip p{margin:0 0 8px}.tip .cta{margin:14px 0 0}
+@media(max-width:900px){.builds{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,1fr)}.rars{grid-template-columns:repeat(2,1fr)}.types{grid-template-columns:1fr}}
 @media(max-width:900px){.hero,.account{grid-template-columns:1fr}.grid,.dl{grid-template-columns:1fr}.classes{grid-template-columns:repeat(2,1fr)}.top nav{display:none}.top .btn{margin-left:auto}.shot img{transform:none}.account h2{text-align:center}section{padding:52px 16px}.moon{left:-220px;width:420px;height:420px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

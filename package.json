@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "node tools/news-json.mjs && vite build",
+    "build": "node tools/news-json.mjs && node tools/site-data.mjs && vite build",
     "preview": "vite preview --host",
     "server": "node server.js",
     "start": "node server.js",
