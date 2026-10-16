@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.85', title: 'Acte I : une vraie histoire',
+    items: [
+      '📖 L’acte I passe de 3 à 9 quêtes, reliées par une intrigue : une patrouille disparue, des cristaux noirs qui chantent, des lettres signées « O. », le cabinet d’un archiviste exilé, une attaque sur la porte sud, puis le Gardien corrompu.',
+      '🗺️ Nouveaux lieux à découvrir dans la Forêt des Ombres : une lueur signale chaque lieu, on s’en approche pour lire les indices.',
+      '🎬 Nouvelle cinématique « Ce que sait la pierre » : le Veilleur révèle qui est Orlan. La cinématique de fin d’acte intègre sa voix.',
+      '💬 Nouveaux dialogues avec Halvar, Vaelis, Rhoda et Ysmer à chaque étape. Les parties déjà en cours reprennent là où elles en étaient.'
+    ]
+  },
+  {
     version: '10.84', title: 'Sols de la ville',
     items: [
       '🧱 Les dalles de la ville (places, avenues, écurie, marché) épousent désormais le relief : plus d’aplats superposés aux bords en escalier, plus d’herbe qui perce à travers les pavés.',

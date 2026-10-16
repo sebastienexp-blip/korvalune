@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { STORY_QUESTS, STORY_TALKS, STORY_FIRST, STORY_START_AFTER, STORY_LINES, CINEMATICS, SPEAKERS } from '../data/story.js';
+import { STORY_QUESTS, STORY_TALKS, STORY_POIS, STORY_FIRST, STORY_START_AFTER, STORY_LINES, CINEMATICS, SPEAKERS } from '../data/story.js';
 import { VoiceOver, readTime } from './VoiceOver.js';
 import { REGION_BY_ID, regionAt } from '../world/Continent.js';
 
@@ -27,7 +27,7 @@ export class StoryDirector {
     setTimeout(() => this._ensureStarted(), 5000);
   }
 
-  dispose() { for (const off of this._offs) off(); this._offs = []; this.game.audio?.cinemaMix?.(false); this.skip(); this._closeDom(); if (this._spire) { this.game.scene.remove(this._spire); this._spire = null; } }
+  dispose() { for (const off of this._offs) off(); this._offs = []; if (this._poiMk) { for (const m of this._poiMk.values()) this.game.scene.remove(m.grp); this._poiMk.clear(); } this.game.audio?.cinemaMix?.(false); this.skip(); this._closeDom(); if (this._spire) { this.game.scene.remove(this._spire); this._spire = null; } }
 
   static get quests() { return STORY_QUESTS; }
 
@@ -59,10 +59,12 @@ export class StoryDirector {
     const g = this.game;
     if (this._shot) this._applyCamera(dt);
     if (this._spireCrystal) this._spireCrystal.rotation.y += dt * 0.8;
+    if (this._poiMk) for (const m of this._poiMk.values()) m.gem.rotation.y += dt * 1.2;
     const now = performance.now();
     if (now < (this._nextPoll || 0) || this.playing || !g.player || g.player.dead) return;
     this._nextPoll = now + 500;
     this._syncSpire();
+    this._syncPois();
     this._regionEvents();
     // cinématique 3 : la première spire
     const qs = g.quests?.active.get('story_a1_2');
@@ -77,18 +79,69 @@ export class StoryDirector {
     }
   }
 
-  // vrai tant que l'étape « toucher la pierre d'éclat » est en cours
+  // vrai tant qu'une étape « toucher la pierre » est en cours (prologue : c1 ; acte I : c5). Renvoie l'identifiant de cinématique.
   stoneStep() {
-    const q = this.game.quests?.active.get('story_p1');
-    return !!(q && this.game.quests.currentStep(q)?.id === 'cine' && !this.playing);
+    if (this.playing) return null;
+    const qm = this.game.quests;
+    for (const [qid, cid] of [['story_p1', 'c1'], ['story_a1_2d', 'c5']]) {
+      const q = qm?.active.get(qid);
+      if (q && qm.currentStep(q)?.id === 'cine') return cid;
+    }
+    return null;
   }
 
-  // appelé par Game quand le joueur interagit avec le Monolithe : lance la première cinématique si l'étape est en cours
+  // appelé par Game quand le joueur interagit avec le Monolithe : lance la cinématique de l'étape en cours
   touchStone() {
-    if (!this.stoneStep()) return false;
+    const cid = this.stoneStep();
+    if (!cid) return false;
     const g = this.game;
-    this.play('c1').then(() => g.bus.emit('tut', 'cine_c1'));
+    this.play(cid).then(() => g.bus.emit('tut', 'cine_' + cid));
     return true;
+  }
+
+  // lieux d'histoire : une lueur signale le lieu tant que son étape est en cours ; l'approcher lit le texte et valide l'étape
+  _syncPois() {
+    const g = this.game, qm = g.quests;
+    if (!qm || !g.world) return;
+    const wanted = new Set();
+    for (const q of qm.active.values()) {
+      if (!q.def.story) continue;
+      const st = qm.currentStep(q);
+      if (st?.type === 'event' && /^poi_/.test(st.target) && STORY_POIS[st.target.slice(4)]) wanted.add(st.target.slice(4));
+    }
+    this._poiMk = this._poiMk || new Map();
+    for (const [id, m] of this._poiMk) if (!wanted.has(id)) { g.scene.remove(m.grp); this._poiMk.delete(id); }
+    for (const id of wanted) {
+      if (!this._poiMk.has(id)) this._poiMk.set(id, this._makePoi(id));
+      const m = this._poiMk.get(id);
+      if (!m || this._poiBusy || g.dialogueOpen || g.modalOpen) continue;
+      const d = Math.hypot(m.pos.x - g.player.pos.x, m.pos.z - g.player.pos.z);
+      if (d > 6) continue;
+      const def = STORY_POIS[id];
+      this._poiBusy = true; g.dialogueOpen = true;
+      g.audio?.play('page');
+      g.hud.showDialogue({ name: def.title }, def.lines, { onEnd: () => { g.dialogueOpen = false; this._poiBusy = false; g.bus.emit('tut', 'poi_' + id); } });
+    }
+  }
+
+  _makePoi(id) {
+    const g = this.game, def = STORY_POIS[id], site = REGION_BY_ID[def.region].site;
+    let pos = null;
+    for (let k = 0; k < 40 && !pos; k++) {
+      const rr = def.r + (k >> 3) * 6, aa = def.a + (k % 8) * 0.18;
+      const x = site[0] + Math.cos(aa) * rr, z = site[1] + Math.sin(aa) * rr, y = g.world.heightAt(x, z);
+      if (y > g.world.waterLevel + 0.6 && g.world.isWalkable(x, z, 1.5)) pos = new THREE.Vector3(x, y, z);
+    }
+    if (!pos) pos = new THREE.Vector3(site[0] + Math.cos(def.a) * def.r, g.world.heightAt(site[0], site[1]), site[1] + Math.sin(def.a) * def.r);
+    const grp = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: def.color, emissive: def.color, emissiveIntensity: 2.2, roughness: 0.35 });
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.55, 0), mat); gem.position.y = 1.4; gem.scale.y = 1.5; grp.add(gem);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 0.3, 10), new THREE.MeshStandardMaterial({ color: 0x3a3548, roughness: 0.9 })); base.position.y = 0.15; grp.add(base);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.7, 40, 10, 1, true), new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.25, depthWrite: false, side: THREE.DoubleSide }));
+    beam.position.y = 20; grp.add(beam);
+    const light = new THREE.PointLight(def.color, 2.2, 22, 1.6); light.position.y = 2; grp.add(light);
+    grp.position.copy(pos); g.scene.add(grp);
+    return { grp, pos, gem };
   }
 
   // émet region_<id> quand le joueur est dans la région visée par l'étape en cours d'une quête d'histoire
