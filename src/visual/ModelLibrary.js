@@ -56,6 +56,21 @@ const CLIP_PATTERNS = {
 
 const hashStr = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
 
+// V10.76 — Textures Ultra HD (tex_hd/*.webp, 4096 / 2560 / 2048 px) : même noms que tex/, remplacées à la volée par le chargeur.
+// Activées par le réglage « Textures Ultra HD » (auto : PC puissant — pas de tactile, ≥ 8 Go, ≥ 6 cœurs, texture max ≥ 8192 px).
+function wantHd() {
+  let st = {};
+  try { st = JSON.parse(localStorage.getItem('aetheria.settings.v1')) || {}; } catch { st = {}; }
+  const v = st.hdTex || 'auto';
+  if (v === 'off') return false;
+  let maxTex = 0;
+  try { const gl = document.createElement('canvas').getContext('webgl2'); maxTex = gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) : 0; } catch { maxTex = 0; }
+  if (maxTex < 4096) return false;
+  if (v === 'on') return true;
+  const touch = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 1;
+  return !touch && (navigator.deviceMemory || 8) >= 8 && (navigator.hardwareConcurrency || 4) >= 6 && maxTex >= 8192;
+}
+
 export const ModelLibrary = {
   characters: [], // { file, key, scene, clips }
   clips: new Map(), // nom minuscule → clip (toutes sources)
@@ -74,11 +89,12 @@ export const ModelLibrary = {
     this.terrainTex = null;
     if (!t || !t.detail) return;
     const L = new THREE.TextureLoader();
-    const get = (u) => new Promise((res) => L.load(`${base}models/${u}`, res, undefined, () => res(null)));
+    const hd = this._hd;
+    const get = (u) => new Promise((res) => { const name = u.replace(/^tex\//, ''); const h = hd && hd.index[name]; L.load(`${base}models/${h ? 'tex_hd/' + h.f : u}`, res, undefined, () => (h ? L.load(`${base}models/${u}`, res, undefined, () => res(null)) : res(null))); });
     this._terrainP = Promise.all([get(t.detail), t.normal ? get(t.normal) : null]).then(([detail, normal]) => {
       if (!detail) return;
       detail.colorSpace = THREE.SRGBColorSpace;
-      for (const x of [detail, normal]) if (x) { x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 4; }
+      for (const x of [detail, normal]) if (x) { x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = hd ? 8 : 4; }
       this.terrainTex = { detail, normal };
     }).catch(() => {});
   },
@@ -92,10 +108,45 @@ export const ModelLibrary = {
       index = await r.json();
     } catch (e) { return; }
     this.mapping = index.mapping || {};
+    this._hd = null;
+    if (wantHd()) {
+      try {
+        const r = await fetch(`${base}models/tex_hd/index.json`);
+        if (r.ok) { const ix = await r.json(); if (ix && Object.keys(ix).length) this._hd = { index: ix }; }
+      } catch { this._hd = null; }
+    }
+    this.hdTextures = !!this._hd;
     this._loadTerrain(base, index.terrain);
     const files = (index.files || []).filter((f) => /\.(glb|gltf)$/i.test(f));
     if (!files.length) return;
-    const loader = new GLTFLoader();
+    const manager = new THREE.LoadingManager();
+    if (this._hd) {   // textures « tex/<nom> » → « tex_hd/<nom HD> » (si une version HD existe)
+      const ix = this._hd.index;
+      manager.setURLModifier((url) => {
+        const m = /\/tex\/([^/?#]+)$/.exec(url);
+        const h = m && ix[decodeURIComponent(m[1])];
+        return h ? url.replace(/\/tex\/[^/?#]+$/, '/tex_hd/' + h.f) : url;
+      });
+    }
+    const loader = new GLTFLoader(manager);
+    if (this._hd) {   // HD : UNE seule copie en mémoire de chaque texture (sinon chaque .glb décode sa propre image 4096² → des Go)
+      const shared = new Map();
+      loader.register((parser) => ({
+        name: 'KV_shared_textures',
+        loadTexture(index) {
+          const def = parser.json.textures && parser.json.textures[index];
+          const img = def && parser.json.images && parser.json.images[def.source];
+          if (!img || !img.uri) return null;
+          const url = THREE.LoaderUtils.resolveURL(img.uri, parser.options.path);
+          let p = shared.get(url);
+          if (!p) {
+            p = parser.loadTextureImage(index, def.source, parser.textureLoader);
+            shared.set(url, p);
+          }
+          return p;
+        }
+      }));
+    }
     // V10.42 — ordre de priorité (le décor et le héros d'abord, montures/boss en dernier) ; la coupure ne se déclenche que si plus
     // aucun fichier n'aboutit pendant `stallMs` (réseau lent ≠ réseau bloqué), avec un plafond global `hardMs`.
     const prio = (f) => /^(ville_|nature_)/.test(f) ? 0 : /veilleur|armure|casque|epaul|plastron|jambi|botte|gant/i.test(f) ? 1 : /^(ennemi_|bete_|loup)/.test(f) ? 2 : /^(boss_|monture_)/.test(f) ? 4 : 3;
@@ -108,6 +159,7 @@ export const ModelLibrary = {
         const file = files[i++];
         try {
           const gltf = await loader.loadAsync(`${base}models/${encodeURIComponent(file)}`);
+          if (this._hd) gltf.scene.traverse((o) => { if (!o.isMesh) return; for (const m of [].concat(o.material || [])) for (const k of ['map', 'normalMap', 'metalnessMap', 'roughnessMap', 'aoMap']) if (m[k]) m[k].anisotropy = 8; });
           this._register(file, gltf);
         } catch (e) { console.warn('[V3] GLB ignoré :', file, e); }
         last = performance.now(); done++;

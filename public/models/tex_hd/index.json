@@ -1,0 +1,227 @@
+{
+"02958d_leather_normal.png": {
+"f": "02958d_leather_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"20cd71_bone_normal.png": {
+"f": "20cd71_bone_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"2d6b2e_trim_normal.png": {
+"f": "2d6b2e_trim_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"2e5a2a_leather_metalrough.png": {
+"f": "2e5a2a_leather_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"481ea2_steel_normal.png": {
+"f": "481ea2_steel_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"84c29a_bone_basecolor.jpg": {
+"f": "84c29a_bone_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"8b162d_bone_metalrough.png": {
+"f": "8b162d_bone_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"af5e5c_leather_basecolor.jpg": {
+"f": "af5e5c_leather_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"bf58df_trim_basecolor.jpg": {
+"f": "bf58df_trim_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"bone_basecolor.jpg": {
+"f": "bone_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"bone_metalrough.png": {
+"f": "bone_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"bone_normal.png": {
+"f": "bone_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"c780b5_steel_metalrough.png": {
+"f": "c780b5_steel_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"cloth_basecolor.jpg": {
+"f": "cloth_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"cloth_metalrough.png": {
+"f": "cloth_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"cloth_normal.png": {
+"f": "cloth_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"d2b9ff_steel_basecolor.jpg": {
+"f": "d2b9ff_steel_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"f301fe_trim_metalrough.png": {
+"f": "f301fe_trim_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"fur_basecolor.jpg": {
+"f": "fur_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"fur_metalrough.png": {
+"f": "fur_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"fur_normal.png": {
+"f": "fur_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"hair_basecolor.jpg": {
+"f": "hair_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"hair_metalrough.png": {
+"f": "hair_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"hair_normal.png": {
+"f": "hair_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"leather_basecolor.jpg": {
+"f": "leather_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"leather_metalrough.png": {
+"f": "leather_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"leather_normal.png": {
+"f": "leather_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"nature_basecolor.png": {
+"f": "nature_basecolor.webp",
+"w": 4096,
+"h": 2048
+},
+"steel_basecolor.jpg": {
+"f": "steel_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"steel_metalrough.png": {
+"f": "steel_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"steel_normal.png": {
+"f": "steel_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"terrain_detail.jpg": {
+"f": "terrain_detail.webp",
+"w": 4096,
+"h": 4096
+},
+"terrain_normal.png": {
+"f": "terrain_normal.webp",
+"w": 2560,
+"h": 2560
+},
+"trim_basecolor.jpg": {
+"f": "trim_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"trim_metalrough.png": {
+"f": "trim_metalrough.webp",
+"w": 2048,
+"h": 2048
+},
+"trim_normal.png": {
+"f": "trim_normal.webp",
+"w": 2048,
+"h": 2048
+},
+"ville_bois_basecolor.jpg": {
+"f": "ville_bois_basecolor.webp",
+"w": 4096,
+"h": 4096
+},
+"ville_bois_normal.png": {
+"f": "ville_bois_normal.webp",
+"w": 2560,
+"h": 2560
+},
+"ville_cloth_basecolor.jpg": {
+"f": "ville_cloth_basecolor.webp",
+"w": 2560,
+"h": 2560
+},
+"ville_pierre_basecolor.jpg": {
+"f": "ville_pierre_basecolor.webp",
+"w": 4096,
+"h": 4096
+},
+"ville_pierre_normal.png": {
+"f": "ville_pierre_normal.webp",
+"w": 2560,
+"h": 2560
+},
+"ville_plaster_basecolor.jpg": {
+"f": "ville_plaster_basecolor.webp",
+"w": 4096,
+"h": 4096
+},
+"ville_plaster_normal.png": {
+"f": "ville_plaster_normal.webp",
+"w": 2560,
+"h": 2560
+},
+"ville_tuile_basecolor.jpg": {
+"f": "ville_tuile_basecolor.webp",
+"w": 4096,
+"h": 4096
+},
+"ville_tuile_normal.png": {
+"f": "ville_tuile_normal.webp",
+"w": 2560,
+"h": 2560
+}
+}

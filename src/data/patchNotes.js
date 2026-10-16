@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.76', title: 'Textures Ultra HD',
+    items: [
+      '🖼️ Nouveau réglage « Textures Ultra HD » (Réglages › Graphismes) : sol, murs, toits, bois, nature, armures, cuir, tissu, poils et os en 2 048 à 4 096 px, avec bien plus de détail fin (grain de la pierre, fibres du bois, tissage, rayures du métal…).',
+      '💻 Activé automatiquement sur PC puissant ; désactivé sur téléphone. Compte ~40 Mo de plus à télécharger et ~1 Go de mémoire vidéo. Prend effet au prochain lancement.',
+      '📱 Sans ce réglage, le jeu garde les textures actuelles : rien ne change pour les appareils modestes.'
+    ]
+  },
+  {
     version: '10.75', title: 'Personnages bien plus détaillés',
     items: [
       '🧍 Le personnage (corps, armures, visage, coiffures, barbes) est modélisé avec 5 fois plus de triangles : formes plus lisses et plus fines.',

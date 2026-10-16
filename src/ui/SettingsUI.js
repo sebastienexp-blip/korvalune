@@ -4,7 +4,7 @@ import { ACTIONS, GROUPS, RESERVED, ACTION_BY_ID, defaultKeys, keyLabel } from '
 // Les réglages vivent dans game.settings (sauvegardés en local) ; chaque changement appelle game.applySettings().
 export const DEFAULTS = {
   // graphismes
-  quality: null, renderScale: 100, fpsCap: 0, viewDist: 100, grass: true, particleScale: 100, exposure: 100, fovAdj: 0,
+  quality: null, hdTex: 'auto', renderScale: 100, fpsCap: 0, viewDist: 100, grass: true, particleScale: 100, exposure: 100, fovAdj: 0,
   shake: 100, floatText: true, showFps: false, vignette: true, shadows: true, visualV25: true, realLook: true, adaptive: true,
   // son
   volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, voiceVol: 90, voiceOn: true, mute: false, footsteps: true,
@@ -25,6 +25,7 @@ const pct = (v) => `${v} %`;
 const TABS = [
   { id: 'gfx', label: '🎨 Graphismes', items: [
     { t: 'select', k: 'quality', label: 'Préréglage de qualité', opts: [['verylow', 'Très faible'], ['low', 'Faible'], ['medium', 'Moyenne'], ['high', 'Élevée'], ['ultra', 'Ultra']], hint: 'Règle résolution, ombres, arbres, particules… Les réglages ci-dessous affinent le préréglage.' },
+    { t: 'select', k: 'hdTex', label: 'Textures Ultra HD', opts: [['auto', 'Auto (selon l’appareil)'], ['on', 'Activées'], ['off', 'Désactivées']], hint: 'Textures du sol, des bâtiments, de la nature, des armures… en 2 048 à 4 096 px avec bien plus de détail. Environ 40 Mo de plus à télécharger et 1 Go de mémoire vidéo : réservé aux PC puissants. S’applique au prochain lancement du jeu.' },
     { t: 'range', k: 'renderScale', label: 'Résolution de rendu', min: 40, max: 100, step: 5, fmt: pct },
     { t: 'select', k: 'fpsCap', label: 'Limiteur d’images/seconde', opts: [[0, 'Illimité'], [60, '60'], [45, '45'], [30, '30 (économie de batterie)']] },
     { t: 'range', k: 'viewDist', label: 'Distance de vue', min: 50, max: 150, step: 10, fmt: pct },
