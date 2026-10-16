@@ -254,10 +254,13 @@ m = sup.mesh(); rigid(m, 'Head'); add('croissant_pied', m, 'steel')
 
 # ---- cape : drap tatoué par l'usure ----------------------------------------------------------------
 def make_cape():
-    nu, nv = 24, 22
+    nu0, nv0 = 24, 22
+    nu, nv = dgrid(nu0), dgrid(nv0)            # finesse : plus de points (le bord déchiré garde le même dessin)
     u = np.linspace(-1, 1, nu); v = np.linspace(0, 1, nv)
     rng = np.random.default_rng(11)
-    jag = 0.07 * np.abs(np.sin(u * 6.1 + 0.7)) + 0.05 * rng.random(nu) * (np.abs(u) > 0.2)
+    u0 = np.linspace(-1, 1, nu0)
+    jag0 = 0.07 * np.abs(np.sin(u0 * 6.1 + 0.7)) + 0.05 * rng.random(nu0) * (np.abs(u0) > 0.2)
+    jag = np.interp(u, u0, jag0)
     bottom = 0.40 + jag
     top = 1.47
     V = []; UV = []

@@ -2,7 +2,7 @@
 Chaque style = un module « town » unique (matériau 'cheveux', rôle 0.6 = couleur des cheveux fixée à l'exécution).
 Repère = celui de head_geo (centre du crâne, +Z devant, +Y haut). Construit sur la tête homme/ovale ; le jeu met le module à l'échelle de la forme du crâne/mâchoire."""
 import numpy as np
-from glbkit import Mesh, concat, normals, smoothpath
+from glbkit import Mesh, concat, normals, smoothpath, dn, dgrid
 import head_geo as H
 
 HAIR = 0.6
@@ -56,6 +56,7 @@ def mesh_from(P, F, br=None, role=HAIR):
 
 # ----------------------------------------------------------------------------------------------- coque (cheveux collés au crâne, volume, barbe courte)
 def shell(offfn, nv=36, nu=60, thr=0.0005, streak=0.2, seed=1, lump=None, dark=0.0, tlo=0.15, bright=0.86, hl=None, thi=1.0, prange=None, skin_fade=0.0):
+    nv, nu = dn(nv), dn(nu)            # finesse (KV_DETAIL)
     full = prange is None
     phi = np.linspace(-np.pi, np.pi, nu, endpoint=False) if full else np.linspace(prange[0], prange[1], nu)
     if hl is None:
@@ -98,6 +99,7 @@ def _frames(path, hint):
 
 def lock(path, w, th, hint=(0, 0, 1), taper=0.25, root=1.0, seg=6, br=0.9, twist=0.0, tw_amp=0.0, lobes=3, seed=0, n=14, close=True, rgrad=0.3, wprof=None):
     """Mèche : section elliptique (w = demi-largeur selon S, th = demi-épaisseur selon U), effilée vers la pointe. hint = direction de face (normale)."""
+    n, seg = dgrid(n), dn(seg)          # finesse (KV_DETAIL)
     path = smoothpath(np.asarray(path, float), n) if len(path) != n else np.asarray(path, float)
     T, S, U = _frames(path, hint)
     s = np.linspace(0, 1, n)
@@ -126,6 +128,7 @@ def lock(path, w, th, hint=(0, 0, 1), taper=0.25, root=1.0, seg=6, br=0.9, twist
 
 def blob(c, r, rot=0.0, sq=(1, 1, 1), seg=10, rings=6, br=0.9, lumpy=0.0, seed=0):
     """Ellipsoïde bosselé (boucles, chignon, extrémités)."""
+    seg, rings = dn(seg), dn(rings)     # finesse (KV_DETAIL)
     th = np.linspace(0, np.pi, rings + 1); ph = np.linspace(0, 2 * np.pi, seg, endpoint=False)
     TH, PH = np.meshgrid(th, ph, indexing='ij')
     d = np.stack([np.sin(TH) * np.cos(PH), np.cos(TH), np.sin(TH) * np.sin(PH)], -1)
@@ -144,7 +147,7 @@ def blob(c, r, rot=0.0, sq=(1, 1, 1), seg=10, rings=6, br=0.9, lumpy=0.0, seed=0
 
 def band(c, r, tube, axis='y', tilt=(0, 0), br=0.35):
     """Lien (anneau fin) autour d'un faisceau : torus de rayon r, section tube."""
-    n, k = 14, 5; ps = []
+    n, k = dn(14), dn(5); ps = []
     for i in range(n):
         a = 2 * np.pi * i / n; ps.append(np.array([np.cos(a) * r, 0, np.sin(a) * r]))
     path = np.array(ps + [ps[0]])
@@ -219,6 +222,7 @@ def cap(th=0.007, front=0.80, side=0.62, ear=0.56, back=0.36, crown=0.4, lump_a=
 def curtain(yend, lo=-np.pi, hi=np.pi, nu=88, th=0.0072, crown=0.4, hlk=(0.80, 0.60, 0.52, 0.36), flare=0.012, corr=0.0032, ncorr=30,
             wave=0.0, waves=1.5, gate=(0.35, 0.8), rag=0.012, seed=1, back=0.0, nvs=11, nvh=14, bright=0.86, streak=0.2, tail=0.0):
     """Nappe de cheveux : suit le crâne depuis le sommet jusqu'à la ligne d'implantation puis retombe jusqu'à yend(phi). Fente devant (gate) pour dégager le visage."""
+    nu, nvs, nvh = dn(nu), dn(nvs), dn(nvh)   # finesse (KV_DETAIL)
     full = (hi - lo) > 2 * np.pi - 1e-6
     phi = np.linspace(lo, hi, nu, endpoint=not full)
     rg = np.random.default_rng(seed)

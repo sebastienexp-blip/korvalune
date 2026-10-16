@@ -3,7 +3,7 @@ Tout est de la vraie géométrie (aucune génération au lancement) : 12 têtes 
 Repère : origine = centre du crâne, +Z = devant, +Y = haut, +X = gauche du personnage ; mètres à l'échelle du Veilleur (menton ≈ -0.118, sommet ≈ +0.118).
 Teintes à l'exécution (rôle de sommet = alpha) : 0.8 = couleur « principale » du module (peau, ou cheveux pour les poils), 0.4 = couleur secondaire (iris), 1.0 = fixe."""
 import numpy as np
-from glbkit import Mesh, concat, normals
+from glbkit import Mesh, concat, normals, dn, dgrid, KD
 
 SKIN, ACC, FIX = 0.8, 0.4, 1.0
 
@@ -109,6 +109,7 @@ def skin_col(x, y, mask=1.0, T=None):
     return col
 
 def build_head(sex='homme', shape='ovale', nv=46, nu=56):
+    nv, nu = dn(nv), dn(nu)            # finesse (KV_DETAIL)
     surf, levels, f, fem, s = surface_fn(sex, shape)
     t = np.linspace(0, 1, nv); phi = np.linspace(0, 2 * np.pi, nu, endpoint=False)
     T, PH = np.meshgrid(t, phi, indexing='ij')
@@ -145,8 +146,8 @@ def patch(sex, shape, xs, ys, height, color=None, role=SKIN, sink=0.0015, edge=N
     X, Y = np.meshgrid(xs, ys); h = height(X, Y)
     z = face_z(sex, shape, X, Y) + h
     if edge is None:
-        e = sm(np.minimum(np.minimum(np.arange(len(xs))[None, :], len(xs) - 1 - np.arange(len(xs))[None, :]) / 4.0,
-                          np.minimum(np.arange(len(ys))[:, None], len(ys) - 1 - np.arange(len(ys))[:, None]) / 4.0), 0, 1)
+        e = sm(np.minimum(np.minimum(np.arange(len(xs))[None, :], len(xs) - 1 - np.arange(len(xs))[None, :]) / (4.0 * KD),
+                          np.minimum(np.arange(len(ys))[:, None], len(ys) - 1 - np.arange(len(ys))[:, None]) / (4.0 * KD)), 0, 1)
     else: e = edge
     z = z - 0.0013 - sink * (1 - e)
     P = np.stack([X, Y, z], -1)
@@ -166,7 +167,7 @@ NOSES = {'droit': (1, 1, 1), 'fin': (.78, .95, .9), 'retrousse': (.92, .8, 1.1),
 def build_nose(sex, kind):
     w, l, d = NOSES[kind]; fem = sex == 'femme'
     k = 0.92 if fem else 1.0
-    xs = np.linspace(-.036, .036, 29); ys = np.linspace(-.062, .036, 40)
+    xs = np.linspace(-.036, .036, dgrid(29)); ys = np.linspace(-.062, .036, dgrid(40))
     tipy = -0.031 - 0.004 * (l - 1) * 4 + (0.006 if kind == 'retrousse' else 0)
     def hgt(X, Y):
         h = 0.0
@@ -196,7 +197,7 @@ def build_nose(sex, kind):
 # ----------------------------------------------------------------------------------------------- lèvres
 def build_lips(sex):
     fem = sex == 'femme'; up = 1.0 if not fem else 1.2; lo = 1.0 if not fem else 1.25
-    xs = np.linspace(-.032, .032, 37); ys = np.linspace(-.088, -.050, 26)
+    xs = np.linspace(-.032, .032, dgrid(37)); ys = np.linspace(-.088, -.050, dgrid(26))
     cy = -0.0665
     def hgt(X, Y):
         wup = 0.0235 * (1 + (0.1 if fem else 0)); wlo = 0.020 * (1 + (0.08 if fem else 0))
@@ -221,7 +222,7 @@ def build_lips(sex):
 def build_brow(sex, style=0):
     """Sourcil gauche (x > 0) ; le droit = miroir. Ruban de poils posé sur l'arcade, couleur des cheveux (rôle 0.6)."""
     fem = sex == 'femme'
-    nx, nv_ = 36, 7
+    nx, nv_ = dgrid(36), dgrid(7)
     xs = np.linspace(.009, .056, nx)
     u = np.clip((xs - .009) / .047, 0, 1)
     cy = .0345 + (0.0105 if fem else 0.0055) * np.sin(u * np.pi * 0.9) - (0.004 if fem else 0.0) * u ** 2
@@ -245,7 +246,8 @@ def build_eye(sex, style):
     R = EYE_R * (1.04 if fem else 1.0)
     # globe : anneaux resserrés autour de l'iris
     th = np.array([0, .07, .14, .20, .26, .34, .42, .50, .55, .62, .78, 1.0, 1.3, 1.65, 2.0, 2.4, 2.8, np.pi])
-    nu = 20; ph = np.linspace(0, 2 * np.pi, nu, endpoint=False)
+    th = np.interp(np.linspace(0, len(th) - 1, dgrid(len(th))), np.arange(len(th)), th)   # finesse (KV_DETAIL)
+    nu = dn(20); ph = np.linspace(0, 2 * np.pi, nu, endpoint=False)
     TH, PH = np.meshgrid(th, ph, indexing='ij')
     dirs = np.stack([np.sin(TH) * np.cos(PH), np.sin(TH) * np.sin(PH), np.cos(TH)], -1)   # axe du regard = +Z
     rad = R * (1 + 0.1 * sm(0.62 - TH, 0, 0.6))            # cornée légèrement bombée
@@ -268,10 +270,10 @@ def build_eye(sex, style):
     eye.N = normals(eye, weld=True)
     # paupières : calottes un peu plus grandes que le globe, bord = ligne de cils sombre
     aw = 0.98 * sw; oh = 0.56 * sh * (1.08 if fem else 1.0); ol = 0.40 * sh        # ouverture (rad)
-    nuz = 26; az = np.linspace(-aw, aw, nuz)
+    nuz = dn(26); az = np.linspace(-aw, aw, nuz)
     def lid(sign, h0):
         rows = []
-        nr = 8
+        nr = dn(8)
         for r in range(nr):
             u = r / (nr - 1)
             row = []
@@ -290,7 +292,7 @@ def build_eye(sex, style):
         return m
     up = lid(+1, oh); lo = lid(-1, ol)
     # caroncule (coin interne rosé) : petite sphère aplatie côté nez (x < 0 dans le repère de l'œil gauche)
-    th2 = np.linspace(0, np.pi, 6); ph2 = np.linspace(0, 2 * np.pi, 8, endpoint=False)
+    th2 = np.linspace(0, np.pi, dn(6)); ph2 = np.linspace(0, 2 * np.pi, dn(8), endpoint=False)
     T2, P2 = np.meshgrid(th2, ph2, indexing='ij')
     S = np.stack([np.sin(T2) * np.cos(P2) * .0022, np.sin(T2) * np.sin(P2) * .0016, np.cos(T2) * .0016], -1) + np.array([-R * 0.80 * sw * 0.9, -R * .05, R * 0.58])
     car = grid(S, wrap=True, color=np.tile([.88, .52, .52], (S.shape[0] * S.shape[1], 1)), role=SKIN)
@@ -300,7 +302,7 @@ def build_eye(sex, style):
 # ----------------------------------------------------------------------------------------------- oreilles (gauche, x > 0)
 def build_ear(kind):
     """kind : 'humaine', 'elfe', 'orque'. Origine = attache de l'oreille sur le crâne, x vers l'extérieur."""
-    nr, nt = 9, 40
+    nr, nt = dn(9), dn(40)
     if kind == 'humaine': h, w, tip, tilt, thick = .032, .0185, 0.0, 0.30, 0.0075
     elif kind == 'elfe': h, w, tip, tilt, thick = .034, .0165, 0.75, 0.45, 0.0055
     else: h, w, tip, tilt, thick = .040, .021, 0.55, 0.60, 0.0085

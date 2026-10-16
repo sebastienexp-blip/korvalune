@@ -7,6 +7,17 @@ Repère : Y vers le haut, le personnage regarde +Z, sa gauche est +X. Unités : 
 import io, json, struct
 import numpy as np
 from PIL import Image
+import os as _os
+# Finesse des maillages : multiplicateur du NOMBRE DE TRIANGLES (1 = historique, 5 = cinq fois plus fin).
+# La densité de grille (anneaux × segments) est multipliée par sqrt(DETAIL) dans les deux sens : N triangles x DETAIL.
+DETAIL = float(_os.environ.get('KV_DETAIL', '1'))
+KD = DETAIL ** 0.5
+def dn(n, lo=0):
+    """Nombre de divisions ajusté à la finesse demandée (jamais inférieur à n)."""
+    return int(max(n, round(n * KD), lo))
+def dgrid(n):
+    """Nombre de points d'une grille de n points (n-1 intervalles x KD)."""
+    return int(max(n, round((n - 1) * KD) + 1))
 
 # ---------------------------------------------------------------------------------------------- maillage
 class Mesh:
@@ -132,6 +143,12 @@ class Loft:
         rf = np.broadcast_to(rf, (n,)).astype(float); rs = np.broadcast_to(rs, (n,)).astype(float)
         p = np.broadcast_to(p, (n,)).astype(float)
         of = np.broadcast_to(of, (n,)).astype(float); os_ = np.broadcast_to(os_, (n,)).astype(float)
+        if KD > 1.001 and section is None and n >= 3:   # finesse : plus d'anneaux le long du chemin (interpolation douce), plus de segments par anneau
+            from scipy.interpolate import CubicSpline, PchipInterpolator
+            n2 = dgrid(n); x0 = np.arange(n); x1 = np.linspace(0, n - 1, n2)
+            path = CubicSpline(x0, path, axis=0)(x1)
+            rf, rs, p, of, os_ = [PchipInterpolator(x0, v)(x1) for v in (rf, rs, p, of, os_)]
+            n = n2; segs = dn(segs); cap0 = int(round(cap0 * KD)); cap1 = int(round(cap1 * KD))
         T = np.gradient(path, axis=0); T = _unit(T)
         # repère par transport parallèle
         ref = np.asarray(ref, float)
@@ -249,6 +266,7 @@ def shell(loft, a0, a1, t_lo, t_hi, offset=0.004, thick=0.012, bevel=0.012, na=1
     def dense(n):
         base = np.linspace(0, 1, n)
         return np.unique(np.concatenate([base, [0.05, 0.95]]))
+    na, nt = dn(na), dn(nt)
     qa = dense(na); rr = dense(nt)
     A = np.broadcast_to(a0 + qa * (a1 - a0), (len(rr), len(qa))).copy()
     lo = f_lo(a0 + qa * (a1 - a0)); hi = f_hi(a0 + qa * (a1 - a0))

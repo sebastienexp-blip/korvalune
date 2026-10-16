@@ -3,6 +3,15 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.75', title: 'Personnages bien plus détaillés',
+    items: [
+      '🧍 Le personnage (corps, armures, visage, coiffures, barbes) est modélisé avec 5 fois plus de triangles : formes plus lisses et plus fines.',
+      '👥 Les villageois et tous les PNJ utilisent désormais le même modèle que ton personnage, avec chacun son visage, sa coiffure, ses couleurs et sa silhouette.',
+      '🛡️ Les gardes portent l’armure et l’épée.',
+      '📦 Le premier chargement est plus lourd (modèles plus fins), les suivants restent rapides.'
+    ]
+  },
+  {
     version: '10.74', title: 'Check-up des stands',
     items: [
       '🔨 Un seul stand Forge, avec Helga à l’intérieur (enclume et foyer sous le toit) ; Vaelis se tient derrière son établi d’enchantement.',
