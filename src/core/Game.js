@@ -1,3 +1,4 @@
+import { PostFX } from '../visual/PostFX.js';
 import { RegionAtmosphere } from '../effects/RegionAtmosphere.js';
 import { setWorldBoost, setPersonalBoost, wbInfo } from '../data/worldBoost.js';
 import { Banner } from '../ui/Banner.js';
@@ -219,6 +220,8 @@ export class Game {
     if (this.world) this.world.setGrassVisible(on && this.settings.quality !== 'verylow' && this.settings.grass !== false);
   }
 
+  _wantBloom() { return this._v25 && ['high', 'ultra'].includes(this.settings.quality) && this.settings.bloom !== false && !(this.post && !this.post.ok); }
+
   _resize() {
     const w = innerWidth, h = innerHeight;
     // V10.22 : téléphone à la verticale — on élargit le champ de vision vertical pour garder une vue horizontale correcte
@@ -230,6 +233,7 @@ export class Game {
     this.camera.updateProjectionMatrix();
     this.touch?.orientationChanged?.(portrait);
     this.renderer.setSize(w, h);
+    this.post?.resize();
   }
 
   // Résolution de rendu = plafond de la qualité × échelle adaptative (baisse automatiquement si ça rame)
@@ -3484,7 +3488,8 @@ export class Game {
       this._cullT = (this._cullT || 0) - dt;
       if (this._cullT <= 0) { this._cullT = 0.25; this._cullFar(fog.far * 1.08); }
     } else if (this._cullHid?.length) this._cullFar(Infinity);
-    this.renderer.render(this.scene, this.camera);
+    if (this._wantBloom()) { if (!this.post) { this.post = new PostFX(this.renderer, this.scene, this.camera); this.post.resize(); } }
+    if (this.post && this.post.ok && this._wantBloom()) this.post.render(); else this.renderer.render(this.scene, this.camera);
     if (fog && fogOff) { fog.near -= fogOff; fog.far -= fogOff; }
     if (freeCam) { fog.near = fogN; fog.far = fogF; }
   };

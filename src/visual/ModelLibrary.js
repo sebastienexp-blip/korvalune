@@ -226,7 +226,7 @@ export const ModelLibrary = {
   /** Matériau partagé du kit (une seule copie des textures pour tous les fichiers) ; `window` = matériau de fenêtre du monde (nuit). */
   townMaterial(name, src, windowMat) {
     if (name === 'window' && windowMat) return windowMat;
-    if (name === 'glow') { this._townMats ||= {}; return (this._townMats.glow ||= new THREE.MeshBasicMaterial({ vertexColors: true })); }
+    if (name === 'glow') { this._townMats ||= {}; return (this._townMats.glow ||= new THREE.MeshBasicMaterial({ vertexColors: true, color: new THREE.Color(1.7, 1.7, 1.7) })); }
     this._townMats ||= {};
     if (!this._townMats[name]) { const m = src.clone(); m.vertexColors = true; this._townMats[name] = m; }
     return this._townMats[name];

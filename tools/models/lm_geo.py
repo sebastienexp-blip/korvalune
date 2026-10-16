@@ -229,6 +229,17 @@ def border_banner():
     return k, {}
 
 # ------------------------------------------------------------------------------------------- ruines de la crypte
+RUNE = (0.30, 0.85, 1.0)
+def _runes(k, h):
+    """Fines lignes lumineuses bleu-cyan incrustées dans la pierre (angles droits, comme des circuits runiques), des deux côtés du mur."""
+    for sz in (1, -1):
+        z = sz * .655
+        k.add('glow', box((.07, h * .62, .03), 'glow', RUNE, M=T_((-.9, h * .5, z))))
+        k.add('glow', box((1.0, .07, .03), 'glow', RUNE, M=T_((-.4, h * .81, z))))
+        k.add('glow', box((.07, h * .3, .03), 'glow', RUNE, M=T_((.1, h * .66, z))))
+        k.add('glow', box((.9, .07, .03), 'glow', RUNE, M=T_((.55, h * .51, z))))
+        k.add('glow', box((.07, h * .24, .03), 'glow', RUNE, M=T_((1.0, h * .39, z))))
+
 def ruin_wall(broken=False, mossy=False):
     k = Kit(); h = 1.8 if broken else 4.0
     c = (0.24, 0.29, 0.22) if mossy else (0.30, 0.30, 0.28)
@@ -237,6 +248,7 @@ def ruin_wall(broken=False, mossy=False):
         k.add('pierre', box((1.0, .6, 1.3), 'pierre', c, M=T_((.8, h + .25, 0), rz=-.5)))
     else:
         k.add('pierre', box((3.6, .3, 1.5), 'pierre', (0.34, 0.34, 0.32), M=T_((0, h + .15, 0))))
+    _runes(k, h)   # V10.79 : veines de runes lumineuses
     return k, {}
 
 def ruin_rubble():
@@ -249,12 +261,15 @@ def ruin_pillar():
     k = Kit()
     k.add('pierre', cyl(.9, .7, 4.6, 8, 'pierre', (0.30, 0.30, 0.28)))
     k.add('pierre', box((1.6, .35, 1.6), 'pierre', (0.34, 0.34, 0.32), M=T_((0, 4.6, 0))))
+    for a in (0, np.pi / 2, np.pi, 3 * np.pi / 2):   # V10.79 : rainure lumineuse sur chaque face
+        k.add('glow', box((.06, 2.6, .04), 'glow', RUNE, M=T_((np.cos(a) * .8, 2.4, np.sin(a) * .8), ry=-a)))
     return k, {}
 
 def pedestal():
     k = Kit()
     k.add('pierre', cyl(2.6, 2.2, 1, 10, 'pierre', (0.30, 0.30, 0.28)))
     k.add('pierre', cyl(2.0, 2.3, .15, 10, 'pierre', (0.36, 0.35, 0.33), M=T_((0, 1.0, 0))))
+    k.add('glow', cyl(1.9, 1.9, .05, 24, 'glow', RUNE, M=T_((0, 1.16, 0)), caps=(False, False)))   # V10.79 : anneau lumineux
     return k, {}
 
 # ------------------------------------------------------------------------------------------- portail, caravane, forge, monolithe

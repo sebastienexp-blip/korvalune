@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.79', title: 'Ambiance lumineuse',
+    items: [
+      '✨ Nouveau halo lumineux : néons, cristaux, sorts et runes rayonnent doucement. Actif en qualité Élevé ou Ultra (réglable : Réglages › Graphismes › Halo lumineux).',
+      '🏚️ Les ruines (murs, piliers, piédestaux) ont des veines de runes bleu-cyan lumineuses incrustées dans la pierre.'
+    ]
+  },
+  {
     version: '10.78', title: 'Sols et colonnes refaits',
     items: [
       '🏛️ Les colonnes de marbre du Royaume Céleste sont redessinées (socle, fût cannelé, chapiteau) et leur texture n’est plus étirée. Même correction pour les piliers de basalte, l’obsidienne, la glace, les cactus, les souches et les roseaux.',

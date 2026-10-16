@@ -4,7 +4,7 @@ import { ACTIONS, GROUPS, RESERVED, ACTION_BY_ID, defaultKeys, keyLabel } from '
 // Les réglages vivent dans game.settings (sauvegardés en local) ; chaque changement appelle game.applySettings().
 export const DEFAULTS = {
   // graphismes
-  quality: null, hdTex: 'auto', renderScale: 100, fpsCap: 0, viewDist: 100, grass: true, particleScale: 100, exposure: 100, fovAdj: 0,
+  quality: null, hdTex: 'auto', renderScale: 100, fpsCap: 0, viewDist: 100, grass: true, bloom: true, particleScale: 100, exposure: 100, fovAdj: 0,
   shake: 100, floatText: true, showFps: false, vignette: true, shadows: true, visualV25: true, realLook: true, adaptive: true,
   // son
   volume: 60, musicVol: 70, sfxVol: 100, ambVol: 60, uiVol: 100, voiceVol: 90, voiceOn: true, mute: false, footsteps: true,
@@ -33,6 +33,7 @@ const TABS = [
     { t: 'check', k: 'realLook', label: 'Rendu réaliste (soleil bas, lumière dorée, ombres longues, détails au sol)' },
     { t: 'check', k: 'visualV25', label: 'Effets visuels (reflets, tonemapping, lueurs)' },
     { t: 'check', k: 'grass', label: 'Herbe animée' },
+    { t: 'check', k: 'bloom', label: 'Halo lumineux (néons, sorts, cristaux)' },
     { t: 'range', k: 'particleScale', label: 'Densité des particules', min: 0, max: 150, step: 10, fmt: pct },
     { t: 'range', k: 'exposure', label: 'Luminosité', min: 60, max: 140, step: 5, fmt: pct },
     { t: 'range', k: 'fovAdj', label: 'Champ de vision (écart)', min: -10, max: 20, step: 1, fmt: (v) => (v > 0 ? '+' : '') + v + '°' },
