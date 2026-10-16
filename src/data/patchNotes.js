@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.78', title: 'Sols et colonnes refaits',
+    items: [
+      '🏛️ Les colonnes de marbre du Royaume Céleste sont redessinées (socle, fût cannelé, chapiteau) et leur texture n’est plus étirée. Même correction pour les piliers de basalte, l’obsidienne, la glace, les cactus, les souches et les roseaux.',
+      '🌱 Les sols ont un grain bien plus riche, net de près comme de loin, avec un vrai relief (cailloux, terre, brindilles).'
+    ]
+  },
+  {
     version: '10.77', title: 'Villages plus fluides',
     items: [
       '👥 Les PNJ gardent leur modèle fin quand tu es à moins de 16 m, et passent à une version légère plus loin : même allure, bien moins de calculs.',

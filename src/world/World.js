@@ -351,9 +351,16 @@ export class World {
   diffuseColor.rgb *= mix(vec3(1.0), texture2D(map, vMapUv * 0.067 + vec2(0.37, 0.11)).rgb * 1.2, 0.65);
   // V10.73 : la texture de détail est verte ; on garde son grain mais on neutralise sa teinte, sinon le sable, la cendre et le basalte virent au vert
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), 0.8);
+  // V10.78 : deux échelles fines (≈1,2 m et ≈0,3 m) : le sol reste net de près au lieu de baver
+  float gF1 = dot(texture2D(map, vMapUv * 5.1 + vec2(0.61, 0.23)).rgb, vec3(0.3333));
+  float gF2 = dot(texture2D(map, vMapUv * 21.7 + vec2(0.13, 0.77)).rgb, vec3(0.3333));
+  diffuseColor.rgb *= clamp(1.0 + (gF1 - 0.65) * 1.1 + (gF2 - 0.65) * 0.9, 0.55, 1.6);
 #endif`);
+          shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace(
+            'vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;',
+            'vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0; vec3 mapN2 = texture2D( normalMap, vNormalMapUv * 4.3 + vec2(0.4, 0.8) ).xyz * 2.0 - 1.0; mapN.xy += mapN2.xy * 0.9;'));
           };
-          mat.customProgramCacheKey = () => 'terrain_v25b';
+          mat.customProgramCacheKey = () => 'terrain_v25c';
         }
       }
     }

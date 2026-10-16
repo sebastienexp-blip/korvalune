@@ -60,13 +60,17 @@ def crystal():
     return k, {}
 
 def column():
-    k = Kit()
-    k.add('pierre', cyl(1.0, .95, .04, 14, 'pierre', MARB, M=T_((0, -.5, 0)), smooth=True))
-    k.add('pierre', cyl(.92, .78, .92, 14, 'pierre', MARB, M=T_((0, -.46, 0))))
-    k.add('pierre', cyl(1.2, 1.1, .035, 14, 'pierre', (0.88, 0.84, 0.76), M=T_((0, .465, 0))))
-    # cannelures : fines baguettes verticales
-    for i in range(10):
-        a = i * 2 * np.pi / 10; k.add('pierre', box((.07, .86, .05), 'pierre', (0.82, 0.78, 0.70), M=T_((np.cos(a) * .85, 0, np.sin(a) * .85), ry=-a)))
+    """V10.78 : colonne de marbre à base, tore, fût fuselé cannelé, chapiteau et abaque (module unité : rayon ~1, hauteur 1)."""
+    k = Kit(); ST = (0.88, 0.84, 0.76); FL = (0.78, 0.74, 0.66)
+    k.add('pierre', box((2.5, .03, 2.5), 'pierre', ST, M=T_((0, -.485, 0))))                    # socle
+    k.add('pierre', cyl(1.18, 1.05, .022, 24, 'pierre', ST, M=T_((0, -.47, 0))))              # base
+    k.add('pierre', cyl(1.05, 1.0, .014, 24, 'pierre', (0.84, 0.80, 0.72), M=T_((0, -.448, 0))))  # tore
+    k.add('pierre', cyl(.93, .76, .88, 24, 'pierre', MARB, M=T_((0, -.434, 0))))              # fût fuselé
+    for i in range(16):                                                                          # cannelures : baguettes fines
+        a = i * 2 * np.pi / 16; k.add('pierre', box((.055, .84, .04), 'pierre', FL, M=T_((np.cos(a) * .86, -.01, np.sin(a) * .86), ry=-a)))
+    k.add('pierre', cyl(.74, .96, .03, 24, 'pierre', ST, M=T_((0, .446, 0))))                 # chapiteau
+    k.add('pierre', cyl(.97, .97, .012, 24, 'pierre', (0.84, 0.80, 0.72), M=T_((0, .476, 0))))
+    k.add('pierre', box((2.3, .018, 2.3), 'pierre', ST, M=T_((0, .491, 0))))                   # abaque
     return k, {}
 
 def rock_iron(): return _rk(31, IRONR)
@@ -108,10 +112,24 @@ def ice():
     k.add('pierre', facet_pyramid(.4, .5, 5, 'pierre', (0.66, 0.86, 0.95), M=T_((-.7, -.5, .6), rz=.3)))
     return k, {}
 
+def bake_uv(kit_ret, sx, sy, sz):
+    """V10.78 : le monde étire ces modules (échelle non uniforme) ; on compense dans les UV pour que la texture garde sa taille réelle
+    (sinon pierre/bois sont étirés en longues traînées)."""
+    k, meta = kit_ret
+    for _, m, _mat in k.parts:
+        if m.UV is None: continue
+        UV = np.asarray(m.UV, float).copy(); N = np.asarray(m.N, float)
+        top = np.abs(N[:, 1]) > 0.7
+        UV[top] *= (sx + sz) / 2
+        UV[~top, 0] *= (sx + sz) / 2; UV[~top, 1] *= sy
+        m.UV = UV
+    return k, meta
+
 def catalog():
-    return {'biome_basalte': basalt(), 'biome_debris': float_rock(), 'biome_obsidienne': obsidian(), 'biome_cristal': crystal(), 'biome_colonne': column(),
-            'biome_roche_fer': rock_iron(), 'biome_roche_gres': rock_sand(), 'biome_roche_neige': rock_snow(), 'biome_cactus': cactus(),
-            'biome_souche': stump(), 'biome_roseau': reed(), 'biome_glace': ice()}
+    B = bake_uv
+    return {'biome_basalte': B(basalt(), 2.3, 12, 2.3), 'biome_debris': float_rock(), 'biome_obsidienne': B(obsidian(), 1.25, 5.5, 1.25), 'biome_cristal': crystal(), 'biome_colonne': B(column(), 0.55, 5, 0.55),
+            'biome_roche_fer': rock_iron(), 'biome_roche_gres': rock_sand(), 'biome_roche_neige': rock_snow(), 'biome_cactus': B(cactus(), 0.46, 2.9, 0.46),
+            'biome_souche': B(stump(), 0.7, 1.9, 0.7), 'biome_roseau': B(reed(), 0.3, 2.9, 0.3), 'biome_glace': B(ice(), 0.85, 3.5, 0.85)}
 
 # ------------------------------------------------------------------------------------------------ cinématique d'introduction
 def _rh(x, z, seed=7):
