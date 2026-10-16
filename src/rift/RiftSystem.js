@@ -366,6 +366,11 @@ export class RiftSystem {
         mkPack(cell, type);
       }
     }
+    // V10.82 : chaque faille contient toujours au moins une meute d'élite (son chef = « Gardien » du thème, ex. Gardien corrompu) : les quêtes qui le demandent ne dépendent plus du hasard
+    if (!run.packs.some((pk) => pk.type === 'elite')) {
+      const far = run.layout.list.filter((c) => c.kind !== 'start' && c.kind !== 'boss').sort((a, b) => b.dist - a.dist)[0];
+      if (far) mkPack(far, 'elite');
+    }
     run.need = Math.max(1, sum * 0.8);
   }
 

@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.82', title: 'Commandes souris partout',
+    items: [
+      '🖱️ Les commandes à la souris marchent maintenant aussi en caméra 3ᵉ personne : clic gauche pour se déplacer, attaquer ou interagir, clic droit pour la compétence, bouton du milieu (maintenu) pour tourner la caméra.',
+      '👆 Le clic gauche interagit directement sur le personnage, le coffre, le portail, le butin ou la sortie visés : plus besoin de la touche E.',
+      '🌀 Dans une faille, un clic gauche sur le portail « Sortie » (ou sur un obélisque, un totem, un coffre) fonctionne.',
+      '⚔️ Chaque faille contient toujours au moins une meute d’élite : le Gardien corrompu de l’acte I est désormais garanti dans les « Spires corrompues » (niveau 22+).',
+      '🔇 Plus aucun cri de revenant ou de spectre à la mort des monstres.'
+    ]
+  },
+  {
     version: '10.81', title: 'Mort des humanoïdes',
     items: [
       '🔊 Plus de cri étrange à la mort des bandits, brutes, zélotes, mages, archers et gardes (toutes régions, y compris les brutes abyssales) : place au bruit d’un corps qui tombe, d’une armure ou d’un tissu, et d’une arme qui rebondit au sol.'

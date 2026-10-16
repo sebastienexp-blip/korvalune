@@ -26,7 +26,7 @@ export const EVENTS = {
   combatStart: () => [L('unsheathe', 0.9)],
   enemyAttack: (o) => creature(o.kind, 'attack', 1),
   enemyHurt: (o) => creature(o.kind, 'hurt', 0.9),
-  kill: (o) => isHumanoid(o.kind) ? humanoidDeath(o.kind) : [...creature(o.kind, 'death', 1), L(creatureSize(o.kind) > 1 ? 'death-thud-big' : 'death-thud-small', 0.7, [0.95, 1.05], 0.35)],
+  kill: (o) => isHumanoid(o.kind) ? humanoidDeath(o.kind) : isUndeadVoice(o.kind) ? undeadDeath(o.kind) : [...creature(o.kind, 'death', 1), L(creatureSize(o.kind) > 1 ? 'death-thud-big' : 'death-thud-small', 0.7, [0.95, 1.05], 0.35)],
   // --- soins, progression, butin
   heal: () => [L(['cast-healing-mid', 'cure'], 0.9)],
   levelup: () => [],   // V10.45 : plus de fanfare de niveau (la bannière reste)
@@ -104,6 +104,12 @@ export function creatureSize(kind) { return BIG.test(String(kind || '')) ? 2 : 1
 // chute lourde d'un corps en armure ou d'un corps en tissu (mages, zélotes), arme qui tombe, souffle bref.
 const HUMANOID_SP = new Set(['bandit', 'elite', 'zealot', 'mage', 'archer', 'guard', 'brute']);
 export function isHumanoid(kind) { return HUMANOID_SP.has(speciesOf(String(kind || ''))); }
+// V10.82 : plus aucune voix de revenant / spectre à la mort d'un monstre : seulement le bruit du corps qui s'effondre
+export function isUndeadVoice(kind) { return ['wight', 'ghost'].includes(creatureFamily(kind)); }
+function undeadDeath(kind) {
+  const big = creatureSize(kind) > 1;
+  return [L(big ? 'death-thud-big' : 'death-thud-mid', 1, big ? [0.9, 1.0] : [0.95, 1.05]), L('fall', 0.5, [0.85, 0.95], 0.05)];
+}
 function humanoidDeath(kind) {
   const cloth = /mage|zealot|cultist/.test(String(kind || '')) || ['mage', 'zealot'].includes(speciesOf(String(kind || '')));
   const big = creatureSize(kind) > 1;

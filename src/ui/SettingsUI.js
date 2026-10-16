@@ -64,7 +64,7 @@ const TABS = [
     { t: 'select', k: 'camRotate', label: 'Rotation de la caméra', opts: [['auto', 'Auto (selon la caméra)'], ['on', 'Activée (clic droit / glisser pour tourner)'], ['off', 'Désactivée (caméra figée)']] },
     { t: 'select', k: 'autoLoot', label: 'Ramassage automatique du butin', opts: [['off', 'Désactivé (touche d\'interaction)'], ['basic', 'Potions, parchemins et consommables'], ['all', 'Tout le butin proche']] },
     { t: 'check', k: 'cameraLock', label: 'Caméra verrouillée (mode libre)' },
-    { t: 'check', k: 'pcMouse', label: 'PC : commandes à la souris (clic gauche : se déplacer / attaquer · clic droit : compétence) — caméras aériennes' },
+    { t: 'check', k: 'pcMouse', label: 'PC : commandes à la souris (clic gauche : se déplacer / attaquer / interagir · clic droit : compétence · bouton du milieu : tourner la caméra en 3ᵉ personne)' },
     { t: 'select', k: 'rotateBtn', label: 'Pivoter la caméra avec', opts: [['right', 'Clic droit + glisser'], ['middle', 'Clic molette + glisser']] },
     { t: 'range', k: 'lookSens', label: 'Sensibilité de la souris', min: 20, max: 250, step: 10, fmt: pct },
     { t: 'check', k: 'invertY', label: 'Inverser l’axe vertical' },

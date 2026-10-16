@@ -2518,8 +2518,10 @@ export class Game {
     const r = this.cameraRig; if (!r) return;
     r.setMode(this.settings.cameraMode);
     this._applyCamRotate();
-    this.input.pointerLock = !r.isIso;
-    if (r.isIso) document.exitPointerLock?.();
+    // V10.82 : avec les commandes à la souris (PC), le curseur reste libre aussi en 3ᵉ personne (clic = se déplacer / interagir ; rotation : bouton du milieu)
+    const clickMode = this.settings.pcMouse !== false && !this.input.isTouch;
+    this.input.pointerLock = !r.isIso && !clickMode;
+    if (r.isIso || clickMode) document.exitPointerLock?.();
     this.camera.fov = (r.fov + (this.settings.fovAdj || 0)) * (this._fovMul || 1); this.camera.updateProjectionMatrix();
     this._runFov = 0; this._fovKick = 0;
   }
@@ -2603,7 +2605,7 @@ export class Game {
       this.dayNight?.setShadows(this._q.shadows, this._q.shadowMap);
     } else if (key === 'visualV25') this._applyVisualMode();
     else if (key === 'realLook') this._applyRealLook();
-    else if (key === 'cameraMode') this._applyCameraMode();
+    else if (key === 'cameraMode' || key === 'pcMouse') this._applyCameraMode();
     else if (key === 'camRotate') this._applyCamRotate();
     else if (key === 'cameraLock') { if (this.cameraRig) this.cameraRig.locked = s.cameraLock; }
     else if (key === 'adaptive') { if (!s.adaptive) this._resScale = 1; }
@@ -3453,7 +3455,7 @@ export class Game {
     if (this._v25) this._updateVisualsV25(dt);
     { // caméra libre verrouillée : elle ne tourne derrière le joueur que lorsqu'il avance (évite de tourner en rond en se déplaçant sur le côté)
       const mv = blocked ? { x: 0, y: 0 } : this.input.moveVector();
-      this.cameraRig.follow = mv.y > 0.35 && Math.abs(mv.x) < 0.7;
+      this.cameraRig.follow = mv.y > 0.35 && Math.abs(mv.x) < 0.7 && !(this.click?.enabled && !this.cameraRig.isIso);   // V10.82 : en commandes souris la caméra ne tourne plus d'elle-même
     }
     this.cameraRig.update(this.player.pos, dt, look, wheel, this.player.yaw);
     if (this.story) this.story.update(dt);

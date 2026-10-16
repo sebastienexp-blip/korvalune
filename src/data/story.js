@@ -136,7 +136,7 @@ STORY_QUESTS.push(
     reward: reward(16, 1.2) },
   { id: 'story_a1_3', name: 'Acte I : Le Gardien corrompu', level: 22, story: true,
     steps: [
-      { id: 'kill', text: 'Vaincre un Gardien corrompu (il rôde dans les failles)', type: 'kill', target: 'warden_corrupted', need: 1 },
+      { id: 'kill', text: 'Vaincre un Gardien corrompu (chef d’une meute d’élite dans les failles « Spires corrompues », niveau 22 et plus)', type: 'kill', target: 'warden_corrupted', need: 1 },
       { id: 'rhoda', text: 'Retourner voir la Capitaine Rhoda', type: 'talk', target: 'captain' },
       { id: 'end', text: 'L’acte I est terminé', type: 'auto' }
     ],

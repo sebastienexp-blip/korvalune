@@ -28,7 +28,7 @@ export class ClickControl {
 
   get enabled() {
     const g = this.g;
-    return g.settings.pcMouse !== false && !g.input.isTouch && !!g.cameraRig?.isIso && !!g.player && !g.player.dead;
+    return g.settings.pcMouse !== false && !g.input.isTouch && !!g.cameraRig && !!g.player && !g.player.dead;   // V10.82 : aussi en caméra 3ᵉ personne (le curseur reste libre ; rotation = bouton du milieu)
   }
 
   _onMouse(btn, down, e) {
@@ -81,6 +81,33 @@ export class ClickControl {
     return null;
   }
 
+  // V10.82 : objet interactif visé directement sous le curseur (PNJ, coffre, portail, butin, sortie de faille…), sans devoir viser le sol à leurs pieds
+  _interactAtCursor() {
+    const g = this.g, c = this._cursor();
+    this._v.set((c.x / innerWidth) * 2 - 1, -(c.y / innerHeight) * 2 + 1);
+    this._ray.setFromCamera(this._v, g.camera);
+    let best = null, bd = Infinity;
+    const test = (pos, dy, r) => {
+      if (!pos) return;
+      this._p.set(pos.x, (pos.y ?? g.world.heightAt(pos.x, pos.z)) + dy, pos.z);
+      const d = this._ray.ray.distanceToPoint(this._p) / r;
+      if (d < 1 && d < bd) { bd = d; best = { x: pos.x, z: pos.z }; }
+    };
+    for (const ld of g.lootDrops) test(ld.pos, 0.3, 0.9);
+    for (const n of g.npcs) { if (n.rig?.root?.visible === false) continue; test(n.pos, 1.1, 1.5); }
+    for (const p of g.portals || []) test(p.pos, 2.0, 3.0);
+    if (g.tp) { for (const f of g.tp.fields) test({ x: f.x, z: f.z }, 1.8, 2.6); if (g.tp.town) test(g.tp.town.pos, 1.8, 2.6); }
+    test(g.world.town?.bankPos, 1.0, 2.6);
+    if (g.dungeon?.chest && !g.dungeon.chest.opened) test(g.dungeon.pos, 0.6, 1.8);
+    for (const wc of g.worldChests?.list || []) { if (!wc.open) test({ x: wc.x, z: wc.z, y: wc.group?.position?.y }, 0.5, 1.6); }
+    if (g.rift?.active) {
+      const run = g.rift.run;
+      for (const o of run?.objects || []) { if (o.used || o.hidden || (o.kind === 'chest' && o.state !== 'closed')) continue; test(o.pos, 1.2, 2.0); }
+      for (const ep of run?.exits || []) test(ep.pos, 2.2, 3.4);
+    } else if (g.riftStatue) test(g.riftStatue.pos, 2.0, 3.4);
+    return best;
+  }
+
   // objet interactif proche d'un point du sol
   _objectNear(P) {
     const g = this.g, near = (pos, r = PICK_OBJ) => pos && Math.hypot(pos.x - P.x, pos.z - P.z) < r;
@@ -91,6 +118,10 @@ export class ClickControl {
     const bp = g.world.town?.bankPos; if (near(bp, 4.4)) return bp;
     const wc = g.worldChests?.nearest(new THREE.Vector3(P.x, 0, P.z), 2.2); if (wc) return { x: wc.x, z: wc.z };
     if (!g.rift?.active && g.riftStatue && near(g.riftStatue.pos, 3.2)) return g.riftStatue.pos;
+    if (g.rift?.active && g.rift.run) {   // V10.82 : sortie de la faille et objets de la faille
+      for (const ep of g.rift.run.exits || []) if (near(ep.pos, 3.4)) return ep.pos;
+      for (const o of g.rift.run.objects || []) { if (o.used || o.hidden || (o.kind === 'chest' && o.state !== 'closed')) continue; if (near(o.pos, 2.4)) return o.pos; }
+    }
     return null;
   }
 
@@ -99,14 +130,16 @@ export class ClickControl {
     const e = this._enemyAtCursor();
     if (this._remoteAtCursor() && !right) return; // le clic gauche sur un joueur ouvre son menu (Game)
     const P = this._ground();
+    const direct = !e ? this._interactAtCursor() : null;
     if (right) {
-      const o = P && !e ? this._objectNear(P) : null;
+      const o = direct || (P && !e ? this._objectNear(P) : null);
       if (o) { this._goInteract(o); return; }
       if (e) { g.player.target = e; g._manualTargetT = performance.now(); }
       return; // le lancer se fait dans update() (répété tant que le bouton est maintenu)
     }
     const stand = g.input.keys.has('ShiftLeft') || g.input.keys.has('ShiftRight');
     if (e) { this.engage = e; this.dest = null; this.obj = null; this.lock = true; g.player.target = e; g._manualTargetT = performance.now(); return; }
+    if (direct) { this._goInteract(direct); return; }
     if (!P) return;
     const o = this._objectNear(P);
     if (o) { this._goInteract(o); return; }
