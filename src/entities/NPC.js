@@ -7,11 +7,11 @@ import { refreshGlbGear } from '../visual/GlbEquipment.js';
 
 // V10.75 : les PNJ utilisent le corps et la tête modélisés du personnage joueur (visage, coiffure, teint, couleurs propres à chacun).
 // Repli : ancien modèle de villageois si le corps du joueur n'est pas chargé.
-function makeNpcRig(def) {
+function makeNpcRig(def, lo = false) {
   const L = def.look || {};
   try {
     const a = npcAppearance(def);
-    const opts = { skin: a.skin, cloth: a.cloth, armor: L.armor, cape: L.cape, hair: a.hair, eye: a.eye, look: a.look, equipVisible: false, shield: false, role: 'player:npc' };
+    const opts = { skin: a.skin, cloth: a.cloth, armor: L.armor, cape: L.cape, hair: a.hair, eye: a.eye, look: a.look, equipVisible: false, shield: false, role: lo ? 'player:lo' : 'player:npc' };
     for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
     const rig = createHumanoid(opts);
     if (rig && rig.glb && rig.glbSkeleton) {
@@ -32,7 +32,9 @@ export class NPC {
   constructor(scene, def, pos, yaw = 0) {
     this.def = def;
     this.pos = pos.clone();
-    this.rig = def.model === 'monolith' ? buildMonolith() : makeNpcRig(def);
+    this.fixed = def.model === 'monolith' || def.id === 'jack';   // rigs retouchés de l'extérieur (citrouille, visibilité) : jamais échangés ni masqués
+    this.hi = this.fixed;
+    this.rig = def.model === 'monolith' ? buildMonolith() : makeNpcRig(def, !this.hi);   // détail adaptatif : maillage léger au loin, fin de près
     this.rig.root.position.copy(this.pos);
     this.rig.root.rotation.y = yaw;
     scene.add(this.rig.root);
@@ -44,11 +46,26 @@ export class NPC {
     this.walk = def.walk || null; this.wi = this.walk ? 1 : 0; this.moving = false;
   }
 
+  _swap(hi) {   // remplace le modèle en gardant position, orientation et étiquette
+    const old = this.rig, root = old.root, nr = makeNpcRig(this.def, !hi);
+    if (!nr || !nr.root) return;
+    nr.root.position.copy(root.position); nr.root.rotation.y = root.rotation.y;
+    const parent = root.parent;
+    if (parent) { parent.add(nr.root); parent.remove(root); }
+    nr.root.add(this.label);
+    this.rig = nr; this.hi = hi;
+  }
+
   update(dt, camQuat, playerPos) {
     this.t += dt;
     if (this.rig.isProp) this.rig.update(dt);
     else {
-      if (playerPos) { const d2 = (playerPos.x - this.pos.x) ** 2 + (playerPos.z - this.pos.z) ** 2; const vis = d2 < 85 * 85; this.rig.root.visible = vis; if (!vis) return; }   // modèles très détaillés : invisibles au loin
+      if (playerPos && !this.fixed) {   // détail adaptatif (V10.77) : maillage fin à moins de 16 m, léger au-delà de 24 m, masqué au-delà de 85 m
+        const d2 = (playerPos.x - this.pos.x) ** 2 + (playerPos.z - this.pos.z) ** 2;
+        if (!this.hi && d2 < 16 * 16) this._swap(true);
+        else if (this.hi && d2 > 24 * 24) this._swap(false);
+        const vis = d2 < 85 * 85; this.rig.root.visible = vis; if (!vis) return;
+      }
       let sp = 0;
       if (this.walk) { // V10.39 : promeneurs — ils s'arrêtent et se tournent vers le joueur quand il est proche
         const near = playerPos && Math.hypot(playerPos.x - this.pos.x, playerPos.z - this.pos.z) < 4.2;

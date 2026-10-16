@@ -17,13 +17,14 @@ export function modeledHeadAvailable() {
 export const HEAD_FACE_SCALE = 1.5;
 
 /** Assemble la tête. Renvoie { group, hair, beard, look, skinMats } ou null si les modèles ne sont pas chargés. */
-export function buildModeledHead({ skin = 0xd9a98b, hair = 0x2c1f16, eye = 0x3f78b0, look, race } = {}) {
+export function buildModeledHead({ skin = 0xd9a98b, hair = 0x2c1f16, eye = 0x3f78b0, look, race, lo = false } = {}) {
   if (!modeledHeadAvailable()) return null;
   const lk = normalizeLook(look), fem = lk.sex === 'femme', sx = fem ? 'femme' : 'homme';
   const fs = byId(FACE_SHAPES, lk.face), rc = race || raceOfSkin(skin);
   const tint = { wall: skin, roof: hair, trim: eye };
   const skinMats = [];
-  const inst = (kind, shadow = false) => {
+  const inst = (kind0, shadow = false) => {
+    const kind = lo && ModelLibrary.hasTown([kind0 + '_lo']) ? kind0 + '_lo' : kind0;   // V10.77 : version légère des modules (PNJ éloignés)
     if (!ModelLibrary.hasTown([kind])) return null;
     const g = ModelLibrary.townInstance(kind, { tint, shadow });
     g.traverse((o) => {

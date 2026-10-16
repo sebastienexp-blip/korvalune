@@ -51,7 +51,7 @@ function dressGlbHuman(rig, opts) {
   if (tunic) tunic.color.setHex(o.cloth);
   if (trousers) trousers.color.set(o.cloth).multiplyScalar(0.55);
   for (const m of [skinMat, tunic, trousers]) if (m) m.userData.__base = m.color.getHex();
-  const mh = buildModeledHead({ skin: o.skin, hair: o.hair, eye: o.eye ?? 0x3f78b0, look: opts.look || defaultLook('homme'), race: opts.race });
+  const mh = buildModeledHead({ skin: o.skin, hair: o.hair, eye: o.eye ?? 0x3f78b0, look: opts.look || defaultLook('homme'), race: opts.race, lo: /^player:lo/.test(opts.role || '') });
   let head;
   if (mh) {                                            // V10.44 : visage, yeux, cheveux, barbe = modèles 3D
     head = new THREE.Group(); head.name = 'Head_model';
