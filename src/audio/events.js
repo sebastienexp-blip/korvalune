@@ -26,7 +26,7 @@ export const EVENTS = {
   combatStart: () => [L('unsheathe', 0.9)],
   enemyAttack: (o) => creature(o.kind, 'attack', 1),
   enemyHurt: (o) => creature(o.kind, 'hurt', 0.9),
-  kill: (o) => [...creature(o.kind, 'death', 1), L(creatureSize(o.kind) > 1 ? 'death-thud-big' : 'death-thud-small', 0.7, [0.95, 1.05], 0.35)],
+  kill: (o) => isHumanoid(o.kind) ? humanoidDeath(o.kind) : [...creature(o.kind, 'death', 1), L(creatureSize(o.kind) > 1 ? 'death-thud-big' : 'death-thud-small', 0.7, [0.95, 1.05], 0.35)],
   // --- soins, progression, butin
   heal: () => [L(['cast-healing-mid', 'cure'], 0.9)],
   levelup: () => [],   // V10.45 : plus de fanfare de niveau (la bannière reste)
@@ -99,6 +99,18 @@ export function creatureFamily(kind) {
   return fam;
 }
 export function creatureSize(kind) { return BIG.test(String(kind || '')) ? 2 : 1; }
+
+// V10.80 : mort des humanoïdes (bandits, zélotes, mages, archers, gardes, brutes — toutes variantes de région) : plus de cri de revenant ;
+// chute lourde d'un corps en armure ou d'un corps en tissu (mages, zélotes), arme qui tombe, souffle bref.
+const HUMANOID_SP = new Set(['bandit', 'elite', 'zealot', 'mage', 'archer', 'guard', 'brute']);
+export function isHumanoid(kind) { return HUMANOID_SP.has(speciesOf(String(kind || ''))); }
+function humanoidDeath(kind) {
+  const cloth = /mage|zealot|cultist/.test(String(kind || '')) || ['mage', 'zealot'].includes(speciesOf(String(kind || '')));
+  const big = creatureSize(kind) > 1;
+  return cloth
+    ? [L('fall', 0.95, [0.9, 1.0]), L('cloth-rustle', 0.7, [0.85, 1.0], 0.04), L('breath', 0.5, [0.75, 0.9], 0.02), L('drop-weapon', 0.5, [0.9, 1.05], 0.22)]
+    : [L(big ? 'death-thud-big' : 'fall-armoured', 1, big ? [0.95, 1.05] : [0.92, 1.02]), L(['plate-clank', 'mail-jingle'], 0.55, [0.85, 1.0], 0.07), L('drop-weapon', 0.7, [0.9, 1.05], 0.2), L('breath', 0.4, [0.7, 0.85], 0.02)];
+}
 
 function creature(kind, what, v, rate) {
   const fam = creatureFamily(kind);

@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.81', title: 'Mort des humanoïdes',
+    items: [
+      '🔊 Plus de cri étrange à la mort des bandits, brutes, zélotes, mages, archers et gardes (toutes régions, y compris les brutes abyssales) : place au bruit d’un corps qui tombe, d’une armure ou d’un tissu, et d’une arme qui rebondit au sol.'
+    ]
+  },
+  {
     version: '10.80', title: 'Écran noir après cinématique',
     items: [
       '🛠️ Si le téléphone coupe l’affichage du jeu (mémoire graphique saturée), le jeu le rétablit tout seul au lieu de rester sur un écran noir ; sinon un bouton « Recharger l’affichage » apparaît.',
