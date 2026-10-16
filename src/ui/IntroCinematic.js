@@ -453,7 +453,7 @@ export class IntroCinematic {
   _dispose() {
     for (const o of this._disp) { try { o.dispose && o.dispose(); } catch (e) { /* ignoré */ } }
     this._disp = [];
-    if (this.renderer) { try { this.renderer.forceContextLoss(); } catch (e) { /* ignoré */ } this.renderer = null; }
+    if (this.renderer) { try { this.renderer.dispose(); this.renderer.domElement.width = 1; this.renderer.domElement.height = 1; } catch (e) { /* ignoré */ } this.renderer = null; }   // V10.80 : plus de forceContextLoss (il pouvait faire perdre aussi le rendu du jeu sur certains téléphones)
     this.scene = null;
   }
 

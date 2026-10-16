@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.80', title: 'Écran noir après cinématique',
+    items: [
+      '🛠️ Si le téléphone coupe l’affichage du jeu (mémoire graphique saturée), le jeu le rétablit tout seul au lieu de rester sur un écran noir ; sinon un bouton « Recharger l’affichage » apparaît.',
+      '🎬 La cinématique de lancement ne force plus la fermeture de son rendu, ce qui pouvait faire perdre aussi celui du jeu sur certains téléphones.'
+    ]
+  },
+  {
     version: '10.79', title: 'Ambiance lumineuse',
     items: [
       '✨ Nouveau halo lumineux : néons, cristaux, sorts et runes rayonnent doucement. Actif en qualité Élevé ou Ultra (réglable : Réglages › Graphismes › Halo lumineux).',

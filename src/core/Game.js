@@ -161,6 +161,16 @@ export class Game {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // V10.80 : si le navigateur coupe le rendu (mémoire graphique, second contexte de la cinématique…), on le laisse se rétablir au lieu de rester sur un écran noir
+    canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault(); this._glLost = true;
+      clearTimeout(this._glLostT);
+      this._glLostT = setTimeout(() => { if (this._glLost) this._showGlRescue(); }, 4000);
+    });
+    canvas.addEventListener('webglcontextrestored', () => {
+      this._glLost = false; clearTimeout(this._glLostT); document.getElementById('gl-rescue')?.remove();
+      this.post = null; try { this._resize(); } catch (err) { /* ignoré */ }
+    });
     this.scene = new THREE.Scene();
     // V2.5 : si un shader personnalisé échoue sur cet appareil, on bascule en mode compatible au prochain lancement
     this.renderer.debug.onShaderError = (gl, program, vs, fs) => this._onShaderError(gl, vs, fs);
@@ -218,6 +228,15 @@ export class Game {
     if (this.ambient) this.ambient.setEnabled(on && this.settings.quality !== 'verylow');
     if (this.trail && !on) this.trail.mesh.visible = false;
     if (this.world) this.world.setGrassVisible(on && this.settings.quality !== 'verylow' && this.settings.grass !== false);
+  }
+
+  _showGlRescue() {
+    if (document.getElementById('gl-rescue')) return;
+    const d = document.createElement('div'); d.id = 'gl-rescue';
+    d.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#05070f;color:#e8ecff;font:16px Georgia,serif;text-align:center;padding:24px';
+    d.innerHTML = '<div>L’affichage s’est interrompu (mémoire graphique de l’appareil).</div><button style="padding:12px 22px;border-radius:10px;border:1px solid #8aa;background:#16213d;color:#fff;font:inherit">Recharger l’affichage</button>';
+    d.querySelector('button').onclick = () => location.reload();
+    document.body.appendChild(d);
   }
 
   _wantBloom() { return this._v25 && ['high', 'ultra'].includes(this.settings.quality) && this.settings.bloom !== false && !(this.post && !this.post.ok); }
@@ -3488,8 +3507,10 @@ export class Game {
       this._cullT = (this._cullT || 0) - dt;
       if (this._cullT <= 0) { this._cullT = 0.25; this._cullFar(fog.far * 1.08); }
     } else if (this._cullHid?.length) this._cullFar(Infinity);
+    if (!this._glLost) {
     if (this._wantBloom()) { if (!this.post) { this.post = new PostFX(this.renderer, this.scene, this.camera); this.post.resize(); } }
     if (this.post && this.post.ok && this._wantBloom()) this.post.render(); else this.renderer.render(this.scene, this.camera);
+    }
     if (fog && fogOff) { fog.near -= fogOff; fog.far -= fogOff; }
     if (freeCam) { fog.near = fogN; fog.far = fogF; }
   };
