@@ -141,20 +141,33 @@ def sign_inn():
     return k, {}
 
 def chest_base():
-    k = Kit()
-    k.add('bois', box((.95, .5, .6), 'bois', (0.6, 0.4, 0.22), M=T_((0, .25, 0))))
+    """V10.83 : coffre à planches (3 rangs de teintes légèrement différentes), cerclages de fer rivetés, coins renforcés, serrure."""
+    k = Kit(); WD = [(0.56, 0.37, 0.2), (0.62, 0.42, 0.23), (0.52, 0.34, 0.18)]; FE = (0.19, 0.2, 0.23); GD = (0.85, 0.66, 0.23)
+    for i in range(3):
+        k.add('bois', box((.95 - .004 * i, .164, .6), 'bois', WD[i], uv=.55, M=T_((0, .085 + .166 * i, 0))))
+    k.add('metal', box((.99, .045, .64), 'metal', FE, uv=.5, M=T_((0, .022, 0))))                       # cadre bas
+    k.add('metal', box((.99, .04, .64), 'metal', FE, uv=.5, M=T_((0, .48, 0))))                          # cadre haut
     for sx in (-1, 1):
-        k.add('metal', box((.1, .5, .66), 'metal', (0.85, 0.66, 0.23), M=T_((sx * .3, .25, 0))))
-    k.add('metal', box((.12, .16, .04), 'metal', (0.85, 0.66, 0.23), M=T_((0, .42, .31))))
-    k.add('metal', box((.97, .04, .62), 'metal', IRON, M=T_((0, .02, 0))))
+        k.add('metal', box((.085, .5, .64), 'metal', FE, uv=.5, M=T_((sx * .31, .25, 0))))               # cerclages
+        for sy in (.1, .25, .4):
+            for sz in (-.25, .25):
+                k.add('metal', sphere(.022, 'metal', GD, M=T_((sx * .31, sy, sz * 1.31)), seg=6, rings=4))   # rivets (faces avant/arrière)
+        for cx in (-1, 1):                                                                              # coins renforcés
+            k.add('metal', box((.07, .5, .07), 'metal', FE, uv=.4, M=T_((cx * .46, .25, sx * .295))))
+    k.add('metal', box((.15, .2, .05), 'metal', GD, uv=.3, M=T_((0, .4, .32))))                          # plaque de serrure
+    k.add('metal', box((.03, .06, .06), 'metal', (0.1, 0.1, 0.12), uv=.3, M=T_((0, .39, .335))))         # trou de serrure
+    k.add('metal', cyl(.012, .012, .1, 6, 'metal', GD, M=T_((0, .43, .345), rx=np.pi / 2)))
     return k, {}
 
 def chest_lid():
-    """Couvercle : origine = charnière (arrière, haut du coffre) ; le couvercle s'étend vers +Z."""
-    k = Kit()
-    k.add('bois', box((.97, .16, .62), 'bois', (0.6, 0.4, 0.22), M=T_((0, .08, .31))))
-    k.add('bois', box((.89, .08, .54), 'bois', (0.66, 0.45, 0.26), M=T_((0, .2, .31))))
-    for sx in (-1, 1):
-        k.add('metal', box((.1, .28, .66), 'metal', (0.85, 0.66, 0.23), M=T_((sx * .3, .12, .31))))
-    k.add('metal', box((.1, .1, .06), 'metal', (0.9, 0.78, 0.4), M=T_((0, .02, .62))))
+    """Couvercle voûté : origine = charnière (arrière, haut du coffre) ; il s'étend vers +Z."""
+    k = Kit(); FE = (0.19, 0.2, 0.23); GD = (0.85, 0.66, 0.23)
+    k.add('bois', cyl(.31, .31, .97, 18, 'bois', (0.6, 0.4, 0.22), M=T_((-.485, 0, .31), rz=-np.pi / 2), arc=np.pi, a0=np.pi / 2, caps=(False, False)))
+    for sx in (-1, 1):                                                                                   # cerclages sur la voûte
+        k.add('metal', cyl(.325, .325, .085, 18, 'metal', FE, M=T_((sx * .31 - .0425, 0, .31), rz=-np.pi / 2), arc=np.pi, a0=np.pi / 2, caps=(False, False)))
+    for sx in (-1, 1):                                                                                   # flancs pleins de la voûte
+        k.add('bois', cyl(.31, .31, .035, 18, 'bois', (0.56, 0.37, 0.2), M=T_((sx * .4675 - .0175, 0, .31), rz=-np.pi / 2)))
+    for z in (.02, .6):                                                                                  # deux pignons en planches
+        k.add('bois', box((.95, .04, .03), 'bois', (0.56, 0.37, 0.2), uv=.5, M=T_((0, .02, z))))
+    k.add('metal', box((.15, .12, .06), 'metal', GD, uv=.3, M=T_((0, .02, .625))))                       # languette de serrure
     return k, {'pivot': [0, .5, -.3]}

@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.83', title: 'Stands, licorne et coffres',
+    items: [
+      '🧑‍🌾 Les marchands (forgeron, armurier, apothicaire, mystique, fruitier…) se tiennent maintenant devant leur stand : plus facile de cliquer dessus.',
+      '🦄 La licorne de la boutique à lunes a un vrai corps de poney, une crinière et une corne, au lieu de ressembler à un chat.',
+      '📦 Coffres refaits : couvercle bombé, bandes de fer, rivets et serrure, avec un bois bien texturé.'
+    ]
+  },
+  {
     version: '10.82', title: 'Commandes souris partout',
     items: [
       '🖱️ Les commandes à la souris marchent maintenant aussi en caméra 3ᵉ personne : clic gauche pour se déplacer, attaquer ou interagir, clic droit pour la compétence, bouton du milieu (maintenu) pour tourner la caméra.',

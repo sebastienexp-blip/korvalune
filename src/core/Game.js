@@ -416,8 +416,9 @@ export class Game {
       { def: npcsData.apothecary, pos: POS.apothecary, yaw: 0 }
     ];
     stalls.forEach((s, i) => {
-      const sy = this.world.heightAt(s.pos[0], s.pos[1]);
-      const npc = new NPC(this.scene, s.def, new THREE.Vector3(s.pos[0], sy, s.pos[1]), s.yaw);
+      const pz = s.pos[1] + 2.3;   // V10.82 : le marchand se tient DEVANT son étal (côté clientèle, ouverture au +z) : plus facile à cliquer
+      const sy = this.world.heightAt(s.pos[0], pz);
+      const npc = new NPC(this.scene, s.def, new THREE.Vector3(s.pos[0], sy, pz), s.yaw);
       npc.id = s.def.id;
       this.npcs.push(npc);
     });
@@ -444,9 +445,9 @@ export class Game {
         const n = new NPC(this.scene, def, new THREE.Vector3(x, this.world.heightAt(x, z), z), yaw);
         n.id = def.id; this.npcs.push(n); return n;
       };
-      place(npcsData.smith, POS.smith[0], POS.smith[1], Math.PI / 2);
+      place(npcsData.smith, POS.smith[0] + 4.9, POS.smith[1], Math.PI / 2);   // V10.82 : devant la forge, côté clientèle
       place(npcsData.monolith, POS.monolith[0], POS.monolith[1], 0);
-      place(npcsData.mystic, POS.mystic[0], POS.mystic[1], Math.PI / 2);
+      place(npcsData.mystic, POS.mystic[0] + 3.2, POS.mystic[1], Math.PI / 2);   // V10.82 : devant l'établi d'enchantement
       try { this._forgeDecor = buildForgeDecor(this.scene, this.world, POS.forgeDecor[0], POS.forgeDecor[1], 0); } catch (e) { console.warn('[V10.19] décor de forge ignoré', e); }
     }
 
@@ -473,9 +474,9 @@ export class Game {
       at('gateE', POS.gateGuards.E[0], POS.gateGuards.E[1], -Math.PI / 2);
       at('gateW', POS.gateGuards.W[0], POS.gateGuards.W[1], Math.PI / 2);
       at('gateN', POS.gateGuards.N[0], POS.gateGuards.N[1], 0);
-      at('tilda', POS.tilda[0], POS.tilda[1], Math.PI);
-      at('orsin', POS.orsin[0], POS.orsin[1], Math.PI);
-      at('fruitier', POS.fruitier[0], POS.fruitier[1], Math.PI);   // V10.74 : l'étal de fruits avait un comptoir mais pas de marchand
+      at('tilda', POS.tilda[0], POS.tilda[1] - 2.3, Math.PI);   // V10.82 : devant l'étal (ouverture côté -z)
+      at('orsin', POS.orsin[0], POS.orsin[1] - 2.3, Math.PI);
+      at('fruitier', POS.fruitier[0], POS.fruitier[1] - 2.3, Math.PI);   // V10.74 : l'étal de fruits avait un comptoir mais pas de marchand
       for (const id of ['herald', 'pip', 'mira', 'joss', 'aldric']) { const w = npcsData[id].walk; at(id, w[0][0], w[0][1], 0); }
     }
 

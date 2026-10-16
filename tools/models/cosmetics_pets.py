@@ -12,6 +12,7 @@ def _eyes(k, y, z, dx, r, role=T_R):
         k.add('flat', ell((sx * dx, y, z), (r, r * 1.1, r * 0.7), 'flat', (1, 1, 1), role, seg=8, rings=5))
 
 def quad_parts(o):
+    if o.get('pony'): return pony_parts(o)
     L = o.get('len', 1.3); hR = o.get('headR', 0.12)
     body = Kit(); head = Kit(); leg = Kit(); tail = Kit()
     # corps
@@ -62,12 +63,53 @@ def quad_parts(o):
         tail.add('flat', ell(pts[4], (0.02, 0.022, 0.02), 'flat', (1, 1, 1), R_, seg=6, rings=4))
     return body, head, leg, tail
 
+def pony_parts(o):
+    """V10.83 : vrai poney licorne — corps tonneau, cou arqué avec crinière, tête longue, jambes fines à sabots, queue flottante, longue corne torsadée.
+    Repères (voir Cosmetics.js) : tête pivot (0,.46,.25) ; hanches des pattes y=.2, x=±.065, z=±.14 ; queue racine (0,.33,-.19)."""
+    body = Kit(); head = Kit(); leg = Kit(); tail = Kit()
+    body.add('flat', ell((0, 0.3, 0), (0.095, 0.09, 0.19), 'flat', (1, 1, 1), W_, seg=14, rings=9))
+    body.add('flat', ell((0, 0.3, 0.115), (0.092, 0.097, 0.1), 'flat', (1, 1, 1), W_, seg=12, rings=8))           # poitrail
+    body.add('flat', ell((0, 0.31, -0.105), (0.097, 0.097, 0.1), 'flat', (1, 1, 1), W_, seg=12, rings=8))          # croupe
+    body.add('flat', ell((0, 0.25, 0.03), (0.07, 0.04, 0.14), 'flat', (1, 1, 1), R_, seg=10, rings=6))             # ventre clair
+    body.add('flat', tube((0, 0.33, 0.14), (0, 0.46, 0.25), 0.062, 0.042, 'flat', (1, 1, 1), W_, seg=10))           # cou arqué
+    for i in range(7):                                                                                           # crinière le long du cou
+        t = i / 6; c = np.array([0, 0.35 + 0.115 * t + 0.045, 0.135 + 0.115 * t - 0.035 - 0.012 * (1 - t)])
+        body.add('glow', ell(c, (0.018, 0.04 - 0.008 * t, 0.034), 'glow', (1, 1, 1), 1.0, seg=8, rings=5))
+    for sx in (-1, 1):
+        body.add('glow', ell((sx * 0.026, 0.4, 0.16), (0.012, 0.045, 0.028), 'glow', (1, 1, 1), 1.0, seg=6, rings=4))
+    # tête (pivot = haut du cou)
+    head.add('flat', ell((0, 0.0, 0.035), (0.05, 0.057, 0.075), 'flat', (1, 1, 1), W_, seg=12, rings=8))          # crâne
+    head.add('flat', ell((0, -0.035, 0.115), (0.036, 0.036, 0.075), 'flat', (1, 1, 1), W_, seg=10, rings=7))      # chanfrein long
+    head.add('flat', ell((0, -0.048, 0.178), (0.03, 0.028, 0.032), 'flat', (1, 1, 1), R_, seg=8, rings=5))        # museau
+    for sx in (-1, 1):
+        head.add('flat', ell((sx * 0.012, -0.045, 0.206), (0.007, 0.006, 0.006), 'flat', (0.1, 0.06, 0.07), 1.0, seg=5, rings=3))   # narines
+    _eyes(head, 0.012, 0.05, 0.048, 0.018)
+    for sx in (-1, 1):
+        base = np.array([sx * 0.03, 0.05, -0.012]); tip = base + np.array([sx * 0.012, 0.075, -0.01])
+        head.add('flat', lens(base, tip, 0.019, 0.007, 'flat', (1, 1, 1), W_, peak=0.25))
+    d = np.array([0, np.cos(0.4), np.sin(0.4)]); c = np.array([0, 0.062, 0.05])
+    head.add('metal', tube(c - d * 0.01, c + d * 0.27, 0.021, 0.003, 'metal', GOLD, 1.0, seg=10))
+    for t in np.linspace(0.12, 0.88, 6):                                                                         # torsades de la corne
+        head.add('metal', ell(c + d * (0.27 * t), (0.025 * (1 - t) + 0.006, 0.0045, 0.025 * (1 - t) + 0.006), 'metal', (0.85, 0.65, 0.2), 1.0, rot=(0, 0.4, 0), seg=8, rings=3))
+    head.add('glow', ell((0, 0.075, 0.07), (0.016, 0.03, 0.022), 'glow', (1, 1, 1), 1.0, seg=6, rings=4))         # toupet
+    # patte longue à sabot (origine = hanche)
+    leg.add('flat', tube((0, 0, 0), (0, -0.105, 0.004), 0.031, 0.022, 'flat', (1, 1, 1), W_, seg=8))
+    leg.add('flat', ell((0, -0.105, 0.004), (0.024, 0.022, 0.026), 'flat', (1, 1, 1), W_, seg=7, rings=4))         # articulation
+    leg.add('flat', tube((0, -0.105, 0.004), (0, -0.2, 0.0), 0.019, 0.016, 'flat', (1, 1, 1), W_, seg=7))
+    leg.add('flat', ell((0, -0.213, 0.004), (0.021, 0.016, 0.026), 'flat', (1, 1, 1), R_, seg=8, rings=5))        # sabot
+    # queue flottante (racine à l'origine, vers l'arrière et le bas)
+    pts = [(0, 0, 0), (0, -0.01, -0.07), (0, -0.05, -0.13), (0, -0.11, -0.17), (0, -0.19, -0.19)]
+    for i, (a, b) in enumerate(zip(pts[:-1], pts[1:])):
+        tail.add('glow', ell(((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2), (0.034 + 0.004 * i, 0.04, 0.05), 'glow', (1, 1, 1), 1.0, seg=8, rings=5))
+    tail.add('glow', ell((0, -0.23, -0.19), (0.032, 0.05, 0.03), 'glow', (1, 1, 1), 1.0, seg=8, rings=5))
+    return body, head, leg, tail
+
 QUADS = {
     'chat': dict(earW=0.045, earH=0.1, snout=0.6, tail='long', len=1.2),
     'renard': dict(earW=0.05, earH=0.14, snout=1.5, tail='bushy', len=1.35),
     'loup': dict(earW=0.05, earH=0.12, snout=1.7, tail='bushy', headR=0.13, len=1.5),
     'lapin': dict(earW=0.035, earH=0.26, long=True, earTilt=0.12, tail='puff', snout=0.5, len=1.0),
-    'licorne': dict(earW=0.035, earH=0.09, snout=1.2, tail='bushy', horn=True, mane=True, len=1.6, headR=0.12),
+    'licorne': dict(pony=True),
 }
 
 def _rot_xz(k):

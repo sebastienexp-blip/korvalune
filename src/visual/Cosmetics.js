@@ -366,11 +366,12 @@ function buildPetGlb(fx, rig) {
   if (quad) {
     const [nm, L] = quad;
     group.add(make(`cos_fam_${nm}_corps`));
-    const head = place(new THREE.Group(), 0, 0.3, L * 0.15 + 0.06); head.add(make(`cos_fam_${nm}_tete`));
-    for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) { const lg = place(new THREE.Group(), x * 0.07, 0.12, z * 0.12 * L * 0.8); lg.add(make(`cos_fam_${nm}_patte`)); p.legs.push(lg); }
-    const tl = place(new THREE.Group(), 0, 0.24, -L * 0.16); tl.add(make(`cos_fam_${nm}_queue`));
+    const pony = kind === 'unicorn';   // V10.83 : vrai poney (cou arqué, jambes longues à sabots) : autres repères d'articulation
+    const head = place(new THREE.Group(), 0, pony ? 0.46 : 0.3, pony ? 0.25 : L * 0.15 + 0.06); head.add(make(`cos_fam_${nm}_tete`));
+    for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) { const lg = pony ? place(new THREE.Group(), x * 0.065, 0.2, z * 0.14) : place(new THREE.Group(), x * 0.07, 0.12, z * 0.12 * L * 0.8); lg.add(make(`cos_fam_${nm}_patte`)); p.legs.push(lg); }
+    const tl = pony ? place(new THREE.Group(), 0, 0.33, -0.19) : place(new THREE.Group(), 0, 0.24, -L * 0.16); tl.add(make(`cos_fam_${nm}_queue`));
     p.tailRef = tl; p.headRef = head;
-    if (kind === 'unicorn') p.scale = 1.1;
+    if (kind === 'unicorn') p.scale = 1.25;
   } else {
     group.add(make(`cos_fam_${body}`, kind === 'pumpkin' ? { glow: null } : {}));
     if (kind === 'owl') p.hover = 0.9;
