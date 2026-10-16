@@ -491,14 +491,25 @@ function buildCityLayout(world, g, T, stone, wood, add) {
     m.polygonOffset = true; m.polygonOffsetFactor = -slabLayer; m.polygonOffsetUnits = -slabLayer;
     return m;
   };
-  const pave = (w, dd, x, z, y, color = 0x8d8372) => {
-    const m = add(new THREE.BoxGeometry(w, 0.06, dd), slabMat(color), x, world.heightAt(x, z) - 0.02, z);
+  // V10.84 : les dalles épousent le relief (maillage 1 m dont chaque sommet suit heightAt). Avant, une boîte plate à hauteur
+  // du centre : sur une pente l'herbe perçait la dalle ou la dalle flottait, d'où des aplats aux bords en escalier.
+  const conform = (geo, x, z, color) => {
+    geo.rotateX(-Math.PI / 2);
+    const P = geo.attributes.position, U = geo.attributes.uv;
+    const lift = 0.05 + slabLayer * 0.003;
+    for (let i = 0; i < P.count; i++) {
+      const lx = P.getX(i), lz = P.getZ(i);
+      P.setY(i, world.heightAt(x + lx, z + lz) + lift);
+      U.setXY(i, lx / 8, lz / 8);
+    }
+    geo.computeVertexNormals();
+    const m = add(geo, slabMat(color), x, 0, z);
     m.castShadow = false; m.receiveShadow = true; return m;
   };
-  const disc = (r, x, z, y, color) => {
-    const m = add(new THREE.CylinderGeometry(r, r, 0.06, 40), slabMat(color), x, world.heightAt(x, z) - 0.02, z);
-    m.castShadow = false; m.receiveShadow = true; return m;
-  };
+  const pave = (w, dd, x, z, y, color = 0x8d8372) =>
+    conform(new THREE.PlaneGeometry(w, dd, Math.max(1, Math.ceil(w)), Math.max(1, Math.ceil(dd))), x, z, color);
+  const disc = (r, x, z, y, color) =>
+    conform(new THREE.RingGeometry(0.001, r, 48, Math.max(2, Math.ceil(r))), x, z, color);
   pave(C.hw * 2 + 20, C.hd * 2 + 20, C.x, C.z, 0.03, 0xa49c8c);                     // parvis
   pave(C.hw * 2 - 4, C.hd * 2 - 4, C.x, C.z, 0.06, 0xbdb4a0);                       // cour intérieure
   pave(11, HALF - (C.z + C.hd) - 8, 0, (HALF + C.z + C.hd + 8) / 2, 0.05);           // avenue sud

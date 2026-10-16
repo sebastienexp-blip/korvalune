@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.84', title: 'Sols de la ville',
+    items: [
+      '🧱 Les dalles de la ville (places, avenues, écurie, marché) épousent désormais le relief : plus d’aplats superposés aux bords en escalier, plus d’herbe qui perce à travers les pavés.',
+      '🔍 Les dalles ont aussi une texture à la bonne échelle, au lieu d’être étirée sur toute la place.'
+    ]
+  },
+  {
     version: '10.83', title: 'Stands, licorne et coffres',
     items: [
       '🧑‍🌾 Les marchands (forgeron, armurier, apothicaire, mystique, fruitier…) se tiennent maintenant devant leur stand : plus facile de cliquer dessus.',
