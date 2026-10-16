@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.77', title: 'Villages plus fluides',
+    items: [
+      '👥 Les PNJ gardent leur modèle fin quand tu es à moins de 16 m, et passent à une version légère plus loin : même allure, bien moins de calculs.',
+      '🏘️ En ville, le nombre de triangles à l’écran est presque divisé par deux : le jeu est plus fluide.'
+    ]
+  },
+  {
     version: '10.76', title: 'Textures Ultra HD',
     items: [
       '🖼️ Nouveau réglage « Textures Ultra HD » (Réglages › Graphismes) : sol, murs, toits, bois, nature, armures, cuir, tissu, poils et os en 2 048 à 4 096 px, avec bien plus de détail fin (grain de la pierre, fibres du bois, tissage, rayures du métal…).',
