@@ -325,7 +325,7 @@ export const ModelLibrary = {
 
   _find(role, species, kind, byFile) {
     if (/^player/.test(role || '')) {   // V10.43 : joueurs = corps humain nu (la tête et l'équipement s'ajoutent par-dessus)
-      const body = byFile('veilleur_corps.glb');
+      const body = (/^player:lo/.test(role) && byFile('veilleur_corps_lo.glb')) || byFile('veilleur_corps.glb');   // V10.77 : « player:lo… » = maillage léger (PNJ éloignés)
       if (body && body.meta && body.meta.humanHead) return body;
     }
     for (const k of [role, species && `species:${species}`]) {
