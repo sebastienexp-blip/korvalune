@@ -3,6 +3,12 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.90', title: 'Fini les fentes sur les ennemis',
+    items: [
+      '🩹 Les lignes claires qui coupaient les ennemis en deux (capuche, bras, robe, bâton) étaient de vraies fentes dans le modèle : elles sont refermées, sur tous les ennemis, les boss et les villageois.'
+    ]
+  },
+  {
     version: '10.89', title: 'Ennemis humanoïdes plus détaillés',
     items: [
       '🛡️ Bandits, brutes, zélotes, mages, archers, trolls, gobelins et élites gagnent de l’équipement visible : épaulières, brassards, jambières et bottes en cuir, colliers et plastrons d’acier, médaillons, pointes d’os.',

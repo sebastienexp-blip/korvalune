@@ -12,7 +12,11 @@ def cluster_decimate(m, cell=0.03, uv_cell=None):
     inv = inv.reshape(-1); n = len(cnt)
     def avg(a):
         out = np.zeros((n, a.shape[1])); np.add.at(out, inv, a); return out / cnt[:, None]
-    V, UV, C = avg(m.V), avg(m.UV), avg(m.C)
+    # positions moyennées par cellule d'espace seule : les sommets dupliqués d'une couture (UV différents) restent soudés, pas de fente
+    _, pinv, pcnt = np.unique(key, axis=0, return_inverse=True, return_counts=True); pinv = pinv.reshape(-1)
+    pp = np.zeros((len(pcnt), 3)); np.add.at(pp, pinv, m.V); pp /= pcnt[:, None]
+    V, UV, C = pp[pinv] if False else None, avg(m.UV), avg(m.C)
+    Vc = np.zeros((n, 3)); np.add.at(Vc, inv, pp[pinv]); V = Vc / cnt[:, None]
     # poids : somme par os dans chaque groupe, on garde les 4 plus forts
     nb = max(4, int(m.J.max()) + 1)
     acc = np.zeros((n, nb))

@@ -44,7 +44,7 @@ if __name__ == '__main__':
     for name in names:
         parts, SK, meta = F.build(name)
         cell = meta['decimate'] or 0.035
-        parts = [(n, cluster_decimate(m, cell) if len(m.F) > 400 else m, mat) for n, m, mat in parts]
+        parts = [(n, cluster_decimate(m, cell) if (len(m.F) > 400 and not n.startswith('capuche')) else m, mat) for n, m, mat in parts]
         ms = mats_for(meta, quick, base)
         used = [ms[k] for k in dict.fromkeys(p[2] for p in parts)]
         sc = meta['scale']
