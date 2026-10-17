@@ -3,6 +3,19 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.92', title: 'Les boss mondiaux',
+    items: [
+      '👹 Les anciens boss sont supprimés. À leur place : 10 boss mondiaux inédits, immenses, un par région : l’Épouvantail Moissonneur, le Roi-Cerf des Ombres, le Colosse Forgeron, le Sphinx-Scorpion, le Gobe-Lanterne, le Mammouth de Givre, le Prélat de Chair, le Séraphin Brisé, le Seigneur de Braise et l’Œil du Néant.',
+      '⏰ Comme dans Diablo, un boss apparaît chaque heure (heure universelle, le même pour tous), à tour de rôle dans une région, et reste 50 minutes. Une annonce prévient 5 minutes avant et à l’apparition.',
+      '🗺️ Le boss actif est visible sur la mini-carte et la grande carte. Le bouton 👹 de la carte liste les 10 boss avec leur prochaine apparition.',
+      '📍 Sur la carte, tu peux poser un marqueur (appui court, ou bouton « Marquer » d’un boss). Une piste rose au sol te guide jusqu’au marqueur le plus proche.',
+      '⚔️ Chaque boss a ses attaques à esquiver (zones au sol annoncées) et se déchaîne à 66 % puis 33 % de vie. Il rapporte une grosse récompense : XP, or et butin doublé.',
+      '🌀 Les gardiens des spires empruntent désormais le visage de ces colosses.',
+      '🔊 Sons des boss : cri au réveil, attaques, rage et mort. Le carillon de niveau et de Zénith est très discret, et les succès sonnent plus doucement.',
+      '🩸 Nouvelle option (Réglages > Interface & jeu) : sang et décapitation. Gouttes et flaques au sol, jets de sang, et sur un coup critique ou très lourd la tête peut être tranchée et rouler au sol. Désactivée par défaut.'
+    ]
+  },
+  {
     version: '10.91', title: 'Les squelettes arrivent',
     items: [
       '💀 Nouveau type d’ennemi : les squelettes. Guerrier (épée, bouclier rond, casque et armure rouillée), archer, arbalétrier et nécromant (robe en lambeaux, bâton et orbe). Crâne avec orbites et dents, mâchoire, côtes, colonne, bassin, os des bras, des mains et des jambes : tout y est.',

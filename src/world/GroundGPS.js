@@ -22,6 +22,8 @@ export class GroundGPS {
     this._t = 0;
   }
 
+  setColor(c) { if (this.mat.color.getHex() !== c) this.mat.color.setHex(c); }
+
   // spots : [{x,z}] ; renvoie la distance à la cible (ou null)
   update(dt, player, spots, enabled) {
     if (!enabled || !spots || !spots.length || !player || player.dead) { this.mesh.visible = false; return null; }

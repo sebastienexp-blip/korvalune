@@ -99,7 +99,8 @@ export class Enemy {
     this.hpBar.fg.scale.x = Math.max(0.001, this.hp / this.maxHp);
     this.hpBar.fg.position.x = -(1 - this.hpBar.fg.scale.x) / 2;
     this.bus.emit('floatText', { pos: this.pos.clone().add({ x: 0, y: 1.6, z: 0 }), text: crit ? `CRIT ${final}` : `${final}`, color: crit ? '#ffd23f' : dot ? '#9be86a' : '#ffffff', big: crit });
-    if (this.hp <= 0) this.kill(player);
+    if (!dot) this.bus.emit('goreHit', { e: this, crit, dmg: final });
+    if (this.hp <= 0) { if (!dot) this.bus.emit('goreKill', { e: this, crit, dmg: final }); this.kill(player); }
     else {
       if (!dot) this.bus.emit('enemyHurt', this);
       if (this.state !== STATE.ATTACK) { this.state = STATE.CHASE; this.stateT = 0; }
@@ -333,6 +334,7 @@ export class Enemy {
   _reach() { return this.def.ranged ? this.def.ranged.range : this.def.attackRange; }
 
   respawn() {
+    this.rig._restoreHead?.();   // V10.93 : la tête repousse (option décapitation)
     this.hp = this.maxHp; this._frenzy = false;
     this.state = STATE.PATROL;
     this.pos.copy(this.home);

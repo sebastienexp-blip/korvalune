@@ -31,7 +31,7 @@ export const MAIN_QUESTS = [
   { id: 'laurine_1', name: 'La dernière campagne', level: 145,
     steps: [{ id: 'k', text: 'Tuer 8 traqueurs primordiaux', type: 'kill', target: 'stalker_primordial', need: 8 }, { id: 't', text: 'Retourner voir Laurine', type: 'talk', target: 'laurine' }],
     reward: reward(160, 1.8) },
-  { id: 'laurine_2', name: 'Le Souverain du Néant', level: 190,
-    steps: [{ id: 'k', text: 'Vaincre le Souverain du Néant', type: 'killBoss', target: 'sovereign_void', need: 1 }, { id: 't', text: 'Retourner voir Laurine', type: 'talk', target: 'laurine' }],
+  { id: 'laurine_2', name: 'L’Œil du Néant', level: 190,
+    steps: [{ id: 'k', text: 'Vaincre l’Œil du Néant (boss mondial du Néant Primordial — voir la carte pour son heure)', type: 'killBoss', target: 'wb_eye', need: 1 }, { id: 't', text: 'Retourner voir Laurine', type: 'talk', target: 'laurine' }],
     reward: reward(195, 2.5) }
 ];

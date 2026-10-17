@@ -397,7 +397,7 @@ def _img_bytes(arr, fmt='PNG', quality=90):
 
 class Material:
     def __init__(self, name, base=None, normal=None, orm=None, factor=(1, 1, 1, 1), metal=1.0, rough=1.0,
-                 emissive=(0, 0, 0), emissive_tex=None, normal_scale=1.0, double_sided=False, alpha_mode=None, cutoff=0.5, texkey=None, base_fmt='JPEG'):
+                 emissive=(0, 0, 0), emissive_tex=None, normal_scale=1.0, double_sided=False, alpha_mode=None, cutoff=0.5, texkey=None, base_fmt='JPEG', pack_fmt='PNG'):
         self.__dict__.update(locals())
         self.texkey = texkey or name
 
@@ -459,10 +459,10 @@ def write_glb(path, parts, skeleton, materials, animations=None, extras=None, te
         if m.base is not None:
             pbr['baseColorTexture'] = {'index': add_tex(m.base, m.texkey + '_basecolor', m.base_fmt)}
         if m.orm is not None:
-            pbr['metallicRoughnessTexture'] = {'index': add_tex(m.orm, m.texkey + '_metalrough', 'PNG')}
+            pbr['metallicRoughnessTexture'] = {'index': add_tex(m.orm, m.texkey + '_metalrough', m.pack_fmt)}
             g['occlusionTexture'] = {'index': tex_cache[m.texkey + '_metalrough'], 'strength': 1.0}
         if m.normal is not None:
-            g['normalTexture'] = {'index': add_tex(m.normal, m.texkey + '_normal', 'PNG'), 'scale': m.normal_scale}
+            g['normalTexture'] = {'index': add_tex(m.normal, m.texkey + '_normal', m.pack_fmt), 'scale': m.normal_scale}
         if any(m.emissive):
             g['emissiveFactor'] = list(m.emissive)
         if m.emissive_tex is not None:

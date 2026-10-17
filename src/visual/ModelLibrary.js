@@ -174,6 +174,21 @@ export const ModelLibrary = {
     console.info(`[V3] ${this.characters.length} modèle(s), ${this.clips.size} animation(s) chargés`);
   },
 
+  /** V10.92 — modèles de boss mondiaux (sous-dossier models/wb/) chargés à la demande. */
+  _wbP: {},
+  ensureBossModel(species) {
+    if (!/^wb_[a-z]+$/.test(species || '')) return Promise.resolve(false);
+    if (this.characters.some((c) => c.meta && c.meta.species === species)) return Promise.resolve(true);
+    if (this._wbP[species]) return this._wbP[species];
+    const base = (import.meta.env && import.meta.env.BASE_URL) || '/';
+    const loader = new GLTFLoader();
+    return (this._wbP[species] = loader.loadAsync(`${base}models/wb/${species}.glb`).then((gltf) => {
+      this._register(species + '.glb', gltf);
+      this.ready = this.characters.length > 0;
+      return true;
+    }).catch((e) => { console.warn('[V10.92] modèle de boss indisponible', species, e); delete this._wbP[species]; return false; }));
+  },
+
   nature: {},
   town: {},            // kit « ville » GLB (V10.41 Lot 6) : kind → gltf          // décor statique GLB (V10.41 Lot 5) : kind[_lo] → gltf
   gear: { armor: {}, weapons: {}, mounts: {} },   // mounts[kind] : montures GLB (cheval, griffon)   // pièces d'équipement GLB (V10.41) : armor[skeleton][slot], weapons[visual]
@@ -404,6 +419,7 @@ export function tryCreateGlbRig(kind, opts = {}) {
     const cloneMat = (m) => {
       const c = m.clone();
       if (tint) c.color?.lerp(tint, 0.3);
+      if (c.emissive) c.userData._e0 = c.emissive.clone();   // V10.92 : l'éclat rouge ne doit pas effacer les yeux/braises des boss
       mats.push(c);
       return c;
     };
@@ -523,6 +539,6 @@ export function animateGlbRig(rig, s, dt, kind = 'humanoid') {
   const f = Math.round(rig.hurtT * 10) / 10;
   if (f !== g.flash) {
     g.flash = f;
-    for (const m of rig.mats) if (m.emissive) m.emissive.setRGB(f * 0.9, 0, 0);
+    for (const m of rig.mats) if (m.emissive) { const e0 = m.userData._e0; if (e0) m.emissive.setRGB(Math.min(1, e0.r + f * 0.9), e0.g, e0.b); else m.emissive.setRGB(f * 0.9, 0, 0); }
   }
 }

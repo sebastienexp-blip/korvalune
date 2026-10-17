@@ -17,11 +17,11 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 // délai minimal entre deux déclenchements d'un même événement (ms)
-const MIN_GAP = { hit: 45, swing: 70, click: 30, step: 80, bow: 60, cast: 80, arrowHit: 35, boltHit: 35, enemyAttack: 140, enemyHurt: 90, kill: 100, loot: 120, pickup: 60, land: 120, legendary: 600, absolute: 900, explode: 120, coin: 50, pylon: 200, wings: 250, talk: 150 };
+const MIN_GAP = { hit: 45, swing: 70, click: 30, step: 80, bow: 60, cast: 80, arrowHit: 35, boltHit: 35, enemyAttack: 140, enemyHurt: 90, kill: 100, loot: 120, pickup: 60, land: 120, legendary: 600, absolute: 900, explode: 120, bossCast: 700, achieve: 300, coin: 50, pylon: 200, wings: 250, talk: 150 };
 // nombre maximal de sons identiques en même temps (par fichier de base)
 const MAX_SAME = { step: 2, 'step-grass': 2, 'step-dirt': 2, 'step-stone': 2, 'step-wood': 2, 'step-sand': 2, 'step-snow': 2, 'step-gravel': 2, 'step-mud': 2, 'step-leaves': 2, 'step-water': 2, slash: 3, hack: 3, strike: 3, pierce: 3, 'ui-click': 2 };
 const MAX_VOICES = 40;
-const UI_SOUNDS = new Set(['click', 'open', 'close', 'select', 'confirm', 'quest', 'zone', 'coin', 'equip', 'error', 'denied', 'legendary', 'absolute', 'page', 'trade', 'buy', 'levelup']);
+const UI_SOUNDS = new Set(['click', 'open', 'close', 'select', 'confirm', 'quest', 'zone', 'coin', 'equip', 'error', 'denied', 'legendary', 'absolute', 'page', 'trade', 'buy', 'levelup', 'achieve']);
 const SENDS = { sfx: 0.2, ui: 0.05, ambience: 0.2, music: 0.25 };
 // V10.52 — Garde-fou global : une valeur non finie (NaN, Infinity) donnée à un paramètre audio lève une exception qui arrêtait
 // tout le jeu (« Failed to set the 'value' property on 'AudioParam' »). On l'ignore (une seule alerte en console avec la pile d'appels).

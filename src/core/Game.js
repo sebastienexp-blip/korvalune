@@ -25,7 +25,8 @@ import { Player } from '../player/Player.js';
 import { CameraRig } from '../player/CameraRig.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC } from '../entities/NPC.js';
-import { Boss } from '../entities/Boss.js';
+import { Gore } from '../effects/Gore.js';
+import { WorldBossManager } from '../world/WorldBossManager.js';
 import { LootDrop, warmupLoot } from '../entities/LootDrop.js';
 import { CaravanEvent } from '../world/Caravan.js';
 import { Achievements } from './Achievements.js';
@@ -101,7 +102,6 @@ const DUNGEON_SPAWNS = [
 ];
 const DUNGEON_CHIEF_LEVEL = 24;
 const MAX_ACTIVE_SECONDARY_QUESTS = 6;
-const GUARDIAN_BOSS_LEVEL = 28;
 
 const MAP_ICON_NPCS = new Set(['weaponsmith', 'armorsmith', 'apothecary', 'stablemaster', 'barber', 'jack', 'smith', 'monolith', 'mystic']);
 
@@ -322,6 +322,7 @@ export class Game {
     this.weather = new Weather(this.scene, this.bus, this.audio);
     try { this.atmos = new RegionAtmosphere(this.scene); } catch (e) { console.warn('[V10.72] ambiance de région ignorée', e); this.atmos = null; }
     this.particles = new Particles(this.scene, 700);
+    this.gore = new Gore(this);
     this.enemyProj = new EnemyProjectiles(this.scene, this.bus);
     this.hazards = null; // créé quand le monde existe
     this.particles.factor = this._q.particles * (this.settings.particleScale ?? 100) / 100;
@@ -344,20 +345,8 @@ export class Game {
     this.enemies = [];
     this._generateSpawnPoints();
     this._spawnDungeonGuardians();
-    this.boss = new Boss(this.scene, this.world, this.bus, new THREE.Vector3(0, 0, -150), { id: 'guardian_ruins', level: GUARDIAN_BOSS_LEVEL, name: 'Le Gardien des Ruines' });
-    this.gw.tag(this.boss, 'b:guardian_ruins');
-    this.bosses = [this.boss];
-    const finalTier = tierById(5);
-    if (finalTier.capstoneBoss) {
-      const cPos = new THREE.Vector3(finalTier.center[0], 0, finalTier.center[1]);
-      cPos.y = this.world.heightAt(cPos.x, cPos.z);
-      this.capstoneBoss = new Boss(this.scene, this.world, this.bus, cPos, {
-        id: 'sovereign_void', level: finalTier.capstoneBoss.level, name: finalTier.capstoneBoss.name,
-        scale: 3.2, fur: 0x1a1420, belly: 0x3a2a4a, eye: 0xff8a3a
-      });
-      this.gw.tag(this.capstoneBoss, 'b:sovereign_void');
-      this.bosses.push(this.capstoneBoss);
-    }
+    this.bosses = [];   // V10.92 : les anciens boss sont supprimés — place aux boss mondiaux (un par région, en rotation)
+    this.wb = new WorldBossManager(this);
 
     this.hud.setLoading(0.95, 'Ouverture des portails…');
     this._buildPortals();
@@ -916,14 +905,14 @@ export class Game {
     b.on('playerDeath', () => { try { this.hud.showBossBar(null); } catch (e) { /* ignoré */ } try { wearGear(this._craftCtx(), 'death'); this.hud.notify('Tu perds 10 % de durabilité sur tout ton équipement.', 'warn'); } catch (e) { /* usure facultative */ } });
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
     b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length && this.settings.notifLevel !== false) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } if (this.settings.notifLevel !== false) this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
-    b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || '' }));
+    b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || e.id || '' }));
     b.on('enemyShoot', (d) => { this.enemyProj.spawn(d); this.audio.play(['mage', 'skel_mage'].includes(d.enemy?.def?.species) ? 'cast' : 'bow', d.from); });
     b.on('hazard', (d) => { if (!this.hazards) this.hazards = new GroundHazards(this.scene, this.world, this.bus); this.hazards.spawn(d); });
     b.on('hazardBurst', (d) => { this.audio.play('explode', new THREE.Vector3(d.x, 0, d.z)); if (d.hit && this._mev?.active) this._mev.hit = true; if (d.hit) this.bus.emit('shake', 0.3); });
     b.on('enemyProjectileHit', () => this.audio.play('hurt'));
     b.on('enemyExplode', (e) => this.audio.play('explode', e.pos));
-    b.on('enemyEnrage', (e) => this.audio.play('enrage', { pos: e.pos, kind: e.def?.id || '' }));
-    b.on('enemyHurt', (e) => this.audio.play('enemyHurt', { pos: e.pos, kind: e.def?.id || '' }));
+    b.on('enemyEnrage', (e) => this.audio.play('enrage', { pos: e.pos, kind: e.def?.id || e.id || '' }));
+    b.on('enemyHurt', (e) => this.audio.play('enemyHurt', { pos: e.pos, kind: e.def?.id || e.id || '' }));
     b.on('enemyKilled', (e) => {
       if (this.player.killHealPct && !this.player.dead) this.player.heal(this.player.maxHp * this.player.killHealPct, true); // V10.26 : objets de build
       if (e?.champion) { this.hud.notify(`★ Champion ${e.champion} vaincu !`, 'quest'); this._tut('champion'); }
@@ -960,9 +949,11 @@ export class Game {
       if (gv.coins) this.player.addCoins(gv.coins);
       if (gv.xp) this.player.gainXp(gv.xp);
     });
-    b.on('bossStart', (boss) => this.hud.notify(`⚠ ${boss.name} se réveille !`, 'boss'));
+    b.on('bossStart', (boss) => { this.hud.notify(`⚠ ${boss.name} se réveille !`, 'boss'); this.audio.play('guardian'); });
+    b.on('bossCast', (boss) => this.audio.play('bossCast', boss.pos));
+    b.on('bossEnrage', (boss) => this.audio.play('enrage', { pos: boss.pos, kind: boss.id }));
     b.on('bossHp', (boss) => { if (boss.alive && boss.hp > 0) this.hud.showBossBar(boss); });
-    b.on('bossDefeated', (boss) => { this.hud.notify(`🏆 ${boss.name} est vaincu !`, 'boss'); this.hud.showBossBar(null); });
+    b.on('bossDefeated', (boss) => { this.hud.notify(`🏆 ${boss.name} est vaincu !`, 'boss'); this.hud.showBossBar(null); this.audio.play('bossDeath', boss.pos); });
 
     // ---------- Réseau (multijoueur, chat, groupe) ----------
     b.on('net:status', (s) => this.hud.setNetStatus(s.connected));
@@ -2494,6 +2485,7 @@ export class Game {
       }
       if (rig.landT > 0.97) this.particles.emit(p.pos.x, p.pos.y + 0.1, p.pos.z, { count: 10, color: 0x9a8a68, speed: 2.2, life: 0.6, gravity: 0.5, up: 0.4, spread: 1 });
       this.ambient?.update(performance.now() * 0.001, p.pos.x, p.pos.y, p.pos.z, this.dayNight.night);
+      this.gore?.update(dt);
       if (this.fx) {
         this.fx.update(dt);
         if (!this._q.shadows) {
@@ -2561,7 +2553,8 @@ export class Game {
     const bp = this.world.town?.bankPos; if (bp) out.push({ x: bp.x, z: bp.z, ch: '🏦' });
     out.push({ x: STATUE_POS[0], z: STATUE_POS[1], ch: '🗿', color: '#5ee6d0' });
     for (const c of this.worldChests?.list || []) { if (!c.open && Math.hypot(c.x - pl.x, c.z - pl.z) < 120) out.push({ x: c.x, z: c.z, ch: '📦' }); }
-    for (const b of this.bosses || []) if (b.alive && Math.hypot(b.pos.x - pl.x, b.pos.z - pl.z) < 260) out.push({ x: b.pos.x, z: b.pos.z, ch: '💀', edge: true, color: '#ff6a5a' });
+    { const a = this.wb?.active(); if (a) out.push({ x: a.boss.pos.x, z: a.boss.pos.z, ch: a.boss.def.icon, edge: true, pulse: true, color: '#' + a.boss.def.color.toString(16).padStart(6, '0') }); }
+    for (const m of this._wmMarks || (this._wmMarks = this._loadMarks())) out.push({ x: m.x, z: m.z, ch: '📍', edge: true, color: '#ff5a7a' });
     if (this.lootSprite?.alive) out.push({ x: this.lootSprite.pos.x, z: this.lootSprite.pos.z, ch: '👺', edge: true, pulse: true, color: '#ffd45a' });
     const hw = this.hw;
     if (hw?.on) {
@@ -2731,7 +2724,7 @@ export class Game {
       const dx = e.pos.x - p.x, dz = e.pos.z - p.z;
       if (dx * dx + dz * dz < 576) { fight = true; break; }
     }
-    if (!fight && this.bosses) for (const b of this.bosses) { if (b.alive && b.state !== 'dormant' && b.pos.distanceTo(p) < 40) { fight = true; break; } }
+    if (!fight && this.bosses) for (const b of this.bosses) { if (b.alive && b.state !== 'dormant' && b.engaged !== false && b.pos.distanceTo(p) < 40 + (b.bodyR || 0)) { fight = true; break; } }
     if (fight && !this.player.dead) a.setCombat(true);
     if (this._audEnvT >= 0.5) {
       this._audEnvT = 0;
@@ -2740,7 +2733,7 @@ export class Game {
       const inRift = !!this.rift?.active, inHall = !inRift && Math.hypot(p.x - DUNGEON_CENTER[0], p.z - DUNGEON_CENTER[1]) < 22;
       a.setRoom(inRift || inHall ? 'hall' : 'open');
       // V10.40 : un boss vivant près du joueur (ou le Gardien d'une faille) déclenche la musique de boss
-      const boss = (this.bosses || []).some((b) => b.alive && b.state !== 'dormant' && b.pos.distanceTo(p) < 40) || !!(inRift && this.rift?.guardian?.alive);
+      const boss = (this.bosses || []).some((b) => b.alive && b.state !== 'dormant' && b.engaged !== false && b.pos.distanceTo(p) < 40 + (b.bodyR || 0)) || !!(inRift && this.rift?.guardian?.alive);
       a.setMusicContext({ boss });
       a.stepsOn = this.settings.footsteps !== false;
       if (inRift) a.setEnvironment({ night: 1, town: false, rain: 0, snow: false, fountain: 0, hw: false, rift: true, hall: false, region: 'void' });
@@ -2800,6 +2793,21 @@ export class Game {
       const setZoom = (z) => { wm.zoom = Math.max(1, Math.min(8, z)); if (wm.zoom === 1) { wm.cx = 0; wm.cz = 0; } redraw(); };
       this.root.querySelector('#wm-zin')?.addEventListener('click', () => setZoom(wm.zoom * 1.6));
       this.root.querySelector('#wm-zout')?.addEventListener('click', () => setZoom(wm.zoom / 1.6));
+      const panel = this.root.querySelector('#wm-boss-panel');
+      this.root.querySelector('#wm-boss-btn')?.addEventListener('click', () => { panel.classList.toggle('hidden'); this._renderWbPanel(); });
+      panel?.addEventListener('click', (ev) => {
+        const t = ev.target.closest('button'); if (!t) return;
+        const marks = this._wmMarks || (this._wmMarks = this._loadMarks());
+        if (t.dataset.clear) marks.length = 0;
+        else if (t.dataset.rid) {
+          const e = this.wb.entries().find((x) => x.rid === t.dataset.rid); if (!e) return;
+          const i = marks.findIndex((m) => Math.hypot(m.x - e.x, m.z - e.z) < 12);
+          if (i >= 0) marks.splice(i, 1); else if (marks.length < 20) { marks.push({ x: e.x, z: e.z }); this.hud.notify(`📍 Marqueur posé : ${e.def.name} — suis la piste rose au sol`, 'quest'); }
+        }
+        this._saveMarks(); this.audio.play('select'); this._renderWbPanel(); redraw();
+      });
+      clearInterval(this._wmTimer);
+      this._wmTimer = setInterval(() => { if (this.hud._curScreen === 'worldmap-screen') { this._renderWbPanel(); redraw(); } }, 1000);
       this.root.querySelector('#wm-zme')?.addEventListener('click', () => { if (this.player) { wm.cx = this.player.pos.x; wm.cz = this.player.pos.z; if (wm.zoom < 2.5) wm.zoom = 2.5; redraw(); } });
       c.addEventListener('wheel', (e) => { e.preventDefault(); setZoom(wm.zoom * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
       const pts = new Map(); let lastD = 0;
@@ -2830,13 +2838,26 @@ export class Game {
           const reach = 18 / r.width * size / wm.zoom;
           const near = marks.findIndex((m) => Math.hypot(m.x - wx, m.z - wz) < reach);
           if (near >= 0) marks.splice(near, 1); else if (marks.length < 20) marks.push({ x: Math.round(wx), z: Math.round(wz) });
-          this._saveMarks(); redraw();
+          this._saveMarks(); this.audio.play('select'); redraw();
         }
         tap = null; pts.delete(e.pointerId); lastD = 0;
       };
       c.addEventListener('pointerup', up); c.addEventListener('pointercancel', (e) => { tap = null; pts.delete(e.pointerId); lastD = 0; });
     }
     this._drawWorldMap();
+  }
+
+  _renderWbPanel() {
+    const panel = this.root.querySelector('#wm-boss-panel');
+    if (!panel || panel.classList.contains('hidden') || !this.wb) return;
+    const marks = this._wmMarks || (this._wmMarks = this._loadMarks());
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const rows = this.wb.entries().map((e) => {
+      const on = marks.some((m) => Math.hypot(m.x - e.x, m.z - e.z) < 12);
+      return `<div class="wbr ${e.status}"><b>${e.def.icon} ${esc(e.def.name)}</b><button data-rid="${e.rid}" class="${on ? 'on' : ''}">${on ? 'Retirer 📍' : 'Marquer 📍'}</button><small>${esc(e.region.name)} · niv. ${e.def.level}<br>${esc(e.txt)}</small></div>`;
+    }).join('');
+    const html = `<h3>Boss mondiaux</h3>${rows}<button class="wb-clear" data-clear="1"${marks.length ? '' : ' disabled'}>Effacer mes marqueurs (${marks.length})</button>`;
+    if (html !== this._wbHtml) { this._wbHtml = html; panel.innerHTML = html; }
   }
 
   _loadMarks() { try { const a = JSON.parse(localStorage.getItem('korvalune.wmMarks') || '[]'); return Array.isArray(a) ? a.filter((m) => Number.isFinite(m?.x) && Number.isFinite(m?.z)).slice(0, 20) : []; } catch { return []; } }
@@ -2904,7 +2925,22 @@ export class Game {
     const wmIcon = (wx, wz, ch, ring) => { const x = toX(wx), y = toY(wz); g.fillStyle = 'rgba(8,12,24,0.8)'; g.strokeStyle = ring || 'rgba(226,184,102,0.8)'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 10, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.fillText(ch, x, y + 1); };
     for (const q of this._questSpots()) wmIcon(q.x, q.z, '❗', '#ffd45a');
     for (const c of this.worldChests?.list || []) if (!c.open) wmIcon(c.x, c.z, '📦');
-    for (const b of this.bosses || []) if (b.alive) wmIcon(b.pos.x, b.pos.z, '💀', '#ff6a5a');
+    // V10.92 : boss mondiaux — l'actif en pleine lumière (nom + chrono), les autres atténués
+    for (const e of this.wb?.entries() || []) {
+      const live = e.status === 'live';
+      g.save(); g.globalAlpha = live ? 1 : e.status === 'dead' ? 0.3 : 0.5;
+      const col = '#' + e.def.color.toString(16).padStart(6, '0');
+      const ax = live && this.wb.active() ? this.wb.active().boss.pos : e;
+      wmIcon(ax.x, ax.z, e.def.icon, col);
+      if (live || wm.zoom > 1.8) {
+        const x = toX(ax.x), y = toY(ax.z);
+        g.font = 'bold 11px sans-serif'; g.fillStyle = live ? '#ffe2a8' : '#cfd6e6'; g.strokeStyle = 'rgba(6,10,20,0.95)'; g.lineWidth = 3;
+        g.strokeText(e.def.name, x, y + 21); g.fillText(e.def.name, x, y + 21);
+        g.font = '11px sans-serif'; g.strokeText(e.txt, x, y + 33); g.fillText(e.txt, x, y + 33);
+        g.font = '15px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      }
+      g.restore();
+    }
     if (this.lootSprite?.alive) wmIcon(this.lootSprite.pos.x, this.lootSprite.pos.z, '👺', '#ffd45a');
     if (this.hw?.on && eventActiveNow()) { wmIcon(JACK_POS[0] + 4, JACK_POS[1] - 6, '🎃', '#ff9a3c'); if (this.hw.king?.alive) wmIcon(this.hw.king.pos.x, this.hw.king.pos.z, '👑', '#ff9a3c'); }
     // marqueurs personnels (appui sur la carte)
@@ -3382,11 +3418,12 @@ export class Game {
       if (e.alive && (gwHost && e.netKey ? this.gw.nearestDist(e.pos) ** 2 : this.player.pos.distanceToSquared(e.pos)) > cullDistSq) continue;
       e.update(dt, gwHost ? this.gw.pick(e) : this.player);
     }
+    this.wb?.update(dt);
     let nearestActiveBoss = null;
     for (const b of this.bosses) {
       if (b.alive) b.update(dt, gwHost ? this.gw.pick(b) : this.player);
       if (!b.activated && !b.netProxy && this.gw.activeTargets().some((t) => t.pos.distanceTo(b.home) < 20)) { b.activate(); b.activated = true; }
-      if (b.state !== 'dormant' && b.alive && b.hp > 0 && !this.player.dead) { // V10.67 : barre de boss = le boss actif le plus proche, et seulement s'il est à portée de vue
+      if (b.state !== 'dormant' && b.engaged !== false && b.alive && b.hp > 0 && !this.player.dead) { // V10.67 : barre de boss = le boss actif le plus proche, et seulement s'il est à portée de vue
         const d2b = b.pos.distanceToSquared(this.player.pos);
         if (d2b < 110 * 110 && (!nearestActiveBoss || d2b < nearestActiveBoss._d2)) { nearestActiveBoss = b; b._d2 = d2b; }
       }
@@ -3499,7 +3536,16 @@ export class Game {
 
     // V10.33 : GPS au sol vers l'objectif de quête le plus proche
     if (!this._gps) this._gps = new GroundGPS(this.scene, this.world);
-    this._gps.update(dt, this.player, inRift ? null : this._questSpots(), this.settings.groundGps !== false && !inRift);
+    { // V10.92 : les marqueurs posés sur la carte (📍) passent en priorité : la piste devient rose et mène au plus proche
+      const marks = inRift ? [] : (this._wmMarks || (this._wmMarks = this._loadMarks()));
+      const spots = marks.length ? marks : (inRift ? null : this._questSpots());
+      this._gps.setColor(marks.length ? 0xff5a7a : 0xffd45a);
+      const dGps = this._gps.update(dt, this.player, spots, this.settings.groundGps !== false && !inRift);
+      if (marks.length && !this.player.dead) {
+        const pp = this.player.pos, i = marks.findIndex((m) => Math.hypot(m.x - pp.x, m.z - pp.z) < 8);
+        if (i >= 0) { marks.splice(i, 1); this._saveMarks(); this.hud.notify('📍 Marqueur atteint', 'quest'); this.audio.play('confirm'); }
+      }
+    }
 
     // vue aérienne : la caméra est loin du joueur → on repousse le brouillard d'autant (rendu uniquement)
     const fog = this.scene.fog, fogOff = this.cameraRig.isIso ? Math.max(0, this.cameraRig.dist - 6) : 0;

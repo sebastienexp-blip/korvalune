@@ -4,8 +4,6 @@ import { scaledEnemyStats } from '../data/difficulty.js';
 import { tickStatus, vulnMult } from '../combat/Status.js';
 import { share } from '../network/NetShare.js';
 
-const BOSS_SPECIES = { guardian_ruins: 'gardien', spire_warden: 'gardien', sovereign_void: 'seigneur' };
-const BOSS_SPECIES_SET = new Set(Object.values(BOSS_SPECIES));
 
 // Boss à phases multiples. Les statistiques (PV/dégâts/défense/XP/or) sont
 // calculées à partir du niveau via computeEnemyStats (espèce "boss" : très
@@ -33,9 +31,7 @@ export class Boss {
     this.yaw = 0;
     this.alive = true;
     const scale = opts.scale || 2.6;
-    this.rig = createCreature({ fur: opts.fur ?? 0x3a3f46, belly: opts.belly ?? 0x8f97a3, eye: opts.eye ?? 0xff3a3a, scale, bodyLen: 1.3, snout: 0.45, tusks: true, role: 'boss:' + (opts.id || 'boss'), species: BOSS_SPECIES[opts.id] || 'bear', tint: opts.fur ?? null });
-    // modèles GLB de boss (humanoïdes massifs, livrés comme « créature ») : normalisés à 1 m, on les agrandit à taille de boss
-    if (this.rig.glb && this.rig.glb.entry.meta && BOSS_SPECIES_SET.has(this.rig.glb.entry.meta.species)) this.rig.root.scale.multiplyScalar(1.7);
+    this.rig = createCreature({ fur: opts.fur ?? 0x3a3f46, belly: opts.belly ?? 0x8f97a3, eye: opts.eye ?? 0xff3a3a, scale, bodyLen: 1.3, snout: 0.45, tusks: true, role: 'boss:' + (opts.id || 'boss'), species: opts.species || 'bear', tint: opts.species ? null : (opts.fur ?? null) });
     this.rig.root.position.copy(this.pos);
     scene.add(this.rig.root);
     this.rig.root.visible = false;
@@ -62,7 +58,7 @@ export class Boss {
       return final;
     }
     this.hp = Math.max(0, this.hp - final);
-    if (!dot) this.rig.hurtT = 1;
+    if (!dot) { this.rig.hurtT = 1; this.bus.emit('enemyHurt', this); }
     this.bus.emit('bossHp', this);
     this.bus.emit('floatText', { pos: this.pos.clone().add({ x: 0, y: 2.6, z: 0 }), text: crit ? `CRIT ${final}` : `${final}`, color: crit ? '#ffd23f' : '#ffffff', big: true });
     const ratio = this.hp / this.maxHp;
@@ -76,6 +72,7 @@ export class Boss {
     this.phase = p;
     this.bus.emit('floatText', { pos: this.pos.clone().add({ x: 0, y: 3.4, z: 0 }), text: p === 1 ? 'INVOCATION !' : 'FUREUR !', color: '#ff8a3a', big: true });
     this.bus.emit('particles', { pos: this.pos.clone().add({ x: 0, y: 1, z: 0 }), color: 0xff5a2a, count: 70, speed: 6, life: 1 });
+    this.bus.emit('bossEnrage', this);
     if (p === 1) this.bus.emit('bossSummon', this);
   }
 
@@ -87,7 +84,7 @@ export class Boss {
     const near = share.role === 'solo' || !this.netKey || this.id === 'spire_warden' || !lp?.pos || lp.pos.distanceTo(this.pos) < share.range;
     this.bus.emit('bossDefeated', this);
     // V10.67 : le corps du boss disparaît peu après sa mort (le temps de voir l'explosion et le butin tomber)
-    setTimeout(() => { try { this.rig.root.visible = false; } catch (e) { /* ignoré */ } }, 1800);
+    setTimeout(() => { try { this.rig.root.visible = false; } catch (e) { /* ignoré */ } }, this.deathHideMs || 1800);
     if (near) {
       this.bus.emit('bossKilled', this.id);
       this.bus.emit('loot', this);
@@ -172,7 +169,7 @@ export class Boss {
       this.speed = 0;
       if (this.attackCd <= 0) {
         this.attackCd = this.phase >= 2 ? 1.6 : 2.4;
-        this.action = 'attack'; this.actionT = 0; this.actionDur = 0.6;
+        this.action = 'attack'; this.actionT = 0; this.actionDur = 0.6; this.bus.emit('enemyAttack', this);
         this._pendingHit = true;
         if (this.phase >= 2 && Math.random() < 0.5) {
           this.bus.emit('particles', { pos: this.pos.clone(), color: 0xff3a3a, count: 40, speed: 5, life: 0.7 });

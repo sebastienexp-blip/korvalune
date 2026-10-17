@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ModelLibrary } from '../visual/ModelLibrary.js';
 import { clamp } from '../core/math.js';
 import enemiesData from '../data/enemies.json';
 import { Enemy } from '../entities/Enemy.js';
@@ -17,6 +18,7 @@ import {
   KEY_PRICE, CRAFT_ZKEY_COST, GAMBLE, RIFT_MAX_LEVEL, riftLootShift
 } from './RiftData.js';
 import { RiftUI } from '../ui/RiftUI.js';
+const GUARDIAN_MODEL = { 1: 'wb_scarecrow', 22: 'wb_cathedral', 60: 'wb_seraph', 100: 'wb_ember', 145: 'wb_eye' };
 
 const ACTIVATE_DIST = 50, DEACTIVATE_DIST = 82;
 const MAX_ACTIVE = { verylow: 14, low: 18, medium: 24, high: 30, ultra: 36 };
@@ -208,6 +210,7 @@ export class RiftSystem {
     this.pending = null; this.data.open = null;
     this.statue.setPortalOpen(false);
     const mode = MODES[p.modeId], theme = themeFor(p.level);
+    ModelLibrary.ensureBossModel(GUARDIAN_MODEL[theme.from]);   // V10.92 : précharge le modèle du gardien
     const worldIdx = Math.max(0, RIFT_THEMES.indexOf(theme));
     const layout = generateLayout(p.seed, mode.id === 'ascent' ? 18 : mode.id === 'zenith' ? 15 : 12, worldIdx);
     const built = buildRiftWorld(g.world, layout, theme);
@@ -723,7 +726,15 @@ export class RiftSystem {
   // Invité d'un groupe : le Gardien apparaît quand l'hôte de la spire l'annonce
   onNetGuardian(name) { if (this.active && this.run && !this.run.guardianSpawned) this._spawnGuardian(name); }
 
+  // V10.92 : les gardiens de spire empruntent le modèle d'un boss mondial (selon le thème), chargé à la demande
   _spawnGuardian(forcedName) {
+    const run = this.run, sp = GUARDIAN_MODEL[run.theme.from];
+    run.guardianSpawned = true;
+    if (!sp || ModelLibrary.characters.some((c) => c.meta && c.meta.species === sp)) { this._spawnGuardianNow(forcedName); return; }
+    ModelLibrary.ensureBossModel(sp).then(() => { if (this.run === run && this.active && !run.done) this._spawnGuardianNow(forcedName); });
+  }
+
+  _spawnGuardianNow(forcedName) {
     const g = this.g, run = this.run, th = run.theme;
     run.guardianSpawned = true;
     // V10.37 : le Gardien apparaît toujours à une dizaine de mètres du joueur (jamais sur lui)
@@ -739,7 +750,7 @@ export class RiftSystem {
     }
     if (!pos) pos = new THREE.Vector3(pp.x + 10, 0, pp.z);
     const name = forcedName || pick(GUARDIAN_NAMES);
-    const boss = new Boss(g.scene, g.world, g.bus, pos, { id: 'spire_warden', level: run.level, name: `${name} · Nv.${run.level}`, scale: 3.0, fur: th.wall, belly: th.color, eye: th.color });
+    const boss = new Boss(g.scene, g.world, g.bus, pos, { id: 'spire_warden', level: run.level, name: `${name} · Nv.${run.level}`, scale: GUARDIAN_MODEL[th.from] ? 7 : 3.0, species: GUARDIAN_MODEL[th.from], fur: th.wall, belly: th.color, eye: th.color });
     boss.maxHp = Math.round(boss.maxHp * run.mults.hp * 1.1); boss.hp = boss.maxHp;
     boss.damage = Math.round(boss.damage * run.mults.dmg);
     boss.xp = Math.round(boss.xp * run.mults.xp);

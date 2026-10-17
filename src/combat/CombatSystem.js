@@ -38,7 +38,7 @@ export class CombatSystem {
     // portée, les compétences ciblées (non AoE) la touchent automatiquement,
     // sans exiger que le joueur soit précisément tourné vers elle avec la
     // caméra — c'est ce qui rend le combat jouable sans viser au pixel près.
-    const lockedTarget = (!skill.aoe && p.target && p.target.alive && p.pos.distanceTo(p.target.pos) <= skill.range + 1.1) ? p.target : null;
+    const lockedTarget = (!skill.aoe && p.target && p.target.alive && p.pos.distanceTo(p.target.pos) <= skill.range + 1.1 + (p.target.bodyR || 0)) ? p.target : null;
     if (lockedTarget) targets.push(lockedTarget);
 
     const kind = projectileKind(weaponFamily(p._equipRef));
@@ -47,7 +47,7 @@ export class CombatSystem {
       if (e === lockedTarget) return;
       const to = pos.clone().sub(origin); to.y = 0;
       const d = to.length();
-      if (d > skill.range + 1.1) return;
+      if (d > skill.range + 1.1 + (e.bodyR || 0)) return;
       if (!skill.aoe) {
         const angle = Math.abs(Math.atan2(to.x, to.z) - p.yaw);
         const wrapped = Math.min(angle, Math.PI * 2 - angle);

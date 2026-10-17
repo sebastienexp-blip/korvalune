@@ -154,7 +154,7 @@ export class HUD {
           </div>
           <button id="mm-news" class="news-card" data-act="patch" aria-label="Voir les nouveautés"><span class="news-badge" id="news-badge">Nouveau</span><b>Nouveautés · V${LATEST_VERSION}</b><small>${PATCH_NOTES[0].title}</small></button>
           <div class="menu-hint">Jouable au clavier et à la souris, ou au tactile.</div>
-          <div class="menu-hint" id="build-version">Version V10.91 — Korvalune</div>
+          <div class="menu-hint" id="build-version">Version V10.92 — Korvalune</div>
         </div>
       </div>
 
@@ -558,8 +558,8 @@ export class HUD {
 
       <div id="worldmap-screen" class="hidden panel-screen">
         <h2>Carte du monde</h2>
-        <div id="worldmap-canvas-wrap"><canvas id="worldmap-canvas" width="640" height="640"></canvas><div id="wm-zoom"><button id="wm-zin" aria-label="Zoom avant">+</button><button id="wm-zout" aria-label="Zoom arrière">−</button><button id="wm-zme" aria-label="Centrer sur moi">◎</button></div></div>
-        <div id="worldmap-legend"><span>📍 Appui sur la carte : poser / retirer un marqueur</span><span>⚔️ Armes</span><span>🛡️ Armures</span><span>🧪 Potions</span><span>🐎 Écurie</span><span>✂️ Barbier</span><span>🏦 Banque</span><span>🗿 Spires</span><span>🎃 Événement</span><span>🍬 Bonbons</span><span>📦 Coffre</span><span>💀 Boss</span><span>👺 Gobelin</span><span>👑 Roi Citrouille</span><span>◆ PNJ de quêtes</span><span>❗ Quête</span><span>🟢 Groupe</span><span>🔵 Joueurs</span></div>
+        <div id="worldmap-canvas-wrap"><canvas id="worldmap-canvas" width="640" height="640"></canvas><div id="wm-zoom"><button id="wm-zin" aria-label="Zoom avant">+</button><button id="wm-zout" aria-label="Zoom arrière">−</button><button id="wm-zme" aria-label="Centrer sur moi">◎</button><button id="wm-boss-btn" aria-label="Boss mondiaux" title="Boss mondiaux">👹</button></div><div id="wm-boss-panel" class="hidden"></div></div>
+        <div id="worldmap-legend"><span>📍 Appui sur la carte : poser / retirer un marqueur</span><span>⚔️ Armes</span><span>🛡️ Armures</span><span>🧪 Potions</span><span>🐎 Écurie</span><span>✂️ Barbier</span><span>🏦 Banque</span><span>🗿 Spires</span><span>🎃 Événement</span><span>🍬 Bonbons</span><span>📦 Coffre</span><span>👹 Boss mondiaux (bouton en bas à droite : liste, marqueur, GPS)</span><span>👺 Gobelin</span><span>👑 Roi Citrouille</span><span>◆ PNJ de quêtes</span><span>❗ Quête</span><span>🟢 Groupe</span><span>🔵 Joueurs</span></div>
         <button data-act="close-map">Fermer</button>
       </div>
 

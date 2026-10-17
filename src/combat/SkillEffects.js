@@ -54,17 +54,17 @@ export class SkillEffects {
     if (f.at === 'target') {
       const ctr = this.center(skill, p, locked);
       const r = (f.radius || 4) + 0.6;
-      for (const e of live) if (Math.hypot(e.pos.x - ctr.x, e.pos.z - ctr.z) <= r) out.push(e);
+      for (const e of live) if (Math.hypot(e.pos.x - ctr.x, e.pos.z - ctr.z) <= r + (e.bodyR || 0)) out.push(e);
       if (locked && !out.includes(locked)) out.unshift(locked);
       out.sort((a, b) => (a === locked ? -1 : b === locked ? 1 : 0));
     } else if (skill.aoe) {
-      for (const e of live) if (Math.hypot(e.pos.x - ox, e.pos.z - oz) <= rangeOk) out.push(e);
+      for (const e of live) if (Math.hypot(e.pos.x - ox, e.pos.z - oz) <= rangeOk + (e.bodyR || 0)) out.push(e);
     } else {
       const half = (f.arc || Math.PI * 0.95) / 2;
       for (const e of live) {
         if (e === locked) continue;
         const dx = e.pos.x - ox, dz = e.pos.z - oz, d = Math.hypot(dx, dz);
-        if (d > rangeOk) continue;
+        if (d > rangeOk + (e.bodyR || 0)) continue;
         const a = Math.abs(((Math.atan2(dx, dz) - p.yaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
         if (a > half) continue;
         out.push(e);

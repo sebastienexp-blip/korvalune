@@ -42,7 +42,7 @@ export class Achievements {
       const g = this.game, p = g.player;
       if (p) { p.gainXp(a.reward.xp); p.addCoins(a.reward.coins); }
       g.hud?.notify(`🏆 Succès : ${a.icon} ${a.name} (+${a.reward.xp} XP, +${a.reward.coins} 🪙)`, 'quest');
-      g.audio?.play('quest');
+      g.audio?.play('achieve');
     }
     if (changed) this._save();
   }

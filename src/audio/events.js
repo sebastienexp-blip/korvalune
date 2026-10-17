@@ -29,7 +29,11 @@ export const EVENTS = {
   kill: (o) => isHumanoid(o.kind) ? humanoidDeath(o.kind) : isUndeadVoice(o.kind) ? undeadDeath(o.kind) : [...creature(o.kind, 'death', 1), L(creatureSize(o.kind) > 1 ? 'death-thud-big' : 'death-thud-small', 0.7, [0.95, 1.05], 0.35)],
   // --- soins, progression, butin
   heal: () => [L(['cast-healing-mid', 'cure'], 0.9)],
-  levelup: () => [],   // V10.45 : plus de fanfare de niveau (la bannière reste)
+  levelup: () => [L('level-up', 0.16, [1.0, 1.04])],   // V10.93 : un petit carillon très discret (niveau, zénith)
+  achieve: () => [L('quest-done', 0.4, [1, 1])],   // V10.93 : succès — plus doux que la fin de quête
+  bossDeath: () => [L('dragon-death', 0.95, [0.8, 0.9]), L('death-thud-big', 0.9, [0.85, 0.95], 0.35), L('church-bell', 0.35, [0.85, 0.9], 0.9)],
+  gore: () => [L('slash', 0.9, [0.75, 0.85]), L('crush', 0.55, [1.1, 1.3], 0.03), L('hit-leather', 0.5, [0.7, 0.8], 0.06)],
+  bossCast: () => [L('dragon-breath', 0.55, [0.7, 0.85]), L('spell-circle', 0.4, [0.8, 0.9], 0.05)],
   quest: () => [L('quest-done', 1, [1, 1])],
   legendary: () => [L('summon', 0.9, [1, 1]), L('church-bell', 0.6, [1, 1], 0.4)],
   absolute: () => [L('summon', 1, [0.85, 0.9]), L('light-spell', 0.9, [1, 1], 0.15), L('church-bell', 0.8, [0.85, 0.9], 0.5), L('dragon-call', 0.35, [0.9, 1], 0.9)],
@@ -78,7 +82,7 @@ const SPECIES = {
   boar: 'boar', wolf: 'wolf', alpha: 'wolf', bear: 'bear', skitter: 'rat', troll: 'troll', brute: 'troll',
   golem: 'troll', golem_colossus: 'troll', bandit: 'human-rough', elite: 'human-rough', zealot: 'human', mage: 'human', archer: 'human', guard: 'human', goblin: 'goblin'
 };
-const BIG = /behemoth|colossus|sovereign|harbinger|troll|bear|brute|alpha|werewolf|warden|golem/;
+const BIG = /behemoth|colossus|sovereign|harbinger|troll|bear|brute|alpha|werewolf|warden|golem|wb_/;
 let speciesOf = () => null; // branché par AudioManager (id de monstre → espèce)
 export function setSpeciesResolver(fn) { speciesOf = fn; }
 
@@ -86,7 +90,7 @@ export function creatureFamily(kind) {
   const id = String(kind || '');
   if (/wraith|ghost|specter|shade/.test(id)) return 'ghost';
   if (/skeleton|revenant/.test(id)) return 'skeleton';
-  if (/spire_warden|dragon|sovereign|harbinger/.test(id)) return 'dragon';
+  if (/spire_warden|wb_|dragon|sovereign|harbinger/.test(id)) return 'dragon';
   if (/werewolf/.test(id)) return 'wolf';
   if (/loot_sprite|hw_pumpkin$/.test(id)) return 'goblin';
   if (/behemoth|colossus|pumpkin_king/.test(id)) return 'troll';
