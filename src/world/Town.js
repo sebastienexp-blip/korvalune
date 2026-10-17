@@ -496,7 +496,7 @@ function buildCityLayout(world, g, T, stone, wood, add) {
   const conform = (geo, x, z, color) => {
     geo.rotateX(-Math.PI / 2);
     const P = geo.attributes.position, U = geo.attributes.uv;
-    const lift = 0.05 + slabLayer * 0.003;
+    const lift = 0.012 + slabLayer * 0.0004;
     for (let i = 0; i < P.count; i++) {
       const lx = P.getX(i), lz = P.getZ(i);
       P.setY(i, world.heightAt(x + lx, z + lz) + lift);

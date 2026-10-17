@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.86', title: 'Un vrai ours, des pieds au sol',
+    items: [
+      '🐻 L’ours des forêts est entièrement remodelé : carcasse massive, bosse d’épaules, pattes épaisses, oreilles rondes, longues griffes. Fini le loup déformé aux proportions bizarres.',
+      '🦶 Les personnages ne s’enfoncent plus dans les dalles de la ville : le dallage est posé à la bonne hauteur, au ras du sol.'
+    ]
+  },
+  {
     version: '10.85', title: 'Acte I : une vraie histoire',
     items: [
       '📖 L’acte I passe de 3 à 9 quêtes, reliées par une intrigue : une patrouille disparue, des cristaux noirs qui chantent, des lettres signées « O. », le cabinet d’un archiviste exilé, une attaque sur la porte sud, puis le Gardien corrompu.',

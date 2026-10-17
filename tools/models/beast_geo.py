@@ -109,13 +109,19 @@ def horns_alpha():
 # ------------------------------------------------------------------------------------------------ variantes
 V = {
   'boar':  dict(drop=HEAD_PARTS + r'|^criniere$|^epines$', scale=(1.12, 1.0, 0.92), leg=(0.58, 0.95, 1.5), head=head_boar, bristle=True, tail=0.6, eye=(1.0, 0.35, 0.1), fur=(1.9, 1.35, 0.9)),
-  'bear':  dict(drop=HEAD_PARTS + r'|^criniere$|^epines$', scale=(1.38, 1.0, 1.05), leg=(0.70, 1.12, 1.55), head=head_bear, hump=True, tail=0.35, eye=(0.9, 0.4, 0.1), fur=(1.55, 1.1, 0.8)),
+  'bear':  dict(custom=True, eye=(0.9, 0.4, 0.1), fur=(1.55, 1.1, 0.8)),
   'skitter': dict(drop=HEAD_PARTS + r'|^criniere$|^epines$', scale=(0.62, 1.0, 0.95), leg=(0.50, 0.85, 1.0), head=head_rat, tail=1.9, eye=(1.0, 0.1, 0.1), fur=(1.5, 1.25, 1.05)),
   'alpha': dict(drop=r'^$', scale=(1.12, 1.12, 1.12), extra=horns_alpha, tail=1.0, eye=(1.0, 0.1, 0.05), fur=(0.55, 0.55, 0.62)),
 }
 
 def build(name):
     v = V[name]
+    if v.get('custom'):                                         # modèle dédié (pas de déformation du loup)
+        import bear_geo
+        parts = bear_geo.build(); SK = bear_geo.skeleton()
+        body = [m for n, m, _ in parts if not n.startswith('queue')]
+        ymax = max(float(m.V[:, 1].max()) for m in body); zmax = max(float(m.V[:, 2].max()) for m in body); zmin = min(float(m.V[:, 2].min()) for m in body)
+        return parts, SK, dict(scale=np.array([1.0, 1.0, 1.0]), eye=v['eye'], fur=v['fur'], tail=1.0, refHeight=round(max(ymax, (zmax - zmin) * 0.6), 3))
     parts = []
     for n, m, mat in G.parts:
         if re.match(v['drop'], n): continue
