@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.89', title: 'Ennemis humanoïdes plus détaillés',
+    items: [
+      '🛡️ Bandits, brutes, zélotes, mages, archers, trolls, gobelins et élites gagnent de l’équipement visible : épaulières, brassards, jambières et bottes en cuir, colliers et plastrons d’acier, médaillons, pointes d’os.',
+      '🎨 Matières retravaillées (cuir, acier, tissu) pour que chaque type d’ennemi se reconnaisse au premier regard.'
+    ]
+  },
+  {
     version: '10.88', title: 'Golem : pierre fissurée et cristaux',
     items: [
       '🪨 Le Golem de cristal (et sa version colossale de 10 mètres) reçoit sa vraie matière : roche noire fracturée en facettes avec relief, veines violettes lumineuses dans les fissures.',

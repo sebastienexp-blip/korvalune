@@ -64,5 +64,6 @@ if __name__ == '__main__':
     td = os.path.join(out, 'tex'); vt = os.path.join(os.path.dirname(os.path.normpath(out)), 'veilleur', 'tex')
     for f in os.listdir(td):
         if f.startswith(('steel_', 'leather_', 'cloth_', 'trim_')):
-            assert open(os.path.join(td, f), 'rb').read() == open(os.path.join(vt, f), 'rb').read(), 'texture différente : ' + f
-            os.remove(os.path.join(td, f))
+            if os.path.exists(os.path.join(vt, f)):
+                assert open(os.path.join(td, f), 'rb').read() == open(os.path.join(vt, f), 'rb').read(), 'texture différente : ' + f
+                os.remove(os.path.join(td, f))
