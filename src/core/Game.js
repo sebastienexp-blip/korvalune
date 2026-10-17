@@ -531,8 +531,8 @@ export class Game {
     // Prairies / Forêt / Montagnes : faune de base ; les autres régions : leur propre famille de monstres (+ élites).
     const baseSpecies = {
       prairie: ['wolf', 'wolf', 'boar', 'boar', 'bandit', 'bandit', 'rat_giant', 'bandit_archer', 'wolf_alpha'],
-      forest: ['wolf', 'wolf', 'bear', 'bear', 'rat_giant', 'zealot', 'zealot', 'cultist_mage', 'wolf_alpha', 'bandit'],
-      mount: ['troll', 'troll', 'brute', 'brute', 'shield_guard', 'bear', 'bandit_archer', 'zealot', 'cultist_mage']
+      forest: ['wolf', 'wolf', 'bear', 'bear', 'rat_giant', 'zealot', 'zealot', 'cultist_mage', 'wolf_alpha', 'bandit', 'crystal_golem', 'crystal_golem'],
+      mount: ['troll', 'troll', 'brute', 'brute', 'shield_guard', 'bear', 'bandit_archer', 'zealot', 'cultist_mage', 'crystal_golem']
     };
     const TARGET = { prairie: 190, forest: 120, mount: 100, desert: 100, swamp: 90, tundra: 100, corrupt: 100, celeste: 90, abyss: 90, void: 100 };
     const cand = {};
@@ -566,7 +566,10 @@ export class Game {
         let speciesKey;
         if (tier.species) speciesKey = rand() < 0.07 ? tier.elite : tier.species[Math.floor(rand() * tier.species.length)];
         else { const pool = baseSpecies[reg.id]; speciesKey = pool[Math.floor(rand() * pool.length)]; }
-        this.spawnPoints.push({ id: sid++, pos: new THREE.Vector3(p.x, 0, p.z), speciesKey, level, active: false, enemyRef: null });
+        // V10.87 : le Golem de cristal colossal (10 m) : très rare (≈ 1,5 %), forêt et montagnes, niveau maximal de la région
+        let lv = level;
+        if ((reg.id === 'forest' || reg.id === 'mount') && ((Math.imul(sid + 7, 2246822519) >>> 0) % 1000) < 15) { speciesKey = 'crystal_golem_colossus'; lv = hi; }
+        this.spawnPoints.push({ id: sid++, pos: new THREE.Vector3(p.x, 0, p.z), speciesKey, level: lv, active: false, enemyRef: null });
       }
     }
 
@@ -627,7 +630,7 @@ export class Game {
       let def = enemiesData[sp.speciesKey], champ = null;
       // V4.6 : ~6 % des monstres sont des champions (déterministe par point d'apparition)
       const hsh = (Math.imul(sp.id + 1, 2654435761) >>> 0) % 1000;
-      if (hsh < 60 && !['elite', 'goblin'].includes(def.species)) {
+      if (hsh < 60 && !['elite', 'goblin', 'golem_colossus'].includes(def.species)) {
         champ = ['Rapide', 'Colossal', 'Vampirique', 'Blindé'][hsh % 4];
         def = { ...def, itemDropChance: Math.min(0.95, (def.itemDropChance || 0.3) * 2.5), ...(champ === 'Rapide' ? { speed: def.speed * 1.35, attackCd: def.attackCd * 0.8 } : {}), ...(champ === 'Blindé' ? { trait: 'armored' } : {}) };
       }

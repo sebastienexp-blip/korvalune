@@ -76,9 +76,9 @@ export const EVENTS = {
 // espèce (champ « species » de enemies.json) → famille de fichiers (loup-call, bear-attack…)
 const SPECIES = {
   boar: 'boar', wolf: 'wolf', alpha: 'wolf', bear: 'bear', skitter: 'rat', troll: 'troll', brute: 'troll',
-  bandit: 'human-rough', elite: 'human-rough', zealot: 'human', mage: 'human', archer: 'human', guard: 'human', goblin: 'goblin'
+  golem: 'troll', golem_colossus: 'troll', bandit: 'human-rough', elite: 'human-rough', zealot: 'human', mage: 'human', archer: 'human', guard: 'human', goblin: 'goblin'
 };
-const BIG = /behemoth|colossus|sovereign|harbinger|troll|bear|brute|alpha|werewolf|warden/;
+const BIG = /behemoth|colossus|sovereign|harbinger|troll|bear|brute|alpha|werewolf|warden|golem/;
 let speciesOf = () => null; // branché par AudioManager (id de monstre → espèce)
 export function setSpeciesResolver(fn) { speciesOf = fn; }
 

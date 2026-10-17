@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.87', title: 'Golem de cristal et bestiaire remodelé',
+    items: [
+      '💎 Nouveau monstre : le Golem de cristal (niveau 10), une armure de roche sombre couronnée de cristaux violets lumineux. Il hante la Forêt des Ombres et les Montagnes de Fer, résiste aux coups (dégâts réduits) et marche, frappe et s’effondre comme les autres monstres.',
+      '🗿 Sa version colossale de 10 mètres existe aussi : très rare, au niveau maximal de la région, avec beaucoup de points de vie et un butin quasi garanti.',
+      '🐗 Le sanglier et le rat géant sont remodelés, comme l’ours à la version précédente : chacun a maintenant ses propres proportions, sa tête, ses oreilles et sa queue.'
+    ]
+  },
+  {
     version: '10.86', title: 'Un vrai ours, des pieds au sol',
     items: [
       '🐻 L’ours des forêts est entièrement remodelé : carcasse massive, bosse d’épaules, pattes épaisses, oreilles rondes, longues griffes. Fini le loup déformé aux proportions bizarres.',

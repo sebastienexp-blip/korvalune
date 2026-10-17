@@ -111,13 +111,13 @@ def kilt():
 
 # ------------------------------------------------------------------------------------------------ variantes
 V = {
-  'bandit':  dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=0.98, jaw=.6, brow=.45, nose=.6, eye=True, hood=True, base_cloth='linen'), skin=(0.46, 0.30, 0.22), weapon=('dagger', 'R'), scale=(1, 1, 1)),
+  'bandit':  dict(keep=r'^(ceinture|boucle|epaule_cap|brassard[01]|bracelet|jambiere|botte_revers|gorgerin0|lame[01])(_R)?$', mat_map=[(r'^(epaule_cap|brassard|bracelet|jambiere|botte_revers|gorgerin|lame)', 'leather'), (r'^boucle', 'trim')], head=dict(w=0.98, jaw=.6, brow=.45, nose=.6, eye=True, hood=True, base_cloth='linen'), skin=(0.46, 0.30, 0.22), weapon=('dagger', 'R'), scale=(1, 1, 1)),
   'elite':   dict(keep=ELITE, head=None, skin=(0.46, 0.30, 0.22), weapon=('sword', 'R'), shield=True, scale=(1.04, 1, 1.04), decimate=0.07),
-  'zealot':  dict(keep=r'^cape$', head=dict(w=0.95, jaw=.35, brow=.2, nose=.5, hood=True, eye=True), skin=(0.52, 0.42, 0.36), weapon=('sword', 'R'), robe=True, scale=(1, 1, 1)),
-  'mage':    dict(keep=r'^cape$', head=dict(w=0.92, h=1.04, jaw=.2, brow=.15, nose=.45, hood=True, eye=True), skin=(0.50, 0.40, 0.36), weapon=('staff', 'R'), off=('orb', 'L'), robe=True, scale=(0.98, 1.03, 0.98)),
-  'archer':  dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=0.94, jaw=.4, brow=.25, nose=.55, eye=True, hood=True, base_cloth='linen'), skin=(0.46, 0.30, 0.22), weapon=('bow', 'L'), quiver=True, scale=(0.96, 1.01, 0.96)),
-  'brute':   dict(keep=r'^(ceinture|boucle|epaule0|epaule_cap)(_R)?$', head=dict(w=1.12, h=0.95, d=1.1, jaw=.95, brow=.95, nose=.4, tusk=0.7, ears=0.15, k=0.95), skin=(0.40, 0.25, 0.18), weapon=('club', 'R', 1.0), scale=(1.30, 0.98, 1.22), warty=0.4),
-  'troll':   dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.05, h=0.9, d=1.1, jaw=1.0, brow=1.0, nose=.8, tusk=1.3, ears=0.35, ear_pt=-0.3, eye=True, k=0.9), skin=(0.22, 0.27, 0.19), weapon=('club', 'R', 1.4), scale=(1.45, 1.0, 1.35), warty=1.0),
+  'zealot':  dict(keep=r'^(cape|medaillon|gorgerin[01]|epaule0|epaule_ornement|bracelet|cubitiere)(_R)?$', mat_map=[(r'^(gorgerin|epaule0|cubitiere)', 'steel'), (r'^(medaillon|epaule_ornement|bracelet)', 'trim')], head=dict(w=0.95, jaw=.35, brow=.2, nose=.5, hood=True, eye=True), skin=(0.52, 0.42, 0.36), weapon=('sword', 'R'), robe=True, scale=(1, 1, 1)),
+  'mage':    dict(keep=r'^(cape|medaillon|gorgerin0|epaule_ornement|bracelet)(_R)?$', mat_map=[(r'^(medaillon|epaule_ornement|bracelet)', 'trim'), (r'^gorgerin', 'cloth')], head=dict(w=0.92, h=1.04, jaw=.2, brow=.15, nose=.45, hood=True, eye=True), skin=(0.50, 0.40, 0.36), weapon=('staff', 'R'), off=('orb', 'L'), robe=True, scale=(0.98, 1.03, 0.98)),
+  'archer':  dict(keep=r'^(ceinture|boucle|epaule_cap|brassard[012]|bracelet|jambiere|botte_revers|gorgerin0)(_R)?$', mat_map=[(r'^(epaule_cap|brassard|bracelet|jambiere|botte_revers|gorgerin)', 'leather'), (r'^boucle', 'trim')], head=dict(w=0.94, jaw=.4, brow=.25, nose=.55, eye=True, hood=True, base_cloth='linen'), skin=(0.46, 0.30, 0.22), weapon=('bow', 'L'), quiver=True, scale=(0.96, 1.01, 0.96)),
+  'brute':   dict(keep=r'^(ceinture|boucle|epaule0|epaule_cap|brassard[01]|gantelet|cubitiere_pointe|cuissard|jambiere|botte_revers)(_R)?$', mat_map=[(r'^(epaule|brassard|gantelet|cuissard|jambiere|botte_revers)', 'leather'), (r'^cubitiere_pointe', 'bone'), (r'^boucle', 'trim')], head=dict(w=1.12, h=0.95, d=1.1, jaw=.95, brow=.95, nose=.4, tusk=0.7, ears=0.15, k=0.95), skin=(0.40, 0.25, 0.18), weapon=('club', 'R', 1.0), scale=(1.30, 0.98, 1.22), warty=0.4),
+  'troll':   dict(keep=r'^(ceinture|boucle|cubitiere_pointe|genouillere_pointe|epaule_ornement|bracelet|botte_pointe)(_R)?$', mat_map=[(r'^(cubitiere_pointe|genouillere_pointe|epaule_ornement|botte_pointe)', 'bone'), (r'^(bracelet)', 'leather')], head=dict(w=1.05, h=0.9, d=1.1, jaw=1.0, brow=1.0, nose=.8, tusk=1.3, ears=0.35, ear_pt=-0.3, eye=True, k=0.9), skin=(0.22, 0.27, 0.19), weapon=('club', 'R', 1.4), scale=(1.45, 1.0, 1.35), warty=1.0),
   # V10.42 — boss (type « creature » côté jeu : ils passent par createCreature)
   'gardien': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.12, h=1.0, d=1.12, jaw=1.25, brow=1.5, nose=.25, tusk=0.0, ears=0.0, eye=True, k=0.9), skin=(0.30, 0.31, 0.32), weapon=('club', 'R', 1.9), scale=(1.75, 1.2, 1.65), warty=1.0, boss=True),
   'seigneur': dict(keep=ELITE, head=dict(w=1.0, h=1.05, jaw=.8, brow=1.0, nose=.5, ears=.5, ear_pt=1.0, tusk=.5, eye=True, hood=True, k=1.0), skin=(0.14, 0.10, 0.19), weapon=('sword', 'R'), shield=True, scale=(1.35, 1.3, 1.35), decimate=0.07, boss=True),
@@ -125,7 +125,7 @@ V = {
   'villageois_a': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=0.98, jaw=.4, brow=.2, nose=.55, eye=False, hair='hair'), skin=(0.55, 0.38, 0.28), weapon=None, scale=(1.0, 1.0, 1.0), civil=True, tunic='tunic_a'),
   'villageois_b': dict(keep=r'^cape$', head=dict(w=0.94, h=1.02, jaw=.2, brow=.1, nose=.45, eye=False, hair='hair_light'), skin=(0.50, 0.36, 0.30), weapon=None, robe=True, scale=(0.98, 1.02, 0.98), civil=True, tunic='tunic_b'),
   'villageois_c': dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.02, h=0.98, jaw=.55, brow=.35, nose=.7, eye=False, hair='hair_blond'), skin=(0.62, 0.47, 0.37), weapon=None, scale=(1.03, 0.98, 1.05), civil=True, tunic='tunic_c'),
-  'goblin':  dict(keep=r'^(ceinture|boucle)(_R)?$', head=dict(w=1.1, h=1.0, d=1.1, jaw=.5, brow=.6, nose=1.0, ears=1.0, ear_pt=1.0, tusk=.4, eye=True, k=1.55), skin=(0.16, 0.30, 0.10), weapon=('dagger', 'R'), scale=(0.92, 0.95, 0.92), warty=0.6),
+  'goblin':  dict(keep=r'^(ceinture|boucle|epaule_cap|bracelet|botte_revers|gorgerin0)(_R)?$', mat_map=[(r'^(epaule_cap|bracelet|botte_revers|gorgerin)', 'leather'), (r'^boucle', 'trim')], head=dict(w=1.1, h=1.0, d=1.1, jaw=.5, brow=.6, nose=1.0, ears=1.0, ear_pt=1.0, tusk=.4, eye=True, k=1.55), skin=(0.16, 0.30, 0.10), weapon=('dagger', 'R'), scale=(0.92, 0.95, 0.92), warty=0.6),
 }
 
 def build(name):
@@ -144,6 +144,8 @@ def build(name):
             if name in ('bandit', 'archer') and re.match(r'^(torse|jambe|botte)(_R)?$', n): mat = 'linen' if n.startswith(('torse', 'jambe')) else 'leather'
             if name in ('zealot', 'mage') and n.startswith(('torse', 'jambe', 'bras')): mat = 'cloth'
             if name == 'elite' and n.startswith(('torse', 'jambe')): mat = 'linen'
+            for rx_, mm_ in v.get('mat_map', []):
+                if re.match(rx_, n): mat = mm_
             parts.append((n, m.copy(), mat))
     if name in ('brute', 'troll', 'goblin', 'gardien'):
         parts = [(n, m, 'hide' if (n.startswith(('torse', 'jambe', 'bras')) ) else mat) for n, m, mat in parts]

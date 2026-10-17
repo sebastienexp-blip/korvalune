@@ -2137,5 +2137,41 @@
    "shield": true,
    "scale": 2.1
   }
+ },
+ "crystal_golem": {
+  "id": "crystal_golem",
+  "name": "Golem de cristal",
+  "species": "golem",
+  "speed": 3.2,
+  "aggro": 11,
+  "leash": 34,
+  "attackRange": 2.8,
+  "attackCd": 1.8,
+  "respawn": 48,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.5,
+  "model": {
+   "scale": 1.75
+  },
+  "trait": "armored"
+ },
+ "crystal_golem_colossus": {
+  "id": "crystal_golem_colossus",
+  "name": "Golem de cristal colossal",
+  "species": "golem_colossus",
+  "speed": 2.6,
+  "aggro": 24,
+  "leash": 70,
+  "attackRange": 6.5,
+  "attackCd": 2.4,
+  "respawn": 240,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.95,
+  "model": {
+   "scale": 5.6
+  },
+  "trait": "armored"
  }
 }

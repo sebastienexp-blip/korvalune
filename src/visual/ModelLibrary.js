@@ -370,7 +370,7 @@ export const ModelLibrary = {
 };
 
 // espèces sans modèle propre : utilisent celui d'une espèce proche
-const SPECIES_ALIAS = { guard: 'elite' };
+const SPECIES_ALIAS = { guard: 'elite', golem_colossus: 'golem' };
 
 const box = new THREE.Box3(), size = new THREE.Vector3();
 
