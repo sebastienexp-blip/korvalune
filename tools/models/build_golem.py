@@ -7,6 +7,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from glbkit import *
 import hero_geo as G, hero_anim as A
+import golem_tex as GT
 
 B = G.B
 
@@ -38,6 +39,17 @@ def unweld(V, F):
 
 
 FLAT = ('Armor_Crystal', 'Embedded_Shard', 'Knuckle_Crystal', 'Gem', 'Forehead', 'Chest_Core', 'Rib_', 'Back_Spike', 'EyeSocket')
+
+
+def box_uv(V, F, tile=0.9):
+    """Projection triplanaire « par boîte » (une face = un axe dominant), en mètres ; V doit être dé-soudé."""
+    fn = np.cross(V[F[:, 1]] - V[F[:, 0]], V[F[:, 2]] - V[F[:, 0]])
+    ax = np.abs(fn).argmax(1)
+    UV = np.zeros((len(V), 2))
+    for a, (i, j) in enumerate(((1, 2), (0, 2), (0, 1))):
+        fs = F[ax == a].reshape(-1)
+        UV[fs, 0] = V[fs, i] / tile; UV[fs, 1] = V[fs, j] / tile
+    return UV
 
 
 def swapLR(n):             # le modèle nomme « gauche » ce qui est du côté -X ; le squelette du Veilleur a sa gauche en +X
@@ -107,10 +119,24 @@ def main(src, out):
     for i, mt in enumerate(mats):
         pb = mt['pbrMetallicRoughness']; em = tuple(mt.get('emissiveFactor', (0, 0, 0)))
         M[i] = Material(mt['name'].replace(' ', '_'), factor=tuple(pb['baseColorFactor']), metal=pb['metallicFactor'], rough=pb['roughnessFactor'], emissive=em)
+    sb, sn, so, se = GT.stone(); cb, cn, co, ce = GT.crystal()
+    for i, mt in enumerate(mats):
+        nm = mt['name']
+        if nm in ('Obsidian_Stone', 'Dark_Granite', 'Obsidian Stone', 'Dark Granite'):
+            M[i] = Material(nm.replace(' ', '_'), base=sb, normal=sn, orm=so, emissive=(1, 1, 1), emissive_tex=se, metal=1.0, rough=1.0,
+                            normal_scale=1.6, texkey='golem_stone', base_fmt='JPEG')
+            M[i].tex = True
+        elif 'Crystal' in nm or 'Glow' in nm:
+            M[i] = Material(nm.replace(' ', '_'), base=cb, normal=cn, orm=co, emissive=(1, 1, 1), emissive_tex=ce, metal=1.0, rough=1.0,
+                            normal_scale=0.8, texkey='golem_crystal', base_fmt='JPEG')
+            M[i].tex = True
     parts = []
     for n, V, F, mi in tr:
-        if n.startswith(FLAT): V, F = unweld(V, F)
+        tx = getattr(M[mi], 'tex', False)
+        if n.startswith(FLAT) or tx: V, F = unweld(V, F)
         m = Mesh(V, F)
+        if tx:
+            m.UV = box_uv(V, F, 0.9 if 'stone' in M[mi].texkey else 0.5)
         skin_rigid(m, B[assigned[n]])
         parts.append((n, m, M[mi].name))
     used = [M[i] for i in sorted({mi for _, _, _, mi in tr})]

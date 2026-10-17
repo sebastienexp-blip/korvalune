@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.88', title: 'Golem : pierre fissurée et cristaux',
+    items: [
+      '🪨 Le Golem de cristal (et sa version colossale de 10 mètres) reçoit sa vraie matière : roche noire fracturée en facettes avec relief, veines violettes lumineuses dans les fissures.',
+      '💜 Les cristaux sont veinés, brillants et luminescents, comme sur le dessin du golem.'
+    ]
+  },
+  {
     version: '10.87', title: 'Golem de cristal et bestiaire remodelé',
     items: [
       '💎 Nouveau monstre : le Golem de cristal (niveau 10), une armure de roche sombre couronnée de cristaux violets lumineux. Il hante la Forêt des Ombres et les Montagnes de Fer, résiste aux coups (dégâts réduits) et marche, frappe et s’effondre comme les autres monstres.',
