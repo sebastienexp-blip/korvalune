@@ -3110,6 +3110,34 @@ export class Game {
     this.player.target = best;
   }
 
+  // V10.93 : les modèles animés (squelette) ne sont jamais écartés par three.js (frustumCulled = false) : chaque ennemi vivant était dessiné
+  // même hors de l'écran, avec tous ses matériaux — de quoi saturer un téléphone dans une spire. On masque ceux qui sont hors champ ou au-delà de la brume.
+  _cullEnemyDraw(cullDistSq) {
+    const cam = this.camera;
+    if (!cam) return;
+    const fr = (this._cullFr ||= new THREE.Frustum()), m = (this._cullM ||= new THREE.Matrix4()), sp = (this._cullS ||= new THREE.Sphere());
+    cam.updateMatrixWorld();
+    m.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+    fr.setFromProjectionMatrix(m);
+    for (const e of this.enemies) {
+      if (!e.alive || !e.rig?.root) continue;
+      const sc = e.rig.root.scale?.x || 1;
+      sp.center.set(e.pos.x, e.pos.y + 1.2 * sc, e.pos.z); sp.radius = Math.max(3.5, 2.2 * sc);
+      const vis = e.pos.distanceToSquared(this.player.pos) < cullDistSq && fr.intersectsSphere(sp);
+      if (e.rig.root.visible !== vis) e.rig.root.visible = vis;
+      // au-delà de 32 m, l'ennemi ne projette plus d'ombre (moitié moins de dessins : la passe d'ombre redessine tous ses matériaux)
+      if (vis) {
+        const sh = e.pos.distanceToSquared(this.player.pos) < 1024;
+        if (e._shadowOn !== sh) {
+          const ms = e._shMeshes || (e._shMeshes = []);
+          if (!ms.length) e.rig.root.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) ms.push(o); });
+          for (const o of ms) o.castShadow = sh;
+          e._shadowOn = sh;
+        }
+      }
+    }
+  }
+
   _tryInteract() {
     if (!this.player || this.dialogueOpen || this.modalOpen) return;
     let nearestLoot = null, nearestD = 2.4;
@@ -3418,6 +3446,7 @@ export class Game {
       if (e.alive && (gwHost && e.netKey ? this.gw.nearestDist(e.pos) ** 2 : this.player.pos.distanceToSquared(e.pos)) > cullDistSq) continue;
       e.update(dt, gwHost ? this.gw.pick(e) : this.player);
     }
+    this._cullEnemyDraw(cullDistSq);
     this.wb?.update(dt);
     let nearestActiveBoss = null;
     for (const b of this.bosses) {

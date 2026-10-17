@@ -3,6 +3,13 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.93', title: 'Fini les carrés noirs',
+    items: [
+      '🩹 Les grands carrés noirs qui apparaissaient sur téléphone en qualité Élevée ou Ultra (surtout dans les spires) sont corrigés : le halo lumineux demande moins de mémoire graphique et ignore les valeurs invalides qui s’étalaient en carrés.',
+      '⚡ Les ennemis hors de l’écran ne sont plus dessinés, et ceux à plus de 32 m ne projettent plus d’ombre : le jeu est plus fluide dans les combats.'
+    ]
+  },
+  {
     version: '10.92', title: 'Les boss mondiaux',
     items: [
       '👹 Les anciens boss sont supprimés. À leur place : 10 boss mondiaux inédits, immenses, un par région : l’Épouvantail Moissonneur, le Roi-Cerf des Ombres, le Colosse Forgeron, le Sphinx-Scorpion, le Gobe-Lanterne, le Mammouth de Givre, le Prélat de Chair, le Séraphin Brisé, le Seigneur de Braise et l’Œil du Néant.',
