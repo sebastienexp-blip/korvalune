@@ -34,6 +34,10 @@ export const SPECIES = {
   troll: { hp: 1.9, dmg: 1.1, def: 0.9, xp: 1.5 },
   golem_colossus: { hp: 9, dmg: 1.8, def: 2.6, xp: 9 },
   golem: { hp: 2.2, dmg: 1.15, def: 1.8, xp: 1.9 },
+  skel_sword: { hp: 1.25, dmg: 1.05, def: 1.3, xp: 1.4 },
+  skel_archer: { hp: 0.75, dmg: 1.05, def: 0.7, xp: 1.3 },
+  skel_crossbow: { hp: 0.85, dmg: 1.3, def: 0.9, xp: 1.45 },
+  skel_mage: { hp: 0.65, dmg: 1.4, def: 0.55, xp: 1.5 },
   goblin: { hp: 0.35, dmg: 0.08, def: 0.15, xp: 1.4 }
 };
 

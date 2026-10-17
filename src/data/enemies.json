@@ -2173,5 +2173,84 @@
    "scale": 5.6
   },
   "trait": "armored"
+ },
+ "skeleton_warrior": {
+  "id": "skeleton_warrior",
+  "name": "Guerrier squelette",
+  "species": "skel_sword",
+  "speed": 4.5,
+  "aggro": 14,
+  "leash": 38,
+  "attackRange": 2.2,
+  "attackCd": 1.4,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {},
+  "trait": "armored"
+ },
+ "skeleton_archer": {
+  "id": "skeleton_archer",
+  "name": "Archer squelette",
+  "species": "skel_archer",
+  "speed": 4.6,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.1,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {},
+  "ranged": {
+   "range": 18,
+   "min": 6,
+   "speed": 16,
+   "color": 14209712
+  }
+ },
+ "skeleton_crossbow": {
+  "id": "skeleton_crossbow",
+  "name": "Arbalétrier squelette",
+  "species": "skel_crossbow",
+  "speed": 4.2,
+  "aggro": 18,
+  "leash": 44,
+  "attackRange": 2.0,
+  "attackCd": 2.6,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {},
+  "ranged": {
+   "range": 20,
+   "min": 7,
+   "speed": 24,
+   "color": 12105920
+  }
+ },
+ "skeleton_mage": {
+  "id": "skeleton_mage",
+  "name": "Nécromant squelette",
+  "species": "skel_mage",
+  "speed": 4.3,
+  "aggro": 17,
+  "leash": 42,
+  "attackRange": 2.0,
+  "attackCd": 2.8,
+  "respawn": 40,
+  "flees": false,
+  "rigType": "humanoid",
+  "itemDropChance": 0.42,
+  "model": {},
+  "ranged": {
+   "range": 19,
+   "min": 8,
+   "speed": 9,
+   "color": 10289052
+  }
  }
 }

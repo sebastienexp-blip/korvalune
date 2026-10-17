@@ -3,6 +3,14 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.91', title: 'Les squelettes arrivent',
+    items: [
+      '💀 Nouveau type d’ennemi : les squelettes. Guerrier (épée, bouclier rond, casque et armure rouillée), archer, arbalétrier et nécromant (robe en lambeaux, bâton et orbe). Crâne avec orbites et dents, mâchoire, côtes, colonne, bassin, os des bras, des mains et des jambes : tout y est.',
+      '🌲 Ils rôdent dans les prairies, la Forêt des Ombres et les Montagnes de Fer. Les tireurs frappent de loin, les guerriers résistent bien aux coups.',
+      '🩹 Les humanoïdes n’ont plus de fentes claires qui les coupaient en deux.'
+    ]
+  },
+  {
     version: '10.90', title: 'Fini les fentes sur les ennemis',
     items: [
       '🩹 Les lignes claires qui coupaient les ennemis en deux (capuche, bras, robe, bâton) étaient de vraies fentes dans le modèle : elles sont refermées, sur tous les ennemis, les boss et les villageois.'

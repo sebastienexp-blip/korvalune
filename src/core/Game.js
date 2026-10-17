@@ -530,9 +530,9 @@ export class Game {
     // V8.0 — Tout le continent est peuplé, région par région, niveaux 1 → 200.
     // Prairies / Forêt / Montagnes : faune de base ; les autres régions : leur propre famille de monstres (+ élites).
     const baseSpecies = {
-      prairie: ['wolf', 'wolf', 'boar', 'boar', 'bandit', 'bandit', 'rat_giant', 'bandit_archer', 'wolf_alpha'],
-      forest: ['wolf', 'wolf', 'bear', 'bear', 'rat_giant', 'zealot', 'zealot', 'cultist_mage', 'wolf_alpha', 'bandit', 'crystal_golem', 'crystal_golem'],
-      mount: ['troll', 'troll', 'brute', 'brute', 'shield_guard', 'bear', 'bandit_archer', 'zealot', 'cultist_mage', 'crystal_golem']
+      prairie: ['wolf', 'wolf', 'boar', 'boar', 'bandit', 'bandit', 'rat_giant', 'bandit_archer', 'wolf_alpha', 'skeleton_warrior', 'skeleton_archer'],
+      forest: ['wolf', 'wolf', 'bear', 'bear', 'rat_giant', 'zealot', 'zealot', 'cultist_mage', 'wolf_alpha', 'bandit', 'crystal_golem', 'crystal_golem', 'skeleton_warrior', 'skeleton_warrior', 'skeleton_archer', 'skeleton_crossbow', 'skeleton_mage'],
+      mount: ['troll', 'troll', 'brute', 'brute', 'shield_guard', 'bear', 'bandit_archer', 'zealot', 'cultist_mage', 'crystal_golem', 'skeleton_warrior', 'skeleton_crossbow', 'skeleton_mage']
     };
     const TARGET = { prairie: 190, forest: 120, mount: 100, desert: 100, swamp: 90, tundra: 100, corrupt: 100, celeste: 90, abyss: 90, void: 100 };
     const cand = {};
@@ -917,7 +917,7 @@ export class Game {
     b.on('playerHurt', () => tryTriggerEquipEffects('hurt', this.player, { enemies: this.enemies, bosses: this.bosses, particles: this.particles, audio: this.audio, bus: this.bus }));
     b.on('levelup', (lvl) => { setLootLevel(lvl); setTimeout(() => this._startDiscoveryQuests(), 1500); try { const nu = this.player.getSkillPool().filter((x) => x.levelReq === lvl); if (nu.length && this.settings.notifLevel !== false) this.hud.notify(`Nouvelle compétence : ${nu.map((x) => x.icon + ' ' + x.name).join(', ')} (touche K)`, 'info'); } catch (e) { /* ignoré */ } if (this.settings.notifLevel !== false) this.hud.levelupBanner(); try { this.fx?.levelUp(this.player.pos, this.particles); } catch (e) { /* ignore */ } });
     b.on('enemyAttack', (e) => this.audio.play('enemyAttack', { pos: e.pos, kind: e.def?.id || e.def?.name || '' }));
-    b.on('enemyShoot', (d) => { this.enemyProj.spawn(d); this.audio.play(d.enemy?.def?.species === 'mage' ? 'cast' : 'bow', d.from); });
+    b.on('enemyShoot', (d) => { this.enemyProj.spawn(d); this.audio.play(['mage', 'skel_mage'].includes(d.enemy?.def?.species) ? 'cast' : 'bow', d.from); });
     b.on('hazard', (d) => { if (!this.hazards) this.hazards = new GroundHazards(this.scene, this.world, this.bus); this.hazards.spawn(d); });
     b.on('hazardBurst', (d) => { this.audio.play('explode', new THREE.Vector3(d.x, 0, d.z)); if (d.hit && this._mev?.active) this._mev.hit = true; if (d.hit) this.bus.emit('shake', 0.3); });
     b.on('enemyProjectileHit', () => this.audio.play('hurt'));
