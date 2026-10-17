@@ -869,7 +869,7 @@ export class Game {
       else if (source === this.lootSprite) {
         drops = LootSystem.rollForTreasureGoblin(source.level || 10);
         this.hud.notify('✨ Le lutin trésor explose en un torrent de butin !', 'quest');
-        this.audio.play('levelup');
+        this.audio.play('confirm');
         this.particles.emit(source.pos.x, source.pos.y + 0.8, source.pos.z, { count: 90, color: 0xffd23f, speed: 6.5, life: 1.2, up: 3 });
         this.lootSprite = null;
       }
@@ -1528,7 +1528,7 @@ export class Game {
     const onUpgrade = (skillId) => {
       const r = tryUpgrade(this.player, skillId);
       this.hud.notify(r.ok ? `⬆ ${r.msg}` : r.msg, r.ok ? 'quest' : 'boss');
-      if (r.ok) { this.audio.play('levelup'); this.bus.emit('hud'); }
+      if (r.ok) { this.audio.play('confirm'); this.bus.emit('hud'); }
       refresh();
     };
     const onToggleBarSlot = (index) => {

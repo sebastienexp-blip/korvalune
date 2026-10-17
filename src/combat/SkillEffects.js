@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { skillColor } from '../visual/Fx.js';
+import { goreCtx } from '../effects/Gore.js';
 import { applyStun, applySlow, applyDot, applyVuln, isStunned } from './Status.js';
 
 // Effets avancés des compétences (V3.8). Chaque compétence peut porter un objet `fx` (voir data/skills.json) :
@@ -270,7 +271,9 @@ export class SkillEffects {
       if (p.world && p.world.losBlocked && p.world.losBlocked(x, z, e.pos.x, e.pos.z)) continue;
       const crit = Math.random() < p.critChance + (p.sbCrit || 0);
       const dmg = Math.round(power * (crit ? p.critMult : 1) * (0.9 + Math.random() * 0.2));
-      const dealt = e.takeDamage(dmg, crit, p, quiet) || 0;
+      goreCtx.skill = skill; goreCtx.aoe = true;
+      let dealt = 0;
+      try { dealt = e.takeDamage(dmg, crit, p, quiet) || 0; } finally { goreCtx.skill = null; goreCtx.aoe = false; }
       if (dealt > 0 && p.sbLifesteal) p.heal(dealt * p.sbLifesteal, true);
       if (!seen.has(e)) { seen.add(e); this.hitExtras(skill, p, e, dealt); }
       if (++n >= 20) break;

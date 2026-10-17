@@ -155,7 +155,7 @@ export class RiftSystem {
     }
     d.pending = 0; d.pendingLevel = 0;
     this.applyGems();
-    this.g.audio.play(gained ? 'levelup' : 'error');
+    this.g.audio.play(gained ? 'confirm' : 'error');
     this.g.hud.notify(gained ? `${GEMS[gemId].icon} ${GEMS[gemId].name} : +${gained} rang${gained > 1 ? 's' : ''} (rang ${d.gems[gemId]})` : `${GEMS[gemId].icon} L'amélioration a échoué (spire trop facile pour ce rang).`, gained ? 'quest' : 'boss');
     this.g._doSave();
     return { gained, rank: d.gems[gemId] };

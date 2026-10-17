@@ -3,6 +3,7 @@ import { weaponFamily, projectileKind } from './WeaponRules.js';
 import { tryTriggerEquipEffects } from './ItemEffects.js';
 import { skillColor } from '../visual/Fx.js';
 import { SkillEffects } from './SkillEffects.js';
+import { goreCtx } from '../effects/Gore.js';
 
 // Résolution des combats joueur → cible (ennemis, boss). Le "serveur" de demain
 // validera ces calculs ; pour l'instant tout est calculé ici en local.
@@ -103,7 +104,9 @@ export class CombatSystem {
     if (f.execute && t.maxHp && t.hp / t.maxHp < f.execute[0]) mult += f.execute[1];
     if (p.bossDmgPct && (t.def?.boss || t.isBoss || t.champion)) mult += p.bossDmgPct; // V10.26
     const dmg = Math.round(p.atk * skill.damage * (p.dmgMult || 1) * (p.sbDmg || 1) * mult * (crit ? p.critMult : 1) * (0.9 + Math.random() * 0.2));
-    const dealt = t.takeDamage(dmg, crit, p) || 0;
+    goreCtx.skill = skill; goreCtx.aoe = false;
+    let dealt = 0;
+    try { dealt = t.takeDamage(dmg, crit, p) || 0; } finally { goreCtx.skill = null; }
     const ls = (f.lifesteal || 0) + (p.sbLifesteal || 0) + (p.lifestealPct || 0);
     if (ls > 0 && dealt > 0) p.heal(dealt * ls, true);
     if (k === 0 && skill.fx) this.sfx.hitExtras(skill, p, t, dealt);

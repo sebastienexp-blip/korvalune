@@ -6,6 +6,7 @@ import { makeLabel } from '../ui/Label.js';
 import { scaledEnemyStats } from '../data/difficulty.js';
 import { tickStatus, vulnMult } from '../combat/Status.js';
 import { share } from '../network/NetShare.js';
+import { goreCtx } from '../effects/Gore.js';
 
 const STATE = { PATROL: 0, CHASE: 1, ATTACK: 2, FLEE: 3, RETURN: 4, DEAD: 5 };
 
@@ -99,8 +100,9 @@ export class Enemy {
     this.hpBar.fg.scale.x = Math.max(0.001, this.hp / this.maxHp);
     this.hpBar.fg.position.x = -(1 - this.hpBar.fg.scale.x) / 2;
     this.bus.emit('floatText', { pos: this.pos.clone().add({ x: 0, y: 1.6, z: 0 }), text: crit ? `CRIT ${final}` : `${final}`, color: crit ? '#ffd23f' : dot ? '#9be86a' : '#ffffff', big: crit });
-    if (!dot) this.bus.emit('goreHit', { e: this, crit, dmg: final });
-    if (this.hp <= 0) { if (!dot) this.bus.emit('goreKill', { e: this, crit, dmg: final }); this.kill(player); }
+    const gk = goreCtx.skill;   // V10.94 : compétence en cours (les zones comptent aussi pour le sang)
+    if (!dot || gk) this.bus.emit('goreHit', { e: this, crit, dmg: final, skill: gk, aoe: goreCtx.aoe });
+    if (this.hp <= 0) { if (!dot || gk) this.bus.emit('goreKill', { e: this, crit, dmg: final, skill: gk }); this.kill(player); }
     else {
       if (!dot) this.bus.emit('enemyHurt', this);
       if (this.state !== STATE.ATTACK) { this.state = STATE.CHASE; this.stateT = 0; }

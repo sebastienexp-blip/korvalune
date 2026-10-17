@@ -3,6 +3,16 @@
 // la version dans package.json et dans le libellé de src/ui/HUD.js (#build-version). Écrire pour les joueurs : court, concret.
 export const PATCH_NOTES = [
   {
+    version: '10.94', title: 'Plus de sang, plus de morceaux',
+    items: [
+      '🩸 Les flaques de sang ne sont plus des ronds : ce sont de vraies taches irrégulières, avec des coulées, des gouttelettes autour, un reflet humide, posées dans la pente. Elles s’étalent, puis sèchent et s’assombrissent (option « Sang et décapitation »).',
+      '🪓 Démembrements : bras, jambes et pattes peuvent être arrachés et voler en l’air, avec un jet de sang au moignon. Les lames et les coups critiques tranchent le plus.',
+      '💥 Explosions : selon la compétence, un monstre peut éclater en morceaux (feu, foudre et magie) ou voler en éclats de glace (givre). Les marteaux et les coups très violents écrasent. Les flèches visent plutôt la tête.',
+      '🔕 Plus aucun son à la montée de niveau ni de Zénith.',
+      '🗡️ Les compétences de zone font maintenant saigner les ennemis, comme les coups simples.'
+    ]
+  },
+  {
     version: '10.93', title: 'Fini les carrés noirs',
     items: [
       '🩹 Les grands carrés noirs qui apparaissaient sur téléphone en qualité Élevée ou Ultra (surtout dans les spires) sont corrigés : le halo lumineux demande moins de mémoire graphique et ignore les valeurs invalides qui s’étalaient en carrés.',
